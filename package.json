@@ -10,8 +10,9 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "dev": "concurrently \"vite\" \"npm run build:electron && cross-env NODE_ENV=development electron .\"",
-    "build": "npm run build:electron && vite build && electron-forge make",
+    "build": "npm run clean && npm run build:electron && npm run build:renderer && electron-forge make",
     "build:electron": "tsc --project tsconfig.electron.json",
+    "build:renderer": "vite build",
     "clean": "rimraf dist dist-electron orders out"
   },
   "keywords": [],

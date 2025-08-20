@@ -19,14 +19,13 @@ function createWindow() {
     },
   });
 
-  win.loadURL(
-    isDev
-      ? 'http://localhost:5173'
-      : `file://${path.join(__dirname, '../../dist/index.html')}`
-  );
-
   if (isDev) {
+    win.loadURL('http://localhost:5173');
     win.webContents.openDevTools();
+  } else {
+    // In production, load the built files
+    const indexPath = path.join(__dirname, '../../dist/index.html');
+    win.loadFile(indexPath);
   }
 }
 
