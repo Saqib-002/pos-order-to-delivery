@@ -3,6 +3,7 @@ import path from 'path';
 import isDev from 'electron-is-dev';
 import { fileURLToPath } from 'url';
 import { initDB } from './db.js';
+import Logger from 'electron-log';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,7 +36,7 @@ ipcMain.handle('save-order', async (event, order) => {
     const { db } = await import('./db.js');
     return await db.post(order);
   } catch (error) {
-    console.error('Error saving order:', error);
+    Logger.error('Error saving order:', error);
     throw error;
   }
 });
@@ -45,7 +46,7 @@ ipcMain.handle('get-orders', async () => {
     const { db } = await import('./db.js');
     return await db.allDocs({ include_docs: true });
   } catch (error) {
-    console.error('Error getting orders:', error);
+    Logger.error('Error getting orders:', error);
     throw error;
   }
 });
@@ -55,7 +56,7 @@ ipcMain.handle('update-order', async (event, order) => {
     const { db } = await import('./db.js');
     return await db.put(order);
   } catch (error) {
-    console.error('Error updating order:', error);
+    Logger.error('Error updating order:', error);
     throw error;
   }
 });
@@ -65,7 +66,7 @@ ipcMain.handle('get-order-by-id', async (event, id) => {
     const { db } = await import('./db.js');
     return await db.get(id);
   } catch (error) {
-    console.error('Error getting order by id:', error);
+    Logger.error('Error getting order by id:', error);
     throw error;
   }
 });
@@ -73,7 +74,6 @@ ipcMain.handle('get-order-by-id', async (event, id) => {
 app.whenReady().then(() => {
   initDB();
   createWindow();
-
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();

@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { app } from 'electron';
 import { fileURLToPath } from 'url';
+import Logger from 'electron-log';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,7 +32,7 @@ export function initDB(): void {
     const couchdbUrl = process.env.COUCHDB_URL || 'http://localhost:5984/orders';
     
     if (couchdbUsername && couchdbPassword) {
-      console.log('Attempting to connect to remote CouchDB...');
+      Logger.info('Attempting to connect to remote CouchDB...');
       
       const remoteDB = new PouchDB(couchdbUrl, {
         auth: {
@@ -43,8 +44,7 @@ export function initDB(): void {
       // Test connection
       remoteDB.info()
         .then((info) => {
-          console.log('CouchDB connection successful:', info);
-          
+          Logger.info('CouchDB connection successful', info);
           // Start sync if connection is successful
           db.sync(remoteDB, { 
             live: true, 
@@ -53,36 +53,36 @@ export function initDB(): void {
             timeout: 20000
           })
           .on('change', (info) => {
-            console.log('Sync change:', info);
+            Logger.info('Sync change:', info);
           })
           .on('paused', () => {
-            console.log('Sync paused');
+            Logger.info('Sync paused');
           })
           .on('active', () => {
-            console.log('Sync active');
+            Logger.info('Sync active');
           })
           .on('error', (err) => {
-            console.error('Sync error:', err);
+            Logger.error('Sync error:', err);
           });
         })
         .catch((err) => {
-          console.warn('CouchDB connection failed, using local database only:', err.message);
+          Logger.error('CouchDB connection failed, using local database only:', err.message);
         });
     } else {
-      console.log('No CouchDB credentials provided, using local database only');
+      Logger.warn('No CouchDB credentials provided, using local database only');
     }
     
     // Test local database
     db.info()
       .then((info) => {
-        console.log('Local database info:', info);
+        Logger.info('Local database connection successful', info);
       })
       .catch((err) => {
-        console.error('Local database error:', err);
+        Logger.error('Local database connection failed:', err.message);
       });
       
   } catch (error) {
-    console.error('Database initialization error:', error);
+    Logger.error('Database initialization error:', error);
     throw error;
   }
 }
