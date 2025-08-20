@@ -1,3 +1,7 @@
+export interface Item{
+  name: string;
+  quantity: number;
+}
 export interface Order {
   _id: string;
   customer: {
@@ -5,7 +9,7 @@ export interface Order {
     phone: string;
     address: string;
   };
-  items: string;
+  items: Item[];
   status: string;
   createdAt: string;
   deliveryPerson?: string;
