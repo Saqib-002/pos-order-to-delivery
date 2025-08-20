@@ -6,8 +6,8 @@ export const KitchenView: React.FC = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      const result = await (window as any).electronAPI.getOrders();
-      setOrders(result.rows.map((row: any) => row.doc));
+      const results = await (window as any).electronAPI.getOrders();
+      setOrders(results);
     };
     fetchOrders();
   }, []);

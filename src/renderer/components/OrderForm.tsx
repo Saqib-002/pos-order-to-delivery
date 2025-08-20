@@ -4,25 +4,23 @@ import { Order } from '@/types/order';
 export const OrderForm: React.FC = () => {
   const [customer, setCustomer] = useState({ name: '', phone: '', address: '' });
   const [items, setItems] = useState('');
-  const [status, setStatus] = useState('Pending');
 
   const handleSubmit = async () => {
     const order: Order = {
       _id: new Date().toISOString(),
       customer,
       items,
-      status,
+      status:"Sent to Kitchen",
       createdAt: new Date().toISOString(),
     };
     await (window as any).electronAPI.saveOrder(order);
     setCustomer({ name: '', phone: '', address: '' });
     setItems('');
-    // alert('Order saved!');
+    alert('Order saved!');
   };
 
   const sendToKitchen = async () => {
     await handleSubmit();
-    setStatus('Sent to Kitchen');
     // Simulate printing to kitchen
     console.log('Order sent to kitchen:', { customer, items });
   };
