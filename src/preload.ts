@@ -1,9 +1,12 @@
-import { contextBridge } from 'electron';
-import { db } from './main/db';
+const { contextBridge, ipcRenderer } = require('electron');
+
+
+// Note: We can't directly import db here as preload runs in a different context
+// Instead, we need to communicate through IPC
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  saveOrder: (order: any) => db.post(order),
-  getOrders: () => db.allDocs({ include_docs: true }),
-  updateOrder: (order: any) => db.put(order),
-  getOrderById: (id: string) => db.get(id),
+  saveOrder: (order: any) => ipcRenderer.invoke('save-order', order),
+  getOrders: () => ipcRenderer.invoke('get-orders'),
+  updateOrder: (order: any) => ipcRenderer.invoke('update-order', order),
+  getOrderById: (id: string) => ipcRenderer.invoke('get-order-by-id', id),
 });

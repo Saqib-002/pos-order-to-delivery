@@ -5,13 +5,13 @@ dotenv.config();
 
 export let db: PouchDB.Database;
 
-export function initDB() {
+export function initDB(): void {
   db = new PouchDB('orders');
 
   const remoteDB = new PouchDB('http://localhost:5984/orders', {
     auth: {
-      username: process.env.COUCHDB_USERNAME,
-      password: process.env.COUCHDB_PASSWORD,
+      username: process.env.COUCHDB_USERNAME || '',
+      password: process.env.COUCHDB_PASSWORD || '',
     },
   });
 
