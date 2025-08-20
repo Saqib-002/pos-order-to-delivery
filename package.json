@@ -2,6 +2,7 @@
   "name": "pos-order-to-delivery",
   "version": "1.0.0",
   "type": "module",
+  "description": "Hello World!",
   "main": "dist-electron/main/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,12 +11,12 @@
     "make": "electron-forge make",
     "dev": "concurrently \"vite\" \"npm run build:electron && cross-env NODE_ENV=development electron .\"",
     "build": "npm run build:electron && vite build && electron-forge make",
-    "build:electron": "tsc --project tsconfig.electron.json"
+    "build:electron": "tsc --project tsconfig.electron.json",
+    "clean": "rimraf dist dist-electron orders out"
   },
   "keywords": [],
-  "author": "",
+  "author": "Saqib",
   "license": "ISC",
-  "description": "",
   "devDependencies": {
     "@electron-forge/cli": "^7.8.3",
     "@electron-forge/maker-deb": "^7.8.3",
