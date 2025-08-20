@@ -2,12 +2,12 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import isDev from 'electron-is-dev';
 import { fileURLToPath } from 'url';
-import { initDB } from './db.js';
+import { remoteDB,db,initDB } from './db.js';
 import Logger from 'electron-log';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+let changes: any=null;
 function createWindow() {
   const win = new BrowserWindow({
     width: 800,
@@ -20,6 +20,19 @@ function createWindow() {
     },
   });
 
+  // Start changes feed
+  changes = db.changes({
+    since: 'now',
+    live: true,
+    include_docs: true,
+  })
+    .on('change', (change) => {
+      // Send change event to renderer
+      win.webContents.send('db-change', change);
+    })
+    .on('error', (err) => {
+      Logger.error('Changes feed error:', err);
+    });
   if (isDev) {
     win.loadURL('http://localhost:5173');
     win.webContents.openDevTools();
@@ -33,7 +46,6 @@ function createWindow() {
 // IPC handlers - we'll import db dynamically to avoid circular imports
 ipcMain.handle('save-order', async (event, order) => {
   try {
-    const { db } = await import('./db.js');
     return await db.post(order);
   } catch (error) {
     Logger.error('Error saving order:', error);
@@ -43,7 +55,6 @@ ipcMain.handle('save-order', async (event, order) => {
 
 ipcMain.handle('get-orders', async () => {
   try {
-    const { db } = await import('./db.js');
     return await db.allDocs({ include_docs: true });
   } catch (error) {
     Logger.error('Error getting orders:', error);
@@ -53,7 +64,6 @@ ipcMain.handle('get-orders', async () => {
 
 ipcMain.handle('update-order', async (event, order) => {
   try {
-    const { db } = await import('./db.js');
     return await db.put(order);
   } catch (error) {
     Logger.error('Error updating order:', error);
@@ -63,14 +73,12 @@ ipcMain.handle('update-order', async (event, order) => {
 
 ipcMain.handle('get-order-by-id', async (event, id) => {
   try {
-    const { db } = await import('./db.js');
     return await db.get(id);
   } catch (error) {
     Logger.error('Error getting order by id:', error);
     throw error;
   }
 });
-
 app.whenReady().then(() => {
   initDB();
   createWindow();

@@ -17,7 +17,7 @@ export const OrderForm: React.FC = () => {
     await (window as any).electronAPI.saveOrder(order);
     setCustomer({ name: '', phone: '', address: '' });
     setItems('');
-    alert('Order saved!');
+    // alert('Order saved!');
   };
 
   const sendToKitchen = async () => {

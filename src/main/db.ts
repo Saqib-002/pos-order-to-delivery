@@ -12,6 +12,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 export let db: PouchDB.Database;
+export let remoteDB: PouchDB.Database;
 
 export function initDB(): void {
   try {
@@ -34,7 +35,7 @@ export function initDB(): void {
     if (couchdbUsername && couchdbPassword) {
       Logger.info('Attempting to connect to remote CouchDB...');
       
-      const remoteDB = new PouchDB(couchdbUrl, {
+      remoteDB = new PouchDB(couchdbUrl, {
         auth: {
           username: couchdbUsername,
           password: couchdbPassword,
