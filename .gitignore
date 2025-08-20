@@ -4,4 +4,4 @@ dist-electron/
 out/
 *.log
 .env
-/orders
+orders
