@@ -5,7 +5,7 @@ import { deleteOrder, getOrderById, getOrders, saveOrder, updateOrder } from './
 export function registerIpcHandlers() {
   ipcMain.handle('save-order', saveOrder);
 
-  ipcMain.handle('delete-orders', deleteOrder);
+  ipcMain.handle('delete-order', deleteOrder);
   ipcMain.handle('get-orders', getOrders);
 
   ipcMain.handle('update-order', updateOrder);

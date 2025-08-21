@@ -5,7 +5,7 @@ const dbChangeCallbacks = new Set();
 
 contextBridge.exposeInMainWorld('electronAPI', {
   saveOrder: (order: any) => ipcRenderer.invoke('save-order', order),
-  deleteOrder: (id: string) => ipcRenderer.invoke('save-order', id),
+  deleteOrder: (id: string) => ipcRenderer.invoke('delete-order', id),
   getOrders: () => ipcRenderer.invoke('get-orders'),
   updateOrder: (order: any) => ipcRenderer.invoke('update-order', order),
   getOrderById: (id: string) => ipcRenderer.invoke('get-order-by-id', id),
