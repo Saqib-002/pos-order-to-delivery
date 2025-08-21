@@ -4,6 +4,7 @@ import isDev from 'electron-is-dev';
 import { fileURLToPath } from 'url';
 import { db } from './db.js'; // Import the db instance
 import Logger from 'electron-log';
+import { renumberDay } from './utils/db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,7 +39,13 @@ function startDbChangesFeed(win:BrowserWindow) {
     live: true,
     include_docs: true,
   })
-  .on('change', (change) => {
+  .on('change', async (change) => {
+    try {
+      const day = change.id.split('T')[0];
+      await renumberDay(day);
+    } catch (err) {
+      Logger.error('Error in changes listener:', err);
+    }
     if (!win.isDestroyed()) {
       win.webContents.send('db-change', change);
     }
