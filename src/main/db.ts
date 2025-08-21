@@ -4,6 +4,7 @@ import path from 'path';
 import { app } from 'electron';
 import { fileURLToPath } from 'url';
 import Logger from 'electron-log';
+import { Order } from '@/types/order';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
