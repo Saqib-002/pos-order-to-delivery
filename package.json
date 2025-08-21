@@ -49,6 +49,7 @@
     "electron-is-dev": "^3.0.1",
     "electron-log": "^5.4.3",
     "electron-squirrel-startup": "^1.0.1",
-    "pouchdb": "^9.0.0"
+    "pouchdb": "^9.0.0",
+    "react-chartjs-2": "^5.3.0"
   }
 }

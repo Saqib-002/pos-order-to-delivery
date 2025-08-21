@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Order } from "@/types/order";
 import { toast } from "react-toastify";
+import { createPortal } from "react-dom";
 
 interface OrderViewProps {
   setIsAddOrderModelShown: React.Dispatch<React.SetStateAction<boolean>>;
@@ -12,7 +13,11 @@ export const OrderView: React.FC<OrderViewProps> = ({
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] =
+    useState<boolean>(false);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -66,7 +71,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
     };
   }, []);
 
-  // Filter orders based on search term and date
+  // Filter orders based on search term, date, and status
   useEffect(() => {
     let filtered = orders;
 
@@ -88,8 +93,38 @@ export const OrderView: React.FC<OrderViewProps> = ({
       });
     }
 
+    if (selectedStatus !== "all") {
+      filtered = filtered.filter(
+        (order) => order.status.toLowerCase() === selectedStatus.toLowerCase()
+      );
+    }
+
     setFilteredOrders(filtered);
-  }, [orders, searchTerm, selectedDate]);
+  }, [orders, searchTerm, selectedDate, selectedStatus]);
+
+  // Handle click outside dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        statusDropdownRef.current &&
+        !statusDropdownRef.current.contains(event.target as Node)
+      ) {
+        // Check if the click is not on the portal dropdown
+        const target = event.target as Element;
+        if (!target.closest(".status-dropdown-portal")) {
+          setIsStatusDropdownOpen(false);
+        }
+      }
+    };
+
+    if (isStatusDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isStatusDropdownOpen]);
 
   const handleDeleteOrder= (id: string) => {
     (window as any).electronAPI.deleteOrder(id).then(()=>{
@@ -104,8 +139,10 @@ export const OrderView: React.FC<OrderViewProps> = ({
     switch (status.toLowerCase()) {
       case "sent to kitchen":
         return "bg-blue-100 text-blue-800 border-blue-200";
-      case "ready for pickup":
+      case "ready for delivery":
         return "bg-green-100 text-green-800 border-green-200";
+      case "out for delivery":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "delivered":
         return "bg-gray-100 text-gray-800 border-gray-200";
       case "cancelled":
@@ -227,12 +264,12 @@ export const OrderView: React.FC<OrderViewProps> = ({
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">
-                  Ready for Pickup
+                  Ready for Delivery
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {
                     filteredOrders.filter(
-                      (o) => o.status.toLowerCase() === "ready for pickup"
+                      (o) => o.status.toLowerCase() === "ready for delivery"
                     ).length
                   }
                 </p>
@@ -304,6 +341,52 @@ export const OrderView: React.FC<OrderViewProps> = ({
                   />
                 </div>
 
+                {/* Status Filter */}
+                <div className="relative" ref={statusDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      console.log(
+                        "Dropdown button clicked, current state:",
+                        isStatusDropdownOpen
+                      );
+                      setIsStatusDropdownOpen(!isStatusDropdownOpen);
+                    }}
+                    className="relative w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-left flex items-center justify-between hover:border-gray-400 transition-colors duration-200"
+                  >
+                    <span className="text-gray-900">
+                      {selectedStatus === "all"
+                        ? "All Statuses"
+                        : selectedStatus === "sent to kitchen"
+                          ? "Sent to Kitchen"
+                          : selectedStatus === "ready for delivery"
+                            ? "Ready for Delivery"
+                            : selectedStatus === "out for delivery"
+                              ? "Out for Delivery"
+                              : selectedStatus === "delivered"
+                                ? "Delivered"
+                                : selectedStatus === "cancelled"
+                                  ? "Cancelled"
+                                  : "All Statuses"}
+                    </span>
+                    <svg
+                      className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                        isStatusDropdownOpen ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
                 {/* Date Picker */}
                 <div className="relative">
                   <input
@@ -323,11 +406,12 @@ export const OrderView: React.FC<OrderViewProps> = ({
                 </div>
 
                 {/* Clear Filters Button */}
-                {(searchTerm || selectedDate) && (
+                {(searchTerm || selectedDate || selectedStatus !== "all") && (
                   <button
                     onClick={() => {
                       setSearchTerm("");
                       setSelectedDate(null);
+                      setSelectedStatus("all");
                     }}
                     className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
                   >
@@ -481,6 +565,50 @@ export const OrderView: React.FC<OrderViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* Portal Dropdown for Status Filter */}
+      {isStatusDropdownOpen &&
+        statusDropdownRef.current &&
+        createPortal(
+          <div
+            className="fixed z-[9999] bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-auto status-dropdown-portal"
+            style={{
+              top: statusDropdownRef.current.getBoundingClientRect().bottom + 4,
+              left: statusDropdownRef.current.getBoundingClientRect().left,
+              width: statusDropdownRef.current.getBoundingClientRect().width,
+              minWidth: "200px",
+            }}
+          >
+            {[
+              { value: "all", label: "All Statuses" },
+              { value: "sent to kitchen", label: "Sent to Kitchen" },
+              { value: "ready for delivery", label: "Ready for Delivery" },
+              { value: "out for delivery", label: "Out for Delivery" },
+              { value: "delivered", label: "Delivered" },
+              { value: "cancelled", label: "Cancelled" },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log("Dropdown option clicked:", option.value);
+                  setSelectedStatus(option.value);
+                  setIsStatusDropdownOpen(false);
+                }}
+                className={`w-full px-3 py-2 text-left text-sm hover:bg-indigo-500 hover:text-white transition-colors duration-150 ${
+                  selectedStatus === option.value
+                    ? "bg-indigo-100 text-indigo-900 font-medium"
+                    : "text-gray-900"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
