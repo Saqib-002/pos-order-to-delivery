@@ -165,7 +165,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose }) => {
                       })
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600 transition-all duration-200 placeholder-gray-400"
-                  />    
+                  />
                 </div>
 
                 <div>
