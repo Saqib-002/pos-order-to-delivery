@@ -37,7 +37,7 @@ export const ReportView: React.FC = () => {
       {filteredOrders.map((order) => (
         <div key={order._id} className="mb-2 p-2 border rounded">
           <p><strong>Customer:</strong> {order.customer.name}</p>
-          <p><strong>Items:</strong> {order.items}</p>
+          <p><strong>Items:</strong> {order.items.map((item) => item.name).join(', ')}</p>
           <p><strong>Status:</strong> {order.status}</p>
         </div>
       ))}

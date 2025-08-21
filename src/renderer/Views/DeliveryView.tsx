@@ -40,7 +40,7 @@ export const DeliveryView: React.FC = () => {
           <div key={order._id} className="mb-2 p-2 border rounded">
             <p><strong>Customer:</strong> {order.customer.name}</p>
             <p><strong>Address:</strong> {order.customer.address}</p>
-            <p><strong>Items:</strong> {order.items}</p>
+            <p><strong>Items:</strong> {order.items.map((item) => item.name).join(', ')}</p>
             <button
               onClick={() => assignDelivery(order)}
               className="p-2 bg-green-500 text-white rounded"
