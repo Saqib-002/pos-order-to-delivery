@@ -107,7 +107,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
 
   return (
     <div className="mt-4 p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[98%] mx-auto">
         {/* Header Section */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex justify-between items-center">
@@ -120,13 +120,15 @@ export const OrderView: React.FC<OrderViewProps> = ({
               </p>
             </div>
             <button
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md cursor-pointer hover:scale-105"
               type="button"
               onClick={() => setIsAddOrderModelShown(true)}
             >
               <svg
                 viewBox="0 0 24 24"
-                className="fill-current text-white size-5"
+                width={20}
+                height={20}
+                className="fill-current text-white"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path d="M11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8V11H16C16.5523 11 17 11.4477 17 12C17 12.5523 16.5523 13 16 13H13V16C13 16.5523 12.5523 17 12 17C11.4477 17 11 16.5523 11 16V13H8C7.44771 13 7 12.5523 7 12C7 11.4477 7.44772 11 8 11H11V8Z" />
@@ -259,7 +261,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
         </div>
 
         {/* Table Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h3 className="text-lg font-semibold text-gray-900">
@@ -366,10 +368,10 @@ export const OrderView: React.FC<OrderViewProps> = ({
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Contact
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
                       Address
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 min-w-[250px] text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Items
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
@@ -401,12 +403,12 @@ export const OrderView: React.FC<OrderViewProps> = ({
                           {order.customer.phone}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 min-w-[200px]">
                         <div className="text-sm text-gray-900 max-w-xs">
                           {order.customer.address}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 min-w-[250px]">
                         <div className="text-sm text-gray-900">
                           <div className="space-y-1">
                             {order.items.map((item, index) => (
@@ -430,7 +432,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end min-w-[120px]">
-                        <button className="text-indigo-600 hover:text-indigo-900 mr-3 flex items-center gap-1 hover:bg-indigo-50 px-2 py-1 rounded transition-colors duration-150 cursor-pointer">
+                        <button className="text-indigo-600 hover:text-indigo-900 mr-3 flex items-center gap-1 hover:bg-indigo-50 px-2 py-1 rounded transition-colors duration-150 cursor-pointer hover:scale-105">
                           <svg
                             className="w-6 h-6"
                             fill="none"
@@ -445,7 +447,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                             />
                           </svg>
                         </button>
-                        <button className="text-red-600 hover:text-red-900 flex items-center gap-1 hover:bg-red-50 px-2 py-1 rounded transition-colors duration-150 cursor-pointer">
+                        <button className="text-red-600 hover:text-red-900 flex items-center gap-1 hover:bg-red-50 px-2 py-1 rounded transition-colors duration-150 cursor-pointer hover:scale-105">
                           <svg
                             className="w-6 h-6"
                             fill="none"
