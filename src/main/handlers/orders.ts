@@ -27,6 +27,19 @@ export const saveOrder = async (event: IpcMainInvokeEvent, order: Order) => {
         throw error;
     }
 };
+
+export const deleteOrder = async (event: IpcMainInvokeEvent, id: string) => {
+  try {
+    const order = await db.get(id);
+    const response = await db.remove(id, order._rev);
+    Logger.info(`Order ${id} deleted successfully`);
+    return response;
+  } catch (error) {
+    Logger.error(`Error deleting order ${id}:`, error);
+    throw error;
+  }
+};
+
 export const getOrders = async () => {
     try {
         const { rows } = await db.allDocs({ include_docs: true });

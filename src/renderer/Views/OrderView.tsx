@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Order } from "@/types/order";
+import { toast } from "react-toastify";
 
 interface OrderViewProps {
   setIsAddOrderModelShown: React.Dispatch<React.SetStateAction<boolean>>;
@@ -50,8 +51,8 @@ export const OrderView: React.FC<OrderViewProps> = ({
           .then((result: any) => {
             setOrders(result.rows.map((row: any) => row.doc));
           })
-          .catch((err: any) => {
-            console.error("Error refreshing orders:", err);
+          .catch(() => {
+            toast.error("Error fetching orders");
           });
       }
     };
@@ -89,6 +90,15 @@ export const OrderView: React.FC<OrderViewProps> = ({
 
     setFilteredOrders(filtered);
   }, [orders, searchTerm, selectedDate]);
+
+  const handleDeleteOrder= (id: string) => {
+    (window as any).electronAPI.deleteOrder(id).then(()=>{
+      toast.success("Order deleted successfully!");
+    }).catch(() => {
+      toast.error("Error deleting order");
+    });
+
+  }
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -447,7 +457,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                             />
                           </svg>
                         </button>
-                        <button className="text-red-600 hover:text-red-900 flex items-center gap-1 hover:bg-red-50 px-2 py-1 rounded transition-colors duration-150 cursor-pointer hover:scale-105">
+                        <button className="text-red-600 hover:text-red-900 flex items-center gap-1 hover:bg-red-50 px-2 py-1 rounded transition-colors duration-150 cursor-pointer hover:scale-105" onClick={() => handleDeleteOrder(order._id)}>
                           <svg
                             className="w-6 h-6"
                             fill="none"
