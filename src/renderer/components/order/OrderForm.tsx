@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Item, Order } from "@/types/order";
 import { toast } from "react-toastify";
 import AddOrderItem from "./AddOrderItem";
 
 interface OrderFormProps {
   onClose: () => void;
+  selectedOrder: Order | null;
 }
 
-export const OrderForm: React.FC<OrderFormProps> = ({ onClose }) => {
+export const OrderForm: React.FC<OrderFormProps> = ({ onClose,selectedOrder }) => {
   const [customer, setCustomer] = useState({
     name: "",
     phone: "",
@@ -15,7 +16,12 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose }) => {
   });
   const [currentOrderedItems, setCurrentOrderedItems] = useState<Item[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  useEffect(() => {
+    if (selectedOrder) {
+      setCustomer(selectedOrder.customer);
+      setCurrentOrderedItems(selectedOrder.items);
+    }
+  },[])
   const handleSubmit = async () => {
     if (
       !customer.name.trim() ||
@@ -32,6 +38,19 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose }) => {
     }
 
     setIsSubmitting(true);
+    if (selectedOrder) {
+      try {
+         const updatedOrder = { ...selectedOrder, customer, items: currentOrderedItems };
+        await (window as any).electronAPI.updateOrder(updatedOrder);
+        toast.success("Order updated successfully!");
+        onClose();
+      } catch (error) {
+        toast.error("Failed to update order. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+      return
+    }
     try {
       const order: Order = {
         _id: new Date().toISOString(),
@@ -69,9 +88,9 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose }) => {
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-white">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-2xl font-bold">Create New Order</h2>
+              <h2 className="text-2xl font-bold">{selectedOrder ? "Edit" : "Add New"} Order</h2>
               <p className="text-indigo-100 mt-1">
-                Add customer details and order items
+                {selectedOrder ? "Edit" : "Add"} customer details and order items
               </p>
             </div>
             <button

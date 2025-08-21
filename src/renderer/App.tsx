@@ -1,17 +1,71 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { OrderView } from "@/renderer/Views/OrderView";
 import { KitchenView } from "@/renderer/Views/KitchenView";
 import { DeliveryView } from "@/renderer/Views/DeliveryView";
 import { ReportView } from "@/renderer/Views/ReportView";
-import { OrderForm } from "./components/order/OrderForm";
+import { Order } from "@/types/order";
+import { toast } from "react-toastify";
 
 const App: React.FC = () => {
+  const [orders, setOrders] = useState<Order[]>([]);
   const [view, setView] = useState("order");
-  const [isAddOrderModelShown, setIsAddOrderModelShown] = useState(false);
+
+  useEffect(() => {
+      const fetchOrders = async () => {
+        const results = await (window as any).electronAPI.getOrders();
+        setOrders(results);
+      };
+      fetchOrders();
+      const handleChange = (change: any) => {
+        if (change.doc) {
+          setOrders((prevOrders) => {
+            const updatedOrders = [...prevOrders];
+            const index = updatedOrders.findIndex(
+              (order) => order._id === change.id
+            );
+            if (index !== -1) {
+              // Update existing order
+              updatedOrders[index] = change.doc;
+            } else if (!change.deleted) {
+              // Add new order
+              updatedOrders.push(change.doc);
+            } else {
+              // Remove deleted order
+              return updatedOrders.filter((order) => order._id !== change.id);
+            }
+            return updatedOrders;
+          });
+        } else if (change.deleted) {
+          // Handle deletion when doc is not included
+          setOrders((prevOrders) =>
+            prevOrders.filter((order) => order._id !== change.id)
+          );
+        } else {
+          // Fallback: refresh all orders
+          (window as any).electronAPI
+            .getOrders()
+            .then((result: any) => {
+              setOrders(result.rows.map((row: any) => row.doc));
+            })
+            .catch(() => {
+              toast.error("Error fetching orders");
+            });
+        }
+      };
+  
+      // Register change listener and get cleanup function
+      const cleanup = (window as any).electronAPI.onDbChange(handleChange);
+  
+      // Cleanup listener on unmount
+      return () => {
+        cleanup();
+      };
+    }, []);
+
   const renderView = () => {
     switch (view) {
       case "order":
-        return <OrderView setIsAddOrderModelShown={setIsAddOrderModelShown} />;
+        return <OrderView orders={orders} setOrders={setOrders}/>;
       case "kitchen":
         return <KitchenView />;
       case "delivery":
@@ -24,9 +78,6 @@ const App: React.FC = () => {
   };
   return (
     <div className="min-h-screen bg-slate-100 p-4">
-      {isAddOrderModelShown && (
-        <OrderForm onClose={() => setIsAddOrderModelShown(false)} />
-      )}
       <nav className="flex justify-between items-center mb-6 pb-4 border-b border-slate-300">
         <div className="flex items-center gap-2">
           <img src="./assets/logo.png" alt="Logo" className="size-6" />
