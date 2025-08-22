@@ -21,57 +21,16 @@ ChartJS.register(
   Legend
 );
 
-export const ReportView: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
+interface ReportViewProps {
+    orders: Order[];
+    setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
+}
+
+export const ReportView: React.FC<ReportViewProps> = ({orders,setOrders}) => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
   const [dateRange, setDateRange] = useState("today"); // today, week, month, custom
-
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const results = await (window as any).electronAPI.getOrders();
-      setOrders(results);
-    };
-    fetchOrders();
-
-    const handleChange = (change: any) => {
-      if (change.doc) {
-        setOrders((prevOrders) => {
-          const updatedOrders = [...prevOrders];
-          const index = updatedOrders.findIndex(
-            (order) => order._id === change.id
-          );
-          if (index !== -1) {
-            updatedOrders[index] = change.doc;
-          } else if (!change.deleted) {
-            updatedOrders.push(change.doc);
-          } else {
-            return updatedOrders.filter((order) => order._id !== change.id);
-          }
-          return updatedOrders;
-        });
-      } else if (change.deleted) {
-        setOrders((prevOrders) =>
-          prevOrders.filter((order) => order._id !== change.id)
-        );
-      } else {
-        (window as any).electronAPI
-          .getOrders()
-          .then((result: any) => {
-            setOrders(result.rows.map((row: any) => row.doc));
-          })
-          .catch((err: any) => {
-            console.error("Error refreshing orders:", err);
-          });
-      }
-    };
-
-    const cleanup = (window as any).electronAPI.onDbChange(handleChange);
-    return () => {
-      cleanup();
-    };
-  }, []);
 
   const getFilteredOrders = () => {
     const today = new Date();

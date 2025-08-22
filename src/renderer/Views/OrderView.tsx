@@ -87,7 +87,6 @@ export const OrderView: React.FC<OrderViewProps> = ({
                 setOrders((prevOrders) =>
                     prevOrders.filter((order) => order._id !== id)
                 );
-                toast.success("Order deleted successfully!");
             })
             .catch(() => {
                 toast.error("Error deleting order");

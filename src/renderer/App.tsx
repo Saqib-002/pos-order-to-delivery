@@ -5,6 +5,14 @@ import { DeliveryView } from "@/renderer/Views/DeliveryView";
 import { ReportView } from "@/renderer/Views/ReportView";
 import { Order } from "@/types/order";
 import { toast } from "react-toastify";
+import { debounce } from "lodash";
+
+const showSuccessToast = debounce((message: string) => {
+  toast.success(message);
+}, 1000);
+const showErrorToast = debounce((message: string) => {
+  toast.error(message);
+}, 1000);
 
 const App: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -23,15 +31,20 @@ const App: React.FC = () => {
             const index = updatedOrders.findIndex(
               (order) => order._id === change.id
             );
-            if (index !== -1) {
+            const isCreated=Number(change.doc._rev.split("-")[0])===1
+            if (index !== -1 && !isCreated) {
               // Update existing order
               updatedOrders[index] = change.doc;
+              showSuccessToast(`Order#${change.doc.orderId} updated, status:${change.doc.status}`);
             } else if (!change.deleted) {
               // Add new order
               updatedOrders.push(change.doc);
+              showSuccessToast(`Order#${change.doc.orderId} sent to kitchen`);
             } else {
               // Remove deleted order
-              return updatedOrders.filter((order) => order._id !== change.id);
+              showErrorToast(`Order#${change.doc.orderId} deleted`);
+              const newUpdatedOrders=updatedOrders.filter((order) => order._id !== change.id);
+              return newUpdatedOrders
             }
             return updatedOrders;
           });
@@ -67,11 +80,11 @@ const App: React.FC = () => {
       case "order":
         return <OrderView orders={orders} setOrders={setOrders}/>;
       case "kitchen":
-        return <KitchenView />;
+        return <KitchenView orders={orders} setOrders={setOrders}/>;
       case "delivery":
-        return <DeliveryView />;
+        return <DeliveryView orders={orders} setOrders={setOrders}/>;
       case "reports":
-        return <ReportView />;
+        return <ReportView orders={orders} setOrders={setOrders}/>;
       default:
         return <div>Page Not Found</div>;
     }

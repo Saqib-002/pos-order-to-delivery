@@ -42,7 +42,6 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose,selectedOrder }) =
       try {
          const updatedOrder = { ...selectedOrder, customer, items: currentOrderedItems };
         await (window as any).electronAPI.updateOrder(updatedOrder);
-        toast.success("Order updated successfully!");
         onClose();
       } catch (error) {
         toast.error("Failed to update order. Please try again.");
@@ -62,7 +61,6 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onClose,selectedOrder }) =
       await (window as any).electronAPI.saveOrder(order);
       setCustomer({ name: "", phone: "", address: "" });
       setCurrentOrderedItems([]);
-      toast.success("Order sent to kitchen successfully!");
       onClose();
     } catch (error) {
       toast.error("Failed to save order. Please try again.");

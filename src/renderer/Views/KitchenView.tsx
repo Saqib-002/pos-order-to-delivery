@@ -1,56 +1,15 @@
 import { useEffect, useState } from "react";
 import { Order } from "@/types/order";
 
-export const KitchenView: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
+interface KitchenViewProps {
+    orders: Order[];
+    setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
+}
+
+export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
-
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const results = await (window as any).electronAPI.getOrders();
-      setOrders(results);
-    };
-    fetchOrders();
-
-    const handleChange = (change: any) => {
-      if (change.doc) {
-        setOrders((prevOrders) => {
-          const updatedOrders = [...prevOrders];
-          const index = updatedOrders.findIndex(
-            (order) => order._id === change.id
-          );
-          if (index !== -1) {
-            updatedOrders[index] = change.doc;
-          } else if (!change.deleted) {
-            updatedOrders.push(change.doc);
-          } else {
-            return updatedOrders.filter((order) => order._id !== change.id);
-          }
-          return updatedOrders;
-        });
-      } else if (change.deleted) {
-        setOrders((prevOrders) =>
-          prevOrders.filter((order) => order._id !== change.id)
-        );
-      } else {
-        (window as any).electronAPI
-          .getOrders()
-          .then((result: any) => {
-            setOrders(result.rows.map((row: any) => row.doc));
-          })
-          .catch((err: any) => {
-            console.error("Error refreshing orders:", err);
-          });
-      }
-    };
-
-    const cleanup = (window as any).electronAPI.onDbChange(handleChange);
-    return () => {
-      cleanup();
-    };
-  }, []);
 
   // Filter orders based on search term and date
   useEffect(() => {
