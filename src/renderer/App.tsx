@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { OrderView } from "@/renderer/Views/OrderView";
 import { KitchenView } from "@/renderer/Views/KitchenView";
 import { DeliveryView } from "@/renderer/Views/DeliveryView";
@@ -17,6 +17,7 @@ const showErrorToast = debounce((message: string) => {
 const App: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [view, setView] = useState("order");
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -114,6 +115,20 @@ const App: React.FC = () => {
 
         // Register change listener and get cleanup function
         const cleanup = (window as any).electronAPI.onDbChange(handleChange);
+        audioRef.current = new Audio("./assets/notification.wav");
+        audioRef.current.volume = 0.5;
+
+        // Listen for toast changes
+        const unsubscribe = toast.onChange((payload) => {
+            if (payload.status === "added") {
+                // Play sound when a toast is added
+                if (audioRef.current) {
+                    audioRef.current.play().catch((error) => {
+                        console.error("Error playing sound:", error);
+                    });
+                }
+            }
+        });
 
         // Cleanup listener on unmount
         return () => {
