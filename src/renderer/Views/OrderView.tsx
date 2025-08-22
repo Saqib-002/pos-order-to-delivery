@@ -83,11 +83,6 @@ export const OrderView: React.FC<OrderViewProps> = ({
     const handleDeleteOrder = (id: string) => {
         (window as any).electronAPI
             .deleteOrder(id)
-            .then(() => {
-                setOrders((prevOrders) =>
-                    prevOrders.filter((order) => order._id !== id)
-                );
-            })
             .catch(() => {
                 toast.error("Error deleting order");
             });
