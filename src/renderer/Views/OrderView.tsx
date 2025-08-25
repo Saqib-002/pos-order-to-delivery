@@ -6,12 +6,10 @@ import { OrderForm } from "../components/order/OrderForm";
 
 interface OrderViewProps {
     orders: Order[];
-    setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
 }
 
 export const OrderView: React.FC<OrderViewProps> = ({
     orders,
-    setOrders,
 }: OrderViewProps) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);

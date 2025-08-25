@@ -38,6 +38,9 @@ function startDbChangesFeed(win:BrowserWindow) {
     since: 'now',
     live: true,
     include_docs: true,
+    filter(doc) {
+        return doc._id.startsWith('orders:')
+    },
   })
   .on('change', async (change) => {
     try {

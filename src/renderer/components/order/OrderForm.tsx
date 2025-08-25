@@ -59,7 +59,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
         }
         try {
             const order: Order = {
-                _id: new Date().toISOString(),
+                _id: `orders:${new Date().toISOString()}`,
                 customer,
                 items: currentOrderedItems,
                 status: "Sent to Kitchen",

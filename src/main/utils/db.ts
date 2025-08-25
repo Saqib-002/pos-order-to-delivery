@@ -3,8 +3,8 @@ import { db } from "../db.js";
 import Logger from "electron-log";
 
 export async function renumberDay(day: string) {
-  const startkey = `${day}T00:00:00.000Z`;
-  const endkey = `${day}T23:59:59.999Z\uffff`;
+  const startkey = `orders:${day}T00:00:00.000Z`;
+  const endkey = `orders:${day}T23:59:59.999Z\uffff`;
   
   const result = await db.allDocs({ startkey, endkey, include_docs: true });
   const orders = result.rows.map((row) => row.doc as unknown as Order).filter((doc) => doc && doc.createdAt);  // Filter valid orders

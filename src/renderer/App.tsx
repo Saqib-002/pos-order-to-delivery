@@ -139,7 +139,7 @@ const App: React.FC = () => {
     const renderView = () => {
         switch (view) {
             case "order":
-                return <OrderView orders={orders} setOrders={setOrders} />;
+                return <OrderView orders={orders} />;
             case "kitchen":
                 return <KitchenView orders={orders} setOrders={setOrders} />;
             case "delivery":

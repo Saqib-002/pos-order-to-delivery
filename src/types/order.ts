@@ -10,7 +10,6 @@ export interface Order {
     address: string;
   };
   orderId?:number;
-  type?: "customer" | "delivery_person";
   items: Item[];
   status: string;
   createdAt: string;
