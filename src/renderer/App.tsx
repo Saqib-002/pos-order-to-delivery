@@ -5,14 +5,12 @@ import { DeliveryView } from "@/renderer/Views/DeliveryView";
 import { ReportView } from "@/renderer/Views/ReportView";
 import { Order } from "@/types/order";
 import { toast } from "react-toastify";
-import { debounce } from "lodash";
 import { AuthState, User } from "@/types/user";
 import { LoginView } from "./Views/LoginView";
 import { UserManagement } from "./Views/UserManagement";
 import {
     navItems,
     NOTIFICATION_VOLUME,
-    TOAST_DEBOUNCE_MS,
     VIEWS,
 } from "@/constants";
 import { handleOrderChange, refreshOrders } from "./utils/order";

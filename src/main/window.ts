@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow } from 'electron';
 import path from 'path';
 import isDev from 'electron-is-dev';
 import { fileURLToPath } from 'url';
