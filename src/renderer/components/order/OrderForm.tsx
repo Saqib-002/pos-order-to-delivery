@@ -6,11 +6,13 @@ import AddOrderItem from "./AddOrderItem";
 interface OrderFormProps {
     onClose: () => void;
     selectedOrder: Order | null;
+    token: string | null;
 }
 
 export const OrderForm: React.FC<OrderFormProps> = ({
     onClose,
     selectedOrder,
+    token
 }) => {
     const [customer, setCustomer] = useState({
         name: "",
@@ -48,7 +50,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
                     customer,
                     items: currentOrderedItems,
                 };
-                await (window as any).electronAPI.updateOrder(updatedOrder);
+                await (window as any).electronAPI.updateOrder(token,updatedOrder);
                 onClose();
             } catch (error) {
                 toast.error("Failed to update order. Please try again.");
@@ -65,7 +67,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
                 status: "Sent to Kitchen",
                 createdAt: new Date().toISOString(),
             };
-            await (window as any).electronAPI.saveOrder(order);
+            await (window as any).electronAPI.saveOrder(token,order);
             setCustomer({ name: "", phone: "", address: "" });
             setCurrentOrderedItems([]);
             onClose();

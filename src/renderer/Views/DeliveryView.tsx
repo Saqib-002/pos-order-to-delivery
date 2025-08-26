@@ -4,7 +4,7 @@ import { Order } from "@/types/order";
 interface DeliveryViewProps {
     orders: Order[];
     setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
-    token: string;
+    token: string|null;
 }
 
 export const DeliveryView: React.FC<DeliveryViewProps> = ({

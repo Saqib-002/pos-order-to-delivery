@@ -4,7 +4,7 @@ import { Order } from "@/types/order";
 interface KitchenViewProps {
     orders: Order[];
     setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
-    token: string;
+    token: string|null;
 }
 
 export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,token }) => {

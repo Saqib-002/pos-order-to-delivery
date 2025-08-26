@@ -6,123 +6,32 @@ import { ReportView } from "@/renderer/Views/ReportView";
 import { Order } from "@/types/order";
 import { toast } from "react-toastify";
 import { debounce } from "lodash";
-import { User } from "@/types/user";
+import { AuthState, User } from "@/types/user";
 import { LoginView } from "./Views/LoginView";
 import { UserManagement } from "./Views/UserManagement";
-
-const showSuccessToast = debounce((message: string) => {
-    toast.success(message);
-}, 1000);
-const showErrorToast = debounce((message: string) => {
-    toast.error(message);
-}, 1000);
+import {
+    navItems,
+    NOTIFICATION_VOLUME,
+    TOAST_DEBOUNCE_MS,
+    VIEWS,
+} from "@/constants";
+import { handleOrderChange, refreshOrders } from "./utils/order";
 
 const App: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [view, setView] = useState("login");
-    const [token, setToken] = useState<string | null>(null);
-    const [user, setUser] = useState<Omit<User, "password"> | null>(null);
+    const [auth, setAuth] = useState<AuthState>({ token: null, user: null });
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
-        if (!token) return;
-        const fetchOrders = async () => {
-            const results = await (window as any).electronAPI.getOrders(token);
-            console.log("Fetched orders:", results);
-            setOrders(results);
-        };
-        fetchOrders();
-
-        const handleChange = (change: any) => {
-            console.log("Database change received:", change);
-            if (change.deleted) {
-                // Handle deletion
-                setOrders((prevOrders) => {
-                    const deletedOrder = prevOrders.find(
-                        (order) => order._id === change.id
-                    );
-                    if (deletedOrder) {
-                        showErrorToast(
-                            `Order#${deletedOrder.orderId || "N/A"} deleted`
-                        );
-                    }
-                    return prevOrders.filter(
-                        (order) => order._id !== change.id
-                    );
-                });
-            } else if (change.doc) {
-                const revisionNumber = parseInt(change.doc._rev.split("-")[0]);
-                const isNewOrder = revisionNumber === 1;
-
-                setOrders((prevOrders) => {
-                    const existingIndex = prevOrders.findIndex(
-                        (order) => order._id === change.id
-                    );
-
-                    if (existingIndex !== -1) {
-                        if (!isNewOrder) {
-                            // Update existing order
-                            const updatedOrders = [...prevOrders];
-                            updatedOrders[existingIndex] = change.doc;
-                            showSuccessToast(
-                                `Order#${change.doc.orderId || "N/A"} updated, status: ${change.doc.status}`
-                            );
-                            return updatedOrders;
-                        } else {
-                            // This shouldn't happen - new order with existing ID
-                            console.warn(
-                                "New order revision but order already exists:",
-                                change.id
-                            );
-                            return prevOrders;
-                        }
-                    } else {
-                        if (isNewOrder) {
-                            // Add new order
-                            showSuccessToast(
-                                `Order#${change.doc.orderId || "N/A"} sent to kitchen`
-                            );
-                            return [...prevOrders, change.doc];
-                        } else {
-                            // Order doesn't exist locally but isn't new - fetch all orders to sync
-                            console.warn(
-                                "Order update received for non-existing order:",
-                                change.id
-                            );
-                            (window as any).electronAPI
-                                .getOrders(token)
-                                .then((allOrders: Order[]) => {
-                                    setOrders(allOrders);
-                                })
-                                .catch((error: any) => {
-                                    console.error(
-                                        "Error syncing orders:",
-                                        error
-                                    );
-                                });
-                            return prevOrders;
-                        }
-                    }
-                });
-            } else {
-                // Fallback: refresh all orders
-                console.warn("Unexpected change format, refreshing all orders");
-                (window as any).electronAPI
-                    .getOrders(token)
-                    .then((allOrders: Order[]) => {
-                        setOrders(allOrders);
-                    })
-                    .catch((error: any) => {
-                        console.error("Error refreshing orders:", error);
-                        toast.error("Error fetching orders");
-                    });
-            }
-        };
-
+        if (!auth.token) return;
+        refreshOrders(setOrders, auth.token);
+        const handleChange = (change: any) =>
+            handleOrderChange({ setOrders, change, auth });
         // Register change listener and get cleanup function
         const cleanup = (window as any).electronAPI.onDbChange(handleChange);
         audioRef.current = new Audio("./assets/notification.wav");
-        audioRef.current.volume = 0.5;
+        audioRef.current.volume = NOTIFICATION_VOLUME;
 
         // Listen for toast changes
         const unsubscribe = toast.onChange((payload) => {
@@ -141,38 +50,39 @@ const App: React.FC = () => {
             cleanup();
             unsubscribe();
         };
-    }, [token]);
+    }, [auth.token]);
     const handleLogin = (newToken: string, newUser: Omit<User, "password">) => {
-        setToken(newToken);
-        setUser(newUser);
-        setView("order");
+        setAuth({ token: newToken, user: newUser });
+        setView(VIEWS.ORDER);
     };
 
     const handleLogout = async () => {
         try {
-            await (window as any).electronAPI.logoutUser(token);
-            setToken(null);
-            setUser(null);
-            setView("login");
+            await (window as any).electronAPI.logoutUser(auth.token);
+            setAuth({ token: null, user: null });
+            setView(VIEWS.LOGIN);
             toast.success("Logged out successfully");
         } catch (error) {
             toast.error("Failed to log out");
         }
     };
-    if (!token) {
+    if (!auth.token) {
         return <LoginView onLogin={handleLogin} />;
     }
     const renderView = () => {
         switch (view) {
             case "order":
-                return <OrderView orders={orders} token={token} />;
+                return <OrderView orders={orders} token={auth.token} />;
             case "kitchen":
-                if (user?.role === "admin" || user?.role === "kitchen") {
+                if (
+                    auth.user?.role === "admin" ||
+                    auth.user?.role === "kitchen"
+                ) {
                     return (
                         <KitchenView
                             orders={orders}
                             setOrders={setOrders}
-                            token={token}
+                            token={auth.token}
                         />
                     );
                 }
@@ -180,90 +90,73 @@ const App: React.FC = () => {
                     <div>Unauthorized: Admin or Kitchen access required</div>
                 );
             case "delivery":
-                if (user?.role === "admin" || user?.role === "delivery") {
+                if (
+                    auth.user?.role === "admin" ||
+                    auth.user?.role === "delivery"
+                ) {
                     return (
                         <DeliveryView
                             orders={orders}
                             setOrders={setOrders}
-                            token={token}
+                            token={auth.token}
                         />
                     );
                 }
                 return <div>Unauthorized</div>;
             case "reports":
-                if (user?.role === "admin") {
+                if (auth.user?.role === "admin") {
                     return <ReportView orders={orders} setOrders={setOrders} />;
                 }
                 return <div>Unauthorized</div>;
             case "users":
-                if (user?.role === "admin") {
-                    return <UserManagement token={token} />;
+                if (auth.user?.role === "admin") {
+                    return <UserManagement token={auth.token} />;
                 }
                 return <div>Unauthorized</div>;
             default:
                 return <div>Page Not Found</div>;
         }
     };
+    const renderNavButton = (item: (typeof navItems)[0]) => {
+        if (item.adminOnly && auth.user?.role !== "admin") return null;
+
+        return (
+            <button
+                key={item.view}
+                className={`mr-2 outline-none p-2 rounded-lg font-semibold py-2 px-6 shadow-md transition-colors cursor-pointer duration-150 ${
+                    view === item.view
+                        ? "bg-indigo-600 text-slate-100 hover:bg-indigo-700"
+                        : "hover:bg-indigo-600 hover:text-slate-100 bg-slate-200 text-slate-700"
+                }`}
+                onClick={() => setView(item.view)}
+            >
+                {item.label}
+            </button>
+        );
+    };
     return (
         <div className="min-h-screen bg-slate-100 p-4">
-            <nav className="flex justify-between items-center mb-6 pb-4 border-b border-slate-300">
-                <div className="flex items-center gap-2">
-                    <img
-                        src="./assets/logo.png"
-                        alt="Logo"
-                        className="size-6"
-                    />
-                    <h1 className="text-2xl font-bold">Delivery System</h1>
-                </div>
-                <div className="flex items-center gap-2">
-                    <button
-                        className={`mr-2 outline-none p-2 rounded-lg font-semibold py-2 px-6 shadow-md  transition-colors cursor-pointer duration-150 ${view === "order" ? "bg-indigo-600 text-slate-100 hover:bg-indigo-700" : "hover:bg-indigo-600 hover:text-slate-100 bg-slate-200 text-slate-700"}`}
-                        onClick={() => setView("order")}
-                    >
-                        Orders
-                    </button>
-                    <button
-                        className={`mr-2 outline-none p-2 rounded-lg font-semibold py-2 px-6 shadow-md  transition-colors cursor-pointer duration-150 ${view === "kitchen" ? "bg-indigo-600 text-slate-100 hover:bg-indigo-700" : "hover:bg-indigo-600 hover:text-slate-100 bg-slate-200 text-slate-700"}`}
-                        onClick={() => setView("kitchen")}
-                    >
-                        Kitchen View
-                    </button>
-                    <button
-                        className={`mr-2 outline-none p-2 rounded-lg font-semibold py-2 px-6 shadow-md  transition-colors cursor-pointer duration-150 ${view === "delivery" ? "bg-indigo-600 text-slate-100 hover:bg-indigo-700" : "hover:bg-indigo-600 hover:text-slate-100 bg-slate-200 text-slate-700"}`}
-                        onClick={() => setView("delivery")}
-                    >
-                        Delivery View
-                    </button>
-                    <button
-                        className={`mr-2 outline-none p-2 rounded-lg font-semibold py-2 px-6 shadow-md  transition-colors cursor-pointer duration-150 ${view === "reports" ? "bg-indigo-600 text-slate-100 hover:bg-indigo-700" : "hover:bg-indigo-600 hover:text-slate-100 bg-slate-200 text-slate-700"}`}
-                        onClick={() => setView("reports")}
-                    >
-                        Reports
-                    </button>
-                    {user?.role === "admin" && (
-                        <>
-                            <button
-                                className={`mr-2 outline-none p-2 rounded-lg font-semibold py-2 px-6 shadow-md transition-colors cursor-pointer duration-150 ${view === "reports" ? "bg-indigo-600 text-slate-100 hover:bg-indigo-700" : "hover:bg-indigo-600 hover:text-slate-100 bg-slate-200 text-slate-700"}`}
-                                onClick={() => setView("reports")}
-                            >
-                                Reports
-                            </button>
-                            <button
-                                className={`mr-2 outline-none p-2 rounded-lg font-semibold py-2 px-6 shadow-md transition-colors cursor-pointer duration-150 ${view === "users" ? "bg-indigo-600 text-slate-100 hover:bg-indigo-700" : "hover:bg-indigo-600 hover:text-slate-100 bg-slate-200 text-slate-700"}`}
-                                onClick={() => setView("users")}
-                            >
-                                Users
-                            </button>
-                        </>
-                    )}
-                    <button
-                        className="mr-2 outline-none p-2 bg-red-500 text-white rounded-lg font-semibold py-2 px-6 shadow-md hover:bg-red-600 transition-colors cursor-pointer duration-150"
-                        onClick={handleLogout}
-                    >
-                        LogOut
-                    </button>
-                </div>
-            </nav>
+            {auth.token && (
+                <nav className="flex justify-between items-center mb-6 pb-4 border-b border-slate-300">
+                    <div className="flex items-center gap-2">
+                        <img
+                            src="./assets/logo.png"
+                            alt="Logo"
+                            className="size-6"
+                        />
+                        <h1 className="text-2xl font-bold">Delivery System</h1>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {navItems.map(renderNavButton)}
+                        <button
+                            className="mr-2 outline-none p-2 bg-red-500 text-white rounded-lg font-semibold py-2 px-6 shadow-md hover:bg-red-600 transition-colors cursor-pointer duration-150"
+                            onClick={handleLogout}
+                        >
+                            LogOut
+                        </button>
+                    </div>
+                </nav>
+            )}
             {renderView()}
         </div>
     );

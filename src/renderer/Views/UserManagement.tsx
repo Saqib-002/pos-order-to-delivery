@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { User } from '@/types/user';
 import { toast } from 'react-toastify';
 
-export const UserManagement: React.FC<{ token: string }> = ({ token }) => {
+export const UserManagement: React.FC<{ token: string|null }> = ({ token }) => {
   const [users, setUsers] = useState<Omit<User, 'password'>[]>([]);
   const [newUser, setNewUser] = useState({ username: '', password: '', name: '', email: '', role: 'staff' });
   const [editingUser, setEditingUser] = useState<User | null>(null);

@@ -6,7 +6,7 @@ import { OrderForm } from "../components/order/OrderForm";
 
 interface OrderViewProps {
     orders: Order[];
-    token: string;
+    token: string|null;
 }
 
 export const OrderView: React.FC<OrderViewProps> = ({
@@ -111,6 +111,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                 <OrderForm
                     onClose={() => setIsAddOrderModelShown(false)}
                     selectedOrder={selectedOrder}
+                    token={token}
                 />
             )}
             <div className="mt-4 p-6 bg-gray-50 min-h-screen">
