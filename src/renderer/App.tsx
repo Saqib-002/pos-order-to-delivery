@@ -6,6 +6,8 @@ import { ReportView } from "@/renderer/Views/ReportView";
 import { Order } from "@/types/order";
 import { toast } from "react-toastify";
 import { debounce } from "lodash";
+import { User } from "@/types/user";
+import { LoginView } from "./Views/LoginView";
 
 const showSuccessToast = debounce((message: string) => {
     toast.success(message);
@@ -16,19 +18,22 @@ const showErrorToast = debounce((message: string) => {
 
 const App: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
-    const [view, setView] = useState("order");
+    const [view, setView] = useState("login");
+    const [token, setToken] = useState<string | null>(null);
+    const [user, setUser] = useState<Omit<User, "password"> | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
+        if (!token) return;
         const fetchOrders = async () => {
-            const results = await (window as any).electronAPI.getOrders();
+            const results = await (window as any).electronAPI.getOrders(token);
+            console.log("Fetched orders:", results);
             setOrders(results);
         };
         fetchOrders();
 
         const handleChange = (change: any) => {
             console.log("Database change received:", change);
-
             if (change.deleted) {
                 // Handle deletion
                 setOrders((prevOrders) => {
@@ -84,7 +89,7 @@ const App: React.FC = () => {
                                 change.id
                             );
                             (window as any).electronAPI
-                                .getOrders()
+                                .getOrders(token)
                                 .then((allOrders: Order[]) => {
                                     setOrders(allOrders);
                                 })
@@ -102,7 +107,7 @@ const App: React.FC = () => {
                 // Fallback: refresh all orders
                 console.warn("Unexpected change format, refreshing all orders");
                 (window as any).electronAPI
-                    .getOrders()
+                    .getOrders(token)
                     .then((allOrders: Order[]) => {
                         setOrders(allOrders);
                     })
@@ -133,19 +138,62 @@ const App: React.FC = () => {
         // Cleanup listener on unmount
         return () => {
             cleanup();
+            unsubscribe();
         };
-    }, []);
+    }, [token]);
+    const handleLogin = (newToken: string, newUser: Omit<User, "password">) => {
+        setToken(newToken);
+        setUser(newUser);
+        setView("order");
+    };
 
+    const handleLogout = async () => {
+        try {
+            await (window as any).electronAPI.logoutUser(token);
+            setToken(null);
+            setUser(null);
+            setView("login");
+            toast.success("Logged out successfully");
+        } catch (error) {
+            toast.error("Failed to log out");
+        }
+    };
+    if (!token) {
+        return <LoginView onLogin={handleLogin} />;
+    }
     const renderView = () => {
         switch (view) {
             case "order":
-                return <OrderView orders={orders} />;
+                return <OrderView orders={orders} token={token} />;
             case "kitchen":
-                return <KitchenView orders={orders} setOrders={setOrders} />;
+                if (user?.role === "admin" || user?.role === "kitchen") {
+                    return (
+                        <KitchenView
+                            orders={orders}
+                            setOrders={setOrders}
+                            token={token}
+                        />
+                    );
+                }
+                return (
+                    <div>Unauthorized: Admin or Kitchen access required</div>
+                );
             case "delivery":
-                return <DeliveryView orders={orders} setOrders={setOrders} />;
+                if (user?.role === "admin" || user?.role === "delivery") {
+                    return (
+                        <DeliveryView
+                            orders={orders}
+                            setOrders={setOrders}
+                            token={token}
+                        />
+                    );
+                }
+                return <div>Unauthorized</div>;
             case "reports":
-                return <ReportView orders={orders} setOrders={setOrders} />;
+                if (user?.role === "admin") {
+                    return <ReportView orders={orders} setOrders={setOrders} />;
+                }
+                return <div>Unauthorized</div>;
             default:
                 return <div>Page Not Found</div>;
         }
@@ -188,7 +236,7 @@ const App: React.FC = () => {
                     </button>
                     <button
                         className="mr-2 outline-none p-2 bg-red-500 text-white rounded-lg font-semibold py-2 px-6 shadow-md hover:bg-red-600 transition-colors cursor-pointer duration-150"
-                        onClick={() => {}}
+                        onClick={handleLogout}
                     >
                         LogOut
                     </button>

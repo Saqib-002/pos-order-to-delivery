@@ -4,9 +4,10 @@ import { Order } from "@/types/order";
 interface KitchenViewProps {
     orders: Order[];
     setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
+    token: string;
 }
 
-export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders }) => {
+export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,token }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
@@ -41,7 +42,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders }) =
   const markAsReady = async (order: Order) => {
     try {
       const updatedOrder = { ...order, status: "Ready for Delivery" };
-      await (window as any).electronAPI.updateOrder(updatedOrder);
+      await (window as any).electronAPI.updateOrder(token,updatedOrder);
       setOrders(orders.map((o) => (o._id === order._id ? updatedOrder : o)));
     } catch (error) {
       console.error("Failed to update order:", error);

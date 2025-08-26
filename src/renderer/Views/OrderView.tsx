@@ -6,9 +6,11 @@ import { OrderForm } from "../components/order/OrderForm";
 
 interface OrderViewProps {
     orders: Order[];
+    token: string;
 }
 
 export const OrderView: React.FC<OrderViewProps> = ({
+    token,
     orders,
 }: OrderViewProps) => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -80,7 +82,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
 
     const handleDeleteOrder = (id: string) => {
         (window as any).electronAPI
-            .deleteOrder(id)
+            .deleteOrder(token,id)
             .catch(() => {
                 toast.error("Error deleting order");
             });
@@ -102,7 +104,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                 return "bg-gray-100 text-gray-800 border-gray-200";
         }
     };
-
+    console.log(filteredOrders,orders);
     return (
         <>
             {isAddOrderModelShown && (

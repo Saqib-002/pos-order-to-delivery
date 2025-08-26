@@ -4,11 +4,13 @@ import { Order } from "@/types/order";
 interface DeliveryViewProps {
     orders: Order[];
     setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
+    token: string;
 }
 
 export const DeliveryView: React.FC<DeliveryViewProps> = ({
     orders,
     setOrders,
+    token,
 }) => {
     const [deliveryPerson, setDeliveryPerson] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
@@ -53,7 +55,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                 status: "Out for Delivery",
                 deliveryPerson: deliveryPerson.trim(),
             };
-            await (window as any).electronAPI.updateOrder(updatedOrder);
+            await (window as any).electronAPI.updateOrder(token,updatedOrder);
             setOrders(
                 orders.map((o) => (o._id === order._id ? updatedOrder : o))
             );
@@ -67,7 +69,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
     const markAsDelivered = async (order: Order) => {
         try {
             const updatedOrder = { ...order, status: "Delivered" };
-            await (window as any).electronAPI.updateOrder(updatedOrder);
+            await (window as any).electronAPI.updateOrder(token,updatedOrder);
             setOrders(
                 orders.map((o) => (o._id === order._id ? updatedOrder : o))
             );

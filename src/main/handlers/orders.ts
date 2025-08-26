@@ -21,10 +21,9 @@ export const saveOrder = async (event: IpcMainInvokeEvent, order: Order) => {
             const endkey = `orders:${day}T23:59:59.999Z\uffff`;
 
             const result = await db.allDocs({
-                partition: "orders",
                 startkey,
                 endkey,
-            }as PouchDB.Core.AllDocsOptions & { partition?: string });
+            });
             order.orderId = result.rows.length + 1;
         }
 
@@ -55,8 +54,10 @@ export const getOrders = async () => {
     try {
         const { rows } = await db.allDocs({
             include_docs: true,
-            partition: "orders",
-        } as PouchDB.Core.AllDocsOptions & { partition?: string });
+            startkey: "orders:",
+            endkey: "orders:\uffff",
+        });
+        console.log(rows);
         return rows.map((row) => row.doc);
     } catch (error) {
         Logger.error("Error getting orders:", error);

@@ -4,7 +4,6 @@ import path from 'path';
 import { app } from 'electron';
 import { fileURLToPath } from 'url';
 import Logger from 'electron-log';
-import { Order } from '@/types/order';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +24,6 @@ export function initDB(): void {
     
     // Initialize local database
     db = new PouchDB(dbPath);
-    
     console.log('Local database initialized successfully');
     
     // Try to connect to remote CouchDB if credentials are provided
