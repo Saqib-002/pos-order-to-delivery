@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { debounce } from "lodash";
 import { User } from "@/types/user";
 import { LoginView } from "./Views/LoginView";
+import { UserManagement } from "./Views/UserManagement";
 
 const showSuccessToast = debounce((message: string) => {
     toast.success(message);
@@ -194,6 +195,11 @@ const App: React.FC = () => {
                     return <ReportView orders={orders} setOrders={setOrders} />;
                 }
                 return <div>Unauthorized</div>;
+            case "users":
+                if (user?.role === "admin") {
+                    return <UserManagement token={token} />;
+                }
+                return <div>Unauthorized</div>;
             default:
                 return <div>Page Not Found</div>;
         }
@@ -234,6 +240,22 @@ const App: React.FC = () => {
                     >
                         Reports
                     </button>
+                    {user?.role === "admin" && (
+                        <>
+                            <button
+                                className={`mr-2 outline-none p-2 rounded-lg font-semibold py-2 px-6 shadow-md transition-colors cursor-pointer duration-150 ${view === "reports" ? "bg-indigo-600 text-slate-100 hover:bg-indigo-700" : "hover:bg-indigo-600 hover:text-slate-100 bg-slate-200 text-slate-700"}`}
+                                onClick={() => setView("reports")}
+                            >
+                                Reports
+                            </button>
+                            <button
+                                className={`mr-2 outline-none p-2 rounded-lg font-semibold py-2 px-6 shadow-md transition-colors cursor-pointer duration-150 ${view === "users" ? "bg-indigo-600 text-slate-100 hover:bg-indigo-700" : "hover:bg-indigo-600 hover:text-slate-100 bg-slate-200 text-slate-700"}`}
+                                onClick={() => setView("users")}
+                            >
+                                Users
+                            </button>
+                        </>
+                    )}
                     <button
                         className="mr-2 outline-none p-2 bg-red-500 text-white rounded-lg font-semibold py-2 px-6 shadow-md hover:bg-red-600 transition-colors cursor-pointer duration-150"
                         onClick={handleLogout}
