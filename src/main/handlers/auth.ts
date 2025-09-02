@@ -1,4 +1,4 @@
-import { UserDatabaseOperations } from '@/main/database/userOperations.js';
+import { UserDatabaseOperations } from '../database/userOperations.js';
 import { syncManager } from '../database/sync.js';
 import jwt from 'jsonwebtoken';
 import Logger from 'electron-log';

@@ -20,7 +20,7 @@
         "migrate:rollback": "knex migrate:rollback --env development",
         "migrate:rollback:remote": "knex migrate:rollback --env production",
         "seed": "knex seed:run --env development",
-        "seed:prod": "knex seed:run --env production",
+        "seed:remote": "knex seed:run --env production",
         "migrate:status": "knex migrate:currentVersion",
         "test-db": "node network_test.js",
         "db:reset": "knex migrate:rollback --all && knex migrate:latest && knex seed:run"

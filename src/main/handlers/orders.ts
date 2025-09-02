@@ -1,7 +1,7 @@
 import Logger from "electron-log";
 import { IpcMainInvokeEvent } from "electron";
 import { Order } from "@/types/order.js";
-import { OrderDatabaseOperations } from "@/main/database/Orderoperations.js";
+import { OrderDatabaseOperations } from "../database/Orderoperations.js";
 import { syncManager } from "../database/sync.js";
 
 export const saveOrder = async (event: IpcMainInvokeEvent, order: Order) => {

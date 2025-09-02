@@ -2,7 +2,7 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> } 
  */
-const bcrypt = require('bcrypt');
+import bcrypt from 'bcrypt';
 
 export async function seed(knex) {
   // Delete existing entries
@@ -19,8 +19,8 @@ export async function seed(knex) {
       role: 'admin',
       name: 'System Administrator',
       email: 'admin@restaurant.local',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      createdAt: new Date("9-3-2025").toISOString(),
+      updatedAt: new Date("9-3-2025").toISOString()
     },
     {
       id: 'users:kitchen',
@@ -29,8 +29,8 @@ export async function seed(knex) {
       role: 'kitchen',
       name: 'Kitchen Staff',
       email: 'kitchen@restaurant.local',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      createdAt: new Date("9-3-2025").toISOString(),
+      updatedAt: new Date("9-3-2025").toISOString()
     },
     {
       id: 'users:delivery',
@@ -39,8 +39,8 @@ export async function seed(knex) {
       role: 'delivery',
       name: 'Delivery Staff',
       email: 'delivery@restaurant.local',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      createdAt: new Date("9-3-2025").toISOString(),
+      updatedAt: new Date("9-3-2025").toISOString()
     }
   ]);
 };

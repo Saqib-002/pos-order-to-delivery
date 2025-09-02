@@ -22,7 +22,7 @@ export async function up(knex) {
     table.index(['status']);
     table.index(['customerPhone']);
     table.index(['createdAt']);
-    table.index(['UpdatedAt']);
+    table.index(['updatedAt']);
     table.index(['orderId']);
   });
 };
