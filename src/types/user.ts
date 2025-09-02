@@ -1,6 +1,5 @@
 export interface User {
-  _id: string;
-  _rev?: string;
+  id?: string;
   username: string;
   password: string;
   role: 'admin' | 'kitchen' | 'delivery' | 'staff';
@@ -8,8 +7,10 @@ export interface User {
   email?: string;
   createdAt: string;
   updatedAt: string;
+  syncAt: string;
+  isDeleted?: boolean;
 }
 export interface AuthState {
   token: string | null;
   user: Omit<User, "password"> | null;
-}
+} 

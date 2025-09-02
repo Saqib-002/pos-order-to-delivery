@@ -2,9 +2,7 @@ import { BrowserWindow } from 'electron';
 import path from 'path';
 import isDev from 'electron-is-dev';
 import { fileURLToPath } from 'url';
-import { db } from './db.js'; // Import the db instance
-import Logger from 'electron-log';
-import { renumberDay } from './utils/db.js';
+import { syncManager } from './database/sync.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,8 +18,8 @@ export function createWindow() {
       sandbox: true,
     },
   });
-
-  startDbChangesFeed(win);
+  // Setup sync status monitoring
+  setupSyncMonitoring(win);
 
   if (isDev) {
     win.loadURL('http://localhost:5173');
@@ -33,34 +31,30 @@ export function createWindow() {
   return win;
 }
 
-function startDbChangesFeed(win:BrowserWindow) {
-  let changes:PouchDB.Core.Changes<{}> |null = db.changes({
-    since: 'now',
-    live: true,
-    include_docs: true,
-    filter(doc) {
-        return doc._id.startsWith('orders:')
-    },
-  })
-  .on('change', async (change) => {
-    try {
-      const day = change.id.split('T')[0];
-      await renumberDay(day);
-    } catch (err) {
-      Logger.error('Error in changes listener:', err);
-    }
+function setupSyncMonitoring(win: BrowserWindow) {
+  // Listen for sync events and forward to renderer
+  syncManager.on('sync-success', () => {
     if (!win.isDestroyed()) {
-      win.webContents.send('db-change', change);
+      win.webContents.send('sync-status', { 
+        status: 'success', 
+        timestamp: new Date(),
+        message: 'Data synchronized successfully'
+      });
     }
-  })
-  .on('error', (err) => {
-    Logger.error('Changes feed error:', err);
   });
 
-  win.on('closed', () => {
-    if (changes) {
-      changes.cancel();
-      changes = null;
+  syncManager.on('sync-failed', (error) => {
+    if (!win.isDestroyed()) {
+      win.webContents.send('sync-status', { 
+        status: 'failed', 
+        timestamp: new Date(),
+        error: error.message 
+      });
     }
+  });
+
+  // Clean up listeners when window is closed
+  win.on('closed', () => {
+    syncManager.removeAllListeners();
   });
 }

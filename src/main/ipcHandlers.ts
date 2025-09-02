@@ -1,5 +1,4 @@
 import { ipcMain } from "electron";
-
 import {
     deleteOrder,
     getOrderById,
@@ -16,6 +15,7 @@ import {
     updateUser,
     verifyToken,
 } from "./handlers/auth.js";
+import { syncManager } from "./database/sync.js";
 
 export function registerIpcHandlers() {
     // Authentication handlers
@@ -27,7 +27,7 @@ export function registerIpcHandlers() {
     ipcMain.handle("delete-user", deleteUser);
     ipcMain.handle("verify-token", verifyToken);
 
-    // Order handlers
+    // Order handlers (with same authorization logic)
     ipcMain.handle("save-order", async (event, token: string, order: any) => {
         const { role } = await verifyToken(event, token);
         if (role !== "admin" && role !== "staff") {
@@ -35,6 +35,7 @@ export function registerIpcHandlers() {
         }
         return saveOrder(event, order);
     });
+    
     ipcMain.handle("delete-order", async (event, token: string, id: string) => {
         const { role } = await verifyToken(event, token);
         if (role !== "admin") {
@@ -42,10 +43,12 @@ export function registerIpcHandlers() {
         }
         return deleteOrder(event, id);
     });
+    
     ipcMain.handle("get-orders", async (event, token: string) => {
         await verifyToken(event, token);
         return getOrders();
     });
+    
     ipcMain.handle("update-order", async (event, token: string, order: any) => {
         const { role } = await verifyToken(event, token);
         if (
@@ -64,11 +67,20 @@ export function registerIpcHandlers() {
         }
         throw new Error("Unauthorized: Invalid role for this action");
     });
-    ipcMain.handle(
-        "get-order-by-id",
-        async (event, token: string, id: string) => {
-            await verifyToken(event, token);
-            return getOrderById(event, id);
-        }
-    );
+    
+    ipcMain.handle("get-order-by-id", async (event, token: string, id: string) => {
+        await verifyToken(event, token);
+        return getOrderById(event, id);
+    });
+
+    // Sync handlers
+    ipcMain.handle("force-sync", async (event, token: string) => {
+        await verifyToken(event, token);
+        await syncManager.syncWithRemote();
+        return { success: true };
+    });
+
+    ipcMain.handle("get-sync-status", () => {
+        return syncManager.getSyncStatus();
+    });
 }

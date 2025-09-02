@@ -3,7 +3,7 @@ export interface Item{
   quantity: number;
 }
 export interface Order {
-  _id: string;
+  id: string;
   customer: {
     name: string;
     phone: string;
@@ -16,5 +16,7 @@ export interface Order {
   updatedAt?: string;
   cancelledAt?: string;
   deliveredAt?: string;
+  syncAt?: string;
+  isDeleted?: boolean;
   deliveryPerson?: string;
 }
