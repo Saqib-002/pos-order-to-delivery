@@ -48,7 +48,7 @@ export const getOrders = async () => {
 
 export const updateOrder = async (event: IpcMainInvokeEvent, order: Order) => {
     try {
-        if (!order._id.startsWith('orders:')) {
+        if (!order.id.startsWith('orders:')) {
             throw new Error('Invalid order id: must start with "orders:"');
         }
         
