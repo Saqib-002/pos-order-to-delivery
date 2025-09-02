@@ -1,4 +1,4 @@
-import { DatabaseOperations } from '../database/operations.js';
+import { UserDatabaseOperations } from '@/main/database/userOperations.js';
 import { syncManager } from '../database/sync.js';
 import jwt from 'jsonwebtoken';
 import Logger from 'electron-log';
@@ -9,9 +9,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 // In-memory session store (keep existing functionality)
 const sessions: { [token: string]: { userId: string; role: string; expires: number } } = {};
 
-export async function registerUser(_: any, userData: Omit<User, '_id' | '_rev' | 'createdAt' | 'updatedAt'>): Promise<User> {
+export async function registerUser(_: any, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<Omit<User,'syncAt'>> {
   try {
-    const result = await DatabaseOperations.registerUser(userData);
+    const result = await UserDatabaseOperations.registerUser(userData);
     
     // Trigger sync after registration
     setTimeout(() => syncManager.syncWithRemote(), 100);
@@ -23,9 +23,9 @@ export async function registerUser(_: any, userData: Omit<User, '_id' | '_rev' |
   }
 }
 
-export async function loginUser(_: any, { username, userPassword }: { username: string; userPassword: string }): Promise<{ token: string; user: Omit<User, 'password'> }> {
+export async function loginUser(_: any, { username, userPassword }: { username: string; userPassword: string }): Promise<{ token: string; user: Omit<User, 'password'|'syncAt'> }> {
   try {
-    const { token, user } = await DatabaseOperations.loginUser(username, userPassword);
+    const { token, user } = await UserDatabaseOperations.loginUser(username, userPassword);
     
     // Store session (keep existing session management)
     const decoded = jwt.verify(token, JWT_SECRET) as any;
@@ -46,26 +46,26 @@ export async function logoutUser(_: any, token: string): Promise<void> {
   delete sessions[token];
 }
 
-export async function getUsers(_: any, token: string): Promise<Omit<User, 'password'>[]> {
+export async function getUsers(_: any, token: string): Promise<Omit<User, 'password'|'syncAt'>[]> {
   if (!isAdmin(token)) {
     throw new Error('Unauthorized: Admin access required');
   }
 
   try {
-    return await DatabaseOperations.getUsers();
+    return await UserDatabaseOperations.getUsers();
   } catch (error) {
     Logger.error('Error fetching users:', error);
     throw new Error('Failed to fetch users');
   }
 }
 
-export async function updateUser(_: any, token: string, userData: Partial<User> & { _id: string }): Promise<User> {
+export async function updateUser(_: any, token: string, userData: Partial<User> & { id: string }): Promise<Omit<User,'syncAt'>> {
   if (!isAdmin(token)) {
     throw new Error('Unauthorized: Admin access required');
   }
 
   try {
-    const result = await DatabaseOperations.updateUser(userData);
+    const result = await UserDatabaseOperations.updateUser(userData);
     
     // Trigger sync after update
     setTimeout(() => syncManager.syncWithRemote(), 100);
@@ -83,7 +83,7 @@ export async function deleteUser(_: any, token: string, userId: string): Promise
   }
 
   try {
-    await DatabaseOperations.deleteUser(userId);
+    await UserDatabaseOperations.deleteUser(userId);
     
     // Trigger sync after deletion
     setTimeout(() => syncManager.syncWithRemote(), 100);

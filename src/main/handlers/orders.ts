@@ -1,12 +1,12 @@
 import Logger from "electron-log";
 import { IpcMainInvokeEvent } from "electron";
 import { Order } from "@/types/order.js";
-import { DatabaseOperations } from "../database/operations.js";
+import { OrderDatabaseOperations } from "@/main/database/Orderoperations.js";
 import { syncManager } from "../database/sync.js";
 
 export const saveOrder = async (event: IpcMainInvokeEvent, order: Order) => {
     try {
-        const result = await DatabaseOperations.saveOrder(order);
+        const result = await OrderDatabaseOperations.saveOrder(order);
         
         // Trigger sync after local save
         setTimeout(() => syncManager.syncWithRemote(), 100);
@@ -24,7 +24,7 @@ export const deleteOrder = async (event: IpcMainInvokeEvent, id: string) => {
             throw new Error('Invalid order id: must start with "orders:"');
         }
         
-        const result = await DatabaseOperations.deleteOrder(id);
+        const result = await OrderDatabaseOperations.deleteOrder(id);
         
         // Trigger sync after deletion
         setTimeout(() => syncManager.syncWithRemote(), 100);
@@ -39,7 +39,7 @@ export const deleteOrder = async (event: IpcMainInvokeEvent, id: string) => {
 
 export const getOrders = async () => {
     try {
-        return await DatabaseOperations.getOrders();
+        return await OrderDatabaseOperations.getOrders();
     } catch (error) {
         Logger.error("Error getting orders:", error);
         throw error;
@@ -52,7 +52,7 @@ export const updateOrder = async (event: IpcMainInvokeEvent, order: Order) => {
             throw new Error('Invalid order id: must start with "orders:"');
         }
         
-        const result = await DatabaseOperations.updateOrder(order);
+        const result = await OrderDatabaseOperations.updateOrder(order);
         
         // Trigger sync after update
         setTimeout(() => syncManager.syncWithRemote(), 100);
@@ -70,7 +70,7 @@ export const getOrderById = async (event: IpcMainInvokeEvent, id: string) => {
             throw new Error('Invalid order id: must start with "orders:"');
         }
         Logger.info("Getting order by id:", id);
-        return await DatabaseOperations.getOrderById(id);
+        return await OrderDatabaseOperations.getOrderById(id);
     } catch (error) {
         Logger.error("Error getting order by id:", error);
         throw error;
