@@ -47,8 +47,8 @@ export class SyncManager extends EventEmitter {
 
     // 1. Pull remote changes
     const remoteChanges = await remoteDb!(tableName)
-      .where('updated_at', '>', lastSync)
-      .orderBy('updated_at', 'asc');
+      .where('updatedAt', '>', lastSync)
+      .orderBy('updatedAt', 'asc');
 
     Logger.info(`Pulling ${remoteChanges.length} remote changes for ${tableName}`);
 
@@ -79,8 +79,8 @@ export class SyncManager extends EventEmitter {
 
     // 2. Push local changes
     const localChanges = await db(tableName)
-      .where('updated_at', '>', lastSync)
-      .whereNull('synced_at');
+      .where('updatedAt', '>', lastSync)
+      .whereNull('syncedAt');
 
     Logger.info(`Pushing ${localChanges.length} local changes for ${tableName}`);
 

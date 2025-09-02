@@ -46,12 +46,14 @@ export class UserDatabaseOperations {
     try {
       const bcrypt = await import('bcrypt');
       const jwt = await import('jsonwebtoken');
-      
+      console.log('username, userPassword', username, userPassword);
+      const rows = await localDb('users').select('*')
+      console.log('rows', rows);
       const row = await localDb('users')
         .where('username', username)
         .andWhere('isDeleted', false)
         .first();
-      
+      console.log('row', row);
       if (!row) {
         throw new Error('Invalid credentials');
       }

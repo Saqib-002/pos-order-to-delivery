@@ -4,9 +4,12 @@ import Logger from 'electron-log';
 import { app } from 'electron';
 import path from 'path';
 import fs from 'fs';
+import dotenv from 'dotenv';
 
+dotenv.config();
 export let localDb: Knex;
 export let remoteDb: Knex | null = null;
+
 
 export async function initDatabase(): Promise<void> {
   try {
@@ -121,13 +124,13 @@ async function syncTable(tableName: string): Promise<void> {
 
   // Pull changes from remote
   const remoteChanges = await remoteDb(tableName)
-    .where('updated_at', '>', lastSync)
-    .andWhere('is_deleted', false);
+    .where('updatedAt', '>', lastSync)
+    .andWhere('isDeleted', false);
 
   // Push local changes to remote
   const localChanges = await localDb(tableName)
-    .where('updated_at', '>', lastSync)
-    .whereNull('synced_at');
+    .where('updatedAt', '>', lastSync)
+    .whereNull('syncedAt');
 
   // Apply remote changes locally
   for (const change of remoteChanges) {
@@ -137,7 +140,7 @@ async function syncTable(tableName: string): Promise<void> {
         synced_at: new Date().toISOString()
       })
       .onConflict('id')
-      .merge(['customer_name', 'customer_phone', 'customer_address', 'items', 'status', 'delivery_person', 'updated_at', 'synced_at']);
+      .merge(['customerName', 'customerPhone', 'customerAddress', 'items', 'status', 'deliveryPerson', 'updatedAt', 'syncedAt']);
   }
 
   // Apply local changes to remote

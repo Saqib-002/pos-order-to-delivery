@@ -1,7 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 
-export interface User {
+interface User {
   id?: string;
   username: string;
   password: string;
