@@ -12,7 +12,7 @@ const knexConfig = {
   development: {
     client: 'better-sqlite3',
     connection: {
-      filename: path.join(getUserDataPath(), 'restaurant.db')
+      filename: path.join(getUserDataPath(), 'restaurant.sqlite')
     },
     useNullAsDefault: true,
     migrations: {
