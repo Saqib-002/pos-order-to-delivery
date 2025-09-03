@@ -1,4 +1,3 @@
-import { Client } from 'pg';
 import knex  from 'knex';
 import knexConfig from './knexfile.js';
 import net from 'net';

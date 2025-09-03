@@ -5,16 +5,15 @@ import { app } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
+import { syncManager } from './sync.js';
 
 dotenv.config();
 export let localDb: Knex;
 export let remoteDb: Knex | null = null;
 
-
 export async function initDatabase(): Promise<void> {
   try {
     // Ensure data directory exists
-    const userDataPath = app.getPath('userData');
     const dataDir = path.dirname(knexConfig.development.connection.filename);
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
@@ -30,13 +29,13 @@ export async function initDatabase(): Promise<void> {
 
     // Initialize sync metadata
     await initSyncMetadata();
-
+    
     // Try to connect to remote PostgreSQL
     await connectToRemoteDb();
-
+    
     // Start sync process if remote connection successful
     if (remoteDb) {
-      startSyncProcess();
+      await syncManager.syncWithRemote();
     }
 
   } catch (error) {
@@ -53,7 +52,6 @@ async function connectToRemoteDb(): Promise<void> {
     }
 
     remoteDb = knex(knexConfig.production);
-    
     // Test connection
     await remoteDb.raw('SELECT 1');
     Logger.info('Remote PostgreSQL connection successful');
@@ -83,84 +81,3 @@ async function initSyncMetadata(): Promise<void> {
     }
   }
 }
-
-function startSyncProcess(): void {
-  // Sync every 30 seconds
-  setInterval(async () => {
-    try {
-      await syncWithRemote();
-    } catch (error) {
-      Logger.error('Sync error:', error);
-    }
-  }, parseInt(process.env.SYNC_INTERVAL || '30000'));
-
-  // Initial sync
-  setTimeout(() => syncWithRemote(), 1000);
-}
-
-async function syncWithRemote(): Promise<void> {
-  if (!remoteDb) return;
-
-  try {
-    Logger.info('Starting sync with remote database...');
-    
-    // Sync users
-    await syncTable('users');
-    
-    // Sync orders
-    await syncTable('orders');
-    
-    Logger.info('Sync completed successfully');
-  } catch (error) {
-    Logger.error('Sync failed:', error);
-  }
-}
-
-async function syncTable(tableName: string): Promise<void> {
-  if (!remoteDb) return;
-
-  const syncMeta = await localDb('sync_metadata').where('table_name', tableName).first();
-  const lastSync = new Date(syncMeta.last_sync);
-
-  // Pull changes from remote
-  const remoteChanges = await remoteDb(tableName)
-    .where('updatedAt', '>', lastSync)
-    .andWhere('isDeleted', false);
-
-  // Push local changes to remote
-  const localChanges = await localDb(tableName)
-    .where('updatedAt', '>', lastSync)
-    .whereNull('syncedAt');
-
-  // Apply remote changes locally
-  for (const change of remoteChanges) {
-    await localDb(tableName)
-      .insert({
-        ...change,
-        synced_at: new Date().toISOString()
-      })
-      .onConflict('id')
-      .merge(['customerName', 'customerPhone', 'customerAddress', 'items', 'status', 'deliveryPerson', 'updatedAt', 'syncedAt']);
-  }
-
-  // Apply local changes to remote
-  for (const change of localChanges) {
-    const { synced_at, ...changeData } = change;
-    await remoteDb(tableName)
-      .insert(changeData)
-      .onConflict('id')
-      .merge();
-    
-    // Mark as synced locally
-    await localDb(tableName)
-      .where('id', change.id)
-      .update({ synced_at: new Date().toISOString() });
-  }
-
-  // Update sync metadata
-  await localDb('sync_metadata')
-    .where('table_name', tableName)
-    .update({ last_sync: new Date().toISOString() });
-}
-
-export { syncWithRemote };

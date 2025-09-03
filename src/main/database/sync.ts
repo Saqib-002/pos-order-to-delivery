@@ -13,7 +13,6 @@ export class SyncManager extends EventEmitter {
     this.syncInProgress = true;
     try {
       Logger.info('Starting database synchronization...');
-      
       // Sync in transaction for consistency
       await localDb.transaction(async (trx) => {
         await this.syncTable('users', trx);
