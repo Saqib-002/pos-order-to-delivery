@@ -1,7 +1,6 @@
 import knex, { Knex } from 'knex';
 import knexConfig from '../../knexfile.js';
 import Logger from 'electron-log';
-import { app } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
@@ -15,6 +14,7 @@ export async function initDatabase(): Promise<void> {
   try {
     // Ensure data directory exists
     const dataDir = path.dirname(knexConfig.development.connection.filename);
+    console.log('Data directory:', dataDir);
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
@@ -26,9 +26,6 @@ export async function initDatabase(): Promise<void> {
     // Run migrations for local database
     await localDb.migrate.latest();
     Logger.info('Local database migrations completed');
-
-    // Initialize sync metadata
-    await initSyncMetadata();
     
     // Try to connect to remote PostgreSQL
     await connectToRemoteDb();
@@ -66,18 +63,3 @@ async function connectToRemoteDb(): Promise<void> {
   }
 }
 
-async function initSyncMetadata(): Promise<void> {
-  const tables = ['users', 'orders'];
-  
-  for (const tableName of tables) {
-    const exists = await localDb('sync_metadata').where('table_name', tableName).first();
-    if (!exists) {
-      await localDb('sync_metadata').insert({
-        table_name: tableName,
-        last_sync: new Date().toISOString(),
-        last_sync_revision: 0,
-        sync_config: JSON.stringify({ enabled: true })
-      });
-    }
-  }
-}

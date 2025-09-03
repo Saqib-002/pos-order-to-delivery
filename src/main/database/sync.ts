@@ -6,7 +6,7 @@ export class SyncManager extends EventEmitter {
   private syncInProgress = false;
   private retryCount = 0;
   private maxRetries = parseInt(process.env.MAX_RETRY_ATTEMPTS || '3');
-
+  
   async syncWithRemote(): Promise<void> {
     if (!remoteDb || this.syncInProgress) return;
 
@@ -42,7 +42,17 @@ export class SyncManager extends EventEmitter {
   private async syncTable(tableName: string, trx?: any): Promise<void> {
     const db = trx || localDb;
     const syncMeta = await db('sync_metadata').where('table_name', tableName).first();
-    const lastSync = new Date(syncMeta.last_sync);
+    let lastSync;
+    if(!syncMeta){
+      const remoteSyncMeta = await remoteDb!('sync_metadata').where('table_name', tableName).first();
+      if(remoteSyncMeta){
+        lastSync = new Date(remoteSyncMeta.last_sync);
+      }else{
+        lastSync = new Date(0);
+      }
+    }else{
+      lastSync = new Date(syncMeta.last_sync);
+    }
 
     // 1. Pull remote changes
     const remoteChanges = await remoteDb!(tableName)
@@ -58,7 +68,7 @@ export class SyncManager extends EventEmitter {
         // Insert new record
         await db(tableName).insert({
           ...remoteRecord,
-          synced_at: new Date().toISOString()
+          syncedAt: new Date().toISOString()
         });
       } else {
         // Resolve conflict - last write wins
@@ -70,7 +80,7 @@ export class SyncManager extends EventEmitter {
             .where('id', remoteRecord.id)
             .update({
               ...remoteRecord,
-              synced_at: new Date().toISOString()
+              syncedAt: new Date().toISOString()
             });
         }
       }
@@ -95,7 +105,7 @@ export class SyncManager extends EventEmitter {
         // Mark as synced
         await db(tableName)
           .where('id', localRecord.id)
-          .update({ synced_at: new Date().toISOString() });
+          .update({ syncedAt: new Date().toISOString() });
           
       } catch (error) {
         Logger.error(`Failed to sync record ${localRecord.id}:`, error);
@@ -107,7 +117,7 @@ export class SyncManager extends EventEmitter {
       .where('table_name', tableName)
       .update({ 
         last_sync: new Date().toISOString(),
-        last_sync_revision: syncMeta.last_sync_revision + 1
+        last_sync_revision: syncMeta?.last_sync_revision + 1  || 0
       });
   }
 

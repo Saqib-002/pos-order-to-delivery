@@ -1,6 +1,7 @@
 import { localDb } from './index.js';
 import { User } from '@/types/user.js';
 import Logger from 'electron-log';
+import  jwt from 'jsonwebtoken';
 
 // In-memory session store
 const sessions: { [token: string]: { userId: string; role: string; expires: number } } = {};
@@ -45,19 +46,13 @@ export class UserDatabaseOperations {
   static async loginUser(username: string, userPassword: string): Promise<{ token: string; user: Omit<User, 'password'|'syncAt'> }> {
     try {
       const bcrypt = await import('bcrypt');
-      const jwt = await import('jsonwebtoken');
-      console.log('username, userPassword', username, userPassword);
-      const rows = await localDb('users').select('*')
-      console.log('rows', rows);
       const row = await localDb('users')
         .where('username', username)
         .andWhere('isDeleted', false)
         .first();
-      console.log('row', row);
       if (!row) {
         throw new Error('Invalid credentials');
       }
-
       const isValid = await bcrypt.compare(userPassword, row.password);
       if (!isValid) {
         throw new Error('Invalid credentials');
