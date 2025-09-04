@@ -20,10 +20,25 @@ const App: React.FC = () => {
     const [view, setView] = useState("login");
     const [auth, setAuth] = useState<AuthState>({ token: null, user: null });
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const orderChangeCleanupRef = useRef<(() => void) | null>(null);
 
     useEffect(() => {
         if (!auth.token) return;
         refreshOrders(setOrders, auth.token);
+        if (orderChangeCleanupRef.current) {
+            orderChangeCleanupRef.current();
+            orderChangeCleanupRef.current = null;
+        }
+        const cleanup = (window as any).electronAPI.onOrderChange((change: any) => {
+            console.log("Order change received:", change);
+            handleOrderChange({auth,change,setOrders,audioRef});
+        });
+        orderChangeCleanupRef.current = cleanup;
+        return () => {
+            if (cleanup) {
+                cleanup();
+            }
+        };
     }, [auth.token]);
     const handleLogin = (newToken: string, newUser: Omit<User, "password">) => {
         setAuth({ token: newToken, user: newUser });

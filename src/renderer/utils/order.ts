@@ -1,96 +1,89 @@
 import { Order } from "@/types/order";
 import { showToast } from "./utils";
 import { AuthState } from "@/types/user";
+import { toast } from "react-toastify";
+import { NOTIFICATION_VOLUME } from "@/constants";
 
 interface HandleOrderChangeArgs {
     change: any;
     setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
     auth: AuthState;
+    audioRef: React.RefObject<HTMLAudioElement | null>;
 }
 
-export const handleOrderChange = ({
+export const handleOrderChange = ({ 
     change,
     setOrders,
     auth,
+    audioRef,
 }: HandleOrderChangeArgs) => {
-    console.log("Database change received:", change);
-    if (change.deleted) {
-        // Handle deletion
-        setOrders((prevOrders) => {
-            const deletedOrder = prevOrders.find(
-                (order) => order.id === change.id
-            );
-            if (deletedOrder) {
-                showToast.error(
-                    `Order#${deletedOrder.orderId || "N/A"} deleted`
-                );
-            }
-            return prevOrders.filter((order) => order.id !== change.id);
-        });
-    } else if (change.doc) {
-        const revisionNumber = parseInt(change.doc._rev.split("-")[0]);
-        const isNewOrder = revisionNumber === 1;
-
-        setOrders((prevOrders) => {
-            const existingIndex = prevOrders.findIndex(
-                (order) => order.id === change.id
-            );
-
-            if (existingIndex !== -1) {
-                if (!isNewOrder) {
-                    // Update existing order
-                    const updatedOrders = [...prevOrders];
-                    updatedOrders[existingIndex] = change.doc;
-                    showToast.success(
-                        `Order#${change.doc.orderId || "N/A"} updated, status: ${change.doc.status}`
-                    );
-                    return updatedOrders;
-                } else {
-                    // This shouldn't happen - new order with existing ID
-                    console.warn(
-                        "New order revision but order already exists:",
-                        change.id
-                    );
-                    return prevOrders;
+   setOrders((prevOrders) => {
+            console.log("Processing order change:", change);
+            
+            if (change.type === "delete") {
+                // Handle deletion
+                const deletedOrder = prevOrders.find(order => order.id === change.id);
+                if (deletedOrder) {
+                    toast.info(`Order #${deletedOrder.orderId || 'N/A'} has been deleted`);
                 }
-            } else {
-                if (isNewOrder) {
-                    // Add new order
-                    showToast.success(
-                        `Order#${change.doc.orderId || "N/A"} sent to kitchen`
-                    );
-                    return [...prevOrders, change.doc];
-                } else {
-                    // Order doesn't exist locally but isn't new - fetch all orders to sync
-                    console.warn(
-                        "Order update received for non-existing order:",
-                        change.id
-                    );
-                    (window as any).electronAPI
-                        .getOrders(auth.token)
-                        .then((allOrders: Order[]) => {
-                            setOrders(allOrders);
-                        })
-                        .catch((error: any) => {
-                            console.error("Error syncing orders:", error);
-                        });
-                    return prevOrders;
-                }
+                return prevOrders.filter(order => order.id !== change.id);
             }
+            
+            if (change.type === "insert") {
+                // Handle new order insertion
+                if (change.doc) {
+                    const newOrder = change.doc;
+                    // Check if order already exists to avoid duplicates
+                    const exists = prevOrders.some(order => order.id === newOrder.id);
+                    if (!exists) {
+                        toast.success(`New order #${newOrder.orderId || 'N/A'} received`);
+                        // Play notification sound if available
+                        if (audioRef.current) {
+                            audioRef.current.volume = NOTIFICATION_VOLUME;
+                            audioRef.current.play().catch(console.error);
+                        }
+                        return [...prevOrders, newOrder];
+                    }
+                }
+                return prevOrders;
+            }
+            
+            if (change.type === "update") {
+                // Handle order updates
+                if (change.doc) {
+                    const updatedOrder = change.doc;
+                    const existingIndex = prevOrders.findIndex(order => order.id === updatedOrder.id);
+                    
+                    if (existingIndex !== -1) {
+                        const updatedOrders = [...prevOrders];
+                        const oldOrder = updatedOrders[existingIndex];
+                        updatedOrders[existingIndex] = updatedOrder;
+                        
+                        // Show notification about status change
+                        if (oldOrder.status !== updatedOrder.status) {
+                            toast.info(
+                                `Order #${updatedOrder.orderId || 'N/A'} status changed to: ${updatedOrder.status}`,
+                                { autoClose: 3000 }
+                            );
+                        }
+                        
+                        return updatedOrders;
+                    } else {
+                        // Order doesn't exist locally, add it
+                        toast.info(`Order #${updatedOrder.orderId || 'N/A'} synchronized`);
+                        return [...prevOrders, updatedOrder];
+                    }
+                }
+                return prevOrders;
+            }
+            
+            // Fallback: refresh all orders if change type is unrecognized
+            console.warn("Unrecognized change type, refreshing orders");
+            if (auth.token) {
+                refreshOrders(setOrders, auth.token);
+            }
+            return prevOrders;
         });
-    } else {
-        // Fallback: refresh all orders
-        console.warn("Unexpected change format, refreshing all orders");
-        (window as any).electronAPI
-            .getOrders(auth.token)
-            .then((allOrders: Order[]) => {
-                setOrders(allOrders);
-            })
-            .catch((error: any) => {
-                console.error("Error refreshing orders:", error);
-                showToast.error("Error fetching orders");
-            });
-    }
 };
 
 export const refreshOrders = async (setOrders: React.Dispatch<React.SetStateAction<Order[]>>, token: string) => {
