@@ -36,7 +36,7 @@ export const UserManagement: React.FC<{ token: string|null }> = ({ token }) => {
     if (!editingUser) return;
     try {
       const updatedUser = await (window as any).electronAPI.updateUser(token, editingUser);
-      setUsers(users.map(u => u._id === updatedUser._id ? updatedUser : u));
+      setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
       setEditingUser(null);
       toast.success('User updated successfully');
     } catch (error) {
@@ -47,7 +47,7 @@ export const UserManagement: React.FC<{ token: string|null }> = ({ token }) => {
   const handleDeleteUser = async (userId: string) => {
     try {
       await (window as any).electronAPI.deleteUser(token, userId);
-      setUsers(users.filter(u => u._id !== userId));
+      setUsers(users.filter(u => u.id !== userId));
       toast.success('User deleted successfully');
     } catch (error) {
       toast.error('Failed to delete user');
@@ -120,7 +120,7 @@ export const UserManagement: React.FC<{ token: string|null }> = ({ token }) => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {users.map(user => (
-              <tr key={user._id}>
+              <tr key={user.id}>
                 <td className="px-6 py-4">{user.username}</td>
                 <td className="px-6 py-4">{user.name}</td>
                 <td className="px-6 py-4">{user.role}</td>
@@ -132,7 +132,7 @@ export const UserManagement: React.FC<{ token: string|null }> = ({ token }) => {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDeleteUser(user._id)}
+                    onClick={() => user.id &&handleDeleteUser(user.id)}
                     className="text-red-600 hover:text-red-900"
                   >
                     Delete

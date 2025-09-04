@@ -39,29 +39,29 @@ export const ReportView: React.FC<ReportViewProps> = ({orders,setOrders}) => {
     switch (dateRange) {
       case "today":
         return orders.filter((order) => {
-          const orderDate = new Date(order._id);
+          const orderDate = new Date(order.id);
           return orderDate.toDateString() === today.toDateString();
         });
       case "week":
         const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
         return orders.filter((order) => {
-          const orderDate = new Date(order._id);
+          const orderDate = new Date(order.id);
           return orderDate >= weekAgo && orderDate <= today;
         });
       case "month":
         const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
         return orders.filter((order) => {
-          const orderDate = new Date(order._id);
+          const orderDate = new Date(order.id);
           return orderDate >= monthAgo && orderDate <= today;
         });
       case "custom":
         return orders.filter((order) => {
-          const orderDate = new Date(order._id);
+          const orderDate = new Date(order.id);
           return orderDate.toDateString() === selectedDateObj.toDateString();
         });
       default:
         return orders.filter((order) => {
-          const orderDate = new Date(order._id);
+          const orderDate = new Date(order.id);
           return orderDate.toDateString() === selectedDateObj.toDateString();
         });
     }
@@ -91,8 +91,8 @@ export const ReportView: React.FC<ReportViewProps> = ({orders,setOrders}) => {
   const deliveryTimes = filteredOrders
     .filter((order) => order.status.toLowerCase() === "delivered")
     .map((order) => {
-      const orderTime = new Date(order._id);
-      const deliveredTime = new Date(order._id); // Using order time as approximation
+      const orderTime = new Date(order.id);
+      const deliveredTime = new Date(order.id); // Using order time as approximation
       return (deliveredTime.getTime() - orderTime.getTime()) / (1000 * 60); // in minutes
     });
 
@@ -124,7 +124,7 @@ export const ReportView: React.FC<ReportViewProps> = ({orders,setOrders}) => {
   const getHourlyDistribution = () => {
     const hourlyData = new Array(24).fill(0);
     filteredOrders.forEach((order) => {
-      const orderTime = new Date(order._id);
+      const orderTime = new Date(order.id);
       const hour = orderTime.getHours();
       hourlyData[hour]++;
     });
@@ -583,12 +583,12 @@ export const ReportView: React.FC<ReportViewProps> = ({orders,setOrders}) => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredOrders.slice(0, 20).map((order) => (
                     <tr
-                      key={order._id}
+                      key={order.id}
                       className="hover:bg-gray-50 transition-colors duration-150"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          #{order._id.slice(16, 24)}
+                          #{order.id.slice(16, 24)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -631,10 +631,10 @@ export const ReportView: React.FC<ReportViewProps> = ({orders,setOrders}) => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {new Date(order._id).toLocaleTimeString()}
+                          {new Date(order.id).toLocaleTimeString()}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {new Date(order._id).toLocaleDateString()}
+                          {new Date(order.id).toLocaleDateString()}
                         </div>
                       </td>
                     </tr>
