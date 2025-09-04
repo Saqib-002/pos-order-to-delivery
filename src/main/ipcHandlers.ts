@@ -72,15 +72,4 @@ export function registerIpcHandlers() {
         await verifyToken(event, token);
         return getOrderById(event, id);
     });
-
-    // Sync handlers
-    ipcMain.handle("force-sync", async (event, token: string) => {
-        await verifyToken(event, token);
-        await syncManager.syncWithRemote();
-        return { success: true };
-    });
-
-    ipcMain.handle("get-sync-status", () => {
-        return syncManager.getSyncStatus();
-    });
 }

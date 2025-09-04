@@ -32,16 +32,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateUser: (token:string, userData:Partial<User> & { id: string }) => ipcRenderer.invoke('update-user', token, userData),
   deleteUser: (token:string, userId:string) => ipcRenderer.invoke('delete-user', token, userId),
   verifyToken: (token:string) => ipcRenderer.invoke('verify-token', token),
-  // Sync operations
-  forceSyncNow: (token: string) => ipcRenderer.invoke('force-sync', token),
-  getSyncStatus: () => ipcRenderer.invoke('get-sync-status'),
 
   // Order change notifications
   onOrderChange: (callback: (change: any) => void) => {
     const orderChangeCallback = (event: any, change: any) => {
       callback(change);
     };
-    
     orderChangeCallbacks.add(orderChangeCallback);
     ipcRenderer.on('order-change', orderChangeCallback);
     
@@ -51,8 +47,4 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.removeListener('order-change', orderChangeCallback);
     };
   },
-  onSyncStatus: (callback: (status: any) => void) => {
-    ipcRenderer.on('sync-status', (event: any, status: any) => callback(status));
-    return () => ipcRenderer.removeListener('sync-status', callback);
-  }
 });
