@@ -30,13 +30,13 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                         .toLowerCase()
                         .includes(searchTerm.toLowerCase()) ||
                     order.customer.phone.includes(searchTerm) ||
-                    order._id.toLowerCase().includes(searchTerm.toLowerCase())
+                    order.id.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
 
         if (selectedDate) {
             filtered = filtered.filter((order) => {
-                const orderDate = new Date(order.createdAt || order._id);
+                const orderDate = new Date(order.createdAt || order.id);
                 return orderDate.toDateString() === selectedDate.toDateString();
             });
         }
@@ -57,7 +57,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
             };
             await (window as any).electronAPI.updateOrder(token,updatedOrder);
             setOrders(
-                orders.map((o) => (o._id === order._id ? updatedOrder : o))
+                orders.map((o) => (o.id === order.id ? updatedOrder : o))
             );
             setDeliveryPerson("");
         } catch (error) {
@@ -71,14 +71,13 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
             const updatedOrder = { ...order, status: "Delivered" };
             await (window as any).electronAPI.updateOrder(token,updatedOrder);
             setOrders(
-                orders.map((o) => (o._id === order._id ? updatedOrder : o))
+                orders.map((o) => (o.id === order.id ? updatedOrder : o))
             );
         } catch (error) {
             console.error("Failed to mark as delivered:", error);
             alert("Failed to mark as delivered. Please try again.");
         }
     };
-
     // const getDeliveryStatusColor = (status: string) => {
     //   switch (status.toLowerCase()) {
     //     case "ready for pickup":
@@ -224,7 +223,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                                             )
                                                 return false;
                                             const deliveredDate = new Date(
-                                                o._id
+                                                o.id
                                             );
                                             const today = new Date();
                                             return (
@@ -471,7 +470,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {filteredOrders.map((order) => {
-                                        const readyTime = new Date(order._id);
+                                        const readyTime = new Date(order.id);
                                         const now = new Date();
                                         const diffMinutes = Math.floor(
                                             (now.getTime() -
@@ -482,13 +481,13 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
 
                                         return (
                                             <tr
-                                                key={order._id}
+                                                key={order.id}
                                                 className="hover:bg-gray-50 transition-colors duration-150"
                                             >
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="text-sm font-medium text-gray-900">
                                                         #
-                                                        {order._id.slice(
+                                                        {order.id.slice(
                                                             16,
                                                             24
                                                         )}
@@ -628,13 +627,13 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                                         )
                                         .map((order) => (
                                             <tr
-                                                key={order._id}
+                                                key={order.id}
                                                 className="hover:bg-gray-50 transition-colors duration-150"
                                             >
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="text-sm font-medium text-gray-900">
                                                         #
-                                                        {order._id.slice(
+                                                        {order.id.slice(
                                                             16,
                                                             24
                                                         )}

@@ -17,7 +17,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
     let filtered = orders.filter(
       (order) => order.status.toLowerCase() === "sent to kitchen"
     );
-
+    
     if (searchTerm) {
       filtered = filtered.filter(
         (order) =>
@@ -25,13 +25,13 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
             .toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
           order.customer.phone.includes(searchTerm) ||
-          order._id.toLowerCase().includes(searchTerm.toLowerCase())
+          order.id.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (selectedDate) {
       filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.createdAt || order._id);
+        const orderDate = new Date(order.createdAt || order.id);
         return orderDate.toDateString() === selectedDate.toDateString();
       });
     }
@@ -43,7 +43,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
     try {
       const updatedOrder = { ...order, status: "Ready for Delivery" };
       await (window as any).electronAPI.updateOrder(token,updatedOrder);
-      setOrders(orders.map((o) => (o._id === order._id ? updatedOrder : o)));
+      setOrders(orders.map((o) => (o.id === order.id ? updatedOrder : o)));
     } catch (error) {
       console.error("Failed to update order:", error);
     }
@@ -51,7 +51,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
 
   const getPriorityColor = (order: Order) => {
     // Simple priority based on order creation time (older = higher priority)
-    const orderTime = new Date(order.createdAt || order._id);
+    const orderTime = new Date(order.createdAt || order.id);
     const now = new Date();
     const diffHours = (now.getTime() - orderTime.getTime()) / (1000 * 60 * 60);
 
@@ -147,7 +147,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                 <p className="text-2xl font-bold text-gray-900">
                   {
                     filteredOrders.filter((order) => {
-                      const orderTime = new Date(order.createdAt || order._id);
+                      const orderTime = new Date(order.createdAt || order.id);
                       const now = new Date();
                       const diffHours =
                         (now.getTime() - orderTime.getTime()) /
@@ -317,7 +317,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredOrders.map((order) => {
-                    const orderTime = new Date(order.createdAt || order._id);
+                    const orderTime = new Date(order.createdAt || order.id);
                     const now = new Date();
                     const diffMinutes = Math.floor(
                       (now.getTime() - orderTime.getTime()) / (1000 * 60)
@@ -326,7 +326,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
 
                     return (
                       <tr
-                        key={order._id}
+                        key={order.id}
                         className={`hover:bg-gray-50 transition-colors duration-150 ${getPriorityColor(order)}`}
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -348,7 +348,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            #{order._id.slice(16, 24)}
+                            #{order.id.slice(16, 24)}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">

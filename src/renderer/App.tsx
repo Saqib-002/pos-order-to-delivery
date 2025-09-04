@@ -24,30 +24,6 @@ const App: React.FC = () => {
     useEffect(() => {
         if (!auth.token) return;
         refreshOrders(setOrders, auth.token);
-        const handleChange = (change: any) =>
-            handleOrderChange({ setOrders, change, auth });
-        // Register change listener and get cleanup function
-        const cleanup = (window as any).electronAPI.onDbChange(handleChange);
-        audioRef.current = new Audio("./assets/notification.wav");
-        audioRef.current.volume = NOTIFICATION_VOLUME;
-
-        // Listen for toast changes
-        const unsubscribe = toast.onChange((payload) => {
-            if (payload.status === "added") {
-                // Play sound when a toast is added
-                if (audioRef.current) {
-                    audioRef.current.play().catch((error) => {
-                        console.error("Error playing sound:", error);
-                    });
-                }
-            }
-        });
-
-        // Cleanup listener on unmount
-        return () => {
-            cleanup();
-            unsubscribe();
-        };
     }, [auth.token]);
     const handleLogin = (newToken: string, newUser: Omit<User, "password">) => {
         setAuth({ token: newToken, user: newUser });

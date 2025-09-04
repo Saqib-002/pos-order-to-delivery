@@ -18,14 +18,14 @@ export const handleOrderChange = ({
         // Handle deletion
         setOrders((prevOrders) => {
             const deletedOrder = prevOrders.find(
-                (order) => order._id === change.id
+                (order) => order.id === change.id
             );
             if (deletedOrder) {
                 showToast.error(
                     `Order#${deletedOrder.orderId || "N/A"} deleted`
                 );
             }
-            return prevOrders.filter((order) => order._id !== change.id);
+            return prevOrders.filter((order) => order.id !== change.id);
         });
     } else if (change.doc) {
         const revisionNumber = parseInt(change.doc._rev.split("-")[0]);
@@ -33,7 +33,7 @@ export const handleOrderChange = ({
 
         setOrders((prevOrders) => {
             const existingIndex = prevOrders.findIndex(
-                (order) => order._id === change.id
+                (order) => order.id === change.id
             );
 
             if (existingIndex !== -1) {
@@ -96,7 +96,6 @@ export const handleOrderChange = ({
 export const refreshOrders = async (setOrders: React.Dispatch<React.SetStateAction<Order[]>>, token: string) => {
     try {
       const results = await (window as any).electronAPI.getOrders(token);
-      console.log("Fetched orders:", results);
       setOrders(results);
     } catch (error) {
       console.error("Error refreshing orders:", error);

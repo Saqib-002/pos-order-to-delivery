@@ -15,7 +15,7 @@ export class OrderDatabaseOperations {
             if (!order.orderId) {
                 const day = order.createdAt.split("T")[0];
                 const dailyOrders = await localDb("orders")
-                    .whereRaw("DATE(createdAt) = ?", [day])
+                    .whereRaw("DATE(createdAt) = ?", [day]).andWhere("isDeleted", false)
                     .count("* as count");
                 order.orderId = (Number(dailyOrders[0]?.count) || 0) + 1;
             }

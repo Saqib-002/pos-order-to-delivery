@@ -35,13 +35,13 @@ export const OrderView: React.FC<OrderViewProps> = ({
                         .toLowerCase()
                         .includes(searchTerm.toLowerCase()) ||
                     order.customer.phone.includes(searchTerm) ||
-                    order._id.toLowerCase().includes(searchTerm.toLowerCase())
+                    order.id.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
 
         if (selectedDate) {
             filtered = filtered.filter((order) => {
-                const orderDate = new Date(order.createdAt || order._id);
+                const orderDate = new Date(order.createdAt || order.id);
                 return orderDate.toDateString() === selectedDate.toDateString();
             });
         }
@@ -104,7 +104,6 @@ export const OrderView: React.FC<OrderViewProps> = ({
                 return "bg-gray-100 text-gray-800 border-gray-200";
         }
     };
-    console.log(filteredOrders,orders);
     return (
         <>
             {isAddOrderModelShown && (
@@ -473,7 +472,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {filteredOrders.map((order) => (
                                             <tr
-                                                key={order._id}
+                                                key={order.id}
                                                 className="hover:bg-gray-50 transition-colors duration-150"
                                             >
                                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -564,7 +563,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                                                         className="text-red-600 hover:text-red-900 flex items-center gap-1 hover:bg-red-50 px-2 py-1 rounded transition-colors duration-150 cursor-pointer hover:scale-105"
                                                         onClick={() =>
                                                             handleDeleteOrder(
-                                                                order._id
+                                                                order!.id
                                                             )
                                                         }
                                                     >

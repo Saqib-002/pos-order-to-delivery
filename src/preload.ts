@@ -14,6 +14,7 @@ interface User {
   isDeleted?: boolean;
 }
 const syncStatusCallbacks = new Set<(status: any) => void>();
+const orderChangeCallbacks = new Set<(change: any,event:any) => void>();
 
 contextBridge.exposeInMainWorld('electronAPI', {
   // Order operations
@@ -35,26 +36,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
   forceSyncNow: (token: string) => ipcRenderer.invoke('force-sync', token),
   getSyncStatus: () => ipcRenderer.invoke('get-sync-status'),
 
-  // Database change notifications (modified for SQL)
-  onDbChange: (callback: (changes: any) => void) => {
-    const syncStatusCallback = (status: any) => {
-      if (status.status === 'success') {
-        // Simulate change event for compatibility with existing UI
-        callback({
-          id: 'sync-event',
-          changes: status,
-          timestamp: status.timestamp
-        });
-      }
+  // Order change notifications
+  onOrderChange: (callback: (change: any) => void) => {
+    const orderChangeCallback = (event: any, change: any) => {
+      callback(change);
     };
     
-    syncStatusCallbacks.add(syncStatusCallback);
-    ipcRenderer.on('sync-status', (event: any, status: any) => syncStatusCallback(status));
+    orderChangeCallbacks.add(orderChangeCallback);
+    ipcRenderer.on('order-change', orderChangeCallback);
     
     // Return cleanup function
     return () => {
-      syncStatusCallbacks.delete(syncStatusCallback);
-      ipcRenderer.removeListener('sync-status', syncStatusCallback);
+      orderChangeCallbacks.delete(orderChangeCallback);
+      ipcRenderer.removeListener('order-change', orderChangeCallback);
     };
   },
   onSyncStatus: (callback: (status: any) => void) => {
