@@ -25,6 +25,7 @@ app.whenReady().then(async () => {
                     win.webContents.send("sync-status", {
                         status: "success",
                         timestamp: new Date(),
+                        message: "Data synchronized successfully"
                     });
                 }
             });
@@ -36,6 +37,7 @@ app.whenReady().then(async () => {
                 if (!win.isDestroyed()) {
                     win.webContents.send("sync-status", {
                         status: "failed",
+                        timestamp: new Date(),
                         error: error.message,
                     });
                 }
@@ -57,6 +59,22 @@ app.whenReady().then(async () => {
 // Quit the app when all windows are closed (except on macOS)
 app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {
+        syncManager.destroy();
         app.quit();
+    }
+});
+app.on("before-quit", () => {
+    Logger.info("Application shutting down, stopping sync manager...");
+    syncManager.destroy();
+});
+
+app.on("will-quit", (event) => {
+    // Give sync manager time to cleanup
+    if (syncManager.getSyncStatus().inProgress) {
+        event.preventDefault();
+        setTimeout(() => {
+            syncManager.destroy();
+            app.quit();
+        }, 2000);
     }
 });

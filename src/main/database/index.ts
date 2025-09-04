@@ -32,7 +32,7 @@ export async function initDatabase(): Promise<void> {
     
     // Start sync process if remote connection successful
     if (remoteDb) {
-      await syncManager.syncWithRemote();
+      await syncManager.startPeriodicSync();
     }
 
   } catch (error) {

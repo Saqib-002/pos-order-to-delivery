@@ -7,6 +7,38 @@ export class SyncManager extends EventEmitter {
     private syncInProgress = false;
     private retryCount = 0;
     private maxRetries = parseInt(process.env.MAX_RETRY_ATTEMPTS || "3");
+    private syncInterval: NodeJS.Timeout | null = null;
+    private syncIntervalMs = parseInt(process.env.SYNC_INTERVAL_MS || "30000");
+    constructor() {
+        super();
+        this.startPeriodicSync();
+    }
+    // Start periodic sync
+    startPeriodicSync(): void {
+        if (this.syncInterval) {
+            clearInterval(this.syncInterval);
+        }
+
+        this.syncInterval = setInterval(async () => {
+            if (remoteDb && !this.syncInProgress) {
+                Logger.info("Periodic sync triggered");
+                await this.syncWithRemote();
+            }
+        }, this.syncIntervalMs);
+
+        Logger.info(
+            `Periodic sync started with interval: ${this.syncIntervalMs}ms`
+        );
+    }
+
+    // Stop periodic sync
+    stopPeriodicSync(): void {
+        if (this.syncInterval) {
+            clearInterval(this.syncInterval);
+            this.syncInterval = null;
+            Logger.info("Periodic sync stopped");
+        }
+    }
 
     async syncWithRemote(): Promise<void> {
         if (!remoteDb || this.syncInProgress) return;
@@ -18,6 +50,7 @@ export class SyncManager extends EventEmitter {
             await localDb.transaction(async (trx) => {
                 await this.syncTable("users", trx);
                 await this.syncTable("orders", trx);
+                await this.syncSyncMetadata(trx);
             });
 
             this.retryCount = 0;
@@ -44,26 +77,26 @@ export class SyncManager extends EventEmitter {
 
     private async syncTable(tableName: string, trx?: any): Promise<void> {
         const db = trx || localDb;
-        const syncMeta = await db("sync_metadata")
+        const localSyncMeta = await db("sync_metadata")
             .where("table_name", tableName)
             .first();
-        let lastSync;
-        if (!syncMeta) {
-            const remoteSyncMeta = await remoteDb!("sync_metadata")
-                .where("table_name", tableName)
-                .first();
-            if (remoteSyncMeta) {
-                lastSync = new Date(remoteSyncMeta.last_sync);
-            } else {
-                lastSync = new Date(0);
-            }
-        } else {
-            lastSync = new Date(syncMeta.last_sync);
+        const remoteSyncMeta = await remoteDb!("sync_metadata")
+            .where("table_name", tableName)
+            .first();
+        let lastSync = new Date(0);
+        if (localSyncMeta && remoteSyncMeta) {
+            const localTime = new Date(localSyncMeta.last_sync);
+            const remoteTime = new Date(remoteSyncMeta.last_sync);
+            lastSync = localTime < remoteTime ? localTime : remoteTime;
+        } else if (localSyncMeta) {
+            lastSync = new Date(localSyncMeta.last_sync);
+        } else if (remoteSyncMeta) {
+            lastSync = new Date(remoteSyncMeta.last_sync);
         }
 
         // 1. Pull remote changes
         const remoteChanges = await remoteDb!(tableName)
-            .where("updatedAt", ">", lastSync)
+            .where("updatedAt", ">", lastSync.toISOString())
             .orderBy("updatedAt", "asc");
 
         Logger.info(
@@ -92,15 +125,19 @@ export class SyncManager extends EventEmitter {
                 }
             } else {
                 // Resolve conflict - last write wins
-                const remoteTime = new Date(remoteRecord.updated_at);
-                const localTime = new Date(localRecord.updated_at);
-
+                const remoteTime = new Date(remoteRecord.updatedAt);
+                const localTime = new Date(localRecord.updatedAt);
+                console.log({ remoteTime, localTime });
                 if (remoteTime > localTime) {
                     const oldRecord = { ...localRecord };
+                    console.log("Syncing remote record:", remoteRecord);
                     await db(tableName)
                         .where("id", remoteRecord.id)
                         .update({
                             ...remoteRecord,
+                            items: typeof remoteRecord.items !== "string"
+                                ? JSON.stringify(remoteRecord.items)
+                                : remoteRecord.items,
                             syncedAt: new Date().toISOString(),
                         });
                     // Emit change event for orders table only
@@ -113,13 +150,42 @@ export class SyncManager extends EventEmitter {
                             source: "remote",
                         });
                     }
+                } else {
+                    // Same timestamp, check if content differs
+                    const {
+                        syncedAt: localSynced,
+                        updatedAt: localUpdated,
+                        ...localContent
+                    } = localRecord;
+                    const {
+                        syncedAt: remoteSynced,
+                        updatedAt: remoteUpdated,
+                        ...remoteContent
+                    } = remoteRecord;
+
+                    if (
+                        JSON.stringify(localContent) !==
+                        JSON.stringify(remoteContent)
+                    ) {
+                        // Content differs but timestamps are same, log conflict
+                        Logger.warn(
+                            `Conflict detected for ${tableName} record ${remoteRecord.id} - same timestamp but different content`
+                        );
+                        // Apply remote changes (last write wins default)
+                        await db(tableName)
+                            .where("id", remoteRecord.id)
+                            .update({
+                                ...remoteRecord,
+                                syncedAt: new Date().toISOString(),
+                            });
+                    }
                 }
             }
         }
 
         // 2. Push local changes
         const localChanges = await db(tableName)
-            .where("updatedAt", ">", lastSync)
+            .where("updatedAt", ">", lastSync.toISOString())
             .whereNull("syncedAt");
 
         Logger.info(
@@ -134,13 +200,17 @@ export class SyncManager extends EventEmitter {
                     .where("id", localRecord.id)
                     .first();
                 if (existingRemote) {
-                    // Update existing record
-                    await remoteDb!(tableName)
-                        .where("id", localRecord.id)
-                        .update({
-                            ...recordData,
-                            syncedAt: new Date().toISOString(),
-                        });
+                    const remoteTime = new Date(existingRemote.updatedAt);
+                    const localTime = new Date(localRecord.updatedAt);
+                    if (remoteTime >= localTime) {
+                        // Update existing record
+                        await remoteDb!(tableName)
+                            .where("id", localRecord.id)
+                            .update({
+                                ...recordData,
+                                syncedAt: new Date().toISOString(),
+                            });
+                    }
                 } else {
                     // Insert new record
                     await remoteDb!(tableName).insert({
@@ -154,7 +224,11 @@ export class SyncManager extends EventEmitter {
         }
         // 3. Update sync metadata
         const currentTime = new Date().toISOString();
-        const currentRevision = (syncMeta?.last_sync_revision || 0) + 1;
+        const currentRevision =
+            Math.max(
+                localSyncMeta?.last_sync_revision || 0,
+                remoteSyncMeta?.last_sync_revision || 0
+            ) + 1;
 
         await db("sync_metadata")
             .insert({
@@ -170,6 +244,87 @@ export class SyncManager extends EventEmitter {
                 last_sync_revision: currentRevision,
                 updated_at: currentTime,
             });
+        await remoteDb!("sync_metadata")
+            .insert({
+                table_name: tableName,
+                last_sync: currentTime,
+                last_sync_revision: currentRevision,
+                created_at: currentTime,
+                updated_at: currentTime,
+            })
+            .onConflict("table_name")
+            .merge({
+                last_sync: currentTime,
+                last_sync_revision: currentRevision,
+                updated_at: currentTime,
+            });
+    }
+    private async syncSyncMetadata(trx?: any): Promise<void> {
+        const db = trx || localDb;
+
+        try {
+            // Get all remote metadata
+            const remoteMetadata = await remoteDb!("sync_metadata").select("*");
+
+            for (const remoteMeta of remoteMetadata) {
+                const localMeta = await db("sync_metadata")
+                    .where("table_name", remoteMeta.table_name)
+                    .first();
+
+                if (!localMeta) {
+                    // Insert missing metadata
+                    await db("sync_metadata").insert(remoteMeta);
+                    Logger.info(
+                        `Inserted missing sync metadata for ${remoteMeta.table_name}`
+                    );
+                } else {
+                    // Update if remote is newer
+                    const remoteTime = new Date(remoteMeta.updated_at);
+                    const localTime = new Date(localMeta.updated_at);
+
+                    if (remoteTime > localTime) {
+                        await db("sync_metadata")
+                            .where("table_name", remoteMeta.table_name)
+                            .update(remoteMeta);
+                        Logger.info(
+                            `Updated sync metadata for ${remoteMeta.table_name}`
+                        );
+                    }
+                }
+            }
+
+            // Push local metadata to remote
+            const localMetadata = await db("sync_metadata").select("*");
+
+            for (const localMeta of localMetadata) {
+                const remoteMeta = await remoteDb!("sync_metadata")
+                    .where("table_name", localMeta.table_name)
+                    .first();
+
+                if (!remoteMeta) {
+                    // Insert to remote
+                    await remoteDb!("sync_metadata").insert(localMeta);
+                    Logger.info(
+                        `Pushed sync metadata for ${localMeta.table_name} to remote`
+                    );
+                } else {
+                    // Update remote if local is newer
+                    const localTime = new Date(localMeta.updated_at);
+                    const remoteTime = new Date(remoteMeta.updated_at);
+
+                    if (localTime > remoteTime) {
+                        await remoteDb!("sync_metadata")
+                            .where("table_name", localMeta.table_name)
+                            .update(localMeta);
+                        Logger.info(
+                            `Updated remote sync metadata for ${localMeta.table_name}`
+                        );
+                    }
+                }
+            }
+        } catch (error) {
+            Logger.error("Failed to sync metadata table:", error);
+        }
     }
     // Helper method to format order record for frontend
     private formatOrderForFrontend(record: any): any {
@@ -243,6 +398,11 @@ export class SyncManager extends EventEmitter {
             lastSync: new Date(), // TODO: Get from metadata
             retryCount: this.retryCount,
         };
+    }
+    destroy(): void {
+        this.stopPeriodicSync();
+        this.removeAllListeners();
+        Logger.info("SyncManager destroyed");
     }
 }
 export const syncManager = new SyncManager();
