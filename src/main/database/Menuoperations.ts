@@ -1,5 +1,6 @@
 import { localDb } from "./index.js";
 import { MenuItem, OrderItem } from "@/types/Menu.js";
+import { randomUUID } from "crypto";
 import Logger from "electron-log";
 
 export class MenuDatabaseOperations {
@@ -7,18 +8,20 @@ export class MenuDatabaseOperations {
     static async createMenuItem(menuItem: Omit<MenuItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<MenuItem> {
         try {
             const now = new Date().toISOString();
-            const id = `menu:${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-            
+            const id = randomUUID();
             const newMenuItem = {
                 id,
                 ...menuItem,
+                ingredients: menuItem.ingredients?.map((ingredient) => ingredient.trim()).join(","),
                 createdAt: now,
                 updatedAt: now,
             };
-
             await localDb("menu_items").insert(newMenuItem);
             Logger.info(`Menu item created: ${newMenuItem.name}`);
-            return newMenuItem;
+            return {
+                ...newMenuItem,
+                ingredients: newMenuItem.ingredients?.split(",")
+            };
         } catch (error) {
             Logger.error("Error creating menu item:", error);
             throw error;
@@ -31,7 +34,10 @@ export class MenuDatabaseOperations {
                 .where("isDeleted", false)
                 .orderBy("category", "asc")
                 .orderBy("name", "asc");
-            return rows;
+            return rows.map(row => ({
+                ...row,
+                ingredients: row.ingredients?.split(",")
+            }));
         } catch (error) {
             Logger.error("Error getting menu items:", error);
             throw error;
@@ -45,7 +51,10 @@ export class MenuDatabaseOperations {
                 .andWhere("isDeleted", false)
                 .andWhere("isAvailable", true)
                 .orderBy("name", "asc");
-            return rows;
+            return rows.map(row => ({
+                ...row,
+                ingredients: row.ingredients?.split(",")
+            }));
         } catch (error) {
             Logger.error(`Error getting menu items for category ${category}:`, error);
             throw error;
@@ -60,6 +69,7 @@ export class MenuDatabaseOperations {
                 .where("id", id)
                 .update({
                     ...updates,
+                    ingredients: updates.ingredients?.map((ingredient) => ingredient.trim()).join(","),
                     updatedAt: now,
                     syncedAt: null,
                 });
@@ -73,7 +83,7 @@ export class MenuDatabaseOperations {
             }
 
             Logger.info(`Menu item updated: ${id}`);
-            return updatedItem;
+            return {...updatedItem, ingredients: updatedItem.ingredients?.split(",")};
         } catch (error) {
             Logger.error("Error updating menu item:", error);
             throw error;

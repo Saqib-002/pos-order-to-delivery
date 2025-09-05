@@ -22,22 +22,44 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
     price: 0,
     category: "",
     isAvailable: true,
-    imageUrl: "",
     ingredients: [] as string[],
   });
 
   const [newIngredient, setNewIngredient] = useState("");
 
   useEffect(() => {
-    fetchMenuItems();
+    if(selectedCategory==="all"){
+      fetchMenuItems();
+    }else{
+      fetchMenuItemsByCategory(selectedCategory);
+    }
     fetchCategories();
-  }, [token]);
+  }, [token, selectedCategory]);
 
   const fetchMenuItems = async () => {
     try {
       setLoading(true);
-      const items = await (window as any).electronAPI.getMenuItems(token);
-      setMenuItems(items);
+      const res = await (window as any).electronAPI.getMenuItems(token);
+      if(!res.status){
+        toast.error("Unable to get menu items")
+        return;
+      }
+      setMenuItems(res.data);
+    } catch (error) {
+      toast.error("Failed to fetch menu items");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchMenuItemsByCategory = async (category:string) => {
+    try {
+      setLoading(true);
+      const res = await (window as any).electronAPI.getMenuItemsByCategory(token,category);
+      if(!res.status){
+        toast.error("Unable to get menu items")
+        return;
+      }
+      setMenuItems(res.data);
     } catch (error) {
       toast.error("Failed to fetch menu items");
     } finally {
@@ -47,8 +69,13 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
 
   const fetchCategories = async () => {
     try {
-      const cats = await (window as any).electronAPI.getCategories(token);
-      setCategories(cats);
+      const res = await (window as any).electronAPI.getCategories(token);
+      console.log(res);
+      if(!res.status){
+        toast.error("Unable to get categories")
+        return;
+      }
+      setCategories(res.data);
     } catch (error) {
       console.error("Failed to fetch categories:", error);
     }
@@ -70,41 +97,31 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
       toast.error("Please enter a valid price greater than 0");
       return;
     }
-
-    // Show form data in alert
-    const formData = {
-      name: newItem.name,
-      description: newItem.description,
-      price: newItem.price,
-      category: newItem.category,
-      isAvailable: newItem.isAvailable,
-      imageUrl: newItem.imageUrl,
-      ingredients: newItem.ingredients,
-    };
-    alert("Form Data:\n" + JSON.stringify(formData, null, 2));
-
-    // try {
-    //   const item = await (window as any).electronAPI.createMenuItem(
-    //     token,
-    //     newItem
-    //   );
-    //   setMenuItems([...menuItems, item]);
-    //   setNewItem({
-    //     name: "",
-    //     description: "",
-    //     price: 0,
-    //     category: "",
-    //     isAvailable: true,
-    //     imageUrl: "",
-    //     ingredients: [],
-    //   });
-    //   setIsAddModalOpen(false);
-    //   setNewIngredient("");
-    //   await fetchCategories(); // Refresh categories
-    //   toast.success("Menu item added successfully");
-    // } catch (error) {
-    //   toast.error("Failed to add menu item");
-    // }
+    try {
+      const res = await (window as any).electronAPI.createMenuItem(
+        token,
+        newItem
+      );
+      if (!res.status) {
+        toast.error("Failed to add menu item: ");
+        return;
+      }
+      setMenuItems([...menuItems, res.data]);
+      setNewItem({
+        name: "",
+        description: "",
+        price: 0,
+        category: "",
+        isAvailable: true,
+        ingredients: [],
+      });
+      setIsAddModalOpen(false);
+      setNewIngredient("");
+      await fetchCategories();
+      toast.success("Menu item added successfully");
+    } catch (error) {
+      toast.error("Failed to add menu item");
+    }
   };
 
   const handleUpdateItem = async (e: React.FormEvent) => {
@@ -124,21 +141,24 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
       toast.error("Please enter a valid price greater than 0");
       return;
     }
-
     try {
-      const updatedItem = await (window as any).electronAPI.updateMenuItem(
+      const res = await (window as any).electronAPI.updateMenuItem(
         token,
         editingItem.id,
         editingItem
       );
+      if (!res.status) {
+        toast.error("Failed to update menu item");
+        return;
+      }
       setMenuItems(
         menuItems.map((item) =>
-          item.id === updatedItem.id ? updatedItem : item
+          item.id === res.data.id ? res.data : item
         )
       );
       setEditingItem(null);
       setNewIngredient("");
-      await fetchCategories(); // Refresh categories
+      await fetchCategories();
       toast.success("Menu item updated successfully");
     } catch (error) {
       toast.error("Failed to update menu item");
@@ -149,9 +169,13 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
     if (!confirm("Are you sure you want to delete this menu item?")) return;
 
     try {
-      await (window as any).electronAPI.deleteMenuItem(token, id);
+      const res=await (window as any).electronAPI.deleteMenuItem(token, id);
+      if(!res.status){
+        toast.error("Failed to delete menu item: ")
+        return;
+      }
       setMenuItems(menuItems.filter((item) => item.id !== id));
-      await fetchCategories(); // Refresh categories
+      await fetchCategories();
       toast.success("Menu item deleted successfully");
     } catch (error) {
       toast.error("Failed to delete menu item");
@@ -159,12 +183,10 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
   };
 
   const filteredItems = menuItems.filter((item) => {
-    const matchesCategory =
-      selectedCategory === "all" || item.category === selectedCategory;
     const matchesSearch =
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesSearch;
   });
 
   const getCategoryLabel = (category: string) => {
@@ -555,7 +577,7 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
                         <div className="text-sm text-gray-900 max-w-xs">
                           {item.ingredients && item.ingredients.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
-                              {item.ingredients.map((ingredient, index) => (
+                              {item?.ingredients.map((ingredient, index) => (
                                 <span
                                   key={index}
                                   className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
@@ -673,7 +695,6 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
                   <input
                     type="number"
                     min="0"
-                    step="0.1"
                     value={newItem.price}
                     onChange={(e) =>
                       setNewItem({
@@ -728,20 +749,6 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
                     rows={3}
                     placeholder="Item description"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image URL
-                  </label>
-                  <input
-                    type="url"
-                    value={newItem.imageUrl}
-                    onChange={(e) =>
-                      setNewItem({ ...newItem, imageUrl: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
-                    placeholder="https://example.com/image.jpg"
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -946,22 +953,6 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
                     rows={3}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image URL
-                  </label>
-                  <input
-                    type="url"
-                    value={editingItem.imageUrl || ""}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem,
-                        imageUrl: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
                   />
                 </div>
                 <div className="md:col-span-2">

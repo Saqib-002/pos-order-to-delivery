@@ -20,7 +20,6 @@ interface MenuItem {
   price: number;
   category: string;
   isAvailable: boolean;
-  imageUrl?: string;
   createdAt: string;
   updatedAt: string;
   syncedAt?: string;
@@ -53,13 +52,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getOrderById: (token:string,id: string) => ipcRenderer.invoke('get-order-by-id', token, id),
 
   // User operations
-  registerUser: (userData:Omit<User, 'id' | 'syncAt' | 'createdAt' | 'updatedAt'>) => ipcRenderer.invoke('register-user', userData),
+  registerUser: (token:string,userData:Omit<User, 'id' | 'syncAt' | 'createdAt' | 'updatedAt'>) => ipcRenderer.invoke('register-user',token, userData),
   loginUser: (credentials:{ username: string; userPassword: string }) => ipcRenderer.invoke('login-user', credentials),
   logoutUser: (token:string) => ipcRenderer.invoke('logout-user', token),
   getUsers: (token:string) => ipcRenderer.invoke('get-users', token),
   updateUser: (token:string, userData:Partial<User> & { id: string }) => ipcRenderer.invoke('update-user', token, userData),
   deleteUser: (token:string, userId:string) => ipcRenderer.invoke('delete-user', token, userId),
-  verifyToken: (token:string) => ipcRenderer.invoke('verify-token', token),
 
   // menu item operations
   createMenuItem: (token: string, menuItemData: Omit<MenuItem, 'id' | 'createdAt' | 'updatedAt'>) => 

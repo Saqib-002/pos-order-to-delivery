@@ -5,12 +5,12 @@
 export async function up(knex) {
   return knex.schema.createTable('menu_items', function(table) {
     table.string('id').primary();
-    table.string('name').notNullable();
+    table.string('name').notNullable().unique();
     table.text('description');
     table.decimal('price', 10, 2).notNullable();
     table.string('category').notNullable();
     table.boolean('isAvailable').defaultTo(true);
-    table.string('imageUrl');
+    table.string('ingredients');
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
     table.timestamp('syncedAt');

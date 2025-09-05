@@ -18,6 +18,8 @@ export async function up(knex) {
     table.timestamp('deliveredAt');
     table.timestamp('syncedAt');
     table.boolean('isDeleted').defaultTo(false);
+    table.decimal('totalAmount', 10, 2).defaultTo(0);
+    table.text('notes');
     
     table.index(['status']);
     table.index(['customerPhone']);

@@ -27,8 +27,12 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const users = await (window as any).electronAPI.getUsers(token);
-      setUsers(users);
+      const res = await (window as any).electronAPI.getUsers(token);
+      if (!res.status) {
+        toast.error(res.error || "Failed to fetch users");
+        return;
+      }
+      setUsers(res.data);
     } catch (error) {
       toast.error("Failed to fetch users");
     } finally {
@@ -50,7 +54,7 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
     }
     if (!newUser.name.trim()) {
       toast.error("Please enter a name");
-      return;
+      return; 
     }
     if (!newUser.email.trim()) {
       toast.error("Please enter an email");
@@ -58,7 +62,12 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
     }
 
     try {
-      const user = await (window as any).electronAPI.registerUser(newUser);
+      const res = await (window as any).electronAPI.registerUser(token,newUser);
+      if (!res.status) {
+        toast.error("Failed to add user");
+        return;
+      }
+      const user = res.data;
       setUsers([...users, user]);
       setNewUser({
         username: "",
@@ -93,14 +102,21 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
     }
 
     try {
-      const updatedUser = await (window as any).electronAPI.updateUser(
+      const res = await (window as any).electronAPI.updateUser(
         token,
         editingUser
       );
-      setUsers(users.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
+      console.log(res);
+      console.log(!res.status);
+      if (!res.status) {
+        toast.error(res.error || "Failed to update user");
+        return;
+      }
+      setUsers(users.map((u) => (u.id === res.data.id ? res.data : u)));
       setEditingUser(null);
       toast.success("User updated successfully");
     } catch (error) {
+      console.log(error);
       toast.error("Failed to update user");
     }
   };
@@ -109,7 +125,11 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
     if (!confirm("Are you sure you want to delete this user?")) return;
 
     try {
-      await (window as any).electronAPI.deleteUser(token, userId);
+      const res=await (window as any).electronAPI.deleteUser(token, userId);
+      if(!res.status){
+        toast.error(res.error || "Failed to delete user");
+        return;
+      }
       setUsers(users.filter((u) => u.id !== userId));
       toast.success("User deleted successfully");
     } catch (error) {

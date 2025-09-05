@@ -3,6 +3,7 @@ import { MenuDatabaseOperations } from "../database/Menuoperations.js";
 import { MenuItem, OrderItem } from "@/types/Menu.js";
 import { syncManager } from "../database/sync.js";
 import Logger from "electron-log";
+import { verifyToken } from "./auth.js";
 
 // Menu Items Handlers
 export const createMenuItem = async (
@@ -11,24 +12,35 @@ export const createMenuItem = async (
     menuItemData: Omit<MenuItem, 'id' | 'createdAt' | 'updatedAt'>
 ) => {
     try {
+        await verifyToken(event,token);
         const result = await MenuDatabaseOperations.createMenuItem(menuItemData);
-        
-        // Trigger sync after creation
-        setTimeout(() => syncManager.syncWithRemote(), 100);
-        
-        return result;
+        return {
+            status: true,
+            data: result
+        };
     } catch (error) {
         Logger.error("Error creating menu item:", error);
-        throw error;
+        return {
+            status: false,
+            error:(error as Error).message
+        }
     }
 };
 
-export const getMenuItems = async (event: IpcMainInvokeEvent, token: string) => {
+export const getMenuItems = async (event: IpcMainInvokeEvent,token: string) => {
     try {
-        return await MenuDatabaseOperations.getMenuItems();
+        await verifyToken(event,token);
+        const res=await MenuDatabaseOperations.getMenuItems();
+        return {
+            status:true,
+            data:res
+        }
     } catch (error) {
         Logger.error("Error getting menu items:", error);
-        throw error;
+        return {
+            status: false,
+            error:(error as Error).message
+        }
     }
 };
 
@@ -38,10 +50,17 @@ export const getMenuItemsByCategory = async (
     category: string
 ) => {
     try {
-        return await MenuDatabaseOperations.getMenuItemsByCategory(category);
+        const res= await MenuDatabaseOperations.getMenuItemsByCategory(category);
+        return {
+            status:true,
+            data:res
+        }
     } catch (error) {
         Logger.error("Error getting menu items by category:", error);
-        throw error;
+        return {
+            status: false,
+            error:(error as Error).message
+        }
     }
 };
 
@@ -53,14 +72,16 @@ export const updateMenuItem = async (
 ) => {
     try {
         const result = await MenuDatabaseOperations.updateMenuItem(id, updates);
-        
-        // Trigger sync after update
-        setTimeout(() => syncManager.syncWithRemote(), 100);
-        
-        return result;
+        return {
+            status:true,
+            data:result
+        };
     } catch (error) {
         Logger.error("Error updating menu item:", error);
-        throw error;
+        return {
+            status: false,
+            error:(error as Error).message
+        }
     }
 };
 
@@ -71,14 +92,19 @@ export const deleteMenuItem = async (
 ) => {
     try {
         await MenuDatabaseOperations.deleteMenuItem(id);
-        
-        // Trigger sync after deletion
-        setTimeout(() => syncManager.syncWithRemote(), 100);
-        
         Logger.info(`Menu item ${id} deleted successfully`);
+        return {
+            status:true,
+            data:{
+                message:`Menu item ${id} deleted successfully`
+            }
+        }
     } catch (error) {
         Logger.error(`Error deleting menu item ${id}:`, error);
-        throw error;
+        return {
+            status: false,
+            error:(error as Error).message
+        }
     }
 };
 
@@ -88,19 +114,33 @@ export const getMenuItemById = async (
     id: string
 ) => {
     try {
-        return await MenuDatabaseOperations.getMenuItemById(id);
+        const res= await MenuDatabaseOperations.getMenuItemById(id);
+        return {
+            status:true,
+            data:res
+        }
     } catch (error) {
         Logger.error("Error getting menu item by id:", error);
-        throw error;
+        return {
+            status: false,
+            error:(error as Error).message
+        }
     }
 };
 
 export const getCategories = async (event: IpcMainInvokeEvent, token: string) => {
     try {
-        return await MenuDatabaseOperations.getCategories();
+        const res= await MenuDatabaseOperations.getCategories();
+        return {
+            status:true,
+            data:res
+        }
     } catch (error) {
         Logger.error("Error getting categories:", error);
-        throw error;
+        return {
+            status: false,
+            error:(error as Error).message
+        }
     }
 };
 

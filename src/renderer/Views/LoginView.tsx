@@ -12,10 +12,16 @@ export const LoginView: React.FC<{
     e.preventDefault();
     setIsLoading(true);
     try {
-      const { token, user } = await (window as any).electronAPI.loginUser({
+      const res = await (window as any).electronAPI.loginUser({
         username,
         userPassword: password,
       });
+      if (!res.status) {
+        toast.error("Login failed. Please check your credentials.");
+        setIsLoading(false);
+        return;
+      }
+      const { token, user } = res;
       onLogin(token, user);
       toast.success(`Welcome, ${user.name}!`);
     } catch (error) {

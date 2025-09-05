@@ -50,6 +50,8 @@ export class SyncManager extends EventEmitter {
             await localDb.transaction(async (trx) => {
                 await this.syncTable("users", trx);
                 await this.syncTable("orders", trx);
+                await this.syncTable("menu_items", trx);
+                await this.syncTable("order_items", trx);
                 await this.syncSyncMetadata(trx);
             });
 

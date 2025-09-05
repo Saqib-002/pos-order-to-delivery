@@ -5,7 +5,6 @@ export interface MenuItem {
   price: number;
   category: string;
   isAvailable: boolean;
-  imageUrl?: string;
   ingredients?: string[];
   createdAt: string;
   updatedAt: string;

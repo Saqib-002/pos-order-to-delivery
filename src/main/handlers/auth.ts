@@ -9,21 +9,23 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 // In-memory session store (keep existing functionality)
 const sessions: { [token: string]: { userId: string; role: string; expires: number } } = {};
 
-export async function registerUser(_: any, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<Omit<User,'syncAt'>> {
+export async function registerUser(_: any,token:string, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<{ status: boolean; data?: Omit<User, 'syncAt'>,error?:string }> {
   try {
     const result = await UserDatabaseOperations.registerUser(userData);
-    
-    // Trigger sync after registration
-    setTimeout(() => syncManager.syncWithRemote(), 100);
-    
-    return result;
+    return {
+      status:true,
+      data:result
+    };
   } catch (error) {
     Logger.error('Error registering user:', error);
-    throw new Error('Failed to register user');
+    return {
+      status:false,
+      error:(error as Error).message
+    }
   }
 }
 
-export async function loginUser(_: any, { username, userPassword }: { username: string; userPassword: string }): Promise<{ token: string; user: Omit<User, 'password'|'syncAt'> }> {
+export async function loginUser(_: any, { username, userPassword }: { username: string; userPassword: string }): Promise<{ token: string;status:boolean; user: Omit<User, 'password'|'syncAt'> }> {
   try {
     const { token, user } = await UserDatabaseOperations.loginUser(username, userPassword);
     
@@ -35,10 +37,10 @@ export async function loginUser(_: any, { username, userPassword }: { username: 
       expires: Date.now() + 3600000 
     };
     
-    return { token, user };
+    return { token, user,status:true };
   } catch (error) {
     Logger.error('Error logging in:', error);
-    throw new Error('Invalid credentials');
+    return { token: '', user: {} as Omit<User, 'password'|'syncAt'>,status:false};
   }
 }
 
@@ -46,55 +48,76 @@ export async function logoutUser(_: any, token: string): Promise<void> {
   delete sessions[token];
 }
 
-export async function getUsers(_: any, token: string): Promise<Omit<User, 'password'|'syncAt'>[]> {
+export async function getUsers(_: any, token: string): Promise<{status:boolean;error?:string;data:Omit<User, 'password'|'syncAt'>[]}> {
   if (!isAdmin(token)) {
-    throw new Error('Unauthorized: Admin access required');
+    return {
+      status: false,
+      error: 'Unauthorized: Admin access required',
+      data: []
+    }
   }
-
   try {
-    return await UserDatabaseOperations.getUsers();
+    const res= await UserDatabaseOperations.getUsers();
+    return {
+      status: true,
+      data: res
+    }
   } catch (error) {
     Logger.error('Error fetching users:', error);
-    throw new Error('Failed to fetch users');
+    return {
+      status: false,
+      error: 'Failed to fetch users',
+      data: []
+    }
   }
 }
 
-export async function updateUser(_: any, token: string, userData: Partial<User> & { id: string }): Promise<Omit<User,'syncAt'>> {
+export async function updateUser(_: any, token: string, userData: Partial<User> & { id: string }): Promise<{status:boolean;error?:string;data:Omit<User,'syncAt'>}> {
   if (!isAdmin(token)) {
-    throw new Error('Unauthorized: Admin access required');
+    return {
+      status: false,
+      error: 'Unauthorized: Admin access required',
+      data: {} as Omit<User,'syncAt'>
+    }
   }
 
   try {
     const result = await UserDatabaseOperations.updateUser(userData);
-    
-    // Trigger sync after update
-    setTimeout(() => syncManager.syncWithRemote(), 100);
-    
-    return result;
+    return {
+      status: true,
+      data: result
+    }
   } catch (error) {
     Logger.error('Error updating user:', error);
-    throw new Error('Failed to update user');
+    return {
+      status: false,
+      error: 'Failed to update user',
+      data: {} as Omit<User,'syncAt'>
+    }
   }
 }
 
-export async function deleteUser(_: any, token: string, userId: string): Promise<void> {
+export async function deleteUser(_: any, token: string, userId: string): Promise<{status:boolean;error?:string}> {
   if (!isAdmin(token)) {
-    throw new Error('Unauthorized: Admin access required');
+    return {
+      status: false,
+      error: 'Unauthorized: Admin access required',
+    }
   }
 
   try {
     await UserDatabaseOperations.deleteUser(userId);
-    
-    // Trigger sync after deletion
-    setTimeout(() => syncManager.syncWithRemote(), 100);
-    
+    return { status: true };
   } catch (error) {
     Logger.error('Error deleting user:', error);
-    throw new Error('Failed to delete user');
+    return {
+      status: false,
+      error: 'Failed to delete user',
+    }
   }
 }
 
-export function verifyToken(_: any, token: string): { userId: string; role: string } {
+export function verifyToken(_:any,token: string): { userId: string; role: string } {
   try {
     const session = sessions[token];
     if (!session || session.expires < Date.now()) {
