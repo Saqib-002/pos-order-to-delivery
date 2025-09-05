@@ -6,6 +6,7 @@ export interface MenuItem {
   category: string;
   isAvailable: boolean;
   imageUrl?: string;
+  ingredients?: string[];
   createdAt: string;
   updatedAt: string;
   syncedAt?: string;
