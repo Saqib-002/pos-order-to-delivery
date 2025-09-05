@@ -15,7 +15,17 @@ import {
     updateUser,
     verifyToken,
 } from "./handlers/auth.js";
-import { syncManager } from "./database/sync.js";
+import {
+    createMenuItem,
+    getMenuItems,
+    getMenuItemsByCategory,
+    updateMenuItem,
+    deleteMenuItem,
+    getMenuItemById,
+    getCategories,
+    createOrderItem,
+    getOrderItems,
+ } from "./handlers/menu.js";
 
 export function registerIpcHandlers() {
     // Authentication handlers
@@ -71,5 +81,63 @@ export function registerIpcHandlers() {
     ipcMain.handle("get-order-by-id", async (event, token: string, id: string) => {
         await verifyToken(event, token);
         return getOrderById(event, id);
+    });
+    // Menu Item handlers
+    ipcMain.handle("create-menu-item", async (event, token: string, menuItemData: any) => {
+        const { role } = await verifyToken(event, token);
+        if (role !== "admin") {
+            throw new Error("Unauthorized: Admin access required");
+        }
+        return createMenuItem(event, token, menuItemData);
+    });
+
+    ipcMain.handle("get-menu-items", async (event, token: string) => {
+        await verifyToken(event, token);
+        return getMenuItems(event, token);
+    });
+
+    ipcMain.handle("get-menu-items-by-category", async (event, token: string, category: string) => {
+        await verifyToken(event, token);
+        return getMenuItemsByCategory(event, token, category);
+    });
+
+    ipcMain.handle("update-menu-item", async (event, token: string, id: string, updates: any) => {
+        const { role } = await verifyToken(event, token);
+        if (role !== "admin") {
+            throw new Error("Unauthorized: Admin access required");
+        }
+        return updateMenuItem(event, token, id, updates);
+    });
+
+    ipcMain.handle("delete-menu-item", async (event, token: string, id: string) => {
+        const { role } = await verifyToken(event, token);
+        if (role !== "admin") {
+            throw new Error("Unauthorized: Admin access required");
+        }
+        return deleteMenuItem(event, token, id);
+    });
+
+    ipcMain.handle("get-menu-item-by-id", async (event, token: string, id: string) => {
+        await verifyToken(event, token);
+        return getMenuItemById(event, token, id);
+    });
+
+    ipcMain.handle("get-categories", async (event, token: string) => {
+        await verifyToken(event, token);
+        return getCategories(event, token);
+    });
+
+    // Order Item handlers
+    ipcMain.handle("create-order-item", async (event, token: string, orderItemData: any) => {
+        const { role } = await verifyToken(event, token);
+        if (role !== "admin" && role !== "staff") {
+            throw new Error("Unauthorized: Admin or Staff access required");
+        }
+        return createOrderItem(event, token, orderItemData);
+    });
+
+    ipcMain.handle("get-order-items", async (event, token: string, orderId: string) => {
+        await verifyToken(event, token);
+        return getOrderItems(event, token, orderId);
     });
 }

@@ -13,6 +13,34 @@ interface User {
   syncAt: string;
   isDeleted?: boolean;
 }
+interface MenuItem {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  category: string;
+  isAvailable: boolean;
+  imageUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+  syncedAt?: string;
+  isDeleted?: boolean;
+}
+
+interface OrderItem {
+  id: string;
+  orderId: string;
+  menuItemId: string;
+  quantity: number;
+  unitPrice: number;
+  specialInstructions?: string;
+  createdAt: string;
+  updatedAt: string;
+  syncedAt?: string;
+  isDeleted?: boolean;
+  menuItem?: MenuItem;
+}
+
 const syncStatusCallbacks = new Set<(status: any) => void>();
 const orderChangeCallbacks = new Set<(change: any,event:any) => void>();
 
@@ -33,6 +61,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteUser: (token:string, userId:string) => ipcRenderer.invoke('delete-user', token, userId),
   verifyToken: (token:string) => ipcRenderer.invoke('verify-token', token),
 
+  // menu item operations
+  createMenuItem: (token: string, menuItemData: Omit<MenuItem, 'id' | 'createdAt' | 'updatedAt'>) => 
+    ipcRenderer.invoke('create-menu-item', token, menuItemData),
+  getMenuItems: (token: string) => ipcRenderer.invoke('get-menu-items', token),
+  getMenuItemsByCategory: (token: string, category: string) => 
+    ipcRenderer.invoke('get-menu-items-by-category', token, category),
+  updateMenuItem: (token: string, id: string, updates: Partial<MenuItem>) => 
+    ipcRenderer.invoke('update-menu-item', token, id, updates),
+  deleteMenuItem: (token: string, id: string) => ipcRenderer.invoke('delete-menu-item', token, id),
+  getMenuItemById: (token: string, id: string) => ipcRenderer.invoke('get-menu-item-by-id', token, id),
+  getCategories: (token: string) => ipcRenderer.invoke('get-categories', token),
+
+  // Order Item operations
+  createOrderItem: (token: string, orderItemData: Omit<OrderItem, 'id' | 'createdAt' | 'updatedAt'>) => 
+    ipcRenderer.invoke('create-order-item', token, orderItemData),
+  getOrderItems: (token: string, orderId: string) => ipcRenderer.invoke('get-order-items', token, orderId),
+
+
   // Order change notifications
   onOrderChange: (callback: (change: any) => void) => {
     const orderChangeCallback = (event: any, change: any) => {
@@ -47,4 +93,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.removeListener('order-change', orderChangeCallback);
     };
   },
+
+  
 });

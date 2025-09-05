@@ -1,17 +1,14 @@
 import { localDb } from "./index.js";
 import { Order } from "@/types/order.js";
+import { randomUUID } from "crypto";
 import Logger from "electron-log";
 
 export class OrderDatabaseOperations {
     static async saveOrder(order: Order): Promise<any> {
         try {
             const now = new Date().toISOString();
-
-            if (!order.id || !order.createdAt) {
-                order.id = `orders:${now}`;
-                order.createdAt = now;
-            }
-
+            order.id = randomUUID();
+            order.createdAt = now;
             if (!order.orderId) {
                 const day = order.createdAt.split("T")[0];
                 const dailyOrders = await localDb("orders")
@@ -19,9 +16,7 @@ export class OrderDatabaseOperations {
                     .count("* as count");
                 order.orderId = (Number(dailyOrders[0]?.count) || 0) + 1;
             }
-
             order.updatedAt = now;
-
             const result = await localDb("orders").insert({
                 id: order.id,
                 orderId: order.orderId,
@@ -34,6 +29,7 @@ export class OrderDatabaseOperations {
                 createdAt: order.createdAt,
                 updatedAt: order.updatedAt,
             });
+            console.log("Insert result:", result);
             return { id: order.id };
         } catch (error) {
             Logger.error("Error saving order:", error);
