@@ -1,7 +1,10 @@
 export interface Item {
+  id:string;
   name: string;
   quantity: number;
   ingredients?: string[];
+  customIngredients?: string[];
+  specialInstructions?: string;
   price?: number;
   category?: string;
 }
@@ -22,4 +25,5 @@ export interface Order {
   syncAt?: string;
   isDeleted?: boolean;
   deliveryPerson?: string;
+  notes?: string;
 }

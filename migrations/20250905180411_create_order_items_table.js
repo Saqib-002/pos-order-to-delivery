@@ -8,8 +8,8 @@ export async function up(knex) {
     table.string('orderId').notNullable();
     table.string('menuItemId').notNullable();
     table.integer('quantity').notNullable().defaultTo(1);
-    table.decimal('unitPrice', 10, 2).notNullable();
     table.text('specialInstructions');
+    table.string('customIngredients');
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
     table.timestamp('syncedAt');

@@ -28,7 +28,6 @@ const App: React.FC = () => {
       orderChangeCleanupRef.current = null;
     }
     const cleanup = (window as any).electronAPI.onOrderChange((change: any) => {
-      console.log("Order change received:", change);
       handleOrderChange({ auth, change, setOrders, audioRef });
     });
     orderChangeCleanupRef.current = cleanup;
@@ -38,7 +37,11 @@ const App: React.FC = () => {
       }
     };
   }, [auth.token]);
-
+  const refreshOrderCallback = () => {
+    if (auth.token) {
+      refreshOrders(setOrders, auth.token);
+    }
+  };
   const handleLogin = (newToken: string, newUser: Omit<User, "password">) => {
     setAuth({ token: newToken, user: newUser });
     setView(VIEWS.ORDER);
@@ -62,7 +65,7 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (view) {
       case "order":
-        return <OrderView orders={orders} token={auth.token} />;
+        return <OrderView orders={orders} token={auth.token} refreshOrderCallback={refreshOrderCallback} />;
       case "kitchen":
         if (auth.user?.role === "admin" || auth.user?.role === "kitchen") {
           return (

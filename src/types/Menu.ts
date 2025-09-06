@@ -17,7 +17,7 @@ export interface OrderItem {
   orderId: string;
   menuItemId: string;
   quantity: number;
-  unitPrice: number;
+  customIngredients?: string[];
   specialInstructions?: string;
   createdAt: string;
   updatedAt: string;

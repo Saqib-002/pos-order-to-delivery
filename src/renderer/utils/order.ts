@@ -88,8 +88,12 @@ export const handleOrderChange = ({
 
 export const refreshOrders = async (setOrders: React.Dispatch<React.SetStateAction<Order[]>>, token: string) => {
     try {
-      const results = await (window as any).electronAPI.getOrders(token);
-      setOrders(results);
+      const res = await (window as any).electronAPI.getOrders(token);
+      if (!res.status) {
+        showToast.error("Error fetching orders");
+        return;
+      }
+      setOrders(res.data || []);
     } catch (error) {
       console.error("Error refreshing orders:", error);
       showToast.error("Error fetching orders");

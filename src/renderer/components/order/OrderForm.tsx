@@ -7,12 +7,14 @@ interface OrderFormProps {
   onClose: () => void;
   selectedOrder: Order | null;
   token: string | null;
+  refreshOrders: () => void;
 }
 
 export const OrderForm: React.FC<OrderFormProps> = ({
   onClose,
   selectedOrder,
   token,
+  refreshOrders
 }) => {
   const [customer, setCustomer] = useState({
     name: "",
@@ -50,7 +52,13 @@ export const OrderForm: React.FC<OrderFormProps> = ({
           customer,
           items: currentOrderedItems,
         };
-        await (window as any).electronAPI.updateOrder(token, updatedOrder);
+        const res=await (window as any).electronAPI.updateOrder(token, updatedOrder);
+        if(!res.status){
+          toast.error(res.error || "Failed to update order. Please try again.");
+          return;
+        }
+        refreshOrders();
+        toast.success("Order updated successfully");
         onClose();
       } catch (error) {
         toast.error("Failed to update order. Please try again.");
@@ -60,14 +68,19 @@ export const OrderForm: React.FC<OrderFormProps> = ({
       return;
     }
     try {
-      const order: Order = {
-        id: new Date().toISOString(),
+      const order: Omit<Order,"id"|"createdAt"> = {
         customer,
         items: currentOrderedItems,
         status: "Sent to Kitchen",
-        createdAt: new Date().toISOString(),
       };
-      await (window as any).electronAPI.saveOrder(token, order);
+      const res=await (window as any).electronAPI.saveOrder(token, order);
+      if(!res.status){
+        toast.error(res.error || "Failed to save order. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+      toast.success("Order sent to kitchen successfully");
+      refreshOrders();
       setCustomer({ name: "", phone: "", address: "" });
       setCurrentOrderedItems([]);
       onClose();
@@ -109,7 +122,10 @@ export const OrderForm: React.FC<OrderFormProps> = ({
               </p>
             </div>
             <button
-              onClick={onClose}
+              onClick={()=>{
+                refreshOrders();
+                onClose();
+              }}
               className="text-white hover:text-indigo-500 transition-colors duration-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20 cursor-pointer"
             >
               <svg
@@ -336,7 +352,10 @@ export const OrderForm: React.FC<OrderFormProps> = ({
           <div className="flex justify-between items-center">
             <button
               type="button"
-              onClick={onClose}
+              onClick={()=>{
+                onClose();
+                refreshOrders();
+              }}
               className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium cursor-pointer hover:scale-105"
             >
               Cancel

@@ -7,11 +7,13 @@ import { OrderForm } from "../components/order/OrderForm";
 interface OrderViewProps {
   orders: Order[];
   token: string | null;
+  refreshOrderCallback: () => void;
 }
 
 export const OrderView: React.FC<OrderViewProps> = ({
   token,
   orders,
+  refreshOrderCallback
 }: OrderViewProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -32,7 +34,6 @@ export const OrderView: React.FC<OrderViewProps> = ({
         toast.error("Unable to get menu items");
         return;
       }
-      console.log(res.data);
       setMenuItems(res.data);
     } catch (error) {
       toast.error("Failed to fetch menu items");
@@ -93,11 +94,16 @@ export const OrderView: React.FC<OrderViewProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isStatusDropdownOpen]);
-
-  const handleDeleteOrder = (id: string) => {
-    (window as any).electronAPI.deleteOrder(token, id).catch(() => {
+  const handleDeleteOrder =async (id: string) => {
+    const res=await (window as any).electronAPI.deleteOrder(token, id).catch(() => {
       toast.error("Error deleting order");
     });
+    if (!res.status) {
+      toast.error("Error deleting order");
+      return;
+    }
+    toast.success("Order deleted successfully");
+    refreshOrderCallback();
   };
 
   const getStatusColor = (status: string) => {
@@ -122,6 +128,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
         <OrderForm
           onClose={() => setIsAddOrderModelShown(false)}
           selectedOrder={selectedOrder}
+          refreshOrders={refreshOrderCallback}
           token={token}
         />
       )}
@@ -321,10 +328,6 @@ export const OrderView: React.FC<OrderViewProps> = ({
                     <button
                       type="button"
                       onClick={() => {
-                        console.log(
-                          "Dropdown button clicked, current state:",
-                          isStatusDropdownOpen
-                        );
                         setIsStatusDropdownOpen(!isStatusDropdownOpen);
                       }}
                       className="relative w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-left flex items-center justify-between hover:border-gray-400 transition-colors duration-200"
@@ -608,7 +611,6 @@ export const OrderView: React.FC<OrderViewProps> = ({
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log("Dropdown option clicked:", option.value);
                     setSelectedStatus(option.value);
                     setIsStatusDropdownOpen(false);
                   }}

@@ -106,8 +106,6 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
         token,
         editingUser
       );
-      console.log(res);
-      console.log(!res.status);
       if (!res.status) {
         toast.error(res.error || "Failed to update user");
         return;
@@ -116,7 +114,6 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
       setEditingUser(null);
       toast.success("User updated successfully");
     } catch (error) {
-      console.log(error);
       toast.error("Failed to update user");
     }
   };

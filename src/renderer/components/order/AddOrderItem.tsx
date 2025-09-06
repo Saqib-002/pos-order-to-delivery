@@ -104,10 +104,11 @@ const AddOrderItem = ({
     );
 
     const itemToAdd: Item = {
+      id: menuItem.id,
       name: menuItem.name,
       quantity: 1,
       ingredients:
-        filteredIngredients.length > 0 ? filteredIngredients : undefined,
+        filteredIngredients.length > 0 ? filteredIngredients : [],
       price: menuItem.price,
       category: menuItem.category,
     };
@@ -211,7 +212,7 @@ const AddOrderItem = ({
       updatedItems[editingItem.index] = {
         ...editingItem.item,
         ingredients:
-          filteredIngredients.length > 0 ? filteredIngredients : undefined,
+          filteredIngredients.length > 0 ? filteredIngredients : [],
       };
       setItems(updatedItems);
       setEditingItem(null);
