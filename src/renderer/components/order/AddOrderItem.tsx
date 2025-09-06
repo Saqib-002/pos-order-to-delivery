@@ -107,13 +107,39 @@ const AddOrderItem = ({
       id: menuItem.id,
       name: menuItem.name,
       quantity: 1,
-      ingredients:
-        filteredIngredients.length > 0 ? filteredIngredients : [],
+      ingredients: filteredIngredients.length > 0 ? filteredIngredients : [],
       price: menuItem.price,
       category: menuItem.category,
     };
 
-    setItems([...items, itemToAdd]);
+    // Check if an item with the same name and ingredients already exists
+    const existingItemIndex = items.findIndex((item) => {
+      // Compare name and ingredients arrays
+      const sameName = item.name === itemToAdd.name;
+      const itemIngredients = item.ingredients || [];
+      const addItemIngredients = itemToAdd.ingredients || [];
+      const sameIngredients =
+        itemIngredients.length === addItemIngredients.length &&
+        itemIngredients.every(
+          (ingredient, index) => ingredient === addItemIngredients[index]
+        );
+      return sameName && sameIngredients;
+    });
+
+    if (existingItemIndex !== -1) {
+      // Item already exists, increase quantity
+      const updatedItems = [...items];
+      updatedItems[existingItemIndex].quantity += 1;
+      setItems(updatedItems);
+      toast.success(
+        `Increased quantity of ${itemToAdd.name} to ${updatedItems[existingItemIndex].quantity}`
+      );
+    } else {
+      // New item, add to the list
+      setItems([...items, itemToAdd]);
+      toast.success(`Added ${itemToAdd.name} to order`);
+    }
+
     setSearchTerm("");
     setShowSearchResults(false);
     setSelectedMenuItem(null);
@@ -211,8 +237,7 @@ const AddOrderItem = ({
       const updatedItems = [...items];
       updatedItems[editingItem.index] = {
         ...editingItem.item,
-        ingredients:
-          filteredIngredients.length > 0 ? filteredIngredients : [],
+        ingredients: filteredIngredients.length > 0 ? filteredIngredients : [],
       };
       setItems(updatedItems);
       setEditingItem(null);
