@@ -25,7 +25,7 @@ import {
   getMenuItemsByName,
   getCategories
 } from "./handlers/menu.js";
-import { createDeliveryPerson, deleteDeliveryPerson, getDeliveryPersons, getDeliveryPersonStats, updateDeliveryPerson } from "./handlers/delivery.js";
+import { assignDeliveryPersonToOrder, createDeliveryPerson, deleteDeliveryPerson, getDeliveryPersons, getDeliveryPersonStats, updateDeliveryPerson } from "./handlers/delivery.js";
 
 export function registerIpcHandlers() {
   // Authentication handlers
@@ -59,4 +59,5 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-delivery-person-stats", getDeliveryPersonStats);
   ipcMain.handle("update-delivery-person", updateDeliveryPerson);
   ipcMain.handle("delete-delivery-person", deleteDeliveryPerson);
+  ipcMain.handle("assign-delivery-person", assignDeliveryPersonToOrder);
 }

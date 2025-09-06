@@ -1,19 +1,25 @@
 import { useEffect, useState } from "react";
 import { Order } from "@/types/order";
 import { CustomSelect } from "../components/ui/CustomSelect";
+import { toast } from "react-toastify";
 
 interface DeliveryViewProps {
   orders: Order[];
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
   token: string | null;
+  refreshOrderCallback: () => void;
 }
 
 export const DeliveryView: React.FC<DeliveryViewProps> = ({
   orders,
   setOrders,
   token,
+  refreshOrderCallback
 }) => {
-  const [deliveryPerson, setDeliveryPerson] = useState("");
+  const [deliveryPerson, setDeliveryPerson] = useState({
+    id:"",
+    name:"",
+  });
   const [deliveryPersons, setDeliveryPersons] = useState<
     {
       id: string;
@@ -52,19 +58,18 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
   };
 
   const getFilteredDeliveryPersons = () => {
-    if (!deliveryPerson.trim()) return [];
+    if (!deliveryPerson.name.trim()) return [];
     return deliveryPersons.filter((person) =>
-      person.name.toLowerCase().includes(deliveryPerson.toLowerCase())
+      person.name.toLowerCase().includes(deliveryPerson.name.toLowerCase())
     );
   };
 
-  const handleDeliveryPersonChange = (value: string) => {
-    setDeliveryPerson(value);
-    setShowDeliverySuggestions(value.trim().length > 0);
+  const handleDeliveryPersonChange = ({id,name}: {id: string, name: string}) => {
+    setDeliveryPerson({id,name});
+    setShowDeliverySuggestions(name.trim().length > 0);
   };
-
-  const selectDeliveryPerson = (name: string) => {
-    setDeliveryPerson(name);
+  const selectDeliveryPerson = ({id,name}: {id: string, name: string}) => {
+    setDeliveryPerson({id,name});
     setShowDeliverySuggestions(false);
   };
 
@@ -96,19 +101,18 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
   }, [orders, searchTerm, selectedDate]);
 
   const assignDelivery = async (order: Order) => {
-    if (!deliveryPerson.trim()) {
+    if (!deliveryPerson.name.trim()) {
       alert("Please enter delivery person name");
       return;
     }
     try {
-      const updatedOrder = {
-        ...order,
-        status: "Out for Delivery",
-        deliveryPersonId: deliveryPerson.trim(),
-      };
-      await (window as any).electronAPI.updateOrder(token, updatedOrder);
-      setOrders(orders.map((o) => (o.id === order.id ? updatedOrder : o)));
-      setDeliveryPerson("");
+      const res= await (window as any).electronAPI.assignDeliveryPerson(token,order.id,deliveryPerson.id);
+      if (!res.status) {
+        toast.error("Failed to assign delivery person");
+        return;
+      }
+      refreshOrderCallback();
+      setDeliveryPerson({id:"",name:""});
     } catch (error) {
       console.error("Failed to assign delivery:", error);
       alert("Failed to assign delivery. Please try again.");
@@ -336,10 +340,10 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                 <input
                   type="text"
                   placeholder="Search delivery person by name..."
-                  value={deliveryPerson}
-                  onChange={(e) => handleDeliveryPersonChange(e.target.value)}
+                  value={deliveryPerson.name}
+                  onChange={(e) => handleDeliveryPersonChange({id:deliveryPerson.id,name:e.target.value})}
                   onFocus={() =>
-                    setShowDeliverySuggestions(deliveryPerson.trim().length > 0)
+                    setShowDeliverySuggestions(deliveryPerson.name.trim().length > 0)
                   }
                   onBlur={() =>
                     setTimeout(() => setShowDeliverySuggestions(false), 200)
@@ -355,7 +359,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                         <button
                           key={person.id}
                           type="button"
-                          onClick={() => selectDeliveryPerson(person.name)}
+                          onClick={() => selectDeliveryPerson({id:person.id,name:person.name})}
                           className="w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors duration-150 border-b border-gray-100 last:border-b-0"
                         >
                           <div className="flex items-center justify-between">
@@ -382,14 +386,14 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
             <div className="flex items-end justify-end">
               <button
                 onClick={() => {
-                  if (deliveryPerson.trim()) {
+                  if (deliveryPerson.name.trim()) {
                     const firstOrder = filteredOrders[0];
                     if (firstOrder) {
                       assignDelivery(firstOrder);
                     }
                   }
                 }}
-                disabled={!deliveryPerson.trim() || filteredOrders.length === 0}
+                disabled={!deliveryPerson.name.trim() || filteredOrders.length === 0}
                 className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 <svg
@@ -601,7 +605,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2 min-w-[140px]">
                           <button
                             onClick={() => assignDelivery(order)}
-                            disabled={!deliveryPerson.trim()}
+                            disabled={!deliveryPerson.name.trim()}
                             className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105"
                           >
                             <svg

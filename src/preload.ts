@@ -104,6 +104,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getDeliveryPersonStats: (token: string,deliveryPersonId:string) => ipcRenderer.invoke("get-delivery-person-stats", token,deliveryPersonId),
   updateDeliveryPerson: (token: string,id:string,deliveryPersonData:Partial<DeliveryPerson>) => ipcRenderer.invoke("update-delivery-person", token,id, deliveryPersonData),
   deleteDeliveryPerson: (token: string,id:string,) => ipcRenderer.invoke("delete-delivery-person", token,id),
+  assignDeliveryPerson: (token: string,orderId:string,personId:string) => ipcRenderer.invoke("assign-delivery-person", token,orderId,personId),
 
   // Order Item operations
   createOrderItem: (

@@ -121,7 +121,7 @@ export class OrderDatabaseOperations {
                 status: order.status,
                 deliveryPersonId: order.deliveryPersonId,
                 updatedAt: now,
-                syncedAt: null,
+                
             });
             const existingItems = await trx("order_items")
                 .where("orderId", order.id)
@@ -148,7 +148,7 @@ export class OrderDatabaseOperations {
                         quantity: item.quantity,
                         specialInstructions: item.specialInstructions || "",
                         updatedAt: now,
-                        syncedAt: null,
+                        
                     });
                     processedKeys.add(key);
                 }else{
@@ -187,12 +187,12 @@ export class OrderDatabaseOperations {
             await trx("orders").where("id", id).update({
                 isDeleted: true,
                 updatedAt: now,
-                syncedAt: null,
+                
             });
             await trx("order_items").where("orderId", id).update({
                 isDeleted: true,
                 updatedAt: now,
-                syncedAt: null,
+                
             })
             trx.commit();
             return { id };

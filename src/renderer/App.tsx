@@ -61,7 +61,7 @@ const App: React.FC = () => {
   if (!auth.token) {
     return <LoginView onLogin={handleLogin} />;
   }
-
+  console.log(orders);
   const renderView = () => {
     switch (view) {
       case "order":
@@ -108,6 +108,7 @@ const App: React.FC = () => {
               orders={orders}
               setOrders={setOrders}
               token={auth.token}
+              refreshOrderCallback={refreshOrderCallback}
             />
           );
         }

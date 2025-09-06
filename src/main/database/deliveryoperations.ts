@@ -99,7 +99,7 @@ export class DeliveryDatabaseOperations {
                 .update({
                     ...updates,
                     updatedAt: now,
-                    syncedAt: null,
+                    
                 });
 
             const updatedPerson = await localDb("delivery_persons")
@@ -125,7 +125,7 @@ export class DeliveryDatabaseOperations {
             await localDb("delivery_persons").where("id", id).update({
                 isDeleted: true,
                 updatedAt: now,
-                syncedAt: null,
+                
             });
 
             Logger.info(`Delivery person deleted: ${id}`);
@@ -139,34 +139,16 @@ export class DeliveryDatabaseOperations {
         orderId: string,
         deliveryPersonId: string
     ): Promise<void> {
-        const trx = await localDb.transaction();
         try {
             const now = new Date().toISOString();
-
             // Update the order with delivery person assignment
-            await trx("orders").where("id", orderId).update({
+            await localDb("orders").where("id", orderId).update({
                 deliveryPersonId: deliveryPersonId,
                 assignedAt: now,
                 status: "Out for Delivery",
                 updatedAt: now,
-                syncedAt: null,
             });
-
-            // Update delivery person's total deliveries count
-            await trx("delivery_persons")
-                .where("id", deliveryPersonId)
-                .increment("totalDeliveries", 1)
-                .update({
-                    updatedAt: now,
-                    syncedAt: null,
-                });
-
-            await trx.commit();
-            Logger.info(
-                `Delivery person ${deliveryPersonId} assigned to order ${orderId}`
-            );
         } catch (error) {
-            await trx.rollback();
             throw error;
         }
     }
@@ -179,7 +161,6 @@ export class DeliveryDatabaseOperations {
             await localDb("orders").where("id", orderId).update({
                 pickedUpAt: now,
                 updatedAt: now,
-                syncedAt: null,
             });
 
             Logger.info(`Order ${orderId} marked as picked up`);

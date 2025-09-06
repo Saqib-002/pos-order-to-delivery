@@ -77,7 +77,7 @@ export class MenuDatabaseOperations {
             ?.map((ingredient) => ingredient.trim())
             .join(","),
           updatedAt: now,
-          syncedAt: null,
+          
         });
 
       const updatedItem = await localDb("menu_items").where("id", id).first();
@@ -103,7 +103,7 @@ export class MenuDatabaseOperations {
       await localDb("menu_items").where("id", id).update({
         isDeleted: true,
         updatedAt: now,
-        syncedAt: null,
+        
       });
 
       Logger.info(`Menu item deleted: ${id}`);

@@ -115,7 +115,7 @@ export class UserDatabaseOperations {
         name: userData.name,
         email: userData.email,
         updatedAt: now,
-        syncedAt: null
+        
       };
 
       if (userData.password) {
@@ -167,7 +167,7 @@ export class UserDatabaseOperations {
         .update({
           isDeleted: true,
           updatedAt: new Date().toISOString(),
-          syncedAt: null
+          
         });
     } catch (error) {
       throw error;

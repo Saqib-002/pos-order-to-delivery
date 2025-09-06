@@ -1,7 +1,6 @@
 import { IpcMainInvokeEvent } from "electron";
 import { DeliveryDatabaseOperations } from "../database/deliveryoperations.js";
 import { DeliveryPerson } from "@/types/delivery.js";
-import { syncManager } from "../database/sync.js";
 import Logger from "electron-log";
 import { verifyToken } from "./auth.js";
 
@@ -127,10 +126,6 @@ export const assignDeliveryPersonToOrder = async (
   try {
     await verifyToken(event, token);
     await DeliveryDatabaseOperations.assignDeliveryPerson(orderId, deliveryPersonId);
-    
-    // Trigger sync after assignment
-    setTimeout(() => syncManager.syncWithRemote(), 100);
-    
     Logger.info(`Delivery person ${deliveryPersonId} assigned to order ${orderId}`);
     return {
       status: true,
@@ -156,10 +151,6 @@ export const markOrderPickedUp = async (
   try {
     await verifyToken(event, token);
     await DeliveryDatabaseOperations.markOrderPickedUp(orderId);
-    
-    // Trigger sync after update
-    setTimeout(() => syncManager.syncWithRemote(), 100);
-    
     Logger.info(`Order ${orderId} marked as picked up`);
     return {
       status: true,
