@@ -70,7 +70,6 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
   const fetchCategories = async () => {
     try {
       const res = await (window as any).electronAPI.getCategories(token);
-      console.log(res);
       if(!res.status){
         toast.error("Unable to get categories")
         return;

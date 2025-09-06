@@ -20,14 +20,29 @@ export const OrderView: React.FC<OrderViewProps> = ({
         useState<boolean>(false);
     const [isAddOrderModelShown, setIsAddOrderModelShown] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-
+    const [loading, setLoading] = useState(false);
+    const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
     const statusDropdownRef = useRef<HTMLDivElement>(null);
-
+    const fetchMenuItems = async () => {
+    try {
+      setLoading(true);
+      const res = await (window as any).electronAPI.getMenuItems(token);
+      if(!res.status){
+        toast.error("Unable to get menu items")
+        return;
+      }
+      setMenuItems(res.data);
+    } catch (error) {
+      toast.error("Failed to fetch menu items");
+    } finally {
+      setLoading(false);
+    }
+  };
     // Filter orders based on search term, date, and status
     useEffect(() => {
+        fetchMenuItems();
         let filtered = orders;
-
         if (searchTerm) {
             filtered = filtered.filter(
                 (order) =>
@@ -55,7 +70,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
 
         setFilteredOrders(filtered);
     }, [orders, searchTerm, selectedDate, selectedStatus]);
-
+    console.log("Menu Items:",menuItems)
     // Handle click outside dropdown
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
