@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Order } from "@/types/order";
+import { toast } from "react-toastify";
 
 interface KitchenViewProps {
     orders: Order[];
@@ -42,7 +43,12 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
   const markAsReady = async (order: Order) => {
     try {
       const updatedOrder = { ...order, status: "Ready for Delivery" };
-      await (window as any).electronAPI.updateOrder(token,updatedOrder);
+      const res=await (window as any).electronAPI.updateOrder(token,updatedOrder);
+      if (!res.status) {
+        toast.error("Failed to update order");
+        return;
+      }
+      toast.success("Order marked as ready");
       setOrders(orders.map((o) => (o.id === order.id ? updatedOrder : o)));
     } catch (error) {
       console.error("Failed to update order:", error);

@@ -30,13 +30,18 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
   const fetchDeliveryPersons = async () => {
     try {
       setLoading(true);
-      const users = await (window as any).electronAPI.getUsers(token);
+      const res = await (window as any).electronAPI.getUsers(token);
+      if(!res.status){
+        toast.error("Failed to fetch delivery personnel");
+        return;
+      }
       // Filter only delivery personnel
-      const deliveryUsers = users.filter(
+      const deliveryUsers = res.data.filter(
         (user: User) => user.role === "delivery"
       );
       setDeliveryPersons(deliveryUsers);
     } catch (error) {
+      console.log(error)
       toast.error("Failed to fetch delivery personnel");
     } finally {
       setLoading(false);
@@ -69,6 +74,7 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
         ...newDeliveryPerson,
         role: "delivery",
       };
+      console.log(userData);
       const user = await (window as any).electronAPI.registerUser(userData);
       setDeliveryPersons([...deliveryPersons, user]);
       setNewDeliveryPerson({
