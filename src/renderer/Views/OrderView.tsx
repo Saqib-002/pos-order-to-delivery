@@ -70,7 +70,6 @@ export const OrderView: React.FC<OrderViewProps> = ({
 
         setFilteredOrders(filtered);
     }, [orders, searchTerm, selectedDate, selectedStatus]);
-    console.log("Menu Items:",menuItems)
     // Handle click outside dropdown
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

@@ -17,7 +17,7 @@ export class OrderDatabaseOperations {
                 order.orderId = (Number(dailyOrders[0]?.count) || 0) + 1;
             }
             order.updatedAt = now;
-            const result = await localDb("orders").insert({
+            const newOrder={
                 id: order.id,
                 orderId: order.orderId,
                 customerName: order.customer.name,
@@ -28,9 +28,9 @@ export class OrderDatabaseOperations {
                 deliveryPerson: order.deliveryPerson,
                 createdAt: order.createdAt,
                 updatedAt: order.updatedAt,
-            });
-            console.log("Insert result:", result);
-            return { id: order.id };
+            }
+            await localDb("orders").insert(newOrder);
+            return newOrder;
         } catch (error) {
             Logger.error("Error saving order:", error);
             throw error;

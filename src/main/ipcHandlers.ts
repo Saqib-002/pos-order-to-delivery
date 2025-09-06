@@ -37,11 +37,11 @@ export function registerIpcHandlers() {
     ipcMain.handle("delete-user", deleteUser);
 
     // Order handlers (with same authorization logic)
-    ipcMain.handle("save-order", async (event, token: string, order: any) => saveOrder(event, order));
-    ipcMain.handle("delete-order", async (event, token: string, id: string) => deleteOrder(event, id));
-    ipcMain.handle("get-orders", async (event, token: string) => getOrders());
-    ipcMain.handle("update-order", async (event, token: string, order: any) => updateOrder(event, order));
-    ipcMain.handle("get-order-by-id", async (event, token: string, id: string) => getOrderById(event, id));
+    ipcMain.handle("save-order", saveOrder);
+    ipcMain.handle("delete-order", deleteOrder);
+    ipcMain.handle("get-orders", getOrders);
+    ipcMain.handle("update-order", updateOrder);
+    ipcMain.handle("get-order-by-id", getOrderById);
 
     // Menu Item handlers
     ipcMain.handle("create-menu-item", createMenuItem);
