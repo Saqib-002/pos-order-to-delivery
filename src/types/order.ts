@@ -1,6 +1,9 @@
-export interface Item{
+export interface Item {
   name: string;
   quantity: number;
+  ingredients?: string[];
+  price?: number;
+  category?: string;
 }
 export interface Order {
   id: string;
@@ -9,7 +12,7 @@ export interface Order {
     phone: string;
     address: string;
   };
-  orderId?:number;
+  orderId?: number;
   items: Item[];
   status: string;
   createdAt: string;
