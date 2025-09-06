@@ -185,16 +185,23 @@ export class OrderDatabaseOperations {
     }
 
     static async deleteOrder(id: string): Promise<any> {
+        const trx=await localDb.transaction();
         try {
             const now = new Date().toISOString();
-            await localDb("orders").where("id", id).update({
+            await trx("orders").where("id", id).update({
                 isDeleted: true,
                 updatedAt: now,
                 syncedAt: null,
             });
-
+            await trx("order_items").where("orderId", id).update({
+                isDeleted: true,
+                updatedAt: now,
+                syncedAt: null,
+            })
+            trx.commit();
             return { id };
         } catch (error) {
+            trx.rollback();
             Logger.error("Error deleting order:", error);
             throw error;
         }
