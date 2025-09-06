@@ -124,7 +124,16 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
       return;
 
     try {
-      const res =await (window as any).electronAPI.deleteUser(token, userId);
+      const statsRes=await (window as any).electronAPI.getDeliveryPersonStats(token,userId);
+      if(!statsRes.status){
+        toast.error("Failed to fetch delivery person stats");
+        return;
+      }
+      if(statsRes.data.totalAssigned>0){
+        alert(`Cannot delete delivery person with ${statsRes.data.totalAssigned} assigned orders`);
+        return;
+      }
+      const res =await (window as any).electronAPI.deleteDeliveryPerson(token, userId);
       if (!res.status){
         toast.error("Failed to delete delivery person");
         return;

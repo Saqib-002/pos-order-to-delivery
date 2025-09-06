@@ -47,6 +47,26 @@ export const getDeliveryPersons = async (
     };
   }
 };
+export const getDeliveryPersonStats = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  deliveryPersonId: string
+) => {
+  try {
+    await verifyToken(event, token);
+    const result = await DeliveryDatabaseOperations.getDeliveryPersonStats(deliveryPersonId);
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    Logger.error("Error getting delivery person stats:", error);
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};
 
 
 // Update delivery person
@@ -178,27 +198,6 @@ export const getOrdersByDeliveryPerson = async (
   }
 };
 
-// Get delivery person statistics
-export const getDeliveryPersonStats = async (
-  event: IpcMainInvokeEvent,
-  token: string,
-  deliveryPersonId: string
-) => {
-  try {
-    await verifyToken(event, token);
-    const result = await DeliveryDatabaseOperations.getDeliveryPersonStats(deliveryPersonId);
-    return {
-      status: true,
-      data: result,
-    };
-  } catch (error) {
-    Logger.error("Error getting delivery person stats:", error);
-    return {
-      status: false,
-      error: (error as Error).message,
-    };
-  }
-};
 
 // Get available delivery persons
 export const getAvailableDeliveryPersons = async (

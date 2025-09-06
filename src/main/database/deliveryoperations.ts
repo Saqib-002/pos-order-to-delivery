@@ -124,7 +124,6 @@ export class DeliveryDatabaseOperations {
 
             await localDb("delivery_persons").where("id", id).update({
                 isDeleted: true,
-                isActive: false,
                 updatedAt: now,
                 syncedAt: null,
             });
