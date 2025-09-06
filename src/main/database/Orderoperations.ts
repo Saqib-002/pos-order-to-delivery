@@ -1,4 +1,3 @@
-import { OrderItem } from "@/types/Menu.js";
 import { localDb } from "./index.js";
 import { Order } from "@/types/order.js";
 import { randomUUID } from "crypto";
