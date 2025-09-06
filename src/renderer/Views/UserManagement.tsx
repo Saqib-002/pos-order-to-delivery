@@ -42,7 +42,6 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
 
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
-
     // Validate required fields
     if (!newUser.username.trim()) {
       toast.error("Please enter a username");
@@ -64,7 +63,7 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
     try {
       const res = await (window as any).electronAPI.registerUser(token,newUser);
       if (!res.status) {
-        toast.error("Failed to add user");
+        toast.error(res.error.includes("UNIQUE constraint failed: users.username")?"username already taken":"Failed to add user");
         return;
       }
       const user = res.data;
@@ -107,7 +106,7 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
         editingUser
       );
       if (!res.status) {
-        toast.error(res.error || "Failed to update user");
+        toast.error(res.error.includes("UNIQUE constraint failed: users.username")?"username already taken": "Failed to update user");
         return;
       }
       setUsers(users.map((u) => (u.id === res.data.id ? res.data : u)));

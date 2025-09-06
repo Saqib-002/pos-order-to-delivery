@@ -23,10 +23,9 @@ import {
   deleteMenuItem,
   getMenuItemById,
   getMenuItemsByName,
-  getCategories,
-  createOrderItem,
-  getOrderItems,
+  getCategories
 } from "./handlers/menu.js";
+import { createDeliveryPerson, deleteDeliveryPerson, getDeliveryPersons, updateDeliveryPerson } from "./handlers/delivery.js";
 
 export function registerIpcHandlers() {
   // Authentication handlers
@@ -54,16 +53,9 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-menu-items-by-name", getMenuItemsByName);
   ipcMain.handle("get-categories", getCategories);
 
-  // Order Item handlers
-  ipcMain.handle(
-    "create-order-item",
-    async (event, token: string, orderItemData: any) =>
-      createOrderItem(event, token, orderItemData)
-  );
-
-  ipcMain.handle(
-    "get-order-items",
-    async (event, token: string, orderId: string) =>
-      getOrderItems(event, token, orderId)
-  );
+  // delivery person hadnlers
+  ipcMain.handle("create-delivery-person", createDeliveryPerson);
+  ipcMain.handle("get-delivery-persons", getDeliveryPersons);
+  ipcMain.handle("update-delivery-person", updateDeliveryPerson);
+  ipcMain.handle("delete-delivery-person", deleteDeliveryPerson);
 }

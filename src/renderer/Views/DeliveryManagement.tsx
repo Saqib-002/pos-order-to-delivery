@@ -2,22 +2,23 @@ import { useState, useEffect } from "react";
 import { User } from "@/types/user";
 import { toast } from "react-toastify";
 import { CustomSelect } from "../components/ui/CustomSelect";
+import { DeliveryPerson } from "@/types/delivery";
 
 export const DeliveryManagement: React.FC<{ token: string | null }> = ({
   token,
 }) => {
   const [deliveryPersons, setDeliveryPersons] = useState<
-    Omit<User, "password">[]
+    DeliveryPerson[]
   >([]);
   const [newDeliveryPerson, setNewDeliveryPerson] = useState({
     name: "",
     email: "",
     phone: "",
     vehicleType: "bike",
-    licenseNumber: "",
+    licenseNo: "",
   });
   const [editingDeliveryPerson, setEditingDeliveryPerson] =
-    useState<User | null>(null);
+    useState<DeliveryPerson | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,16 +31,12 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
   const fetchDeliveryPersons = async () => {
     try {
       setLoading(true);
-      const res = await (window as any).electronAPI.getUsers(token);
+      const res = await (window as any).electronAPI.getDeliveryPersons(token);
       if(!res.status){
         toast.error("Failed to fetch delivery personnel");
         return;
       }
-      // Filter only delivery personnel
-      const deliveryUsers = res.data.filter(
-        (user: User) => user.role === "delivery"
-      );
-      setDeliveryPersons(deliveryUsers);
+      setDeliveryPersons(res.data);
     } catch (error) {
       console.log(error)
       toast.error("Failed to fetch delivery personnel");
@@ -64,25 +61,24 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
       toast.error("Please enter a phone number");
       return;
     }
-    if (!newDeliveryPerson.licenseNumber.trim()) {
+    if (!newDeliveryPerson.licenseNo.trim()) {
       toast.error("Please enter a license number");
       return;
     }
 
     try {
-      const userData = {
-        ...newDeliveryPerson,
-        role: "delivery",
-      };
-      console.log(userData);
-      const user = await (window as any).electronAPI.registerUser(userData);
-      setDeliveryPersons([...deliveryPersons, user]);
+      const res = await (window as any).electronAPI.createDeliveryPerson(token,newDeliveryPerson);
+      if (!res.status) {
+        toast.error(res.error.includes("UNIQUE constraint failed: delivery_persons.email")?"Email already exists":"Failed to add delivery person");
+        return;
+      }
+      await fetchDeliveryPersons();
       setNewDeliveryPerson({
         name: "",
         email: "",
         phone: "",
         vehicleType: "bike",
-        licenseNumber: "",
+        licenseNo: "",
       });
       setIsAddModalOpen(false);
       toast.success("Delivery person added successfully");
@@ -106,13 +102,16 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
     }
 
     try {
-      const updatedUser = await (window as any).electronAPI.updateUser(
+      const res = await (window as any).electronAPI.updateDeliveryPerson(
         token,
+        editingDeliveryPerson.id,
         editingDeliveryPerson
       );
-      setDeliveryPersons(
-        deliveryPersons.map((u) => (u.id === updatedUser.id ? updatedUser : u))
-      );
+      if (!res.status) {
+        toast.error(res.error.includes("UNIQUE constraint failed: delivery_persons.email")?"Email already exists":"Failed to update delivery person");
+        return;
+      }
+      await fetchDeliveryPersons();
       setEditingDeliveryPerson(null);
       toast.success("Delivery person updated successfully");
     } catch (error) {
@@ -125,8 +124,12 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
       return;
 
     try {
-      await (window as any).electronAPI.deleteUser(token, userId);
-      setDeliveryPersons(deliveryPersons.filter((u) => u.id !== userId));
+      const res =await (window as any).electronAPI.deleteUser(token, userId);
+      if (!res.status){
+        toast.error("Failed to delete delivery person");
+        return;
+      }
+      await fetchDeliveryPersons();
       toast.success("Delivery person deleted successfully");
     } catch (error) {
       toast.error("Failed to delete delivery person");
@@ -509,13 +512,13 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {(person as any).licenseNumber || "No license"}
+                          {(person as any).licenseNo || "No license"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2">
                         <button
                           onClick={() =>
-                            setEditingDeliveryPerson(person as User)
+                            setEditingDeliveryPerson(person as DeliveryPerson)
                           }
                           className="text-indigo-600 hover:text-indigo-900 flex items-center gap-1 hover:bg-indigo-50 px-2 py-1 rounded transition-colors duration-150 cursor-pointer hover:scale-105"
                         >
@@ -580,7 +583,7 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                       email: "",
                       phone: "",
                       vehicleType: "bike",
-                      licenseNumber: "",
+                      licenseNo: "",
                     });
                   }}
                   className="text-white hover:text-indigo-500 transition-colors duration-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20"
@@ -660,11 +663,11 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                   </label>
                   <input
                     type="text"
-                    value={newDeliveryPerson.licenseNumber}
+                    value={newDeliveryPerson.licenseNo}
                     onChange={(e) =>
                       setNewDeliveryPerson({
                         ...newDeliveryPerson,
-                        licenseNumber: e.target.value,
+                        licenseNo: e.target.value,
                       })
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
@@ -699,7 +702,7 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                       email: "",
                       phone: "",
                       vehicleType: "bike",
-                      licenseNumber: "",
+                      licenseNo: "",
                     });
                   }}
                   className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium cursor-pointer hover:scale-105"
@@ -802,11 +805,11 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                   </label>
                   <input
                     type="text"
-                    value={(editingDeliveryPerson as any).licenseNumber || ""}
+                    value={(editingDeliveryPerson as any).licenseNo || ""}
                     onChange={(e) =>
                       setEditingDeliveryPerson({
                         ...editingDeliveryPerson,
-                        licenseNumber: e.target.value,
+                        licenseNo: e.target.value,
                       } as any)
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"

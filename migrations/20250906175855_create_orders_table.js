@@ -10,22 +10,24 @@ export async function up(knex) {
     table.string('customerPhone').notNullable();
     table.text('customerAddress').notNullable();
     table.string('status').notNullable().defaultTo('Sent to Kitchen');
-    table.string('deliveryPerson');
     table.text('notes');
     table.decimal('discount').defaultTo(0);
     table.decimal('tax').defaultTo(0);
+    table.string('deliveryPersonId');
+    table.timestamp('assignedAt');
+    table.timestamp('pickedUpAt');
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
     table.timestamp('cancelledAt');
     table.timestamp('deliveredAt');
     table.timestamp('syncedAt');
     table.boolean('isDeleted').defaultTo(false);
-    
     table.index(['status']);
     table.index(['customerPhone']);
     table.index(['createdAt']);
     table.index(['updatedAt']);
     table.index(['orderId']);
+    table.foreign('deliveryPersonId').references('id').inTable('delivery_persons').onDelete('SET NULL');
   });
 };
 

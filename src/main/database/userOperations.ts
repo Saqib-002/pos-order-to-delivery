@@ -38,7 +38,6 @@ export class UserDatabaseOperations {
         updatedAt: user.updatedAt
       };
     } catch (error) {
-      Logger.error('Error registering user:', error);
       throw error;
     }
   }
@@ -78,7 +77,6 @@ export class UserDatabaseOperations {
         }
       };
     } catch (error) {
-      Logger.error('Error logging in:', error);
       throw error;
     }
   }
@@ -102,7 +100,6 @@ export class UserDatabaseOperations {
         updatedAt: row.updatedAt
       }));
     } catch (error) {
-      Logger.error('Error fetching users:', error);
       throw error;
     }
   }
@@ -144,7 +141,6 @@ export class UserDatabaseOperations {
         updatedAt: updatedUser.updatedAt
       };
     } catch (error) {
-      Logger.error('Error updating user:', error);
       throw error;
     }
   }
@@ -156,7 +152,6 @@ export class UserDatabaseOperations {
       }
       return { userId: session.userId, role: session.role };
     } catch (error) {
-      Logger.error('Error verifying token:', error);
       throw new Error('Invalid or expired token');
     }
   }
@@ -175,7 +170,6 @@ export class UserDatabaseOperations {
           syncedAt: null
         });
     } catch (error) {
-      Logger.error('Error deleting user:', error);
       throw error;
     }
   }

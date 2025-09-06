@@ -91,7 +91,7 @@ export async function updateUser(_: any, token: string, userData: Partial<User> 
     Logger.error('Error updating user:', error);
     return {
       status: false,
-      error: 'Failed to update user',
+      error: (error as Error).message,
       data: {} as Omit<User,'syncAt'>
     }
   }

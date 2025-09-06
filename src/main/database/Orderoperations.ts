@@ -57,7 +57,6 @@ export class OrderDatabaseOperations {
             return order;
         } catch (error) {
             await trx.rollback();
-            Logger.error("Error saving order:", error);
             throw error;
         }
     }
@@ -106,7 +105,6 @@ export class OrderDatabaseOperations {
             }
             return orders;
         } catch (error) {
-            Logger.error("Error getting orders:", error);
             throw error;
         }
     }
@@ -179,7 +177,6 @@ export class OrderDatabaseOperations {
             return order;
         } catch (error) {
             await trx.rollback();
-            Logger.error("Error updating order:", error);
             throw error;
         }
     }
@@ -202,7 +199,6 @@ export class OrderDatabaseOperations {
             return { id };
         } catch (error) {
             trx.rollback();
-            Logger.error("Error deleting order:", error);
             throw error;
         }
     }
@@ -231,7 +227,6 @@ export class OrderDatabaseOperations {
                 updatedAt: row.updatedAt,
             };
         } catch (error) {
-            Logger.error("Error getting order by id:", error);
             throw error;
         }
     }

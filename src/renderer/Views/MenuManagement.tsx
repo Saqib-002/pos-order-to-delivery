@@ -102,7 +102,7 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
         newItem
       );
       if (!res.status) {
-        toast.error("Failed to add menu item: ");
+        toast.error(res.error.includes("UNIQUE constraint failed: menu_items.name")?"Menu item already exists":"Failed to add menu item: ");
         return;
       }
       setMenuItems([...menuItems, res.data]);
@@ -147,7 +147,7 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
         editingItem
       );
       if (!res.status) {
-        toast.error("Failed to update menu item");
+        toast.error(res.error.includes("UNIQUE constraint failed: menu_items.name")?"Menu item already exists":"Failed to update menu item");
         return;
       }
       setMenuItems(

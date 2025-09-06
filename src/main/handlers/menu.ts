@@ -172,35 +172,3 @@ export const getCategories = async (
     };
   }
 };
-
-// Order Items Handlers
-export const createOrderItem = async (
-  event: IpcMainInvokeEvent,
-  token: string,
-  orderItemData: Omit<OrderItem, "id" | "createdAt" | "updatedAt">
-) => {
-  try {
-    const result = await MenuDatabaseOperations.createOrderItem(orderItemData);
-
-    // Trigger sync after creation
-    setTimeout(() => syncManager.syncWithRemote(), 100);
-
-    return result;
-  } catch (error) {
-    Logger.error("Error creating order item:", error);
-    throw error;
-  }
-};
-
-export const getOrderItems = async (
-  event: IpcMainInvokeEvent,
-  token: string,
-  orderId: string
-) => {
-  try {
-    return await MenuDatabaseOperations.getOrderItems(orderId);
-  } catch (error) {
-    Logger.error("Error getting order items:", error);
-    throw error;
-  }
-};

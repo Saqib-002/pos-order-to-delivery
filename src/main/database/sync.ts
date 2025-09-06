@@ -52,6 +52,7 @@ export class SyncManager extends EventEmitter {
                 await this.syncTable("orders", trx);
                 await this.syncTable("menu_items", trx);
                 await this.syncTable("order_items", trx);
+                await this.syncTable("delivery_persons", trx);
                 await this.syncSyncMetadata(trx);
             });
 
