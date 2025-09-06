@@ -127,92 +127,52 @@ export class OrderDatabaseOperations {
                 syncedAt: null,
             });
             const existingItems = await trx("order_items")
-                .innerJoin(
-                    "menu_items",
-                    "order_items.menuItemId",
-                    "menu_items.id"
-                )
-                .where("order_items.orderId", order.id)
-                .andWhere("order_items.isDeleted", false)
-                .andWhere("menu_items.isDeleted", false)
-                .select(
-                    "order_items.id as orderItemId",
-                    "order_items.menuItemId",
-                    "order_items.quantity",
-                    "order_items.customIngredients",
-                    "order_items.specialInstructions",
-                    "menu_items.id as menuId",
-                    "menu_items.name",
-                    "menu_items.ingredients",
-                    "menu_items.price",
-                    "menu_items.category"
-                );
-            const incomingItemIds = new Set(order.items.map((item) => item.id));
-            // Mark items not in the incoming list as deleted
-            for (const existingItem of existingItems) {
-                const isExcluded = !incomingItemIds.has(
-                    existingItem.menuItemId
-                );
-                const haveSameIngredients = order.items.some(
-                    (i) =>
-                        i.ingredients?.join(",") ===
-                            existingItem.customIngredients ||
-                        i.ingredients?.join(",") === existingItem.ingredients
-                );
-                if (isExcluded && !haveSameIngredients) {
-                    await trx("order_items")
-                        .where("id", existingItem.orderItemId)
-                        .update({
-                            isDeleted: true,
-                            updatedAt: now,
-                        });
-                }
-            }
+                .where("orderId", order.id)
+                .andWhere("isDeleted", false);
+            const existingItemsMap = new Map();
+            existingItems.forEach((item) => {
+                const key = `${item.menuItemId}-${item.customIngredients || ""}`;
+                existingItemsMap.set(key, item);
+            });
+            const processedKeys=new Set();
             for (const item of order.items) {
-                const existingItem = existingItems.find(
-                    (ei) => ei.menuItemId === item.id
-                );
                 const menuItem = await trx("menu_items")
                     .where("id", item.id)
                     .andWhere("isDeleted", false)
                     .first();
-                const haveSameIngredients =
-                    menuItem.ingredients === item.ingredients?.join(",") ||
-                    existingItems.some(
-                        (ei) =>
-                            ei.customIngredients === item.ingredients?.join(",")
-                    );
-                if (existingItem && haveSameIngredients) {
-                    // Update existing item
-                    await trx("order_items")
-                        .where("id", existingItem.orderItemId)
-                        .update({
-                            quantity: item.quantity,
-                            specialInstructions: item.specialInstructions || "",
-                            customIngredients:
-                                menuItem.ingredients !==
-                                item.ingredients?.join(",")
-                                    ? item.ingredients?.join(",")
-                                    : "",
-                            updatedAt: now,
-                            isDeleted: false,
-                        });
-                } else {
-                    // Insert new item
-                    const orderItem = {
-                        id: randomUUID(),
-                        orderId: order.id,
-                        menuItemId: item.id,
-                        customIngredients:
-                            menuItem.ingredients !== item.ingredients?.join(",")
-                                ? item.ingredients?.join(",")
-                                : "",
+                if (!menuItem) {
+                    Logger.error("Menu item not found:", item.id);
+                    continue;
+                }
+                const key = `${item.id}-${item.ingredients?.join(",") || ""}`;
+                const existingItem = existingItemsMap.get(key);
+                if (existingItem) {
+                    await trx("order_items").where("id", existingItem.id).update({
                         quantity: item.quantity,
                         specialInstructions: item.specialInstructions || "",
-                        createdAt: now,
                         updatedAt: now,
-                    };
-                    await trx("order_items").insert(orderItem);
+                        syncedAt: null,
+                    });
+                    processedKeys.add(key);
+                }else{
+                    const orderItem={
+                        id:randomUUID(),
+                        orderId:order.id,
+                        menuItemId:item.id,
+                        quantity:item.quantity,
+                        customIngredients:item.ingredients?.join(","),
+                        createdAt:now,
+                        updatedAt:now,
+                    }
+                    await trx("order_items").insert(orderItem)
+                }
+            }
+            for (const [key,existingItem] of existingItemsMap){
+                if(!processedKeys.has(key)){
+                    await trx("order_items").where("id",existingItem.id).update({
+                        isDeleted:true,
+                        updatedAt:now,
+                    })
                 }
             }
             await trx.commit();
