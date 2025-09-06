@@ -24,6 +24,6 @@ export interface Order {
   deliveredAt?: string;
   syncAt?: string;
   isDeleted?: boolean;
-  deliveryPerson?: string;
+  deliveryPersonId?: string;
   notes?: string;
 }

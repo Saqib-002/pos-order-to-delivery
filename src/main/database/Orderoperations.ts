@@ -27,7 +27,7 @@ export class OrderDatabaseOperations {
                 customerPhone: order.customer.phone,
                 customerAddress: order.customer.address,
                 status: order.status,
-                deliveryPerson: order.deliveryPerson,
+                deliveryPersonId: order.deliveryPersonId,
                 createdAt: order.createdAt,
                 updatedAt: order.updatedAt,
                 notes: order.notes,
@@ -76,7 +76,7 @@ export class OrderDatabaseOperations {
                 },
                 items: [],
                 status: row.status,
-                deliveryPerson: row.deliveryPerson,
+                deliveryPersonId: row.deliveryPersonId,
                 createdAt: row.createdAt,
                 updatedAt: row.updatedAt,
             }));
@@ -120,7 +120,7 @@ export class OrderDatabaseOperations {
                 customerPhone: order.customer.phone,
                 customerAddress: order.customer.address,
                 status: order.status,
-                deliveryPerson: order.deliveryPerson,
+                deliveryPersonId: order.deliveryPersonId,
                 updatedAt: now,
                 syncedAt: null,
             });
@@ -222,7 +222,7 @@ export class OrderDatabaseOperations {
                 },
                 items: JSON.parse(row.items),
                 status: row.status,
-                deliveryPerson: row.deliveryPerson,
+                deliveryPersonId: row.deliveryPersonId,
                 createdAt: row.createdAt,
                 updatedAt: row.updatedAt,
             };
