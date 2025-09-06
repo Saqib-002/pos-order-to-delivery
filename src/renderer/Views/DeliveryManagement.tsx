@@ -7,9 +7,7 @@ import { DeliveryPerson } from "@/types/delivery";
 export const DeliveryManagement: React.FC<{ token: string | null }> = ({
   token,
 }) => {
-  const [deliveryPersons, setDeliveryPersons] = useState<
-    DeliveryPerson[]
-  >([]);
+  const [deliveryPersons, setDeliveryPersons] = useState<DeliveryPerson[]>([]);
   const [newDeliveryPerson, setNewDeliveryPerson] = useState({
     name: "",
     email: "",
@@ -32,13 +30,13 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
     try {
       setLoading(true);
       const res = await (window as any).electronAPI.getDeliveryPersons(token);
-      if(!res.status){
+      if (!res.status) {
         toast.error("Failed to fetch delivery personnel");
         return;
       }
       setDeliveryPersons(res.data);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error("Failed to fetch delivery personnel");
     } finally {
       setLoading(false);
@@ -67,9 +65,16 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
     }
 
     try {
-      const res = await (window as any).electronAPI.createDeliveryPerson(token,newDeliveryPerson);
+      const res = await (window as any).electronAPI.createDeliveryPerson(
+        token,
+        newDeliveryPerson
+      );
       if (!res.status) {
-        toast.error(res.error.includes("UNIQUE constraint failed: delivery_persons.email")?"Email already exists":"Failed to add delivery person");
+        toast.error(
+          res.error.includes("UNIQUE constraint failed: delivery_persons.email")
+            ? "Email already exists"
+            : "Failed to add delivery person"
+        );
         return;
       }
       await fetchDeliveryPersons();
@@ -108,7 +113,11 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
         editingDeliveryPerson
       );
       if (!res.status) {
-        toast.error(res.error.includes("UNIQUE constraint failed: delivery_persons.email")?"Email already exists":"Failed to update delivery person");
+        toast.error(
+          res.error.includes("UNIQUE constraint failed: delivery_persons.email")
+            ? "Email already exists"
+            : "Failed to update delivery person"
+        );
         return;
       }
       await fetchDeliveryPersons();
@@ -124,17 +133,25 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
       return;
 
     try {
-      const statsRes=await (window as any).electronAPI.getDeliveryPersonStats(token,userId);
-      if(!statsRes.status){
+      const statsRes = await (window as any).electronAPI.getDeliveryPersonStats(
+        token,
+        userId
+      );
+      if (!statsRes.status) {
         toast.error("Failed to fetch delivery person stats");
         return;
       }
-      if(statsRes.data.totalAssigned>0){
-        alert(`Cannot delete delivery person with ${statsRes.data.totalAssigned} assigned orders`);
+      if (statsRes.data.totalAssigned > 0) {
+        alert(
+          `Cannot delete delivery person with ${statsRes.data.totalAssigned} assigned orders`
+        );
         return;
       }
-      const res =await (window as any).electronAPI.deleteDeliveryPerson(token, userId);
-      if (!res.status){
+      const res = await (window as any).electronAPI.deleteDeliveryPerson(
+        token,
+        userId
+      );
+      if (!res.status) {
         toast.error("Failed to delete delivery person");
         return;
       }
@@ -261,7 +278,7 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">
-                  Total Delivery
+                  Delivery Personnel
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {deliveryPersons.length}
@@ -538,22 +555,24 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {(person as any).totalAssigned}
+                          {(person as any).totalAssigned || 0}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {(person as any).totalDelivered}
+                          {(person as any).totalDelivered || 0}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {(person as any).totalCancelled}
+                          {(person as any).totalCancelled || 0}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {(person as any).avgDeliveryTime}min
+                          {(person as any).avgDeliveryTime
+                            ? `${(person as any).avgDeliveryTime}min`
+                            : "N/A"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2">
