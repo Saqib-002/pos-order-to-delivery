@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { MenuItem } from "@/types/Menu";
 import { toast } from "react-toastify";
+import { MenuItemModal } from "../components/menu/MenuItemModal";
 import { CustomSelect } from "../components/ui/CustomSelect";
 
 interface MenuManagementProps {
@@ -16,21 +17,10 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [newItem, setNewItem] = useState({
-    name: "",
-    description: "",
-    price: 0,
-    category: "",
-    isAvailable: true,
-    ingredients: [] as string[],
-  });
-
-  const [newIngredient, setNewIngredient] = useState("");
-
   useEffect(() => {
-    if(selectedCategory==="all"){
+    if (selectedCategory === "all") {
       fetchMenuItems();
-    }else{
+    } else {
       fetchMenuItemsByCategory(selectedCategory);
     }
     fetchCategories();
@@ -40,8 +30,8 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
     try {
       setLoading(true);
       const res = await (window as any).electronAPI.getMenuItems(token);
-      if(!res.status){
-        toast.error("Unable to get menu items")
+      if (!res.status) {
+        toast.error("Unable to get menu items");
         return;
       }
       setMenuItems(res.data);
@@ -51,12 +41,15 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
       setLoading(false);
     }
   };
-  const fetchMenuItemsByCategory = async (category:string) => {
+  const fetchMenuItemsByCategory = async (category: string) => {
     try {
       setLoading(true);
-      const res = await (window as any).electronAPI.getMenuItemsByCategory(token,category);
-      if(!res.status){
-        toast.error("Unable to get menu items")
+      const res = await (window as any).electronAPI.getMenuItemsByCategory(
+        token,
+        category
+      );
+      if (!res.status) {
+        toast.error("Unable to get menu items");
         return;
       }
       setMenuItems(res.data);
@@ -70,8 +63,8 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
   const fetchCategories = async () => {
     try {
       const res = await (window as any).electronAPI.getCategories(token);
-      if(!res.status){
-        toast.error("Unable to get categories")
+      if (!res.status) {
+        toast.error("Unable to get categories");
         return;
       }
       setCategories(res.data);
@@ -80,97 +73,23 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
     }
   };
 
-  const handleAddItem = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate required fields
-    if (!newItem.name.trim()) {
-      toast.error("Please enter a menu item name");
-      return;
-    }
-    if (!newItem.category) {
-      toast.error("Please select a category");
-      return;
-    }
-    if (newItem.price <= 0) {
-      toast.error("Please enter a valid price greater than 0");
-      return;
-    }
-    try {
-      const res = await (window as any).electronAPI.createMenuItem(
-        token,
-        newItem
-      );
-      if (!res.status) {
-        toast.error(res.error.includes("UNIQUE constraint failed: menu_items.name")?"Menu item already exists":"Failed to add menu item: ");
-        return;
-      }
-      setMenuItems([...menuItems, res.data]);
-      setNewItem({
-        name: "",
-        description: "",
-        price: 0,
-        category: "",
-        isAvailable: true,
-        ingredients: [],
-      });
-      setIsAddModalOpen(false);
-      setNewIngredient("");
-      await fetchCategories();
-      toast.success("Menu item added successfully");
-    } catch (error) {
-      toast.error("Failed to add menu item");
-    }
+  const handleAddSuccess = async () => {
+    await fetchMenuItems();
+    await fetchCategories();
   };
 
-  const handleUpdateItem = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingItem) return;
-
-    // Validate required fields
-    if (!editingItem.name.trim()) {
-      toast.error("Please enter a menu item name");
-      return;
-    }
-    if (!editingItem.category) {
-      toast.error("Please select a category");
-      return;
-    }
-    if (editingItem.price <= 0) {
-      toast.error("Please enter a valid price greater than 0");
-      return;
-    }
-    try {
-      const res = await (window as any).electronAPI.updateMenuItem(
-        token,
-        editingItem.id,
-        editingItem
-      );
-      if (!res.status) {
-        toast.error(res.error.includes("UNIQUE constraint failed: menu_items.name")?"Menu item already exists":"Failed to update menu item");
-        return;
-      }
-      setMenuItems(
-        menuItems.map((item) =>
-          item.id === res.data.id ? res.data : item
-        )
-      );
-      setEditingItem(null);
-      setNewIngredient("");
-      await fetchCategories();
-      toast.success("Menu item updated successfully");
-    } catch (error) {
-      toast.error("Failed to update menu item");
-    }
+  const handleEditSuccess = async () => {
+    await fetchMenuItems();
+    await fetchCategories();
   };
 
   const handleDeleteItem = async (id: string) => {
     if (!confirm("Are you sure you want to delete this menu item?")) return;
 
     try {
-      const res=await (window as any).electronAPI.deleteMenuItem(token, id);
-      if(!res.status){
-        toast.error("Failed to delete menu item: ")
+      const res = await (window as any).electronAPI.deleteMenuItem(token, id);
+      if (!res.status) {
+        toast.error("Failed to delete menu item: ");
         return;
       }
       setMenuItems(menuItems.filter((item) => item.id !== id));
@@ -192,82 +111,14 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
     return category.charAt(0).toUpperCase() + category.slice(1);
   };
 
-  const getCategoryOptions = () => [
-    { value: "burgers", label: "Burgers" },
-    { value: "pizza", label: "Pizza" },
-    { value: "drinks", label: "Drinks" },
-    { value: "desserts", label: "Desserts" },
-    { value: "appetizers", label: "Appetizers" },
-    { value: "salads", label: "Salads" },
-    { value: "pasta", label: "Pasta" },
-    { value: "sandwiches", label: "Sandwiches" },
-  ];
+  const getCategoryFilterOptions = () => {
+    const allOption = { value: "all", label: "All Categories" };
+    const categoryOptions = categories.map((category) => ({
+      value: category,
+      label: getCategoryLabel(category),
+    }));
 
-  const getStatusOptions = () => [
-    { value: "available", label: "Available" },
-    { value: "unavailable", label: "Unavailable" },
-  ];
-
-  const addIngredient = (ingredient: string) => {
-    const cleanIngredient = ingredient.trim();
-    // Check for special characters (only allow letters, numbers, spaces, and basic punctuation)
-    const specialCharRegex = /[!@#$%^&*()_+=\[\]{};':"\\|,.<>\/?]/;
-
-    if (
-      cleanIngredient &&
-      !specialCharRegex.test(cleanIngredient) &&
-      !newItem.ingredients.includes(cleanIngredient)
-    ) {
-      setNewItem({
-        ...newItem,
-        ingredients: [...newItem.ingredients, cleanIngredient],
-      });
-      setNewIngredient("");
-    } else if (specialCharRegex.test(cleanIngredient)) {
-      toast.error(
-        "Ingredients cannot contain special characters like !@#$%^&*()_+=[]{};':\"\\|,.<>/?"
-      );
-    }
-  };
-
-  const removeIngredient = (index: number) => {
-    setNewItem({
-      ...newItem,
-      ingredients: newItem.ingredients.filter((_, i) => i !== index),
-    });
-  };
-
-  const addEditIngredient = (ingredient: string) => {
-    const cleanIngredient = ingredient.trim();
-    // Check for special characters (only allow letters, numbers, spaces, and basic punctuation)
-    const specialCharRegex = /[!@#$%^&*()_+=\[\]{};':"\\|,.<>\/?]/;
-
-    if (
-      cleanIngredient &&
-      !specialCharRegex.test(cleanIngredient) &&
-      editingItem &&
-      !editingItem.ingredients?.includes(cleanIngredient)
-    ) {
-      setEditingItem({
-        ...editingItem,
-        ingredients: [...(editingItem.ingredients || []), cleanIngredient],
-      });
-      setNewIngredient("");
-    } else if (specialCharRegex.test(cleanIngredient)) {
-      toast.error(
-        "Ingredients cannot contain special characters like !@#$%^&*()_+=[]{};':\"\\|,.<>/?"
-      );
-    }
-  };
-
-  const removeEditIngredient = (index: number) => {
-    if (editingItem) {
-      setEditingItem({
-        ...editingItem,
-        ingredients:
-          editingItem.ingredients?.filter((_, i) => i !== index) || [],
-      });
-    }
+    return [allOption, ...categoryOptions];
   };
 
   if (loading) {
@@ -422,6 +273,9 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Search Menu Items
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg
@@ -440,37 +294,24 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search menu items..."
+                  placeholder="Search by name or description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setSelectedCategory("all")}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                  selectedCategory === "all"
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                All Categories
-              </button>
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    selectedCategory === category
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  {getCategoryLabel(category)}
-                </button>
-              ))}
+            <div className="w-full sm:w-64">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Filter by Category
+              </label>
+              <CustomSelect
+                options={getCategoryFilterOptions()}
+                value={selectedCategory}
+                onChange={(value: string) => setSelectedCategory(value)}
+                placeholder="Select category"
+                portalClassName="category-filter-dropdown-portal"
+              />
             </div>
           </div>
         </div>
@@ -574,16 +415,24 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900 max-w-xs">
-                          {item.ingredients && item.ingredients.length > 0 ? (
+                          {item.ingredients &&
+                          item.ingredients.length > 0 &&
+                          item.ingredients.some(
+                            (ingredient) => ingredient.trim() !== ""
+                          ) ? (
                             <div className="flex flex-wrap gap-1">
-                              {item?.ingredients.map((ingredient, index) => (
-                                <span
-                                  key={index}
-                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                                >
-                                  {ingredient}
-                                </span>
-                              ))}
+                              {item?.ingredients
+                                .filter(
+                                  (ingredient) => ingredient.trim() !== ""
+                                )
+                                .map((ingredient, index) => (
+                                  <span
+                                    key={index}
+                                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                                  >
+                                    {ingredient}
+                                  </span>
+                                ))}
                             </div>
                           ) : (
                             <span className="text-gray-400 italic">
@@ -641,411 +490,18 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
         </div>
       </div>
 
-      {/* Add Item Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-white rounded-t-2xl">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold">Add New Menu Item</h3>
-                <button
-                  onClick={() => {
-                    setIsAddModalOpen(false);
-                    setNewIngredient("");
-                  }}
-                  className="text-white hover:text-indigo-500 transition-colors duration-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <form onSubmit={handleAddItem} className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={newItem.name}
-                    onChange={(e) =>
-                      setNewItem({ ...newItem, name: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
-                    placeholder="Item name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price *
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={newItem.price}
-                    onChange={(e) =>
-                      setNewItem({
-                        ...newItem,
-                        price: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category *
-                  </label>
-                  <CustomSelect
-                    options={getCategoryOptions()}
-                    value={newItem.category}
-                    onChange={(value: string) =>
-                      setNewItem({ ...newItem, category: value })
-                    }
-                    placeholder="Select category"
-                    portalClassName="category-dropdown-portal"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Status
-                  </label>
-                  <CustomSelect
-                    options={getStatusOptions()}
-                    value={newItem.isAvailable ? "available" : "unavailable"}
-                    onChange={(value: string) =>
-                      setNewItem({
-                        ...newItem,
-                        isAvailable: value === "available",
-                      })
-                    }
-                    placeholder="Select status"
-                    portalClassName="status-dropdown-portal"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    value={newItem.description}
-                    onChange={(e) =>
-                      setNewItem({ ...newItem, description: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
-                    rows={3}
-                    placeholder="Item description"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Ingredients
-                  </label>
-                  <div className="space-y-3">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newIngredient}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          // Only allow letters, numbers, spaces, and basic punctuation
-                          const specialCharRegex =
-                            /[!@#$%^&*()_+=\[\]{};':"\\|,.<>\/?]/;
-                          if (!specialCharRegex.test(value)) {
-                            setNewIngredient(value);
-                          }
-                        }}
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            addIngredient(newIngredient);
-                          }
-                        }}
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
-                        placeholder="Add ingredient (press Enter to add)"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => addIngredient(newIngredient)}
-                        className="px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-medium"
-                      >
-                        Add
-                      </button>
-                    </div>
-                    {newItem.ingredients.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {newItem.ingredients.map((ingredient, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium"
-                          >
-                            {ingredient}
-                            <button
-                              type="button"
-                              onClick={() => removeIngredient(index)}
-                              className="text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
-                            >
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M6 18L18 6M6 6l12 12"
-                                />
-                              </svg>
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-end gap-4 mt-8">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsAddModalOpen(false);
-                    setNewIngredient("");
-                  }}
-                  className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium cursor-pointer hover:scale-105"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 cursor-pointer hover:scale-105"
-                >
-                  Add Item
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Item Modal */}
-      {editingItem && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-white rounded-t-2xl">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold">Edit Menu Item</h3>
-                <button
-                  onClick={() => {
-                    setEditingItem(null);
-                    setNewIngredient("");
-                  }}
-                  className="text-white hover:text-indigo-500 transition-colors duration-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <form onSubmit={handleUpdateItem} className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={editingItem.name}
-                    onChange={(e) =>
-                      setEditingItem({ ...editingItem, name: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price *
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.1"
-                    value={editingItem.price}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem,
-                        price: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category *
-                  </label>
-                  <CustomSelect
-                    options={getCategoryOptions()}
-                    value={editingItem.category}
-                    onChange={(value: string) =>
-                      setEditingItem({ ...editingItem, category: value })
-                    }
-                    placeholder="Select category"
-                    portalClassName="edit-category-dropdown-portal"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Status
-                  </label>
-                  <CustomSelect
-                    options={getStatusOptions()}
-                    value={
-                      editingItem.isAvailable ? "available" : "unavailable"
-                    }
-                    onChange={(value: string) =>
-                      setEditingItem({
-                        ...editingItem,
-                        isAvailable: value === "available",
-                      })
-                    }
-                    placeholder="Select status"
-                    portalClassName="edit-status-dropdown-portal"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    value={editingItem.description || ""}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem,
-                        description: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
-                    rows={3}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Ingredients
-                  </label>
-                  <div className="space-y-3">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newIngredient}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          // Only allow letters, numbers, spaces, and basic punctuation
-                          const specialCharRegex =
-                            /[!@#$%^&*()_+=\[\]{};':"\\|,.<>\/?]/;
-                          if (!specialCharRegex.test(value)) {
-                            setNewIngredient(value);
-                          }
-                        }}
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            addEditIngredient(newIngredient);
-                          }
-                        }}
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
-                        placeholder="Add ingredient (press Enter to add)"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => addEditIngredient(newIngredient)}
-                        className="px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-medium"
-                      >
-                        Add
-                      </button>
-                    </div>
-                    {editingItem.ingredients &&
-                      editingItem.ingredients.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {editingItem.ingredients.map((ingredient, index) => (
-                            <span
-                              key={index}
-                              className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium"
-                            >
-                              {ingredient}
-                              <button
-                                type="button"
-                                onClick={() => removeEditIngredient(index)}
-                                className="text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
-                              >
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                  />
-                                </svg>
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-end gap-4 mt-8">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingItem(null);
-                    setNewIngredient("");
-                  }}
-                  className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium cursor-pointer hover:scale-105"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 cursor-pointer hover:scale-105"
-                >
-                  Update Item
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Modal */}
+      <MenuItemModal
+        isOpen={isAddModalOpen || !!editingItem}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setEditingItem(null);
+        }}
+        token={token}
+        categories={categories}
+        onSuccess={editingItem ? handleEditSuccess : handleAddSuccess}
+        editingItem={editingItem}
+      />
     </div>
   );
 };
