@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { MenuItem } from "@/types/Menu";
 import { toast } from "react-toastify";
 import { MenuItemModal } from "../components/menu/MenuItemModal";
+import { CustomSelect } from "../components/ui/CustomSelect";
 
 interface MenuManagementProps {
   token: string | null;
@@ -108,6 +109,16 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
 
   const getCategoryLabel = (category: string) => {
     return category.charAt(0).toUpperCase() + category.slice(1);
+  };
+
+  const getCategoryFilterOptions = () => {
+    const allOption = { value: "all", label: "All Categories" };
+    const categoryOptions = categories.map((category) => ({
+      value: category,
+      label: getCategoryLabel(category),
+    }));
+
+    return [allOption, ...categoryOptions];
   };
 
   if (loading) {
@@ -262,6 +273,9 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Search Menu Items
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg
@@ -280,37 +294,24 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ token }) => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search menu items..."
+                  placeholder="Search by name or description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setSelectedCategory("all")}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                  selectedCategory === "all"
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                All Categories
-              </button>
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    selectedCategory === category
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  {getCategoryLabel(category)}
-                </button>
-              ))}
+            <div className="w-full sm:w-64">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Filter by Category
+              </label>
+              <CustomSelect
+                options={getCategoryFilterOptions()}
+                value={selectedCategory}
+                onChange={(value: string) => setSelectedCategory(value)}
+                placeholder="Select category"
+                portalClassName="category-filter-dropdown-portal"
+              />
             </div>
           </div>
         </div>
