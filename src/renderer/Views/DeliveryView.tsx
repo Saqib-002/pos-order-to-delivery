@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
-import { Order } from "@/types/order";
-import { CustomSelect } from "../components/ui/CustomSelect";
+import { FilterType, Order } from "@/types/order";
 import { toast } from "react-toastify";
 
 interface DeliveryViewProps {
   orders: Order[];
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
   token: string | null;
-  refreshOrderCallback: () => void;
+  refreshOrdersCallback: () => void;
+  filter: FilterType;
+  setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
 }
 
 export const DeliveryView: React.FC<DeliveryViewProps> = ({
   orders,
   setOrders,
   token,
-  refreshOrderCallback,
+  refreshOrdersCallback,
+  filter,
+  setFilter
 }) => {
   const [deliveryPerson, setDeliveryPerson] = useState({
     id: "",
@@ -30,13 +33,11 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
     }[]
   >([]);
   const [showDeliverySuggestions, setShowDeliverySuggestions] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
 
   // Fetch delivery persons on component mount
   useEffect(() => {
     fetchDeliveryPersons();
+    setFilter({selectedDate:null,searchTerm:"",selectedStatus:["ready for delivery","out for delivery"]})
   }, [token]);
 
   const fetchDeliveryPersons = async () => {
@@ -48,13 +49,6 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
     } catch (error) {
       console.error("Failed to fetch delivery persons:", error);
     }
-  };
-
-  const getDeliveryPersonOptions = () => {
-    return deliveryPersons.map((person) => ({
-      value: person.name,
-      label: person.name,
-    }));
   };
 
   const getFilteredDeliveryPersons = () => {
@@ -79,33 +73,6 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
     setShowDeliverySuggestions(false);
   };
 
-  // Filter orders based on search term and date
-  useEffect(() => {
-    let filtered = orders.filter(
-      (order) => order.status.toLowerCase() === "ready for delivery"
-    );
-
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (order) =>
-          order.customer.name
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          order.customer.phone.includes(searchTerm) ||
-          order.id.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (selectedDate) {
-      filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.createdAt || order.id);
-        return orderDate.toDateString() === selectedDate.toDateString();
-      });
-    }
-
-    setFilteredOrders(filtered);
-  }, [orders, searchTerm, selectedDate]);
-
   const assignDelivery = async (order: Order) => {
     if (!deliveryPerson.name.trim()) {
       alert("Please enter delivery person name");
@@ -121,7 +88,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
         toast.error("Failed to assign delivery person");
         return;
       }
-      refreshOrderCallback();
+      refreshOrdersCallback();
       setDeliveryPerson({ id: "", name: "" });
     } catch (error) {
       console.error("Failed to assign delivery:", error);
@@ -129,29 +96,20 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
     }
   };
 
-  const markAsDelivered = async (order: Order) => {
+  const markAsDelivered = async (id: string) => {
     try {
-      const updatedOrder = { ...order, status: "Delivered" };
-      await (window as any).electronAPI.updateOrder(token, updatedOrder);
-      setOrders(orders.map((o) => (o.id === order.id ? updatedOrder : o)));
+      const res=await (window as any).electronAPI.markDeliveredOrder(token, id);
+      if(!res.status){
+        toast.error("Failed to mark as delivered");
+        return
+      }
+      refreshOrdersCallback();
+      toast.success("Order marked as delivered");
     } catch (error) {
       console.error("Failed to mark as delivered:", error);
       alert("Failed to mark as delivered. Please try again.");
     }
   };
-  // const getDeliveryStatusColor = (status: string) => {
-  //   switch (status.toLowerCase()) {
-  //     case "ready for pickup":
-  //       return "bg-green-100 text-green-800 border-green-200";
-  //     case "out for delivery":
-  //       return "bg-blue-100 text-blue-800 border-blue-200";
-  //     case "delivered":
-  //       return "bg-gray-100 text-gray-800 border-gray-200";
-  //     default:
-  //       return "bg-gray-100 text-gray-800 border-gray-200";
-  //   }
-  // };
-
   return (
     <div className="mt-4 p-6 bg-gray-50 min-h-screen">
       <div className="max-w-[98%] mx-auto">
@@ -409,14 +367,14 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
               <button
                 onClick={() => {
                   if (deliveryPerson.name.trim()) {
-                    const firstOrder = filteredOrders[0];
+                    const firstOrder = orders[0];
                     if (firstOrder) {
                       assignDelivery(firstOrder);
                     }
                   }
                 }}
                 disabled={
-                  !deliveryPerson.name.trim() || filteredOrders.length === 0
+                  !deliveryPerson.name.trim() || orders.length === 0
                 }
                 className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
               >
@@ -467,8 +425,8 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                   <input
                     type="text"
                     placeholder="Search orders..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={filter.searchTerm}
+                    onChange={(e) => setFilter({ ...filter, searchTerm: e.target.value })}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
                 </div>
@@ -478,13 +436,13 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                   <input
                     type="date"
                     value={
-                      selectedDate
-                        ? selectedDate.toISOString().split("T")[0]
+                      filter.selectedDate
+                        ? filter.selectedDate.toISOString().split("T")[0]
                         : ""
                     }
                     onChange={(e) =>
-                      setSelectedDate(
-                        e.target.value ? new Date(e.target.value) : null
+                      setFilter(
+                        {...filter,selectedDate:e.target.value ? new Date(e.target.value) : null}
                       )
                     }
                     className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -492,11 +450,14 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                 </div>
 
                 {/* Clear Filters Button */}
-                {(searchTerm || selectedDate) && (
+                {(filter.searchTerm || filter.selectedDate) && (
                   <button
                     onClick={() => {
-                      setSearchTerm("");
-                      setSelectedDate(null);
+                      setFilter({
+                        ...filter,
+                        searchTerm: "",
+                        selectedDate: null,
+                      });
                     }}
                     className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
                   >
@@ -507,7 +468,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
             </div>
           </div>
 
-          {filteredOrders.length === 0 ? (
+          {orders.length === 0 ? (
             <div className="text-center py-12">
               <svg
                 className="mx-auto h-12 w-12 text-gray-400"
@@ -566,7 +527,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredOrders.map((order) => {
+                  {orders.map((order) => {
                     const readyTime = new Date(order.id);
                     const now = new Date();
                     const diffMinutes = Math.floor(
@@ -753,7 +714,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end min-w-[120px]">
                           <button
-                            onClick={() => markAsDelivered(order)}
+                            onClick={() => markAsDelivered(order.id)}
                             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105"
                           >
                             <svg

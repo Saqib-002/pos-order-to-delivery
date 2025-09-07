@@ -35,10 +35,70 @@ export const deleteOrder = async (event: IpcMainInvokeEvent,token:string, id: st
         };
     }
 };
+export const cancelOrder = async (event: IpcMainInvokeEvent,token:string, id: string) => {
+    try {
+        const result = await OrderDatabaseOperations.cancelOrder(id);
+        return {
+            status:true,
+            data:result
+        };
+    } catch (error) {
+        Logger.error(`Error deleting order ${id}:`, error);
+        return {
+            status:false,
+            error:(error as Error).message
+        };
+    }
+};
+export const readyOrder = async (event: IpcMainInvokeEvent,token:string, id: string) => {
+    try {
+        const result = await OrderDatabaseOperations.readyOrder(id);
+        return {
+            status:true,
+            data:result
+        };
+    } catch (error) {
+        Logger.error(`Error deleting order ${id}:`, error);
+        return {
+            status:false,
+            error:(error as Error).message
+        };
+    }
+};
+export const markDeliveredOrder = async (event: IpcMainInvokeEvent,token:string, id: string) => {
+    try {
+        const result = await OrderDatabaseOperations.markDeliveredOrder(id);
+        return {
+            status:true,
+            data:result
+        };
+    } catch (error) {
+        Logger.error(`Error deleting order ${id}:`, error);
+        return {
+            status:false,
+            error:(error as Error).message
+        };
+    }
+};
 
 export const getOrders = async (event: IpcMainInvokeEvent,token:string) => {
     try {
         const res= await OrderDatabaseOperations.getOrders();
+        return {
+            status:true,
+            data:res
+        }
+    } catch (error) {
+        Logger.error("Error getting orders:", error);
+        return {
+            status:false,
+            error:(error as Error).message
+        }
+    }
+};
+export const getOrdersByFilter = async (event: IpcMainInvokeEvent,token:string,filter:any) => {
+    try {
+        const res= await OrderDatabaseOperations.getOrdersByFilter(filter);
         return {
             status:true,
             data:res
@@ -61,23 +121,6 @@ export const updateOrder = async (event: IpcMainInvokeEvent,token:string, order:
         };
     } catch (error) {
         Logger.error("Error updating order:", error);
-        return {
-            status:false,
-            error:(error as Error).message
-        }
-    }
-};
-
-export const getOrderById = async (event: IpcMainInvokeEvent,token:string, id: string) => {
-    try {
-        Logger.info("Getting order by id:", id);
-        const res=await OrderDatabaseOperations.getOrderById(id);
-        return{
-            status:true,
-            data:res
-        }
-    } catch (error) {
-        Logger.error("Error getting order by id:", error);
         return {
             status:false,
             error:(error as Error).message

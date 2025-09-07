@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from "react";
-import { Order } from "@/types/order";
+import { useEffect, useState } from "react";
+import { FilterType, Order } from "@/types/order";
 import { toast } from "react-toastify";
 import { OrderForm } from "../components/order/OrderForm";
 import { ViewOrderModal } from "../components/order/ViewOrderModal";
@@ -8,23 +8,25 @@ import { CustomSelect } from "../components/ui/CustomSelect";
 interface OrderViewProps {
   orders: Order[];
   token: string | null;
-  refreshOrderCallback: () => void;
+  refreshOrdersCallback: () => void;
+  filter: FilterType;
+  setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
 }
 
 export const OrderView: React.FC<OrderViewProps> = ({
   token,
   orders,
-  refreshOrderCallback,
+  refreshOrdersCallback,
+  filter,
+  setFilter,
 }: OrderViewProps) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  
   const [isAddOrderModelShown, setIsAddOrderModelShown] = useState(false);
   const [isViewOrderModalShown, setIsViewOrderModalShown] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+
   const fetchMenuItems = async () => {
     try {
       setLoading(true);
@@ -43,33 +45,8 @@ export const OrderView: React.FC<OrderViewProps> = ({
   // Filter orders based on search term, date, and status
   useEffect(() => {
     fetchMenuItems();
-    let filtered = orders;
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (order) =>
-          order.customer.name
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          order.customer.phone.includes(searchTerm) ||
-          order.id.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (selectedDate) {
-      filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.createdAt || order.id);
-        return orderDate.toDateString() === selectedDate.toDateString();
-      });
-    }
-
-    if (selectedStatus !== "all") {
-      filtered = filtered.filter(
-        (order) => order.status.toLowerCase() === selectedStatus.toLowerCase()
-      );
-    }
-
-    setFilteredOrders(filtered);
-  }, [orders, searchTerm, selectedDate, selectedStatus]);
+    setFilter({searchTerm:"",selectedDate:null,selectedStatus:["all"]})
+  }, []);
   const handleDeleteOrder = async (id: string) => {
     if (
       window.confirm(
@@ -86,30 +63,21 @@ export const OrderView: React.FC<OrderViewProps> = ({
         return;
       }
       toast.success("Order deleted successfully");
-      refreshOrderCallback();
+      refreshOrdersCallback();
     }
   };
 
   const handleCancelOrder = async (id: string) => {
     if (window.confirm("Are you sure you want to cancel this order?")) {
       try {
-        // Find the order to get complete data
-        const orderToCancel = orders.find((order) => order.id === id);
-        if (!orderToCancel) {
-          toast.error("Order not found");
-          return;
-        }
 
-        const res = await (window as any).electronAPI.updateOrder(token, {
-          ...orderToCancel,
-          status: "cancelled",
-        });
+        const res = await (window as any).electronAPI.cancelOrder(token,id);
         if (!res.status) {
           toast.error("Error cancelling order");
           return;
         }
         toast.success("Order cancelled successfully");
-        refreshOrderCallback();
+        refreshOrdersCallback();
       } catch (error) {
         toast.error("Error cancelling order");
       }
@@ -147,7 +115,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
         <OrderForm
           onClose={() => setIsAddOrderModelShown(false)}
           selectedOrder={selectedOrder}
-          refreshOrders={refreshOrderCallback}
+          refreshOrders={refreshOrdersCallback}
           token={token}
         />
       )}
@@ -217,7 +185,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                     Total Orders
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {filteredOrders.length}
+                    {orders.length}
                   </p>
                 </div>
               </div>
@@ -245,7 +213,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
                     {
-                      filteredOrders.filter(
+                      orders.filter(
                         (o) => o.status.toLowerCase() === "sent to kitchen"
                       ).length
                     }
@@ -276,7 +244,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
                     {
-                      filteredOrders.filter(
+                      orders.filter(
                         (o) => o.status.toLowerCase() === "ready for delivery"
                       ).length
                     }
@@ -305,7 +273,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                   <p className="text-sm font-medium text-gray-600">Delivered</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {
-                      filteredOrders.filter(
+                      orders.filter(
                         (o) => o.status.toLowerCase() === "delivered"
                       ).length
                     }
@@ -343,8 +311,8 @@ export const OrderView: React.FC<OrderViewProps> = ({
                     <input
                       type="text"
                       placeholder="Search orders..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      value={filter.searchTerm}
+                      onChange={(e) => setFilter({...filter,searchTerm:e.target.value})}
                       className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     />
                   </div>
@@ -352,8 +320,8 @@ export const OrderView: React.FC<OrderViewProps> = ({
                   {/* Status Filter */}
                   <CustomSelect
                     options={getStatusOptions()}
-                    value={selectedStatus}
-                    onChange={(value: string) => setSelectedStatus(value)}
+                    value={filter.selectedStatus[0]}
+                    onChange={(value: string) => setFilter({...filter,selectedStatus:[value]})}
                     placeholder="Select status"
                     portalClassName="status-dropdown-portal"
                   />
@@ -363,26 +331,29 @@ export const OrderView: React.FC<OrderViewProps> = ({
                     <input
                       type="date"
                       value={
-                        selectedDate
-                          ? selectedDate.toISOString().split("T")[0]
+                        filter.selectedDate
+                          ? filter.selectedDate.toISOString().split("T")[0]
                           : ""
                       }
                       onChange={(e) =>
-                        setSelectedDate(
-                          e.target.value ? new Date(e.target.value) : null
-                        )
+                        setFilter({
+                          ...filter,
+                          selectedDate:e.target.value ? new Date(e.target.value) : null
+                        })
                       }
                       className="block w-full px-3 py-3 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     />
                   </div>
 
                   {/* Clear Filters Button */}
-                  {(searchTerm || selectedDate || selectedStatus !== "all") && (
+                  {(filter.searchTerm || filter.selectedDate || filter.selectedStatus[0] !== "all") && (
                     <button
                       onClick={() => {
-                        setSearchTerm("");
-                        setSelectedDate(null);
-                        setSelectedStatus("all");
+                        setFilter({
+                          searchTerm: "",
+                          selectedDate: null,
+                          selectedStatus: ["all"],
+                        })
                       }}
                       className="px-3 py-3 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
                     >
@@ -393,7 +364,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
               </div>
             </div>
 
-            {filteredOrders.length === 0 ? (
+            {orders.length === 0 ? (
               <div className="text-center py-12">
                 <svg
                   className="mx-auto h-12 w-12 text-gray-400"
@@ -448,7 +419,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredOrders.map((order) => (
+                    {orders.map((order) => (
                       <tr
                         key={order.id}
                         className="hover:bg-gray-50 transition-colors duration-150"

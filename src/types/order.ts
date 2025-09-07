@@ -34,3 +34,8 @@ export interface Order {
   };
   notes?: string;
 }
+export interface FilterType {
+  searchTerm: string;
+  selectedDate: Date | null;
+  selectedStatus: string[];
+}

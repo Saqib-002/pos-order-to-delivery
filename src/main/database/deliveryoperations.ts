@@ -134,7 +134,6 @@ export class DeliveryDatabaseOperations {
         }
     }
 
-    // Assign delivery person to order
     static async assignDeliveryPerson(
         orderId: string,
         deliveryPersonId: string
@@ -148,22 +147,6 @@ export class DeliveryDatabaseOperations {
                 status: "Out for Delivery",
                 updatedAt: now,
             });
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    // Mark order as picked up
-    static async markOrderPickedUp(orderId: string): Promise<void> {
-        try {
-            const now = new Date().toISOString();
-
-            await localDb("orders").where("id", orderId).update({
-                pickedUpAt: now,
-                updatedAt: now,
-            });
-
-            Logger.info(`Order ${orderId} marked as picked up`);
         } catch (error) {
             throw error;
         }

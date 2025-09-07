@@ -1,55 +1,31 @@
 import { useEffect, useState } from "react";
-import { Order } from "@/types/order";
+import { FilterType, Order } from "@/types/order";
 import { toast } from "react-toastify";
 
 interface KitchenViewProps {
     orders: Order[];
-    setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
     token: string|null;
+    filter: FilterType;
+  setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
+  refreshOrdersCallback: () => void
 }
 
-export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,token }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+export const KitchenView: React.FC<KitchenViewProps> = ({ orders,token,filter,setFilter,refreshOrdersCallback }) => {
 
   // Filter orders based on search term and date
   useEffect(() => {
-    let filtered = orders.filter(
-      (order) => order.status.toLowerCase() === "sent to kitchen"
-    );
-    
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (order) =>
-          order.customer.name
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          order.customer.phone.includes(searchTerm) ||
-          order.id.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+        setFilter({selectedDate:null,searchTerm:"",selectedStatus:["sent to kitchen"]} );
+  }, [token]);
 
-    if (selectedDate) {
-      filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.createdAt || order.id);
-        return orderDate.toDateString() === selectedDate.toDateString();
-      });
-    }
-
-    setFilteredOrders(filtered);
-  }, [orders, searchTerm, selectedDate]);
-
-  const markAsReady = async (order: Order) => {
+  const markAsReady = async (id: string) => {
     try {
-      const updatedOrder = { ...order, status: "Ready for Delivery" };
-      const res=await (window as any).electronAPI.updateOrder(token,updatedOrder);
+      const res=await (window as any).electronAPI.readyOrder(token,id);
       if (!res.status) {
-        toast.error("Failed to update order");
+        toast.error("Failed to ready the order");
         return;
       }
+      refreshOrdersCallback();
       toast.success("Order marked as ready");
-      setOrders(orders.map((o) => (o.id === order.id ? updatedOrder : o)));
     } catch (error) {
       console.error("Failed to update order:", error);
     }
@@ -124,7 +100,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                   Orders in Kitchen
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {filteredOrders.length}
+                  {orders.length}
                 </p>
               </div>
             </div>
@@ -152,7 +128,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {
-                    filteredOrders.filter((order) => {
+                    orders.filter((order) => {
                       const orderTime = new Date(order.createdAt || order.id);
                       const now = new Date();
                       const diffHours =
@@ -220,8 +196,8 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                   <input
                     type="text"
                     placeholder="Search orders..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={filter.searchTerm}
+                    onChange={(e) => setFilter({...filter,searchTerm:e.target.value})}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
                 </div>
@@ -231,13 +207,13 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                   <input
                     type="date"
                     value={
-                      selectedDate
-                        ? selectedDate.toISOString().split("T")[0]
+                      filter.selectedDate
+                        ? filter.selectedDate.toISOString().split("T")[0]
                         : ""
                     }
                     onChange={(e) =>
-                      setSelectedDate(
-                        e.target.value ? new Date(e.target.value) : null
+                      setFilter(
+                        {...filter,selectedDate:e.target.value ? new Date(e.target.value) : null}
                       )
                     }
                     className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -245,11 +221,14 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                 </div>
 
                 {/* Clear Filters Button */}
-                {(searchTerm || selectedDate) && (
+                {(filter.searchTerm || filter.selectedDate) && (
                   <button
                     onClick={() => {
-                      setSearchTerm("");
-                      setSelectedDate(null);
+                      setFilter({
+                        ...filter,
+                        searchTerm: "",
+                        selectedDate: null
+                      })
                     }}
                     className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
                   >
@@ -260,7 +239,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
             </div>
           </div>
 
-          {filteredOrders.length === 0 ? (
+          {orders.length === 0 ? (
             <div className="text-center py-12">
               <svg
                 className="mx-auto h-12 w-12 text-gray-400"
@@ -322,7 +301,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredOrders.map((order) => {
+                  {orders.map((order) => {
                     const orderTime = new Date(order.createdAt || order.id);
                     const now = new Date();
                     const diffMinutes = Math.floor(
@@ -354,7 +333,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            #{order.id.slice(16, 24)}
+                            #{order.orderId}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -401,7 +380,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end min-w-[120px]">
                           <button
-                            onClick={() => markAsReady(order)}
+                            onClick={() => markAsReady(order.id)}
                             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 cursor-pointer hover:scale-105"
                           >
                             <svg

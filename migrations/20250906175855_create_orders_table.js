@@ -15,7 +15,7 @@ export async function up(knex) {
     table.decimal('tax').defaultTo(0);
     table.string('deliveryPersonId');
     table.timestamp('assignedAt');
-    table.timestamp('pickedUpAt');
+    table.timestamp('readyAt');
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
     table.timestamp('cancelledAt');
