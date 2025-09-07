@@ -58,7 +58,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-menu-items-by-name", getMenuItemsByName);
   ipcMain.handle("get-categories", getCategories);
 
-  // delivery person hadnlers
+  // delivery person handlers
   ipcMain.handle("create-delivery-person", createDeliveryPerson);
   ipcMain.handle("get-delivery-persons", getDeliveryPersons);
   ipcMain.handle("get-delivery-person-stats", getDeliveryPersonStats);

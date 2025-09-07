@@ -99,7 +99,6 @@ export class DeliveryDatabaseOperations {
                 .update({
                     ...updates,
                     updatedAt: now,
-                    
                 });
 
             const updatedPerson = await localDb("delivery_persons")
@@ -125,7 +124,6 @@ export class DeliveryDatabaseOperations {
             await localDb("delivery_persons").where("id", id).update({
                 isDeleted: true,
                 updatedAt: now,
-                
             });
 
             Logger.info(`Delivery person deleted: ${id}`);
@@ -147,59 +145,6 @@ export class DeliveryDatabaseOperations {
                 status: "Out for Delivery",
                 updatedAt: now,
             });
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    // Get orders assigned to a delivery person
-    static async getOrdersByDeliveryPerson(
-        deliveryPersonId: string
-    ): Promise<any[]> {
-        try {
-            const orders = await localDb("orders")
-                .where("deliveryPersonId", deliveryPersonId)
-                .andWhere("isDeleted", false)
-                .whereIn("status", ["Out for Delivery", "Picked Up"])
-                .orderBy("assignedAt", "desc");
-
-            return orders;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    // Get delivery statistics for a person
-
-    // Get available delivery persons (active and not currently delivering too many orders)
-    static async getAvailableDeliveryPersons(
-        maxConcurrentDeliveries: number = 3
-    ): Promise<DeliveryPerson[]> {
-        try {
-            // First get all active delivery persons
-            const activePersons = await localDb("delivery_persons")
-                .where("isActive", true)
-                .andWhere("isDeleted", false);
-
-            // Then check their current delivery load
-            const availablePersons = [];
-
-            for (const person of activePersons) {
-                const currentDeliveries = await localDb("orders")
-                    .where("deliveryPersonId", person.id)
-                    .whereIn("status", ["Out for Delivery", "Picked Up"])
-                    .count("* as count")
-                    .first();
-
-                if (
-                    ((currentDeliveries?.count as number) || 0) <
-                    maxConcurrentDeliveries
-                ) {
-                    availablePersons.push(person);
-                }
-            }
-
-            return availablePersons;
         } catch (error) {
             throw error;
         }

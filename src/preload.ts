@@ -111,14 +111,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   deleteDeliveryPerson: (token: string,id:string,) => ipcRenderer.invoke("delete-delivery-person", token,id),
   assignDeliveryPerson: (token: string,orderId:string,personId:string) => ipcRenderer.invoke("assign-delivery-person", token,orderId,personId),
 
-  // Order Item operations
-  createOrderItem: (
-    token: string,
-    orderItemData: Omit<OrderItem, "id" | "createdAt" | "updatedAt">
-  ) => ipcRenderer.invoke("create-order-item", token, orderItemData),
-  getOrderItems: (token: string, orderId: string) =>
-    ipcRenderer.invoke("get-order-items", token, orderId),
-
   // Order change notifications
   onOrderChange: (callback: (change: any) => void) => {
     const orderChangeCallback = (event: any, change: any) => {
