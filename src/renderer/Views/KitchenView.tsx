@@ -222,7 +222,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                     placeholder="Search orders..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
                 </div>
 
@@ -240,7 +240,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                         e.target.value ? new Date(e.target.value) : null
                       )
                     }
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
                 </div>
 
@@ -251,7 +251,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({ orders, setOrders,toke
                       setSearchTerm("");
                       setSelectedDate(null);
                     }}
-                    className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
+                    className="px-3 py-3 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
                   >
                     Clear Filters
                   </button>

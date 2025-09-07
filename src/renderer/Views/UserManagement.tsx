@@ -19,10 +19,42 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
+  const [emailError, setEmailError] = useState("");
+  const [editEmailError, setEditEmailError] = useState("");
 
   useEffect(() => {
     fetchUsers();
   }, [token]);
+
+  // Email validation function
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim()) {
+      return "Email is required";
+    }
+    if (!emailRegex.test(email)) {
+      return "Please enter a valid email address";
+    }
+    return "";
+  };
+
+  // Handle email change for add user
+  const handleEmailChange = (value: string) => {
+    setNewUser({ ...newUser, email: value });
+    if (emailError) {
+      setEmailError("");
+    }
+  };
+
+  // Handle email change for edit user
+  const handleEditEmailChange = (value: string) => {
+    if (editingUser) {
+      setEditingUser({ ...editingUser, email: value });
+      if (editEmailError) {
+        setEditEmailError("");
+      }
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -53,17 +85,28 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
     }
     if (!newUser.name.trim()) {
       toast.error("Please enter a name");
-      return; 
+      return;
     }
-    if (!newUser.email.trim()) {
-      toast.error("Please enter an email");
+
+    // Validate email
+    const emailValidationError = validateEmail(newUser.email);
+    if (emailValidationError) {
+      setEmailError(emailValidationError);
+      toast.error(emailValidationError);
       return;
     }
 
     try {
-      const res = await (window as any).electronAPI.registerUser(token,newUser);
+      const res = await (window as any).electronAPI.registerUser(
+        token,
+        newUser
+      );
       if (!res.status) {
-        toast.error(res.error.includes("UNIQUE constraint failed: users.username")?"username already taken":"Failed to add user");
+        toast.error(
+          res.error.includes("UNIQUE constraint failed: users.username")
+            ? "username already taken"
+            : "Failed to add user"
+        );
         return;
       }
       const user = res.data;
@@ -95,8 +138,12 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
       toast.error("Please enter a name");
       return;
     }
-    if (!editingUser.email?.trim()) {
-      toast.error("Please enter an email");
+
+    // Validate email
+    const emailValidationError = validateEmail(editingUser.email || "");
+    if (emailValidationError) {
+      setEditEmailError(emailValidationError);
+      toast.error(emailValidationError);
       return;
     }
 
@@ -106,7 +153,11 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
         editingUser
       );
       if (!res.status) {
-        toast.error(res.error.includes("UNIQUE constraint failed: users.username")?"username already taken": "Failed to update user");
+        toast.error(
+          res.error.includes("UNIQUE constraint failed: users.username")
+            ? "username already taken"
+            : "Failed to update user"
+        );
         return;
       }
       setUsers(users.map((u) => (u.id === res.data.id ? res.data : u)));
@@ -121,8 +172,8 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
     if (!confirm("Are you sure you want to delete this user?")) return;
 
     try {
-      const res=await (window as any).electronAPI.deleteUser(token, userId);
-      if(!res.status){
+      const res = await (window as any).electronAPI.deleteUser(token, userId);
+      if (!res.status) {
         toast.error(res.error || "Failed to delete user");
         return;
       }
@@ -544,6 +595,7 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
                       email: "",
                       role: "staff",
                     });
+                    setEmailError("");
                   }}
                   className="text-white hover:text-indigo-500 transition-colors duration-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20"
                 >
@@ -612,14 +664,23 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
                     Email *
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     value={newUser.email}
-                    onChange={(e) =>
-                      setNewUser({ ...newUser, email: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    onBlur={() => {
+                      const error = validateEmail(newUser.email);
+                      setEmailError(error);
+                    }}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${
+                      emailError
+                        ? "border-red-300 focus:ring-red-600 focus:border-red-600"
+                        : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
+                    }`}
                     placeholder="Enter email address"
                   />
+                  {emailError && (
+                    <p className="mt-1 text-sm text-red-600">{emailError}</p>
+                  )}
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -648,6 +709,7 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
                       email: "",
                       role: "staff",
                     });
+                    setEmailError("");
                   }}
                   className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium cursor-pointer hover:scale-105"
                 >
@@ -673,7 +735,10 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-bold">Edit User</h3>
                 <button
-                  onClick={() => setEditingUser(null)}
+                  onClick={() => {
+                    setEditingUser(null);
+                    setEditEmailError("");
+                  }}
                   className="text-white hover:text-indigo-500 transition-colors duration-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20"
                 >
                   <svg
@@ -745,13 +810,25 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
                     Email *
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     value={editingUser.email || ""}
-                    onChange={(e) =>
-                      setEditingUser({ ...editingUser, email: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
+                    onChange={(e) => handleEditEmailChange(e.target.value)}
+                    onBlur={() => {
+                      const error = validateEmail(editingUser.email || "");
+                      setEditEmailError(error);
+                    }}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${
+                      editEmailError
+                        ? "border-red-300 focus:ring-red-600 focus:border-red-600"
+                        : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
+                    }`}
+                    placeholder="Enter email address"
                   />
+                  {editEmailError && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {editEmailError}
+                    </p>
+                  )}
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -771,7 +848,10 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
               <div className="flex justify-end gap-4 mt-8">
                 <button
                   type="button"
-                  onClick={() => setEditingUser(null)}
+                  onClick={() => {
+                    setEditingUser(null);
+                    setEditEmailError("");
+                  }}
                   className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium cursor-pointer hover:scale-105"
                 >
                   Cancel

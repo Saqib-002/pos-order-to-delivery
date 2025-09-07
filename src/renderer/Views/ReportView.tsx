@@ -276,7 +276,7 @@ export const ReportView: React.FC<ReportViewProps> = ({orders,setOrders}) => {
                   <button
                     key={range}
                     onClick={() => setDateRange(range)}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
                       dateRange === range
                         ? "bg-indigo-600 text-white"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -293,7 +293,7 @@ export const ReportView: React.FC<ReportViewProps> = ({orders,setOrders}) => {
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
+                  className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
                 />
               </div>
             )}

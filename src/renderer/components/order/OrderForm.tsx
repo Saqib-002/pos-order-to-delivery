@@ -14,7 +14,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
   onClose,
   selectedOrder,
   token,
-  refreshOrders
+  refreshOrders,
 }) => {
   const [customer, setCustomer] = useState({
     name: "",
@@ -23,6 +23,41 @@ export const OrderForm: React.FC<OrderFormProps> = ({
   });
   const [currentOrderedItems, setCurrentOrderedItems] = useState<Item[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
+
+  // Phone number validation function
+  const handlePhoneChange = (value: string) => {
+    // Only allow numbers, spaces, dashes, parentheses, and plus sign
+    const phoneRegex = /^[0-9\s\-\(\)\+]*$/;
+    if (phoneRegex.test(value)) {
+      setCustomer({
+        ...customer,
+        phone: value,
+      });
+
+      // Clear error when valid input is entered
+      if (phoneError) {
+        setPhoneError("");
+      }
+    }
+  };
+
+  // Validate phone number format
+  const validatePhone = (phone: string) => {
+    // Remove all non-digit characters for validation
+    const digitsOnly = phone.replace(/\D/g, "");
+
+    if (digitsOnly.length < 10) {
+      return "Phone number must have at least 10 digits";
+    }
+
+    if (digitsOnly.length > 15) {
+      return "Phone number cannot exceed 15 digits";
+    }
+
+    return "";
+  };
+
   useEffect(() => {
     if (selectedOrder) {
       setCustomer(selectedOrder.customer);
@@ -39,6 +74,14 @@ export const OrderForm: React.FC<OrderFormProps> = ({
       return;
     }
 
+    // Validate phone number
+    const phoneValidationError = validatePhone(customer.phone);
+    if (phoneValidationError) {
+      setPhoneError(phoneValidationError);
+      toast.error(phoneValidationError);
+      return;
+    }
+
     if (currentOrderedItems.length === 0) {
       toast.error("Please add at least one item to the order");
       return;
@@ -52,8 +95,11 @@ export const OrderForm: React.FC<OrderFormProps> = ({
           customer,
           items: currentOrderedItems,
         };
-        const res=await (window as any).electronAPI.updateOrder(token, updatedOrder);
-        if(!res.status){
+        const res = await (window as any).electronAPI.updateOrder(
+          token,
+          updatedOrder
+        );
+        if (!res.status) {
           toast.error(res.error || "Failed to update order. Please try again.");
           return;
         }
@@ -68,13 +114,13 @@ export const OrderForm: React.FC<OrderFormProps> = ({
       return;
     }
     try {
-      const order: Omit<Order,"id"|"createdAt"> = {
+      const order: Omit<Order, "id" | "createdAt"> = {
         customer,
         items: currentOrderedItems,
         status: "Sent to Kitchen",
       };
-      const res=await (window as any).electronAPI.saveOrder(token, order);
-      if(!res.status){
+      const res = await (window as any).electronAPI.saveOrder(token, order);
+      if (!res.status) {
         toast.error(res.error || "Failed to save order. Please try again.");
         setIsSubmitting(false);
         return;
@@ -122,7 +168,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
               </p>
             </div>
             <button
-              onClick={()=>{
+              onClick={() => {
                 refreshOrders();
                 onClose();
               }}
@@ -208,14 +254,20 @@ export const OrderForm: React.FC<OrderFormProps> = ({
                     id="phone"
                     required
                     value={customer.phone}
-                    onChange={(e) =>
-                      setCustomer({
-                        ...customer,
-                        phone: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600 transition-all duration-200 placeholder-gray-400"
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    onBlur={() => {
+                      const error = validatePhone(customer.phone);
+                      setPhoneError(error);
+                    }}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 placeholder-gray-400 ${
+                      phoneError
+                        ? "border-red-300 focus:ring-red-600 focus:border-red-600"
+                        : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
+                    }`}
                   />
+                  {phoneError && (
+                    <p className="mt-1 text-sm text-red-600">{phoneError}</p>
+                  )}
                 </div>
 
                 <div>
@@ -352,7 +404,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
           <div className="flex justify-between items-center">
             <button
               type="button"
-              onClick={()=>{
+              onClick={() => {
                 onClose();
                 refreshOrders();
               }}
