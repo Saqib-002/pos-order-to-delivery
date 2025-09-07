@@ -125,6 +125,7 @@ export class OrderDatabaseOperations {
             throw error;
         }
     }
+
     static async getOrderAnalytics(filter: any): Promise<any[]> {
         const { dateRange, selectedDate } = filter;
         let startDate = new Date();
@@ -153,7 +154,6 @@ export class OrderDatabaseOperations {
             default:
                 throw new Error("Invalid date range");
         }
-        console.log(startDate, endDate);
         const ordersStats = await localDb("orders")
             .where("isDeleted", false)
             .andWhere("createdAt", ">=", startDate.toISOString())
@@ -184,40 +184,75 @@ export class OrderDatabaseOperations {
             .where("isDeleted", false)
             .andWhere("createdAt", ">=", startDate.toISOString())
             .andWhere("createdAt", "<=", endDate.toISOString())
-            .select("createdAt","customerName","orderId","customerPhone","status");
-        const newOrders=[]
+            .select(
+                "id",
+                "createdAt",
+                "customerName",
+                "orderId",
+                "customerPhone",
+                "status"
+            );
+
+        const newOrders = [];
         for (const order of orders) {
             const orderTime = new Date(order.createdAt);
             const hour = orderTime.getHours();
             hourlyData[hour]++;
-            const newOrder={
-                createdAt:order.createdAt,
-                customer:{
-                    name:order.customerName,
-                    phone:order.customerPhone
+
+            // Get order items for each order
+            const items = await localDb("order_items")
+                .innerJoin(
+                    "menu_items",
+                    "order_items.menuItemId",
+                    "menu_items.id"
+                )
+                .where("order_items.orderId", order.id)
+                .andWhere("order_items.isDeleted", false)
+                .andWhere("menu_items.isDeleted", false)
+                .select(
+                    "menu_items.name",
+                    "order_items.quantity",
+                    "menu_items.price",
+                    "order_items.specialInstructions",
+                    "order_items.customIngredients",
+                    "menu_items.ingredients"
+                );
+
+            const formattedItems = items.map((item) => ({
+                name: item.name,
+                quantity: item.quantity,
+            }));
+
+            const newOrder = {
+                createdAt: order.createdAt,
+                customer: {
+                    name: order.customerName,
+                    phone: order.customerPhone,
                 },
-                orderId:order.orderId,
-                status:order.status,
-                items:[] as { name: string; quantity: number }[]
-            }
+                orderId: order.orderId,
+                status: order.status,
+                items: formattedItems,
+            };
             newOrders.push(newOrder);
         }
+
         const topItems = await localDb("order_items")
-        .innerJoin("menu_items", "order_items.menuItemId", "menu_items.id")
-        .innerJoin("orders", "order_items.orderId", "orders.id")
-        .where("order_items.isDeleted", false)
-        .andWhere("menu_items.isDeleted", false)
-        .andWhere("orders.isDeleted", false)
-        .andWhere("orders.createdAt", ">=", startDate.toISOString())
-        .andWhere("orders.createdAt", "<=", endDate.toISOString())
-        .groupBy("menu_items.id", "menu_items.name")
-        .select(
-            "menu_items.name",
-            localDb.raw("SUM(order_items.quantity) as count")
-        )
-        .orderBy("count", "desc")
-        .limit(8);
-        return {...ordersStats, hourlyData,topItems,orders:newOrders};
+            .innerJoin("menu_items", "order_items.menuItemId", "menu_items.id")
+            .innerJoin("orders", "order_items.orderId", "orders.id")
+            .where("order_items.isDeleted", false)
+            .andWhere("menu_items.isDeleted", false)
+            .andWhere("orders.isDeleted", false)
+            .andWhere("orders.createdAt", ">=", startDate.toISOString())
+            .andWhere("orders.createdAt", "<=", endDate.toISOString())
+            .groupBy("menu_items.id", "menu_items.name")
+            .select(
+                "menu_items.name",
+                localDb.raw("SUM(order_items.quantity) as count")
+            )
+            .orderBy("count", "desc")
+            .limit(8);
+
+        return { ...ordersStats, hourlyData, topItems, orders: newOrders };
     }
     static async getOrdersByFilter(filter: FilterType): Promise<Order[]> {
         try {

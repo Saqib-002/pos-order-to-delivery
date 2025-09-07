@@ -188,15 +188,7 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
     { value: "admin", label: "Admin" },
     { value: "staff", label: "Staff" },
     { value: "kitchen", label: "Kitchen" },
-    { value: "delivery", label: "Delivery" },
-  ];
-
-  const getRoleFilterOptions = () => [
-    { value: "all", label: "All Roles" },
-    { value: "admin", label: "Admin" },
-    { value: "staff", label: "Staff" },
-    { value: "kitchen", label: "Kitchen" },
-    { value: "delivery", label: "Delivery" },
+    { value: "manager", label: "Manager" },
   ];
 
   const filteredUsers = users.filter((user) => {
@@ -220,7 +212,7 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
         return "bg-blue-100 text-blue-800";
       case "kitchen":
         return "bg-orange-100 text-orange-800";
-      case "delivery":
+      case "manager":
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -367,13 +359,13 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">
-                  Kitchen/Delivery
+                  Kitchen/Manager
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {
                     users.filter(
                       (user) =>
-                        user.role === "kitchen" || user.role === "delivery"
+                        user.role === "kitchen" || user.role === "manager"
                     ).length
                   }
                 </p>
@@ -422,7 +414,7 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
               >
                 All Roles
               </button>
-              {["admin", "staff", "kitchen", "delivery"].map((role) => (
+              {["admin", "staff", "kitchen", "manager"].map((role) => (
                 <button
                   key={role}
                   onClick={() => setSelectedRole(role)}

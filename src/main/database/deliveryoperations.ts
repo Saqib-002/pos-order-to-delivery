@@ -59,15 +59,15 @@ export class DeliveryDatabaseOperations {
                 .select(
                     localDb.raw("COUNT(*) as totalAssigned"),
                     localDb.raw(
-                        "COUNT(CASE WHEN status = 'Delivered' THEN 1 END) as totalDelivered"
+                        "COUNT(CASE WHEN LOWER(status) = LOWER('Delivered') THEN 1 END) as totalDelivered"
                     ),
                     localDb.raw(
-                        "COUNT(CASE WHEN status = 'Cancelled' THEN 1 END) as totalCancelled"
+                        "COUNT(CASE WHEN LOWER(status) = LOWER('Cancelled') THEN 1 END) as totalCancelled"
                     ),
                     localDb.raw(`
                           AVG(
                             CASE 
-                              WHEN status = 'Delivered' AND assignedAt IS NOT NULL AND deliveredAt IS NOT NULL 
+                              WHEN LOWER(status) = LOWER('Delivered') AND assignedAt IS NOT NULL AND deliveredAt IS NOT NULL 
                               THEN (JULIANDAY(deliveredAt) - JULIANDAY(assignedAt)) * 1440
                             END
                           ) as avgDeliveryTime

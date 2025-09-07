@@ -6,5 +6,5 @@ export { ViewType };
 export interface NavItem {
     view: string;
     label: string;
-    adminOnly?: boolean;
+    roles: string[];
 }

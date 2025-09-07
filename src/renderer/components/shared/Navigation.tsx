@@ -18,8 +18,8 @@ export const Navigation = ({
             <h1 className="text-2xl font-bold">Delivery System</h1>
         </div>
         <div className="flex items-center gap-2">
-            {navItems.map(({ view, label, adminOnly }: NavItem) =>
-                !adminOnly || userRole === "admin" ? (
+            {navItems.map(({ view, label, roles }: NavItem) =>
+                roles && roles.includes(userRole!.toLowerCase()) ? (
                     <button
                         key={view}
                         className={`mr-2 outline-none p-2 rounded-lg font-semibold py-2 px-6 shadow-md transition-colors cursor-pointer duration-150 ${

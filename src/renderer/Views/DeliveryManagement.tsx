@@ -666,8 +666,8 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
                           {(person as any).avgDeliveryTime
-                            ? `${(person as any).avgDeliveryTime}min`
-                            : "N/A"}
+                            ? `${((person as any).avgDeliveryTime).toFixed(2)}min`
+                            : "0min"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2">
