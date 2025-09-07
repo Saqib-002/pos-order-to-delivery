@@ -12,6 +12,7 @@ import ThunderIcon from "../assets/icons/thunder.svg?react";
 import MarkIcon from "../assets/icons/mark.svg?react";
 import GroupIcon from "../assets/icons/group.svg?react";
 import SearchIcon from "../assets/icons/search.svg?react";
+import { printReceipt } from "../utils/receipt";
 
 
 interface DeliveryViewProps {
@@ -35,6 +36,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
     const [deliveryPersons, setDeliveryPersons] = useState<DeliveryPerson[]>(
         []
     );
+    const [isPrinting,setIsPrinting]=useState<string|null>();
     const [showDeliverySuggestions, setShowDeliverySuggestions] =
         useState(false);
 
@@ -72,27 +74,53 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
             orders.filter((o) => o.status.toLowerCase() === "out for delivery"),
         [orders]
     );
-
+    const handlePrintReceipt = async (order: Order) => {
+        setIsPrinting(order.id);
+        try {
+            const success = await printReceipt(order);
+            if (success) {
+                toast.success(`Receipt printed for Order #${order.orderId}`);
+            } else {
+                toast.error("Failed to print receipt");
+            }
+        } catch (error) {
+            console.error("Print error:", error);
+            toast.error("Failed to print receipt");
+        } finally {
+            setIsPrinting(null);
+        }
+    };
     const assignDelivery = useCallback(
-        async (order: Order) => {
+        async (order: Order,shouldPrintReceipt: boolean = false) => {
             if (!deliveryPerson.name.trim()) {
                 toast.error("Please enter delivery person name");
                 return;
             }
             try {
-                const res = await (
-                    window as any
-                ).electronAPI.assignDeliveryPerson(
-                    token,
-                    order.id,
-                    deliveryPerson.id
-                );
-                if (!res.status) {
-                    toast.error("Failed to assign delivery person");
-                    return;
+                // const res = await (
+                //     window as any
+                // ).electronAPI.assignDeliveryPerson(
+                //     token,
+                //     order.id,
+                //     deliveryPerson.id
+                // );
+                // if (!res.status) {
+                //     toast.error("Failed to assign delivery person");
+                //     return;
+                // }
+                // refreshOrdersCallback();
+                // setDeliveryPerson({ id: "", name: "" });
+                // toast.success(`Delivery person assigned to Order #${order.orderId}`);
+                if (shouldPrintReceipt) {
+                    setTimeout(async () => {
+                        // Get the updated order with delivery person info
+                        const updatedOrder = {
+                            ...order,
+                            deliveryPerson: deliveryPersons.find(dp => dp.id === deliveryPerson.id)
+                        };
+                        await handlePrintReceipt(updatedOrder);
+                    }, 500);
                 }
-                refreshOrdersCallback();
-                setDeliveryPerson({ id: "", name: "" });
             } catch (error) {
                 console.error("Failed to assign delivery:", error);
                 toast.error("Failed to assign delivery. Please try again.");
@@ -223,7 +251,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2 min-w-[140px]">
                     <button
-                        onClick={() => assignDelivery(order)}
+                        onClick={() => assignDelivery(order,true)}
                         disabled={!deliveryPerson.name.trim()}
                         className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105"
                     >
@@ -319,7 +347,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                     showSuggestions={showDeliverySuggestions}
                     setShowSuggestions={setShowDeliverySuggestions}
                     onAssign={() =>
-                        readyOrders[0] && assignDelivery(readyOrders[0])
+                        readyOrders[0] && assignDelivery(readyOrders[0],true)
                     }
                     disabled={
                         !deliveryPerson.name.trim() || readyOrders.length === 0
