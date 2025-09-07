@@ -67,6 +67,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   markDeliveredOrder: (token: string, id: string) =>
     ipcRenderer.invoke("mark-delivered-order", token, id),
   getOrders: (token: string) => ipcRenderer.invoke("get-orders", token),
+  getOrderAnalytics: (token: string,filter:any) => ipcRenderer.invoke("get-order-analytics", token,filter),
   getOrdersByFilter: (token: string,filter:any) => ipcRenderer.invoke("get-orders-by-filter", token,filter),
   updateOrder: (token: string, order: any) =>
     ipcRenderer.invoke("update-order", token, order),

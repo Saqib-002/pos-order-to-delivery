@@ -16,7 +16,6 @@ import SearchIcon from "../assets/icons/search.svg?react";
 
 interface DeliveryViewProps {
     orders: Order[];
-    setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
     token: string | null;
     refreshOrdersCallback: () => void;
     filter: FilterType;

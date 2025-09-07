@@ -2,6 +2,7 @@ import { ipcMain } from "electron";
 import {
   cancelOrder,
   deleteOrder,
+  getOrderAnalytics,
   getOrders,
   getOrdersByFilter,
   markDeliveredOrder,
@@ -45,6 +46,7 @@ export function registerIpcHandlers() {
     ipcMain.handle("ready-order", readyOrder);
     ipcMain.handle("mark-delivered-order", markDeliveredOrder);
     ipcMain.handle("get-orders", getOrders);
+    ipcMain.handle("get-order-analytics", getOrderAnalytics);
     ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
     ipcMain.handle("update-order", updateOrder);
 

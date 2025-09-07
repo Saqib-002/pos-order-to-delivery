@@ -79,7 +79,6 @@ const App: React.FC = () => {
             component: (
                 <DeliveryView
                     orders={orders}
-                    setOrders={setOrders}
                     token={auth.token!}
                     refreshOrdersCallback={refreshOrdersCallback}
                     filter={filter}
@@ -89,7 +88,15 @@ const App: React.FC = () => {
             roles: ["admin", "delivery"],
         },
         [VIEWS.REPORTS]: {
-            component: <ReportView orders={orders} setOrders={setOrders} />,
+            component: (
+                <ReportView
+                token={auth.token}
+                    orders={orders}
+                    setOrders={setOrders}
+                    filter={filter}
+                    setFilter={setFilter}
+                />
+            ),
             roles: ["admin"],
         },
         [VIEWS.MENU]: {

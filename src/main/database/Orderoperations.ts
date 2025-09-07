@@ -125,6 +125,100 @@ export class OrderDatabaseOperations {
             throw error;
         }
     }
+    static async getOrderAnalytics(filter: any): Promise<any[]> {
+        const { dateRange, selectedDate } = filter;
+        let startDate = new Date();
+        let endDate = new Date();
+        switch (dateRange) {
+            case "today":
+                startDate = new Date(startDate.setHours(0, 0, 0, 0));
+                endDate = new Date(endDate.setHours(23, 59, 59, 999));
+                break;
+            case "week":
+                startDate = new Date(
+                    endDate.getTime() - 7 * 24 * 60 * 60 * 1000
+                );
+                break;
+            case "month":
+                startDate = new Date(
+                    endDate.getTime() - 30 * 24 * 60 * 60 * 1000
+                );
+                break;
+            case "custom":
+                startDate = new Date(selectedDate);
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(selectedDate);
+                endDate.setHours(23, 59, 59, 999);
+                break;
+            default:
+                throw new Error("Invalid date range");
+        }
+        console.log(startDate, endDate);
+        const ordersStats = await localDb("orders")
+            .where("isDeleted", false)
+            .andWhere("createdAt", ">=", startDate.toISOString())
+            .andWhere("createdAt", "<=", endDate.toISOString())
+            .select(
+                localDb.raw(
+                    "COUNT(CASE WHEN LOWER(status) = LOWER('Delivered') THEN 1 END) as totalDelivered"
+                ),
+                localDb.raw(
+                    "COUNT(CASE WHEN LOWER(status) = LOWER('sent to kitchen') THEN 1 END) as totalSentToKitchen"
+                ),
+                localDb.raw(
+                    "COUNT(CASE WHEN LOWER(status) = LOWER('ready for delivery') THEN 1 END) as totalReadyForDelivery"
+                ),
+                localDb.raw(
+                    "COUNT(CASE WHEN LOWER(status) = LOWER('out for delivery') THEN 1 END) as totalOutForDelivery"
+                ),
+                localDb.raw(
+                    "COUNT(CASE WHEN LOWER(status) = LOWER('Cancelled') THEN 1 END) as totalCancelled"
+                ),
+                localDb.raw(
+                    `AVG(CASE WHEN LOWER(status) = LOWER('Delivered') AND assignedAt IS NOT NULL AND deliveredAt IS NOT NULL THEN (JULIANDAY(deliveredAt) - JULIANDAY(assignedAt)) * 1440 END) as avgDeliveryTime`
+                )
+            )
+            .first();
+        const hourlyData = new Array(24).fill(0);
+        const orders = await localDb("orders")
+            .where("isDeleted", false)
+            .andWhere("createdAt", ">=", startDate.toISOString())
+            .andWhere("createdAt", "<=", endDate.toISOString())
+            .select("createdAt","customerName","orderId","customerPhone","status");
+        const newOrders=[]
+        for (const order of orders) {
+            const orderTime = new Date(order.createdAt);
+            const hour = orderTime.getHours();
+            hourlyData[hour]++;
+            const newOrder={
+                createdAt:order.createdAt,
+                customer:{
+                    name:order.customerName,
+                    phone:order.customerPhone
+                },
+                orderId:order.orderId,
+                status:order.status,
+                items:[] as { name: string; quantity: number }[]
+            }
+            newOrders.push(newOrder);
+        }
+        const topItems = await localDb("order_items")
+        .innerJoin("menu_items", "order_items.menuItemId", "menu_items.id")
+        .innerJoin("orders", "order_items.orderId", "orders.id")
+        .where("order_items.isDeleted", false)
+        .andWhere("menu_items.isDeleted", false)
+        .andWhere("orders.isDeleted", false)
+        .andWhere("orders.createdAt", ">=", startDate.toISOString())
+        .andWhere("orders.createdAt", "<=", endDate.toISOString())
+        .groupBy("menu_items.id", "menu_items.name")
+        .select(
+            "menu_items.name",
+            localDb.raw("SUM(order_items.quantity) as count")
+        )
+        .orderBy("count", "desc")
+        .limit(8);
+        return {...ordersStats, hourlyData,topItems,orders:newOrders};
+    }
     static async getOrdersByFilter(filter: FilterType): Promise<Order[]> {
         try {
             const query = localDb("orders").where("isDeleted", false);
@@ -140,13 +234,16 @@ export class OrderDatabaseOperations {
                     .split("T")[0];
                 query.whereRaw("DATE(createdAt) = ?", [selectedDate]);
             }
-            if (filter.selectedStatus[0] !== "all" && filter.selectedStatus.length>0) {
+            if (
+                filter.selectedStatus[0] !== "all" &&
+                filter.selectedStatus.length > 0
+            ) {
                 query.whereRaw(
-                "LOWER(status) IN (" +
-                    filter.selectedStatus.map(() => "?").join(",") +
-                    ")",
-                filter.selectedStatus.map((s) => s.toLowerCase())
-            );
+                    "LOWER(status) IN (" +
+                        filter.selectedStatus.map(() => "?").join(",") +
+                        ")",
+                    filter.selectedStatus.map((s) => s.toLowerCase())
+                );
             }
             const rows = await query;
             const orders: Order[] = rows.map((row) => ({
@@ -311,7 +408,7 @@ export class OrderDatabaseOperations {
             await localDb("orders").where("id", id).update({
                 updatedAt: now,
                 cancelledAt: now,
-                status:"cancelled"
+                status: "cancelled",
             });
             return { id };
         } catch (error) {
@@ -324,7 +421,7 @@ export class OrderDatabaseOperations {
             await localDb("orders").where("id", id).update({
                 updatedAt: now,
                 readyAt: now,
-                status:"ready for delivery"
+                status: "ready for delivery",
             });
             return { id };
         } catch (error) {
@@ -337,7 +434,7 @@ export class OrderDatabaseOperations {
             await localDb("orders").where("id", id).update({
                 updatedAt: now,
                 deliveredAt: now,
-                status:"delivered"
+                status: "delivered",
             });
             return { id };
         } catch (error) {
