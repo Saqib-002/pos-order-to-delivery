@@ -7,6 +7,11 @@ import { FilterControls } from "../components/order/FilterControls.view";
 import { OrderHeader } from "../components/order/OrderHeader.view";
 import { OrderRow } from "../components/order/OrderRow.view";
 import { StatsCard } from "../components/shared/StatsCard.order";
+// ICONS
+import TotalOrdersIcon from "../assets/icons/total-orders.svg?react";
+import SentToKitchenIcon from "../assets/icons/sent-to-kitchen.svg?react";
+import ReadyForDeliveryIcon from "../assets/icons/ready-for-delivery.svg?react";
+import DeliveredIcon from "../assets/icons/delivered.svg?react"
 
 interface OrderViewProps {
     orders: Order[];
@@ -98,21 +103,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
         {
             title: "Total Orders",
             value: orders.length,
-            icon: (
-                <svg
-                    className="w-6 h-6 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                    />
-                </svg>
-            ),
+            icon:<TotalOrdersIcon className="w-6 h-6 text-blue-600"/>,
             bgColor: "bg-blue-100",
             textColor: "text-blue-600",
         },
@@ -121,21 +112,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
             value: orders.filter(
                 (o) => o.status.toLowerCase() === "sent to kitchen"
             ).length,
-            icon: (
-                <svg
-                    className="w-6 h-6 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    />
-                </svg>
-            ),
+            icon: <SentToKitchenIcon className="w-6 h-6 text-blue-600"/>,
             bgColor: "bg-blue-100",
             textColor: "text-blue-600",
         },
@@ -144,21 +121,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
             value: orders.filter(
                 (o) => o.status.toLowerCase() === "ready for delivery"
             ).length,
-            icon: (
-                <svg
-                    className="w-6 h-6 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                    />
-                </svg>
-            ),
+            icon: <ReadyForDeliveryIcon className="w-6 h-6 text-green-600"/>,
             bgColor: "bg-green-100",
             textColor: "text-green-600",
         },
@@ -166,21 +129,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
             title: "Delivered",
             value: orders.filter((o) => o.status.toLowerCase() === "delivered")
                 .length,
-            icon: (
-                <svg
-                    className="w-6 h-6 text-gray-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                    />
-                </svg>
-            ),
+            icon:<DeliveredIcon className="w-6 h-6 text-gray-600"/>,
             bgColor: "bg-gray-100",
             textColor: "text-gray-600",
         },
@@ -230,19 +179,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                         </div>
                         {orders.length === 0 ? (
                             <div className="text-center py-12">
-                                <svg
-                                    className="mx-auto h-12 w-12 text-gray-400"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                    />
-                                </svg>
+                                <TotalOrdersIcon className="mx-auto h-12 w-12 text-gray-400"/>
                                 <h3 className="mt-2 text-sm font-medium text-gray-900">
                                     {orders.length === 0
                                         ? "No orders"

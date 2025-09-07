@@ -1,6 +1,13 @@
 import React from "react";
 import { Order } from "@/types/order";
 
+// ICONS
+import CrossIcon from "../../assets/icons/cross.svg?react"; 
+import DocumentIcon from "../../assets/icons/document.svg?react"; 
+import PersonIcon from "../../assets/icons/person.svg?react";
+import TotalOrderIcon from "../../assets/icons/total-orders.svg?react";
+
+
 interface ViewOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -53,19 +60,7 @@ export const ViewOrderModal: React.FC<ViewOrderModalProps> = ({
               onClick={onClose}
               className="text-white hover:text-blue-500 transition-colors duration-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20 cursor-pointer"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <CrossIcon className="size-6"/>
             </button>
           </div>
         </div>
@@ -78,19 +73,7 @@ export const ViewOrderModal: React.FC<ViewOrderModalProps> = ({
               <div className="bg-gray-50 rounded-xl p-6">
                 <div className="flex items-center mb-4">
                   <div className="p-2 bg-blue-100 rounded-lg mr-3">
-                    <svg
-                      className="w-5 h-5 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
+                    <DocumentIcon className="w-5 h-5 text-blue-600"/>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900">
                     Order Information
@@ -123,19 +106,7 @@ export const ViewOrderModal: React.FC<ViewOrderModalProps> = ({
               <div className="bg-gray-50 rounded-xl p-6">
                 <div className="flex items-center mb-4">
                   <div className="p-2 bg-green-100 rounded-lg mr-3">
-                    <svg
-                      className="w-5 h-5 text-green-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
+                    <PersonIcon className="w-5 h-5 text-green-600"/>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900">
                     Customer Details
@@ -166,19 +137,7 @@ export const ViewOrderModal: React.FC<ViewOrderModalProps> = ({
               <div className="bg-gray-50 rounded-xl p-6">
                 <div className="flex items-center mb-4">
                   <div className="p-2 bg-purple-100 rounded-lg mr-3">
-                    <svg
-                      className="w-5 h-5 text-purple-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                      />
-                    </svg>
+                    <TotalOrderIcon className="w-5 h-5 text-purple-600"/>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900">
                     Order Summary
@@ -224,19 +183,7 @@ export const ViewOrderModal: React.FC<ViewOrderModalProps> = ({
             <div className="bg-gray-50 rounded-xl p-6">
               <div className="flex items-center mb-6">
                 <div className="p-2 bg-orange-100 rounded-lg mr-3">
-                  <svg
-                    className="w-5 h-5 text-orange-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                    />
-                  </svg>
+                  <TotalOrderIcon className="w-5 h-5 text-orange-600"/>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">
                   Order Items

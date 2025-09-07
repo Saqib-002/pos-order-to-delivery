@@ -1,6 +1,9 @@
 import { Order } from "@/types/order";
 import { JSX } from "react";
 
+// ICONS
+import DeliveredIcon from "../../assets/icons/delivered.svg?react";
+
 export const OrderTable: React.FC<{
     orders: Order[];
     title: string;
@@ -13,19 +16,7 @@ export const OrderTable: React.FC<{
         </div>
         {orders.length === 0 ? (
             <div className="text-center py-12">
-                <svg
-                    className="mx-auto h-12 w-12 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                    />
-                </svg>
+                <DeliveredIcon className="mx-auto size-12 text-gray-400"/>
                 <h3 className="mt-2 text-sm font-medium text-gray-900">
                     No orders {title.toLowerCase()}
                 </h3>

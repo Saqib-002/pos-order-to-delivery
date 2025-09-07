@@ -1,5 +1,9 @@
 import { useMemo } from "react";
 
+import SearchIcon from "../../assets/icons/search.svg?react";
+import AddIcon from "../../assets/icons/add.svg?react";
+
+
 export const DeliveryPersonInput: React.FC<{
     deliveryPerson: { id: string; name: string };
     setDeliveryPerson: React.Dispatch<
@@ -50,19 +54,7 @@ export const DeliveryPersonInput: React.FC<{
                     </label>
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg
-                                className="h-5 w-5 text-gray-400"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                />
-                            </svg>
+                            <SearchIcon className="size-5 text-gray-400"/>
                         </div>
                         <input
                             type="text"
@@ -116,19 +108,7 @@ export const DeliveryPersonInput: React.FC<{
                     disabled={disabled}
                     className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                    <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                    </svg>
+                    <AddIcon className="size-5"/>
                     Quick Assign
                 </button>
             </div>

@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import { Item, Order } from "@/types/order";
 import { toast } from "react-toastify";
 import AddOrderItem from "./AddOrderItem";
+// ICONS
+import CrossIcon from "../../assets/icons/cross.svg?react";
+import PersonIcon from "../../assets/icons/person.svg?react";
+import TotalOrdersIcon from "../../assets/icons/total-orders.svg?react";
+import LoaderIcon from "../../assets/icons/loader.svg?react";
+import SentToKitchen from "../../assets/icons/sent-to-kitchen.svg?react";
 
 interface OrderFormProps {
   onClose: () => void;
@@ -174,19 +180,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
               }}
               className="text-white hover:text-indigo-500 transition-colors duration-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20 cursor-pointer"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <CrossIcon className="size-6"/>
             </button>
           </div>
         </div>
@@ -198,19 +192,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
             <div className="bg-gray-50 rounded-xl p-6">
               <div className="flex items-center mb-4">
                 <div className="p-2 bg-indigo-100 rounded-lg mr-3">
-                  <svg
-                    className="w-5 h-5 text-indigo-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
+                  <PersonIcon className="w-5 h-5 text-indigo-600"/>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">
                   Customer Information
@@ -300,19 +282,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
                   <div className="p-2 bg-green-100 rounded-lg mr-3">
-                    <svg
-                      className="w-5 h-5 text-green-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                      />
-                    </svg>
+                    <TotalOrdersIcon className="w-5 h-5 text-green-600"/>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900">
                     Order Items
@@ -421,43 +391,12 @@ export const OrderForm: React.FC<OrderFormProps> = ({
             >
               {isSubmitting ? (
                 <>
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
+                <LoaderIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"/>
                   Processing...
                 </>
               ) : (
                 <>
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    />
-                  </svg>
+                <SentToKitchen className="size-5"/>
                   {selectedOrder ? "Update Order" : "Send to kitchen"}
                 </>
               )}

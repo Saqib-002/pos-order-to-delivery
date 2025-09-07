@@ -1,4 +1,5 @@
 import { Order } from "@/types/order";
+import MarkIcon from "../../assets/icons/mark.svg?react";
 
 interface OrderRowProps {
     order: Order;
@@ -78,19 +79,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({ order, markAsReady }) => {
                     onClick={() => markAsReady(order.id)}
                     className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105"
                 >
-                    <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                        />
-                    </svg>
+                    <MarkIcon className="size-4"/>
                     Mark Ready
                 </button>
             </td>

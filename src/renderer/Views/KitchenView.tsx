@@ -2,10 +2,15 @@ import { useEffect, useCallback, useMemo } from "react";
 import { toast } from "react-toastify";
 import { EmptyState } from "../components/kitchen/EmptyState.view";
 import { HeaderSection } from "../components/kitchen/Header";
-import { FilterControls } from "../components/order/FilterControls.view";
+import { FilterControls } from "../components/kitchen/FilterControl.view";
 import { Order, FilterType } from "@/types/order";
 import { StatsCard } from "../components/shared/StatsCard.order";
 import { OrderRow } from "../components/kitchen/OrderRow.view";
+
+// ICONS
+import TotalOrdersIcon from "../assets/icons/total-orders.svg?react";
+import HighPriorityIcon from "../assets/icons/high-priority.svg?react";
+import ThunderIcon from "../assets/icons/thunder.svg?react";
 
 interface KitchenViewProps {
     orders: Order[];
@@ -63,63 +68,21 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
             {
                 title: "Orders in Kitchen",
                 value: orders.length,
-                icon: (
-                    <svg
-                        className="w-6 h-6 text-blue-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                        />
-                    </svg>
-                ),
+                icon: <TotalOrdersIcon className="size-6 text-blue-600"/>,
                 bgColor: "bg-blue-100",
                 textColor: "text-blue-600",
             },
             {
                 title: "High Priority",
                 value: highPriorityCount,
-                icon: (
-                    <svg
-                        className="w-6 h-6 text-red-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                    </svg>
-                ),
+                icon: <HighPriorityIcon className="w-6 h-6 text-red-600"/>,
                 bgColor: "bg-red-100",
                 textColor: "text-red-600",
             },
             {
                 title: "Avg Prep Time",
                 value: "~25 min",
-                icon: (
-                    <svg
-                        className="w-6 h-6 text-green-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13 10V3L4 14h7v7l9-11h-7z"
-                        />
-                    </svg>
-                ),
+                icon: <ThunderIcon className="w-6 h-6 text-green-600"/>,
                 bgColor: "bg-green-100",
                 textColor: "text-green-600",
             },

@@ -5,6 +5,15 @@ import { DeliveryPersonInput } from "../components/delivery/DeliveryPersonInput.
 import { Header } from "../components/delivery/Header.view";
 import { OrderTable } from "../components/delivery/OrderTable";
 import { StatsCard } from "../components/shared/StatsCard.order";
+
+// ICONS
+import CircleCheckIcon from "../assets/icons/circle-check.svg?react";
+import ThunderIcon from "../assets/icons/thunder.svg?react";
+import MarkIcon from "../assets/icons/mark.svg?react";
+import GroupIcon from "../assets/icons/group.svg?react";
+import SearchIcon from "../assets/icons/search.svg?react";
+
+
 interface DeliveryViewProps {
     orders: Order[];
     setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
@@ -118,41 +127,13 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
             {
                 title: "Ready for Delivery",
                 value: readyOrders.length,
-                icon: (
-                    <svg
-                        className="w-6 h-6 text-green-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                    </svg>
-                ),
+                icon: <CircleCheckIcon className="size-6 text-green-600"/>,
                 bgColor: "bg-green-100",
             },
             {
                 title: "Out for Delivery",
                 value: outForDeliveryOrders.length,
-                icon: (
-                    <svg
-                        className="w-6 h-6 text-blue-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13 10V3L4 14h7v7l9-11h-7z"
-                        />
-                    </svg>
-                ),
+                icon: <ThunderIcon className="text-blue-600 size-6"/>,
                 bgColor: "bg-blue-100",
             },
             {
@@ -165,21 +146,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                         deliveredDate.toDateString() === today.toDateString()
                     );
                 }).length,
-                icon: (
-                    <svg
-                        className="w-6 h-6 text-gray-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                        />
-                    </svg>
-                ),
+                icon: <MarkIcon className="text-gray-600 size-6"/>,
                 bgColor: "bg-gray-100",
             },
             {
@@ -189,21 +156,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                         .map((o) => o.deliveryPersonId)
                         .filter(Boolean)
                 ).size,
-                icon: (
-                    <svg
-                        className="w-6 h-6 text-purple-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                        />
-                    </svg>
-                ),
+                icon: <GroupIcon className="text-purple-600 size-6"/>,
                 bgColor: "bg-purple-100",
             },
         ],
@@ -275,19 +228,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                         disabled={!deliveryPerson.name.trim()}
                         className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105"
                     >
-                        <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M13 10V3L4 14h7v7l9-11h-7z"
-                            />
-                        </svg>
+                        <ThunderIcon className="size-4"/>
                         Assign
                     </button>
                 </td>
@@ -350,19 +291,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                     onClick={() => markAsDelivered(order.id)}
                     className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105"
                 >
-                    <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                        />
-                    </svg>
+                    <MarkIcon className="size-4"/>
                     Delivered
                 </button>
             </td>
@@ -405,19 +334,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg
-                                        className="h-5 w-5 text-gray-400"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                        />
-                                    </svg>
+                                    <SearchIcon className="size-5 text-gray-400"/>
                                 </div>
                                 <input
                                     type="text"
