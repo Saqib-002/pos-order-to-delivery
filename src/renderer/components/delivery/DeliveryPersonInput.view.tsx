@@ -1,0 +1,137 @@
+import { useMemo } from "react";
+
+export const DeliveryPersonInput: React.FC<{
+    deliveryPerson: { id: string; name: string };
+    setDeliveryPerson: React.Dispatch<
+        React.SetStateAction<{ id: string; name: string }>
+    >;
+    deliveryPersons: DeliveryPerson[];
+    showSuggestions: boolean;
+    setShowSuggestions: React.Dispatch<React.SetStateAction<boolean>>;
+    onAssign: () => void;
+    disabled: boolean;
+}> = ({
+    deliveryPerson,
+    setDeliveryPerson,
+    deliveryPersons,
+    showSuggestions,
+    setShowSuggestions,
+    onAssign,
+    disabled,
+}) => {
+    const filteredDeliveryPersons = useMemo(
+        () =>
+            deliveryPerson.name.trim()
+                ? deliveryPersons.filter((person) =>
+                      person.name
+                          .toLowerCase()
+                          .includes(deliveryPerson.name.toLowerCase())
+                  )
+                : [],
+        [deliveryPerson.name, deliveryPersons]
+    );
+
+    const handleChange = (name: string) => {
+        setDeliveryPerson((prev) => ({ ...prev, name }));
+        setShowSuggestions(name.trim().length > 0);
+    };
+
+    const selectPerson = (person: DeliveryPerson) => {
+        setDeliveryPerson({ id: person.id, name: person.name });
+        setShowSuggestions(false);
+    };
+
+    return (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+                <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Search Delivery Person
+                    </label>
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg
+                                className="h-5 w-5 text-gray-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                />
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search delivery person by name..."
+                            value={deliveryPerson.name}
+                            onChange={(e) => handleChange(e.target.value)}
+                            onFocus={() =>
+                                setShowSuggestions(
+                                    deliveryPerson.name.trim().length > 0
+                                )
+                            }
+                            onBlur={() =>
+                                setTimeout(() => setShowSuggestions(false), 200)
+                            }
+                            className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600 transition-all duration-200 placeholder-gray-400"
+                        />
+                        {showSuggestions &&
+                            filteredDeliveryPersons.length > 0 && (
+                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    {filteredDeliveryPersons.map((person) => (
+                                        <button
+                                            key={person.id}
+                                            type="button"
+                                            onClick={() => selectPerson(person)}
+                                            className="w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors duration-150 border-b border-gray-100 last:border-b-0"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1">
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        {person.name}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 mt-1">
+                                                        {person.phone} •{" "}
+                                                        {person.vehicleType}
+                                                    </div>
+                                                </div>
+                                                <div className="ml-3">
+                                                    <div className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                                                        {person.licenseNo}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                    </div>
+                </div>
+                <button
+                    onClick={onAssign}
+                    disabled={disabled}
+                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                    <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        />
+                    </svg>
+                    Quick Assign
+                </button>
+            </div>
+        </div>
+    );
+};

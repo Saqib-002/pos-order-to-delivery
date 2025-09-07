@@ -44,7 +44,7 @@ interface DeliveryPerson {
   email?: string;
   phone: string;
   vehicleType: 'bike' | 'motorcycle' | 'car' | 'scooter';
-  licenseNumber?: string;
+  licenseNo?: string;
   createdAt: string;
   updatedAt: string;
   syncedAt?: string;

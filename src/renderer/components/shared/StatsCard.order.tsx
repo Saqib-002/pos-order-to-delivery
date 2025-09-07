@@ -1,10 +1,9 @@
 export const StatsCard: React.FC<{
     title: string;
-    value: number;
+    value: number | string;
     icon: React.ReactNode;
     bgColor: string;
-    textColor: string;
-}> = ({ title, value, icon, bgColor, textColor }) => (
+}> = ({ title, value, icon, bgColor }) => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="flex items-center">
             <div className={`p-2 ${bgColor} rounded-lg`}>{icon}</div>

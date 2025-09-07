@@ -3,11 +3,10 @@ import { FilterType, Order } from "@/types/order";
 import { toast } from "react-toastify";
 import { OrderForm } from "../components/order/OrderForm";
 import { ViewOrderModal } from "../components/order/ViewOrderModal";
-import { CustomSelect } from "../components/ui/CustomSelect";
 import { FilterControls } from "../components/order/FilterControls.view";
 import { OrderHeader } from "../components/order/OrderHeader.view";
 import { OrderRow } from "../components/order/OrderRow.view";
-import { StatsCard } from "../components/order/StatsCard.view";
+import { StatsCard } from "../components/shared/StatsCard.order";
 
 interface OrderViewProps {
     orders: Order[];
@@ -53,7 +52,6 @@ export const OrderView: React.FC<OrderViewProps> = ({
             selectedStatus: ["all"],
         });
     }, []);
-    console.log(filter);
     const handleDeleteOrder = async (id: string) => {
         if (
             window.confirm(
