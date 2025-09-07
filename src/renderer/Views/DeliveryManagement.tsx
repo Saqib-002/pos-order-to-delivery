@@ -21,10 +21,88 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedVehicleType, setSelectedVehicleType] = useState("all");
+  const [emailError, setEmailError] = useState("");
+  const [editEmailError, setEditEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [editPhoneError, setEditPhoneError] = useState("");
 
   useEffect(() => {
     fetchDeliveryPersons();
   }, [token]);
+
+  // Email validation function
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim()) {
+      return "Email is required";
+    }
+    if (!emailRegex.test(email)) {
+      return "Please enter a valid email address";
+    }
+    return "";
+  };
+
+  // Phone validation function
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^[0-9\s\-\(\)\+]*$/;
+    if (!phone.trim()) {
+      return "Phone number is required";
+    }
+    if (!phoneRegex.test(phone)) {
+      return "Please enter a valid phone number";
+    }
+    const digitsOnly = phone.replace(/\D/g, "");
+    if (digitsOnly.length < 10) {
+      return "Phone number must have at least 10 digits";
+    }
+    if (digitsOnly.length > 15) {
+      return "Phone number cannot exceed 15 digits";
+    }
+    return "";
+  };
+
+  // Handle email change for add delivery person
+  const handleEmailChange = (value: string) => {
+    setNewDeliveryPerson({ ...newDeliveryPerson, email: value });
+    if (emailError) {
+      setEmailError("");
+    }
+  };
+
+  // Handle email change for edit delivery person
+  const handleEditEmailChange = (value: string) => {
+    if (editingDeliveryPerson) {
+      setEditingDeliveryPerson({ ...editingDeliveryPerson, email: value });
+      if (editEmailError) {
+        setEditEmailError("");
+      }
+    }
+  };
+
+  // Handle phone change for add delivery person
+  const handlePhoneChange = (value: string) => {
+    const phoneRegex = /^[0-9\s\-\(\)\+]*$/;
+    if (phoneRegex.test(value)) {
+      setNewDeliveryPerson({ ...newDeliveryPerson, phone: value });
+      if (phoneError) {
+        setPhoneError("");
+      }
+    }
+  };
+
+  // Handle phone change for edit delivery person
+  const handleEditPhoneChange = (value: string) => {
+    const phoneRegex = /^[0-9\s\-\(\)\+]*$/;
+    if (phoneRegex.test(value) && editingDeliveryPerson) {
+      setEditingDeliveryPerson({
+        ...editingDeliveryPerson,
+        phone: value,
+      } as any);
+      if (editPhoneError) {
+        setEditPhoneError("");
+      }
+    }
+  };
 
   const fetchDeliveryPersons = async () => {
     try {
@@ -51,16 +129,24 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
       toast.error("Please enter a name");
       return;
     }
-    if (!newDeliveryPerson.email.trim()) {
-      toast.error("Please enter an email");
-      return;
-    }
-    if (!newDeliveryPerson.phone.trim()) {
-      toast.error("Please enter a phone number");
-      return;
-    }
     if (!newDeliveryPerson.licenseNo.trim()) {
       toast.error("Please enter a license number");
+      return;
+    }
+
+    // Validate email
+    const emailValidationError = validateEmail(newDeliveryPerson.email);
+    if (emailValidationError) {
+      setEmailError(emailValidationError);
+      toast.error(emailValidationError);
+      return;
+    }
+
+    // Validate phone
+    const phoneValidationError = validatePhone(newDeliveryPerson.phone);
+    if (phoneValidationError) {
+      setPhoneError(phoneValidationError);
+      toast.error(phoneValidationError);
       return;
     }
 
@@ -101,9 +187,26 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
       toast.error("Please enter a name");
       return;
     }
-    if (!editingDeliveryPerson.email?.trim()) {
-      toast.error("Please enter an email");
+
+    // Validate email
+    const emailValidationError = validateEmail(
+      editingDeliveryPerson.email || ""
+    );
+    if (emailValidationError) {
+      setEditEmailError(emailValidationError);
+      toast.error(emailValidationError);
       return;
+    }
+
+    // Validate phone if provided
+    const phone = (editingDeliveryPerson as any).phone || "";
+    if (phone.trim()) {
+      const phoneValidationError = validatePhone(phone);
+      if (phoneValidationError) {
+        setEditPhoneError(phoneValidationError);
+        toast.error(phoneValidationError);
+        return;
+      }
     }
 
     try {
@@ -163,14 +266,6 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
   };
 
   const getVehicleTypeOptions = () => [
-    { value: "bike", label: "Bike" },
-    { value: "motorcycle", label: "Motorcycle" },
-    { value: "car", label: "Car" },
-    { value: "scooter", label: "Scooter" },
-  ];
-
-  const getVehicleTypeFilterOptions = () => [
-    { value: "all", label: "All Vehicles" },
     { value: "bike", label: "Bike" },
     { value: "motorcycle", label: "Motorcycle" },
     { value: "car", label: "Car" },
@@ -400,14 +495,14 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                   placeholder="Search delivery personnel..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setSelectedVehicleType("all")}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
                   selectedVehicleType === "all"
                     ? "bg-indigo-600 text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -419,7 +514,7 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                 <button
                   key={vehicleType}
                   onClick={() => setSelectedVehicleType(vehicleType)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
                     selectedVehicleType === vehicleType
                       ? "bg-indigo-600 text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -645,6 +740,8 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                       vehicleType: "bike",
                       licenseNo: "",
                     });
+                    setEmailError("");
+                    setPhoneError("");
                   }}
                   className="text-white hover:text-indigo-500 transition-colors duration-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20"
                 >
@@ -688,34 +785,46 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                     Email *
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     value={newDeliveryPerson.email}
-                    onChange={(e) =>
-                      setNewDeliveryPerson({
-                        ...newDeliveryPerson,
-                        email: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    onBlur={() => {
+                      const error = validateEmail(newDeliveryPerson.email);
+                      setEmailError(error);
+                    }}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${
+                      emailError
+                        ? "border-red-300 focus:ring-red-600 focus:border-red-600"
+                        : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
+                    }`}
                     placeholder="Enter email address"
                   />
+                  {emailError && (
+                    <p className="mt-1 text-sm text-red-600">{emailError}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Phone Number *
                   </label>
                   <input
-                    type="tel"
+                    type="text"
                     value={newDeliveryPerson.phone}
-                    onChange={(e) =>
-                      setNewDeliveryPerson({
-                        ...newDeliveryPerson,
-                        phone: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    onBlur={() => {
+                      const error = validatePhone(newDeliveryPerson.phone);
+                      setPhoneError(error);
+                    }}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${
+                      phoneError
+                        ? "border-red-300 focus:ring-red-600 focus:border-red-600"
+                        : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
+                    }`}
                     placeholder="Enter phone number"
                   />
+                  {phoneError && (
+                    <p className="mt-1 text-sm text-red-600">{phoneError}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -764,6 +873,8 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                       vehicleType: "bike",
                       licenseNo: "",
                     });
+                    setEmailError("");
+                    setPhoneError("");
                   }}
                   className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium cursor-pointer hover:scale-105"
                 >
@@ -789,7 +900,11 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-bold">Edit Delivery Person</h3>
                 <button
-                  onClick={() => setEditingDeliveryPerson(null)}
+                  onClick={() => {
+                    setEditingDeliveryPerson(null);
+                    setEditEmailError("");
+                    setEditPhoneError("");
+                  }}
                   className="text-white hover:text-indigo-500 transition-colors duration-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20"
                 >
                   <svg
@@ -831,33 +946,55 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                     Email *
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     value={editingDeliveryPerson.email || ""}
-                    onChange={(e) =>
-                      setEditingDeliveryPerson({
-                        ...editingDeliveryPerson,
-                        email: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
+                    onChange={(e) => handleEditEmailChange(e.target.value)}
+                    onBlur={() => {
+                      const error = validateEmail(
+                        editingDeliveryPerson.email || ""
+                      );
+                      setEditEmailError(error);
+                    }}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${
+                      editEmailError
+                        ? "border-red-300 focus:ring-red-600 focus:border-red-600"
+                        : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
+                    }`}
+                    placeholder="Enter email address"
                   />
+                  {editEmailError && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {editEmailError}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Phone Number
                   </label>
                   <input
-                    type="tel"
+                    type="text"
                     value={(editingDeliveryPerson as any).phone || ""}
-                    onChange={(e) =>
-                      setEditingDeliveryPerson({
-                        ...editingDeliveryPerson,
-                        phone: e.target.value,
-                      } as any)
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:border-indigo-600"
+                    onChange={(e) => handleEditPhoneChange(e.target.value)}
+                    onBlur={() => {
+                      const phone = (editingDeliveryPerson as any).phone || "";
+                      if (phone.trim()) {
+                        const error = validatePhone(phone);
+                        setEditPhoneError(error);
+                      }
+                    }}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${
+                      editPhoneError
+                        ? "border-red-300 focus:ring-red-600 focus:border-red-600"
+                        : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
+                    }`}
                     placeholder="Enter phone number"
                   />
+                  {editPhoneError && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {editPhoneError}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -897,7 +1034,11 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
               <div className="flex justify-end gap-4 mt-8">
                 <button
                   type="button"
-                  onClick={() => setEditingDeliveryPerson(null)}
+                  onClick={() => {
+                    setEditingDeliveryPerson(null);
+                    setEditEmailError("");
+                    setEditPhoneError("");
+                  }}
                   className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium cursor-pointer hover:scale-105"
                 >
                   Cancel
