@@ -1,5 +1,5 @@
 export interface Item {
-  id:string;
+  id: string;
   name: string;
   quantity: number;
   ingredients?: string[];
@@ -25,5 +25,12 @@ export interface Order {
   syncAt?: string;
   isDeleted?: boolean;
   deliveryPersonId?: string;
+  deliveryPerson?: {
+    id: string;
+    name: string;
+    phone: string;
+    vehicleType: string;
+    licenseNo?: string;
+  };
   notes?: string;
 }

@@ -14,11 +14,11 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
   orders,
   setOrders,
   token,
-  refreshOrderCallback
+  refreshOrderCallback,
 }) => {
   const [deliveryPerson, setDeliveryPerson] = useState({
-    id:"",
-    name:"",
+    id: "",
+    name: "",
   });
   const [deliveryPersons, setDeliveryPersons] = useState<
     {
@@ -64,12 +64,18 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
     );
   };
 
-  const handleDeliveryPersonChange = ({id,name}: {id: string, name: string}) => {
-    setDeliveryPerson({id,name});
+  const handleDeliveryPersonChange = ({
+    id,
+    name,
+  }: {
+    id: string;
+    name: string;
+  }) => {
+    setDeliveryPerson({ id, name });
     setShowDeliverySuggestions(name.trim().length > 0);
   };
-  const selectDeliveryPerson = ({id,name}: {id: string, name: string}) => {
-    setDeliveryPerson({id,name});
+  const selectDeliveryPerson = ({ id, name }: { id: string; name: string }) => {
+    setDeliveryPerson({ id, name });
     setShowDeliverySuggestions(false);
   };
 
@@ -106,13 +112,17 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
       return;
     }
     try {
-      const res= await (window as any).electronAPI.assignDeliveryPerson(token,order.id,deliveryPerson.id);
+      const res = await (window as any).electronAPI.assignDeliveryPerson(
+        token,
+        order.id,
+        deliveryPerson.id
+      );
       if (!res.status) {
         toast.error("Failed to assign delivery person");
         return;
       }
       refreshOrderCallback();
-      setDeliveryPerson({id:"",name:""});
+      setDeliveryPerson({ id: "", name: "" });
     } catch (error) {
       console.error("Failed to assign delivery:", error);
       alert("Failed to assign delivery. Please try again.");
@@ -341,9 +351,16 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                   type="text"
                   placeholder="Search delivery person by name..."
                   value={deliveryPerson.name}
-                  onChange={(e) => handleDeliveryPersonChange({id:deliveryPerson.id,name:e.target.value})}
+                  onChange={(e) =>
+                    handleDeliveryPersonChange({
+                      id: deliveryPerson.id,
+                      name: e.target.value,
+                    })
+                  }
                   onFocus={() =>
-                    setShowDeliverySuggestions(deliveryPerson.name.trim().length > 0)
+                    setShowDeliverySuggestions(
+                      deliveryPerson.name.trim().length > 0
+                    )
                   }
                   onBlur={() =>
                     setTimeout(() => setShowDeliverySuggestions(false), 200)
@@ -359,7 +376,12 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                         <button
                           key={person.id}
                           type="button"
-                          onClick={() => selectDeliveryPerson({id:person.id,name:person.name})}
+                          onClick={() =>
+                            selectDeliveryPerson({
+                              id: person.id,
+                              name: person.name,
+                            })
+                          }
                           className="w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors duration-150 border-b border-gray-100 last:border-b-0"
                         >
                           <div className="flex items-center justify-between">
@@ -393,7 +415,9 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                     }
                   }
                 }}
-                disabled={!deliveryPerson.name.trim() || filteredOrders.length === 0}
+                disabled={
+                  !deliveryPerson.name.trim() || filteredOrders.length === 0
+                }
                 className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 <svg
@@ -692,9 +716,21 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 font-medium">
-                            {order.deliveryPersonId || "Unassigned"}
-                          </div>
+                          {order.deliveryPerson ? (
+                            <div className="text-sm">
+                              <div className="font-medium text-gray-900">
+                                {order.deliveryPerson.name}
+                              </div>
+                              <div className="text-gray-500 text-xs">
+                                {order.deliveryPerson.phone} •{" "}
+                                {order.deliveryPerson.vehicleType}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-sm">
+                              Unassigned
+                            </span>
+                          )}
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-900">

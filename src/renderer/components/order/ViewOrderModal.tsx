@@ -195,14 +195,25 @@ export const ViewOrderModal: React.FC<ViewOrderModalProps> = ({
                       ${totalPrice.toFixed(2)}
                     </p>
                   </div>
-                  {order.deliveryPersonId && (
+                  {order.deliveryPerson && (
                     <div>
                       <span className="text-sm text-gray-600">
                         Delivery Person:
                       </span>
-                      <p className="font-medium text-gray-900">
-                        {order.deliveryPersonId}
-                      </p>
+                      <div className="mt-1">
+                        <p className="font-medium text-gray-900">
+                          {order.deliveryPerson.name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {order.deliveryPerson.phone} •{" "}
+                          {order.deliveryPerson.vehicleType}
+                        </p>
+                        {order.deliveryPerson.licenseNo && (
+                          <p className="text-xs text-gray-400">
+                            License: {order.deliveryPerson.licenseNo}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

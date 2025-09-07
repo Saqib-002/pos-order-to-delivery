@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { Order } from "@/types/order";
 import { toast } from "react-toastify";
-import { createPortal } from "react-dom";
 import { OrderForm } from "../components/order/OrderForm";
 import { ViewOrderModal } from "../components/order/ViewOrderModal";
+import { CustomSelect } from "../components/ui/CustomSelect";
 
 interface OrderViewProps {
   orders: Order[];
@@ -19,15 +19,12 @@ export const OrderView: React.FC<OrderViewProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [isStatusDropdownOpen, setIsStatusDropdownOpen] =
-    useState<boolean>(false);
   const [isAddOrderModelShown, setIsAddOrderModelShown] = useState(false);
   const [isViewOrderModalShown, setIsViewOrderModalShown] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
-  const statusDropdownRef = useRef<HTMLDivElement>(null);
   const fetchMenuItems = async () => {
     try {
       setLoading(true);
@@ -73,29 +70,6 @@ export const OrderView: React.FC<OrderViewProps> = ({
 
     setFilteredOrders(filtered);
   }, [orders, searchTerm, selectedDate, selectedStatus]);
-  // Handle click outside dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        statusDropdownRef.current &&
-        !statusDropdownRef.current.contains(event.target as Node)
-      ) {
-        // Check if the click is not on the portal dropdown
-        const target = event.target as Element;
-        if (!target.closest(".status-dropdown-portal")) {
-          setIsStatusDropdownOpen(false);
-        }
-      }
-    };
-
-    if (isStatusDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isStatusDropdownOpen]);
   const handleDeleteOrder = async (id: string) => {
     if (
       window.confirm(
@@ -141,6 +115,15 @@ export const OrderView: React.FC<OrderViewProps> = ({
       }
     }
   };
+
+  const getStatusOptions = () => [
+    { value: "all", label: "All Statuses" },
+    { value: "sent to kitchen", label: "Sent to Kitchen" },
+    { value: "ready for delivery", label: "Ready for Delivery" },
+    { value: "out for delivery", label: "Out for Delivery" },
+    { value: "delivered", label: "Delivered" },
+    { value: "cancelled", label: "Cancelled" },
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -367,46 +350,13 @@ export const OrderView: React.FC<OrderViewProps> = ({
                   </div>
 
                   {/* Status Filter */}
-                  <div className="relative" ref={statusDropdownRef}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsStatusDropdownOpen(!isStatusDropdownOpen);
-                      }}
-                      className="relative w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-left flex items-center justify-between hover:border-gray-400 transition-colors duration-200"
-                    >
-                      <span className="text-gray-900">
-                        {selectedStatus === "all"
-                          ? "All Statuses"
-                          : selectedStatus === "sent to kitchen"
-                            ? "Sent to Kitchen"
-                            : selectedStatus === "ready for delivery"
-                              ? "Ready for Delivery"
-                              : selectedStatus === "out for delivery"
-                                ? "Out for Delivery"
-                                : selectedStatus === "delivered"
-                                  ? "Delivered"
-                                  : selectedStatus === "cancelled"
-                                    ? "Cancelled"
-                                    : "All Statuses"}
-                      </span>
-                      <svg
-                        className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
-                          isStatusDropdownOpen ? "rotate-180" : ""
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                  </div>
+                  <CustomSelect
+                    options={getStatusOptions()}
+                    value={selectedStatus}
+                    onChange={(value: string) => setSelectedStatus(value)}
+                    placeholder="Select status"
+                    portalClassName="status-dropdown-portal"
+                  />
 
                   {/* Date Picker */}
                   <div className="relative">
@@ -422,7 +372,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                           e.target.value ? new Date(e.target.value) : null
                         )
                       }
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="block w-full px-3 py-3 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     />
                   </div>
 
@@ -434,7 +384,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                         setSelectedDate(null);
                         setSelectedStatus("all");
                       }}
-                      className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
+                      className="px-3 py-3 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
                     >
                       Clear Filters
                     </button>
@@ -488,6 +438,9 @@ export const OrderView: React.FC<OrderViewProps> = ({
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
                         Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
+                        Delivery Person
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
                         Actions
@@ -571,6 +524,25 @@ export const OrderView: React.FC<OrderViewProps> = ({
                           >
                             {order.status}
                           </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap min-w-[150px]">
+                          {order.deliveryPerson ? (
+                            <div className="text-sm">
+                              <div className="font-medium text-gray-900">
+                                {order.deliveryPerson.name}
+                              </div>
+                              <div className="text-gray-500 text-xs">
+                                {order.deliveryPerson.phone}
+                              </div>
+                              <div className="text-gray-500 text-xs">
+                                {order.deliveryPerson.vehicleType}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-sm">
+                              Not assigned
+                            </span>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[200px]">
                           <div className="flex flex-col gap-1 items-end">
@@ -685,59 +657,6 @@ export const OrderView: React.FC<OrderViewProps> = ({
             )}
           </div>
         </div>
-
-        {/* Portal Dropdown for Status Filter */}
-        {isStatusDropdownOpen &&
-          statusDropdownRef.current &&
-          createPortal(
-            <div
-              className="fixed z-[9999] bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-auto status-dropdown-portal"
-              style={{
-                top:
-                  statusDropdownRef.current.getBoundingClientRect().bottom + 4,
-                left: statusDropdownRef.current.getBoundingClientRect().left,
-                width: statusDropdownRef.current.getBoundingClientRect().width,
-                minWidth: "200px",
-              }}
-            >
-              {[
-                { value: "all", label: "All Statuses" },
-                {
-                  value: "sent to kitchen",
-                  label: "Sent to Kitchen",
-                },
-                {
-                  value: "ready for delivery",
-                  label: "Ready for Delivery",
-                },
-                {
-                  value: "out for delivery",
-                  label: "Out for Delivery",
-                },
-                { value: "delivered", label: "Delivered" },
-                { value: "cancelled", label: "Cancelled" },
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setSelectedStatus(option.value);
-                    setIsStatusDropdownOpen(false);
-                  }}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-indigo-500 hover:text-white transition-colors duration-150 ${
-                    selectedStatus === option.value
-                      ? "bg-indigo-100 text-indigo-900 font-medium"
-                      : "text-gray-900"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>,
-            document.body
-          )}
       </div>
     </>
   );
