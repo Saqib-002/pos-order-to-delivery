@@ -138,18 +138,15 @@ export class OrderDatabaseOperations {
                 const selectedDate = new Date(filter.selectedDate)
                     .toISOString()
                     .split("T")[0];
-                query.orWhereRaw("DATE(createdAt) = ?", [selectedDate]);
+                query.whereRaw("DATE(createdAt) = ?", [selectedDate]);
             }
-            if (
-                filter.selectedStatus[0] !== "all" &&
-                filter.selectedStatus.length > 0
-            ) {
-                query.orWhereRaw(
-                    "LOWER(status) IN (" +
-                        filter.selectedStatus.map(() => "?").join(",") +
-                        ")",
-                    filter.selectedStatus.map((s) => s.toLowerCase())
-                );
+            if (filter.selectedStatus[0] !== "all" && filter.selectedStatus.length>0) {
+                query.whereRaw(
+                "LOWER(status) IN (" +
+                    filter.selectedStatus.map(() => "?").join(",") +
+                    ")",
+                filter.selectedStatus.map((s) => s.toLowerCase())
+            );
             }
             const rows = await query;
             const orders: Order[] = rows.map((row) => ({
@@ -314,7 +311,7 @@ export class OrderDatabaseOperations {
             await localDb("orders").where("id", id).update({
                 updatedAt: now,
                 cancelledAt: now,
-                status: "cancelled",
+                status:"cancelled"
             });
             return { id };
         } catch (error) {
@@ -327,7 +324,7 @@ export class OrderDatabaseOperations {
             await localDb("orders").where("id", id).update({
                 updatedAt: now,
                 readyAt: now,
-                status: "ready for delivery",
+                status:"ready for delivery"
             });
             return { id };
         } catch (error) {
@@ -340,7 +337,7 @@ export class OrderDatabaseOperations {
             await localDb("orders").where("id", id).update({
                 updatedAt: now,
                 deliveredAt: now,
-                status: "delivered",
+                status:"delivered"
             });
             return { id };
         } catch (error) {
