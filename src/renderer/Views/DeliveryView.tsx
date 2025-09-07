@@ -110,6 +110,13 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
       alert("Failed to mark as delivered. Please try again.");
     }
   };
+  const readyOrders=orders.filter(
+    (o) => o.status.toLowerCase() === "ready for delivery"
+  );
+  const outForDelivertOrders=orders.filter(
+    (o) => o.status.toLowerCase() === "out for delivery"
+  );
+
   return (
     <div className="mt-4 p-6 bg-gray-50 min-h-screen">
       <div className="max-w-[98%] mx-auto">
@@ -268,10 +275,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                 <p className="text-2xl font-bold text-gray-900">
                   {
                     new Set(
-                      orders
-                        .filter(
-                          (o) => o.status.toLowerCase() === "out for delivery"
-                        )
+                      outForDelivertOrders
                         .map((o) => o.deliveryPersonId)
                         .filter(Boolean)
                     ).size
@@ -367,14 +371,14 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
               <button
                 onClick={() => {
                   if (deliveryPerson.name.trim()) {
-                    const firstOrder = orders[0];
+                    const firstOrder = readyOrders[0];
                     if (firstOrder) {
                       assignDelivery(firstOrder);
                     }
                   }
                 }}
                 disabled={
-                  !deliveryPerson.name.trim() || orders.length === 0
+                  !deliveryPerson.name.trim() || readyOrders.length === 0
                 }
                 className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
               >
@@ -468,7 +472,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
             </div>
           </div>
 
-          {orders.length === 0 ? (
+          {readyOrders.length === 0 ? (
             <div className="text-center py-12">
               <svg
                 className="mx-auto h-12 w-12 text-gray-400"
@@ -484,14 +488,12 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                 />
               </svg>
               <h3 className="mt-2 text-sm font-medium text-gray-900">
-                {orders.filter(
-                  (o) => o.status.toLowerCase() === "ready for delivery"
-                ).length === 0
+                {readyOrders.length === 0
                   ? "No orders ready for delivery"
                   : "No orders match your search"}
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                {orders.filter(
+                {readyOrders.filter(
                   (o) => o.status.toLowerCase() === "ready for delivery"
                 ).length === 0
                   ? "All orders are either in kitchen or already assigned for delivery."
@@ -527,8 +529,8 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {orders.map((order) => {
-                    const readyTime = new Date(order.id);
+                  {readyOrders.map((order) => {
+                    const readyTime = new Date(order.readyAt || order.createdAt);
                     const now = new Date();
                     const diffMinutes = Math.floor(
                       (now.getTime() - readyTime.getTime()) / (1000 * 60)
@@ -542,7 +544,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            #{order.id.slice(16, 24)}
+                            #{order.orderId}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -619,7 +621,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
         </div>
 
         {/* Out for Delivery Section */}
-        {orders.filter((o) => o.status.toLowerCase() === "out for delivery")
+        {outForDelivertOrders
           .length > 0 && (
           <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -652,10 +654,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {orders
-                    .filter(
-                      (o) => o.status.toLowerCase() === "out for delivery"
-                    )
+                  {outForDelivertOrders
                     .map((order) => (
                       <tr
                         key={order.id}
@@ -663,7 +662,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            #{order.id.slice(16, 24)}
+                            #{order.orderId}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">

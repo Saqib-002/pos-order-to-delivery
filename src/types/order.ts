@@ -20,6 +20,7 @@ export interface Order {
   status: string;
   createdAt: string;
   updatedAt?: string;
+  readyAt?: string;
   cancelledAt?: string;
   deliveredAt?: string;
   syncAt?: string;
