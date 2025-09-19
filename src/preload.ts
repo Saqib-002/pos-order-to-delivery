@@ -77,6 +77,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getVariants:(token:string)=>ipcRenderer.invoke("get-variants",token),
   deleteVariant:(token:string,id:string)=>ipcRenderer.invoke("delete-variant",token,id),
   updateVariant:(token:string,variantData:any,variantItems:any)=>ipcRenderer.invoke("update-variant",token,variantData,variantItems),
+  // groups
+  createGroup:(token:string,groupData:any,groupItems:any)=>ipcRenderer.invoke("create-group",token,groupData,groupItems),
+  getGroups:(token:string)=>ipcRenderer.invoke("get-groups",token),
+  deleteGroup:(token:string,id:string)=>ipcRenderer.invoke("delete-group",token,id),
+  updateGroup:(token:string,groupData:any,groupItems:any)=>ipcRenderer.invoke("update-group",token,groupData,groupItems),
 
   // Order operations
   saveOrder: (token: string, order: any) =>

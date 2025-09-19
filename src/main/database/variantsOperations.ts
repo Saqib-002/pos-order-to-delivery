@@ -1,4 +1,4 @@
-import { Variant, VariantItem } from "@/types/Variants";
+import { Variant, VariantItem } from "@/types/Variants.js";
 import { db } from "./index.js";
 import { randomUUID } from "crypto";
 

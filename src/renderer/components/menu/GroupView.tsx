@@ -1,59 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { UnifiedCard } from "../ui/UnifiedCard";
 import { CreateGroupModal } from "./CreateGroupModal";
+import { toast } from "react-toastify";
 
 interface Group {
   id: string;
   name: string;
-  description?: string;
-  itemCount: number;
-  color: string;
+  items:Complement[]
+}
+interface Complement {
+  id: string;
+  name: string;
+  price: number;
+  priority: number;
 }
 
-export const GroupView: React.FC = () => {
+export const GroupView: React.FC<{token:string}> = ({token}) => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
 
-  // Mock data - replace with actual API calls
+  const getGroups=async()=>{
+    (window as any).electronAPI.getGroups(token).then((res:any)=>{
+      if(!res.status){
+        toast.error("Unable to get groups");
+        return;
+      }
+      setGroups(res.data);
+    })
+  }
   useEffect(() => {
-    setGroups([
-      { id: "1", name: "Rice Or Potatoes", itemCount: 3, color: "blue" },
-      { id: "2", name: "Add Option", itemCount: 5, color: "green" },
-      {
-        id: "3",
-        name: "Add Option (Hamburger)",
-        itemCount: 2,
-        color: "purple",
-      },
-      {
-        id: "4",
-        name: "Add Option (Flafel Product)",
-        itemCount: 4,
-        color: "orange",
-      },
-      { id: "5", name: "Option To Choose In Box", itemCount: 6, color: "pink" },
-      { id: "6", name: "Remove Option", itemCount: 3, color: "red" },
-      {
-        id: "7",
-        name: "Remove Option (Hamburger)",
-        itemCount: 2,
-        color: "indigo",
-      },
-      {
-        id: "8",
-        name: "Remove Option On Plates",
-        itemCount: 4,
-        color: "yellow",
-      },
-      {
-        id: "9",
-        name: "Remove Option Large Plate",
-        itemCount: 3,
-        color: "gray",
-      },
-      { id: "10", name: "Remove Sauce Option", itemCount: 2, color: "teal" },
-    ]);
+    getGroups();
   }, []);
 
   const handleCreateGroup = () => {
@@ -69,7 +46,7 @@ export const GroupView: React.FC = () => {
   const handleGroupSuccess = () => {
     setIsCreateGroupOpen(false);
     setEditingGroup(null);
-    // Refresh data
+    getGroups();
   };
 
   return (
@@ -102,10 +79,17 @@ export const GroupView: React.FC = () => {
 
       {/* Groups Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {groups.length === 0 && (
+          <div className="text-center">
+            <p className="text-lg text-gray-500">
+              No groups found. Add new groups
+            </p>
+          </div>
+        )}
         {groups.map((group) => (
           <UnifiedCard
             key={group.id}
-            data={group}
+            data={{...group,itemCount:group.items.length}}
             type="group"
             onEdit={() => handleEditGroup(group)}
           />
@@ -119,6 +103,7 @@ export const GroupView: React.FC = () => {
           setIsCreateGroupOpen(false);
           setEditingGroup(null);
         }}
+        token={token}
         onSuccess={handleGroupSuccess}
         editingGroup={editingGroup}
       />

@@ -526,7 +526,7 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
             )}
           </>
         ) : currentView === "group" ? (
-          <GroupView />
+          <GroupView token={token}/>
         ) : (
           <VariantView token={token}/>
         )}

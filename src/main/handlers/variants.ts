@@ -20,7 +20,7 @@ export const createVariant = async (
             data: result,
         };
     } catch (error) {
-        Logger.error("Error creating variants:", error);
+        Logger.error("Error creating variant:", error);
         return {
             status: false,
             error: (error as Error).message,
