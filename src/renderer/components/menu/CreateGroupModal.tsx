@@ -132,16 +132,20 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         setIsSubmitting(true);
 
         try {
-          let res;
-          if(editingGroup){
-            res= await (window as any).electronAPI.updateGroup(token,{id:editingGroup.id,...formData},complements);
-          }else{
-            res = await (window as any).electronAPI.createGroup(
-              token,
-              formData,
-              complements
-            );
-          }
+            let res;
+            if (editingGroup) {
+                res = await (window as any).electronAPI.updateGroup(
+                    token,
+                    { id: editingGroup.id, ...formData },
+                    complements
+                );
+            } else {
+                res = await (window as any).electronAPI.createGroup(
+                    token,
+                    formData,
+                    complements
+                );
+            }
             if (!res.status) {
                 toast.error(
                     editingGroup
@@ -162,16 +166,20 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             setIsSubmitting(false);
         }
     };
-    const handleDeleteGroup=(id:string)=>{
-      (window as any).electronAPI.deleteGroup(token,id).then((res:any)=>{
-        if(!res.status){
-          toast.error("Failed to delete group");
-          return;
+    const handleDeleteGroup = (id: string) => {
+        if (window.confirm(`Are you sure you want to delete this "${editingGroup?.name}" with ${complements.length} items?`)) {
+            (window as any).electronAPI
+                .deleteGroup(token, id)
+                .then((res: any) => {
+                    if (!res.status) {
+                        toast.error("Failed to delete group");
+                        return;
+                    }
+                    toast.success("Group deleted successfully");
+                    onSuccess();
+                });
         }
-        toast.success("Group deleted successfully");
-        onSuccess();
-      })
-    }
+    };
 
     if (!isOpen) return null;
 
@@ -442,12 +450,16 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                     </div>
 
                     {/* Action Buttons */}
-                    <div className={`flex ${editingGroup?"justify-between":"justify-end"} items-center`}>
+                    <div
+                        className={`flex ${editingGroup ? "justify-between" : "justify-end"} items-center`}
+                    >
                         {editingGroup && (
                             <button
                                 type="button"
                                 className="text-red-600 hover:text-red-800 text-sm"
-                                onClick={()=>handleDeleteGroup(editingGroup.id)}
+                                onClick={() =>
+                                    handleDeleteGroup(editingGroup.id)
+                                }
                             >
                                 Eliminate
                             </button>

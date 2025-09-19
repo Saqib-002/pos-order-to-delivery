@@ -39,7 +39,7 @@ export const VariantView: React.FC<{token:string}> = ({token}) => {
   };
 
   const handleDeleteVariant = async(variant: Variant) => {
-    if (window.confirm(`Are you sure you want to delete "${variant.groupName}" with "${variant.items.length} variants"?`)) {
+    if (window.confirm(`Are you sure you want to delete "${variant.groupName!==""?variant.groupName:variant.items.map(i=>i.name).join("-")}" with "${variant.items.length} variants"?`)) {
       const res=await (window as any).electronAPI.deleteVariant(token,variant.id);
       if(!res.status){
         toast.error("Unable to delete variant");
