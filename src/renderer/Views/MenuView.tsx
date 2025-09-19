@@ -6,11 +6,12 @@ import { CategoryModal } from "../components/menu/CategoryModal";
 import { SubcategoryModal } from "../components/menu/SubcategoryModal";
 import { ProductModal } from "../components/menu/ProductModal";
 import { MenuModal } from "../components/menu/MenuModal";
+import { toast } from "react-toastify";
 
 interface Category {
   id: string;
   name: string;
-  itemCount: number;
+  itemCount?: number;
   color: string;
   type: "category" | "subcategory";
 }
@@ -34,7 +35,7 @@ interface Product {
   color: string;
 }
 
-export const MenuView: React.FC = () => {
+export const MenuView: React.FC<{token: string}> = ({token}) => {
   const [currentView, setCurrentView] = useState<"menu" | "group" | "variant">(
     "menu"
   );
@@ -60,38 +61,17 @@ export const MenuView: React.FC = () => {
     "categories" | "subcategories" | "products"
   >("categories");
 
+  const getCategories=async()=>{
+    const res= await (window as any).electronAPI.getCategories(token);
+    if(!res.status){
+      toast.error("Unable to get categories");
+      return;
+    }
+    setCategories(res.data.map((c: any) => ({ ...c, name: c.categoryName})));
+  }
   // Mock data - replace with actual API calls
   useEffect(() => {
-    const mockCategories = [
-      {
-        id: "1",
-        name: "Appetizers",
-        itemCount: 12,
-        color: "red",
-        type: "category" as const,
-      },
-      {
-        id: "2",
-        name: "Main Courses",
-        itemCount: 25,
-        color: "blue",
-        type: "category" as const,
-      },
-      {
-        id: "3",
-        name: "Desserts",
-        itemCount: 8,
-        color: "green",
-        type: "category" as const,
-      },
-      {
-        id: "4",
-        name: "Beverages",
-        itemCount: 15,
-        color: "purple",
-        type: "category" as const,
-      },
-    ];
+    getCategories();
 
     const mockSubcategories = [
       {
@@ -181,15 +161,8 @@ export const MenuView: React.FC = () => {
       },
     ];
 
-    setCategories(mockCategories);
     setSubcategories(mockSubcategories);
     setProducts(mockProducts);
-
-    console.log("Mock data loaded:", {
-      categories: mockCategories,
-      subcategories: mockSubcategories,
-      products: mockProducts,
-    });
   }, []);
 
   const handleCreateCategory = () => {
@@ -275,7 +248,7 @@ export const MenuView: React.FC = () => {
   const handleCategorySuccess = () => {
     setIsCreateCategoryOpen(false);
     setEditingCategory(null);
-    // Refresh data
+    getCategories();
   };
 
   const handleSubcategorySuccess = () => {
@@ -499,6 +472,13 @@ export const MenuView: React.FC = () => {
                   </h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {categories.length === 0 && (
+                    <div className="flex items-center justify-center">
+                      <p className="text-xl text-gray-500">
+                        No categories found. Please create a category.
+                      </p>
+                    </div>
+                  )}
                   {categories.map((category) => (
                     <UnifiedCard
                       key={category.id}
@@ -571,6 +551,7 @@ export const MenuView: React.FC = () => {
         {/* Modals */}
         <CategoryModal
           isOpen={isCreateCategoryOpen}
+          token={token}
           onClose={() => {
             setIsCreateCategoryOpen(false);
             setEditingCategory(null);

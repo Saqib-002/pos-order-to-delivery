@@ -55,6 +55,15 @@ const syncStatusCallbacks = new Set<(status: any) => void>();
 const orderChangeCallbacks = new Set<(change: any, event: any) => void>();
 
 contextBridge.exposeInMainWorld("electronAPI", {
+  // categories
+  createCategory: (token: string, category: any) =>
+    ipcRenderer.invoke("create-category", token, category),
+  getCategories: (token: string) => ipcRenderer.invoke("get-categories", token),
+  deleteCategory: (token: string, id: string) =>
+    ipcRenderer.invoke("delete-category", token, id),
+  updateCategory: (token: string, id: string, updates: any) =>
+    ipcRenderer.invoke("update-category", token, id, updates),
+
   // Order operations
   saveOrder: (token: string, order: any) =>
     ipcRenderer.invoke("save-order", token, order),
@@ -102,7 +111,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("get-menu-item-by-id", token, id),
   getMenuItemsByName: (token: string, name: string) =>
     ipcRenderer.invoke("get-menu-items-by-name", token, name),
-  getCategories: (token: string) => ipcRenderer.invoke("get-categories", token),
 
   // delivery operations
   createDeliveryPerson:(token:string, deliveryPersonData: Omit<DeliveryPerson, "id" | "createdAt" | "updatedAt">) => ipcRenderer.invoke("create-delivery-person", token, deliveryPersonData),

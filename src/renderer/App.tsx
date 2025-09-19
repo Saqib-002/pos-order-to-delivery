@@ -105,7 +105,7 @@ const App: React.FC = () => {
       roles: ["admin"],
     },
     [VIEWS.MENU_STRUCTURE]: {
-      component: <MenuView />,
+      component: <MenuView token={auth.token!}/>,
       roles: ["admin"],
     },
     [VIEWS.USERS]: {

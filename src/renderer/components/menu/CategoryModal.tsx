@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 interface Category {
   id: string;
   name: string;
-  itemCount: number;
+  itemCount?: number;
   color: string;
   type: "category" | "subcategory";
 }
@@ -14,6 +14,7 @@ interface CategoryModalProps {
   onClose: () => void;
   onSuccess: () => void;
   editingCategory?: Category | null;
+  token: string | null;
 }
 
 const colorOptions = [
@@ -32,6 +33,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  token,
   editingCategory,
 }) => {
   const [formData, setFormData] = useState({
@@ -65,9 +67,18 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      let res;
+      if(editingCategory){
+        res=await (window as any).electronAPI.updateCategory(token,editingCategory.id,{categoryName:formData.name,color:formData.color});
+      }else{
+        res=await (window as any).electronAPI.createCategory(token,{categoryName:formData.name,color:formData.color});
+      }
+      if(!res.status){
+        toast.error(editingCategory
+          ? "Failed to edit category"
+          : "Failed to save category");
+        return
+      }
       toast.success(
         editingCategory
           ? "Category updated successfully"

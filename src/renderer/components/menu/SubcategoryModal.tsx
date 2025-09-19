@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 interface Category {
   id: string;
   name: string;
-  itemCount: number;
+  itemCount?: number;
   color: string;
   type: "category" | "subcategory";
 }
