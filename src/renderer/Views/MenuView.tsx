@@ -69,34 +69,17 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
     }
     setCategories(res.data.map((c: any) => ({ ...c, name: c.categoryName})));
   }
+  const getSubcategories=async(id:string)=>{
+    const res= await (window as any).electronAPI.getSubcategories(token,id);
+    if(!res.status){
+      toast.error("Unable to get categories");
+      return;
+    }
+    setSubcategories(res.data);
+  }
   // Mock data - replace with actual API calls
   useEffect(() => {
     getCategories();
-
-    const mockSubcategories = [
-      {
-        id: "1",
-        name: "Soups",
-        itemCount: 5,
-        color: "orange",
-        categoryId: "1",
-      },
-      { id: "2", name: "Salads", itemCount: 7, color: "pink", categoryId: "1" },
-      {
-        id: "3",
-        name: "Pasta",
-        itemCount: 12,
-        color: "indigo",
-        categoryId: "2",
-      },
-      {
-        id: "4",
-        name: "Pizza",
-        itemCount: 13,
-        color: "yellow",
-        categoryId: "2",
-      },
-    ];
 
     const mockProducts = [
       {
@@ -161,7 +144,6 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
       },
     ];
 
-    setSubcategories(mockSubcategories);
     setProducts(mockProducts);
   }, []);
 
@@ -211,6 +193,7 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
     setSelectedCategory(category);
     setSelectedSubcategory(null);
     setCurrentLevel("subcategories");
+    getSubcategories(category.id);
   };
 
   const handleSubcategoryClick = (subcategory: Subcategory) => {
@@ -229,13 +212,6 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
     setCurrentLevel("subcategories");
   };
 
-  // Helper functions to filter data
-  const getFilteredSubcategories = () => {
-    if (!selectedCategory) return [];
-    return subcategories.filter(
-      (sub) => sub.categoryId === selectedCategory.id
-    );
-  };
 
   const getFilteredProducts = () => {
     if (!selectedSubcategory) return [];
@@ -254,7 +230,7 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
   const handleSubcategorySuccess = () => {
     setIsCreateSubcategoryOpen(false);
     setEditingSubcategory(null);
-    // Refresh data
+    getSubcategories(selectedCategory!.id);
   };
 
   const handleProductSuccess = () => {
@@ -500,7 +476,7 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
                   </h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {getFilteredSubcategories().map((subcategory) => (
+                  {subcategories.map((subcategory) => (
                     <UnifiedCard
                       key={subcategory.id}
                       data={subcategory}
@@ -558,10 +534,11 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
           }}
           onSuccess={handleCategorySuccess}
           editingCategory={editingCategory}
-        />
+          />
 
         <SubcategoryModal
           isOpen={isCreateSubcategoryOpen}
+          token={token}
           onClose={() => {
             setIsCreateSubcategoryOpen(false);
             setEditingSubcategory(null);

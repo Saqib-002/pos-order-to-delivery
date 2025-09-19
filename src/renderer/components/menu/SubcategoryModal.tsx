@@ -19,6 +19,7 @@ interface Subcategory {
 
 interface SubcategoryModalProps {
   isOpen: boolean;
+  token: string | null;
   onClose: () => void;
   onSuccess: () => void;
   editingSubcategory?: Subcategory | null;
@@ -43,6 +44,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
   onSuccess,
   editingSubcategory,
   categories,
+  token
 }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -83,9 +85,20 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      let res;
+      if (editingSubcategory) {
+        res=await (window as any).electronAPI.updateSubcategory(token,editingSubcategory.id,formData);
+      } else {
+        res=await (window as any).electronAPI.createSubcategory(token,formData);
+      }
+      if (!res.status) {
+        toast.error(
+          editingSubcategory
+            ? "Failed to edit subcategory"
+            : "Failed to save subcategory"
+        );
+        return;
+      }
       toast.success(
         editingSubcategory
           ? "Subcategory updated successfully"

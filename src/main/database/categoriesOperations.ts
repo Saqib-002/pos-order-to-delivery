@@ -1,4 +1,4 @@
-import { Category } from "@/types/categories";
+import { Category, SubCategory } from "@/types/categories";
 import { randomUUID } from "crypto";
 import Logger from "electron-log";
 import { db } from "./index.js";
@@ -19,7 +19,7 @@ export class CategoryDatabaseOperations {
             };
 
             await db("categories").insert(newCategory);
-            Logger.info(`Delivery person created: ${newCategory.categoryName}`);
+            Logger.info(`Category created: ${newCategory.categoryName}`);
             return newCategory;
         } catch (error) {
             throw error;
@@ -27,7 +27,7 @@ export class CategoryDatabaseOperations {
     }
     static async getCategories(){
         try {
-            let query=db("categories").where("isDeleted", false).orderBy("categoryName", "asc");
+            let query=db("categories").orderBy("categoryName", "asc");
             const categories = await query;
             return categories;
         } catch (error) {
@@ -36,11 +36,7 @@ export class CategoryDatabaseOperations {
     }
     static async deleteCategory(id: string) {
         try {
-            const now = new Date().toISOString();
-            await db("categories").where("id", id).update({
-                isDeleted: true,
-                updatedAt: now,
-            });
+            await db("categories").where("id", id).delete();
             Logger.info(`Category deleted: ${id}`);
         } catch (error) {
             throw error;
@@ -55,6 +51,55 @@ export class CategoryDatabaseOperations {
             });
             Logger.info(`Category updated: ${id}`);
             return updatedCategory;
+        } catch (error) {
+            throw error;
+        }
+    }
+}
+export class SubCategoriesOperations {
+    static async createSubCategory(subcategory: Omit<SubCategory, "id" | "createdAt" | "updatedAt" | "isDeleted">) {
+        try {
+            const now = new Date().toISOString();
+            const id = randomUUID();
+            const newSubcategory = {
+                id,
+                ...subcategory,
+                createdAt: now,
+                updatedAt: now,
+            };
+            await db("sub_categories").insert(newSubcategory);
+            Logger.info(`Sub Category created: ${newSubcategory.name}`);
+            return newSubcategory;
+        } catch (error) {
+            throw error;
+        }
+    }
+    static async getSubCategories(categoryId:string){
+        try {
+            let query=db("sub_categories").where("categoryId",categoryId).orderBy("name", "asc");
+            const subCategories = await query;
+            return subCategories;
+        } catch (error) {
+            throw error;
+        }
+    }
+    static async deleteSubCategory(id: string) {
+        try {
+            await db("sub_categories").where("id", id).delete();
+            Logger.info(`Sub Category deleted: ${id}`);
+        } catch (error) {
+            throw error;
+        }
+    }
+    static async updateSubCategory(id: string, updates: Partial<SubCategory>) {
+        try {
+            const now = new Date().toISOString();
+            const updatedSubCategory = await db("sub_categories").where("id", id).update({
+                ...updates,
+                updatedAt: now,
+            });
+            Logger.info(`Sub Category updated: ${id}`);
+            return updatedSubCategory;
         } catch (error) {
             throw error;
         }

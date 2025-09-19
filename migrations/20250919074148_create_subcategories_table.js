@@ -3,12 +3,16 @@
  * @returns { Promise<void> }
  */
 export async function up(knex) {
-  return knex.schema.createTable('categories', function(table) {
+  return knex.schema.createTable('sub_categories', function(table) {
     table.string('id').primary();
-    table.string('categoryName').notNullable();
+    table.string('name').notNullable();
     table.string('color').notNullable();
+    table.boolean('isForMenu');
+    table.string('categoryId').notNullable();
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
+
+    table.foreign('categoryId').references('id').inTable('categories').onDelete('CASCADE');
   });
 };
 
@@ -17,5 +21,5 @@ export async function up(knex) {
  * @returns { Promise<void> }
  */
 export async function down(knex) {
-  return knex.schema.dropTable('categories');
+  return knex.schema.dropTable('sub_categories');
 };

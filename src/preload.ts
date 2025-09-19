@@ -63,6 +63,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("delete-category", token, id),
   updateCategory: (token: string, id: string, updates: any) =>
     ipcRenderer.invoke("update-category", token, id, updates),
+  // sub categories
+  createSubcategory: (token: string, subCategory: any) =>
+    ipcRenderer.invoke("create-sub-category", token, subCategory),
+  getSubcategories: (token: string,categoryId:string) =>
+    ipcRenderer.invoke("get-sub-categories", token,categoryId),
+  deleteSubcategory: (token: string, id: string) =>
+    ipcRenderer.invoke("delete-sub-category", token, id),
+  updateSubcategory: (token: string, id: string, updates: any) =>
+    ipcRenderer.invoke("update-sub-category", token, id, updates),
 
   // Order operations
   saveOrder: (token: string, order: any) =>

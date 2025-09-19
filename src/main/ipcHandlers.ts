@@ -35,15 +35,28 @@ import {
     getDeliveryPersonStats,
     updateDeliveryPerson,
 } from "./handlers/delivery.js";
-import { createCategory, deleteCategory, getCategories, updateCategory } from "./handlers/categories.js";
+import {
+    createCategory,
+    createSubCategory,
+    deleteCategory,
+    deleteSubCategory,
+    getCategories,
+    getSubCategories,
+    updateCategory,
+    updateSubCategory,
+} from "./handlers/categories.js";
 
 export function registerIpcHandlers() {
-
-  // categories handlers
-  ipcMain.handle("create-category", createCategory);
-  ipcMain.handle("get-categories", getCategories);
-  ipcMain.handle("delete-category", deleteCategory);
-  ipcMain.handle("update-category", updateCategory);
+    // categories handlers
+    ipcMain.handle("create-category", createCategory);
+    ipcMain.handle("get-categories", getCategories);
+    ipcMain.handle("delete-category", deleteCategory);
+    ipcMain.handle("update-category", updateCategory);
+    // sub-categories handlers
+    ipcMain.handle("create-sub-category", createSubCategory);
+    ipcMain.handle("get-sub-categories", getSubCategories);
+    ipcMain.handle("delete-sub-category", deleteSubCategory);
+    ipcMain.handle("update-sub-category", updateSubCategory);
 
     // Authentication handlers
     ipcMain.handle("register-user", registerUser);
