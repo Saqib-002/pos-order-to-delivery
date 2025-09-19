@@ -29,6 +29,7 @@ interface ProductModalProps {
   product: Product | null;
   categories: any[];
   subcategories: any[];
+  onFetchSubcategories?: (categoryId: string) => Promise<void>;
   isEditMode?: boolean;
 }
 
@@ -39,36 +40,45 @@ const ProductModal: React.FC<ProductModalProps> = ({
   product,
   categories,
   subcategories,
+  onFetchSubcategories,
   isEditMode = true,
 }) => {
   const [activeTab, setActiveTab] = useState<
-    "general" | "variants" | "printers" | "allergens" | "rules"
+    "general" | "variants" | "printers"
   >("general");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAssociatedProducts, setShowAssociatedProducts] = useState(false);
 
   // Variants and Add-ons state
-  const [selectedVariants, setSelectedVariants] = useState<string[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<string>("");
   const [variantPrices, setVariantPrices] = useState<Record<string, number>>(
     {}
   );
-  const [showVariantDropdown, setShowVariantDropdown] = useState(false);
   const [showAddons, setShowAddons] = useState(true);
   const [selectedAddonPage, setSelectedAddonPage] = useState(1);
-  const [addonPageSetup, setAddonPageSetup] = useState({
-    minComplements: 0,
-    maxComplements: 0,
-    freeAddons: 0,
-  });
-  const [selectedPluginGroups, setSelectedPluginGroups] = useState<string[]>(
-    []
-  );
+  const [addonPages, setAddonPages] = useState<
+    Array<{
+      id: number;
+      minComplements: number;
+      maxComplements: number;
+      freeAddons: number;
+      selectedGroup: string;
+    }>
+  >([
+    {
+      id: 1,
+      minComplements: 0,
+      maxComplements: 0,
+      freeAddons: 0,
+      selectedGroup: "",
+    },
+  ]);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: 0,
     priority: 0,
-    tax: 10,
+    tax: 0,
     discount: 0,
     categoryId: "",
     subcategoryId: "",
@@ -227,11 +237,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
   };
 
   // Handle variant selection
-  const handleVariantChange = (variantIds: string[]) => {
-    setSelectedVariants(variantIds);
+  const handleVariantChange = (variantId: string) => {
+    setSelectedVariant(variantId);
     // Initialize prices for new variant items
     const newPrices = { ...variantPrices };
-    variantIds.forEach((variantId) => {
+    if (variantId) {
       const variant = availableVariants.find((v) => v.id === variantId);
       if (variant) {
         variant.items.forEach((item) => {
@@ -241,7 +251,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
           }
         });
       }
-    });
+    }
     setVariantPrices(newPrices);
   };
 
@@ -260,23 +270,98 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
   // Get selected variant items
   const getSelectedVariantItems = () => {
-    return selectedVariants
-      .map((variantId) => {
-        const variant = availableVariants.find((v) => v.id === variantId);
-        return variant ? { ...variant, items: variant.items } : null;
-      })
-      .filter(
-        (variant): variant is NonNullable<typeof variant> => variant !== null
-      );
+    if (!selectedVariant) return [];
+    const variant = availableVariants.find((v) => v.id === selectedVariant);
+    return variant ? [{ ...variant, items: variant.items }] : [];
   };
 
-  // Handle plugin group selection
-  const handlePluginGroupToggle = (groupId: string) => {
-    setSelectedPluginGroups((prev) =>
-      prev.includes(groupId)
-        ? prev.filter((id) => id !== groupId)
-        : [...prev, groupId]
+  // Add new addon page
+  const addAddonPage = () => {
+    const newPageId = Math.max(...addonPages.map((p) => p.id)) + 1;
+    setAddonPages((prev) => [
+      ...prev,
+      {
+        id: newPageId,
+        minComplements: 0,
+        maxComplements: 0,
+        freeAddons: 0,
+        selectedGroup: "",
+      },
+    ]);
+    setSelectedAddonPage(newPageId);
+  };
+
+  // Remove addon page
+  const removeAddonPage = (pageId: number) => {
+    if (addonPages.length > 1) {
+      setAddonPages((prev) => prev.filter((page) => page.id !== pageId));
+      if (selectedAddonPage === pageId) {
+        setSelectedAddonPage(addonPages[0].id);
+      }
+    }
+  };
+
+  // Handle plugin group selection for a specific page
+  const handlePagePluginGroupChange = (pageId: number, groupId: string) => {
+    setAddonPages((prev) =>
+      prev.map((page) =>
+        page.id === pageId ? { ...page, selectedGroup: groupId } : page
+      )
     );
+  };
+
+  // Get available groups for a page (exclude already selected groups from other pages)
+  const getAvailableGroupsForPage = (currentPageId: number) => {
+    const selectedGroups = addonPages
+      .filter((page) => page.id !== currentPageId)
+      .map((page) => page.selectedGroup)
+      .filter(Boolean);
+
+    return pluginGroups.filter((group) => !selectedGroups.includes(group.id));
+  };
+
+  // Handle addon page setup changes
+  const handleAddonPageSetupChange = (
+    pageId: number,
+    field: string,
+    value: number
+  ) => {
+    setAddonPages((prev) =>
+      prev.map((page) =>
+        page.id === pageId ? { ...page, [field]: value } : page
+      )
+    );
+  };
+
+  // Get current page data
+  const getCurrentPageData = () => {
+    return (
+      addonPages.find((page) => page.id === selectedAddonPage) || addonPages[0]
+    );
+  };
+
+  // Check if current page has required fields filled to enable adding new page
+  const canAddNewPage = () => {
+    const currentPage = getCurrentPageData();
+    return currentPage.selectedGroup !== "";
+  };
+
+  // Calculate price breakdown
+  const calculatePriceBreakdown = () => {
+    const basePrice = formData.price || 0;
+    const discount = formData.discount || 0;
+    const taxPercentage = formData.tax || 0;
+
+    const tax = ((basePrice / (1 + taxPercentage / 100)) * taxPercentage) / 100;
+    const subtotal = basePrice - tax;
+    const total = basePrice - discount;
+
+    return {
+      subtotal: subtotal,
+      taxAmount: tax,
+      discount: discount,
+      total: total,
+    };
   };
 
   // Get color classes for plugin groups
@@ -291,6 +376,34 @@ const ProductModal: React.FC<ProductModalProps> = ({
       gray: "bg-gray-500 hover:bg-gray-600",
     };
     return colorMap[color] || "bg-gray-500 hover:bg-gray-600";
+  };
+
+  // Get ring color classes for plugin groups
+  const getPluginGroupRingClasses = (color: string) => {
+    const ringMap: Record<string, string> = {
+      red: "ring-red-500",
+      green: "ring-green-500",
+      blue: "ring-blue-500",
+      orange: "ring-orange-500",
+      purple: "ring-purple-500",
+      yellow: "ring-yellow-500",
+      gray: "ring-gray-500",
+    };
+    return ringMap[color] || "ring-gray-500";
+  };
+
+  // Get background color classes for checkmark
+  const getPluginGroupCheckmarkClasses = (color: string) => {
+    const checkmarkMap: Record<string, string> = {
+      red: "bg-red-500",
+      green: "bg-green-500",
+      blue: "bg-blue-500",
+      orange: "bg-orange-500",
+      purple: "bg-purple-500",
+      yellow: "bg-yellow-500",
+      gray: "bg-gray-500",
+    };
+    return checkmarkMap[color] || "bg-gray-500";
   };
 
   useEffect(() => {
@@ -318,7 +431,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
         description: "",
         price: 0,
         priority: 0,
-        tax: 10,
+        tax: 0,
         discount: 0,
         categoryId: "",
         subcategoryId: "",
@@ -330,8 +443,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
         isOutstanding: false,
         isPlus18: false,
       });
+
+      if (product && product.categoryId && onFetchSubcategories) {
+        onFetchSubcategories(product.categoryId);
+      }
     }
-  }, [product, isOpen, isEditMode]);
+  }, [product, isOpen, isEditMode, onFetchSubcategories]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -416,8 +533,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
               { id: "general", label: "GENERAL" },
               { id: "variants", label: "VARIANTS AND ADD-ONS" },
               { id: "printers", label: "PRINTERS" },
-              { id: "allergens", label: "ALLERGENS" },
-              { id: "rules", label: "SPECIFIC RULES" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -518,7 +633,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     <CustomSelect
                       options={getCategoryOptions()}
                       value={formData.categoryId}
-                      onChange={(value: string) =>
+                      onChange={async (value: string) =>
                         setFormData({
                           ...formData,
                           categoryId: value,
@@ -666,6 +781,48 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     </div>
                   </div>
                 </div>
+
+                {/* Price Breakdown Display */}
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">
+                        Subtotal:
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        €{calculatePriceBreakdown().subtotal.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">
+                        Tax ({formData.tax || 0}%):
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        €{calculatePriceBreakdown().taxAmount.toFixed(2)}
+                      </span>
+                    </div>
+                    {formData.discount > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">
+                          Discount:
+                        </span>
+                        <span className="text-sm font-semibold text-red-600">
+                          -€{calculatePriceBreakdown().discount.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="border-t pt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-semibold text-gray-900">
+                          Total:
+                        </span>
+                        <span className="text-lg font-bold text-green-600">
+                          €{calculatePriceBreakdown().total.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Product Attributes */}
@@ -735,128 +892,28 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
           {activeTab === "variants" && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900">
-                VARIANTS AND ADD-ONS
-              </h3>
-
               {/* Assign Variants Section */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <label className="block text-sm font-medium text-gray-700">
                     ASSIGN VARIANTS
                   </label>
-                  <svg
-                    className="w-4 h-4 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-
-                <div className="border border-gray-300 rounded-md p-3 min-h-[40px] bg-white">
-                  {selectedVariants.length === 0 ? (
-                    <span className="text-gray-500">Select variants</span>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {selectedVariants.map((variantId) => {
-                        const variant = availableVariants.find(
-                          (v) => v.id === variantId
-                        );
-                        return (
-                          <span
-                            key={variantId}
-                            className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-800 text-sm rounded-md"
-                          >
-                            {variant?.name}
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleVariantChange(
-                                  selectedVariants.filter(
-                                    (id) => id !== variantId
-                                  )
-                                )
-                              }
-                              className="text-orange-600 hover:text-orange-800"
-                            >
-                              <svg
-                                className="w-3 h-3"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M6 18L18 6M6 6l12 12"
-                                />
-                              </svg>
-                            </button>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  )}
                 </div>
 
                 {/* Variant Selection Dropdown */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setShowVariantDropdown(!showVariantDropdown)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-left focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  >
-                    Add variants...
-                  </button>
-
-                  {showVariantDropdown && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                      {availableVariants.map((variant) => (
-                        <label
-                          key={variant.id}
-                          className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedVariants.includes(variant.id)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                handleVariantChange([
-                                  ...selectedVariants,
-                                  variant.id,
-                                ]);
-                              } else {
-                                handleVariantChange(
-                                  selectedVariants.filter(
-                                    (id) => id !== variant.id
-                                  )
-                                );
-                              }
-                            }}
-                            className="h-4 w-4 accent-orange-600"
-                          />
-                          <span className="text-sm text-gray-700">
-                            {variant.name}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <CustomSelect
+                  options={getVariantOptions()}
+                  value={selectedVariant}
+                  onChange={(value: string) => handleVariantChange(value)}
+                  placeholder="Select a variant"
+                  portalClassName="variant-dropdown-portal"
+                />
 
                 {/* Selected Variants and their Items */}
-                {selectedVariants.length > 0 && (
+                {selectedVariant && (
                   <div className="space-y-4">
                     <h4 className="text-sm font-medium text-gray-700">
-                      Selected Variants and Items
+                      Variant Items and Pricing
                     </h4>
                     {getSelectedVariantItems().map((variant) => (
                       <div
@@ -930,19 +987,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   >
                     Show add-ons when adding a product
                   </label>
-                  <svg
-                    className="w-4 h-4 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
                 </div>
               </div>
 
@@ -953,36 +997,58 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     <label className="block text-sm font-medium text-gray-700">
                       SELECT ADD-ONS PAGE
                     </label>
-                    <svg
-                      className="w-4 h-4 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
                   </div>
 
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((page) => (
-                      <button
-                        key={page}
-                        type="button"
-                        onClick={() => setSelectedAddonPage(page)}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                          selectedAddonPage === page
-                            ? "bg-orange-500 text-white"
-                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                        }`}
-                      >
-                        {page}
-                      </button>
+                  <div className="flex gap-2 flex-wrap">
+                    {addonPages.map((page, index) => (
+                      <div key={page.id} className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedAddonPage(page.id)}
+                          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                            selectedAddonPage === page.id
+                              ? "bg-orange-500 text-white"
+                              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                          }`}
+                        >
+                          {index + 1}
+                        </button>
+                        {/* Show remove button only on added pages (not page 1) */}
+                        {index > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => removeAddonPage(page.id)}
+                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors duration-200"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
                     ))}
+
+                    {/* Add New Page Button */}
+                    {canAddNewPage() && (
+                      <button
+                        type="button"
+                        onClick={addAddonPage}
+                        className="flex items-center gap-1 px-4 py-1 border-2 border-dashed border-gray-300 rounded-md text-gray-600 hover:border-orange-500 hover:text-orange-600 transition-colors duration-200"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          />
+                        </svg>
+                        Add Page
+                      </button>
+                    )}
                   </div>
 
                   {/* Page Setup */}
@@ -991,19 +1057,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       <label className="block text-sm font-medium text-gray-700">
                         PAGE {selectedAddonPage} SETUP
                       </label>
-                      <svg
-                        className="w-4 h-4 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1014,12 +1067,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         <input
                           type="number"
                           min="0"
-                          value={addonPageSetup.minComplements}
+                          value={getCurrentPageData().minComplements}
                           onChange={(e) =>
-                            setAddonPageSetup((prev) => ({
-                              ...prev,
-                              minComplements: parseInt(e.target.value) || 0,
-                            }))
+                            handleAddonPageSetupChange(
+                              selectedAddonPage,
+                              "minComplements",
+                              parseInt(e.target.value) || 0
+                            )
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         />
@@ -1031,12 +1085,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         <input
                           type="number"
                           min="0"
-                          value={addonPageSetup.maxComplements}
+                          value={getCurrentPageData().maxComplements}
                           onChange={(e) =>
-                            setAddonPageSetup((prev) => ({
-                              ...prev,
-                              maxComplements: parseInt(e.target.value) || 0,
-                            }))
+                            handleAddonPageSetupChange(
+                              selectedAddonPage,
+                              "maxComplements",
+                              parseInt(e.target.value) || 0
+                            )
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         />
@@ -1048,12 +1103,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         <input
                           type="number"
                           min="0"
-                          value={addonPageSetup.freeAddons}
+                          value={getCurrentPageData().freeAddons}
                           onChange={(e) =>
-                            setAddonPageSetup((prev) => ({
-                              ...prev,
-                              freeAddons: parseInt(e.target.value) || 0,
-                            }))
+                            handleAddonPageSetupChange(
+                              selectedAddonPage,
+                              "freeAddons",
+                              parseInt(e.target.value) || 0
+                            )
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         />
@@ -1063,42 +1119,33 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 </div>
               )}
 
-              {/* Add Plugin Group */}
+              {/* Add Plugin Group for Current Page */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <label className="block text-sm font-medium text-gray-700">
-                    ADD PLUGIN GROUP
+                    ADD PLUGIN GROUP FOR PAGE {selectedAddonPage}
                   </label>
-                  <svg
-                    className="w-4 h-4 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {pluginGroups.map((group) => (
+                  {getAvailableGroupsForPage(selectedAddonPage).map((group) => (
                     <button
                       key={group.id}
                       type="button"
-                      onClick={() => handlePluginGroupToggle(group.id)}
+                      onClick={() =>
+                        handlePagePluginGroupChange(selectedAddonPage, group.id)
+                      }
                       className={`relative px-4 py-3 rounded-md text-sm font-medium text-white transition-colors duration-200 ${getPluginGroupColorClasses(group.color)} ${
-                        selectedPluginGroups.includes(group.id)
-                          ? "ring-2 ring-orange-500 ring-offset-2"
+                        getCurrentPageData().selectedGroup === group.id
+                          ? `ring-2 ${getPluginGroupRingClasses(group.color)} ring-offset-2`
                           : ""
                       }`}
                     >
                       {group.name}
-                      {selectedPluginGroups.includes(group.id) && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
+                      {getCurrentPageData().selectedGroup === group.id && (
+                        <div
+                          className={`absolute -top-3 -right-2 w-5 h-5 ${getPluginGroupCheckmarkClasses(group.color)} rounded-full flex items-center justify-center`}
+                        >
                           <svg
                             className="w-3 h-3 text-white"
                             fill="currentColor"
@@ -1124,28 +1171,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
               <h3 className="text-lg font-semibold text-gray-900">Printers</h3>
               <p className="text-gray-600">Configure printer settings here.</p>
               {/* TODO: Implement printer configuration */}
-            </div>
-          )}
-
-          {activeTab === "allergens" && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900">Allergens</h3>
-              <p className="text-gray-600">
-                Configure allergen information here.
-              </p>
-              {/* TODO: Implement allergen configuration */}
-            </div>
-          )}
-
-          {activeTab === "rules" && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Specific Rules
-              </h3>
-              <p className="text-gray-600">
-                Configure specific business rules here.
-              </p>
-              {/* TODO: Implement specific rules configuration */}
             </div>
           )}
 

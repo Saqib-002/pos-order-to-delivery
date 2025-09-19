@@ -35,7 +35,7 @@ interface Product {
   color: string;
 }
 
-export const MenuView: React.FC<{token: string}> = ({token}) => {
+export const MenuView: React.FC<{ token: string }> = ({ token }) => {
   const [currentView, setCurrentView] = useState<"menu" | "group" | "variant">(
     "menu"
   );
@@ -61,22 +61,22 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
     "categories" | "subcategories" | "products"
   >("categories");
 
-  const getCategories=async()=>{
-    const res= await (window as any).electronAPI.getCategories(token);
-    if(!res.status){
+  const getCategories = async () => {
+    const res = await (window as any).electronAPI.getCategories(token);
+    if (!res.status) {
       toast.error("Unable to get categories");
       return;
     }
-    setCategories(res.data.map((c: any) => ({ ...c, name: c.categoryName})));
-  }
-  const getSubcategories=async(id:string)=>{
-    const res= await (window as any).electronAPI.getSubcategories(token,id);
-    if(!res.status){
+    setCategories(res.data.map((c: any) => ({ ...c, name: c.categoryName })));
+  };
+  const getSubcategories = async (id: string) => {
+    const res = await (window as any).electronAPI.getSubcategories(token, id);
+    if (!res.status) {
       toast.error("Unable to get categories");
       return;
     }
     setSubcategories(res.data);
-  }
+  };
   // Mock data - replace with actual API calls
   useEffect(() => {
     getCategories();
@@ -211,7 +211,6 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
     setSelectedSubcategory(null);
     setCurrentLevel("subcategories");
   };
-
 
   const getFilteredProducts = () => {
     if (!selectedSubcategory) return [];
@@ -526,9 +525,9 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
             )}
           </>
         ) : currentView === "group" ? (
-          <GroupView token={token}/>
+          <GroupView token={token} />
         ) : (
-          <VariantView token={token}/>
+          <VariantView token={token} />
         )}
 
         {/* Modals */}
@@ -541,7 +540,7 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
           }}
           onSuccess={handleCategorySuccess}
           editingCategory={editingCategory}
-          />
+        />
 
         <SubcategoryModal
           isOpen={isCreateSubcategoryOpen}
@@ -565,6 +564,7 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
           product={editingProduct}
           categories={categories}
           subcategories={subcategories}
+          onFetchSubcategories={getSubcategories}
           isEditMode={!!editingProduct}
         />
 
