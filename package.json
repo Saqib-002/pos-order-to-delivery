@@ -14,7 +14,6 @@
         "build:electron": "tsc --project tsconfig.electron.json",
         "build:renderer": "vite build",
         "clean": "rimraf dist dist-electron orders out",
-        "rebuild": "electron-rebuild -f -w better-sqlite3",
         "migrate": "knex migrate:latest --env development",
         "migrate:remote": "knex migrate:latest --env production",
         "migrate:rollback": "knex migrate:rollback --env development",
@@ -22,7 +21,6 @@
         "seed": "knex seed:run --env development",
         "seed:remote": "knex seed:run --env production",
         "migrate:status": "knex migrate:currentVersion",
-        "test-db": "node network_test.js",
         "db:reset": "knex migrate:rollback --all && knex migrate:latest && knex seed:run"
     },
     "keywords": [],
@@ -39,7 +37,6 @@
         "@electron/fuses": "^1.8.0",
         "@tailwindcss/postcss": "^4.1.12",
         "@types/bcrypt": "^6.0.0",
-        "@types/better-sqlite3": "^7.6.13",
         "@types/jsonwebtoken": "^9.0.10",
         "@types/lodash": "^4.17.20",
         "@types/node": "^24.3.0",
@@ -64,7 +61,6 @@
         "vite-plugin-svgr": "^4.5.0"
     },
     "dependencies": {
-        "better-sqlite3": "^12.2.0",
         "dotenv": "^17.2.1",
         "electron-is-dev": "^3.0.1",
         "electron-log": "^5.4.3",

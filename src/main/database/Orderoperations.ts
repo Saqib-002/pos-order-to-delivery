@@ -1,11 +1,11 @@
-import { localDb } from "./index.js";
+import { db } from "./index.js";
 import { FilterType, Order } from "@/types/order.js";
 import { randomUUID } from "crypto";
 import Logger from "electron-log";
 
 export class OrderDatabaseOperations {
     static async saveOrder(order: Order): Promise<any> {
-        const trx = await localDb.transaction();
+        const trx = await db.transaction();
         try {
             const now = new Date().toISOString();
             order.id = randomUUID();
@@ -62,7 +62,7 @@ export class OrderDatabaseOperations {
 
     static async getOrders(): Promise<Order[]> {
         try {
-            const rows = await localDb("orders").where("isDeleted", false);
+            const rows = await db("orders").where("isDeleted", false);
             const orders: Order[] = rows.map((row) => ({
                 id: row.id,
                 orderId: row.orderId,
@@ -80,7 +80,7 @@ export class OrderDatabaseOperations {
 
             for (const order of orders) {
                 // Get order items
-                const items = await localDb("order_items")
+                const items = await db("order_items")
                     .innerJoin(
                         "menu_items",
                         "order_items.menuItemId",
@@ -104,7 +104,7 @@ export class OrderDatabaseOperations {
 
                 // Get delivery person data if assigned
                 if (order.deliveryPersonId) {
-                    const deliveryPerson = await localDb("delivery_persons")
+                    const deliveryPerson = await db("delivery_persons")
                         .where("id", order.deliveryPersonId)
                         .andWhere("isDeleted", false)
                         .first();
@@ -154,33 +154,33 @@ export class OrderDatabaseOperations {
             default:
                 throw new Error("Invalid date range");
         }
-        const ordersStats = await localDb("orders")
+        const ordersStats = await db("orders")
             .where("isDeleted", false)
             .andWhere("createdAt", ">=", startDate.toISOString())
             .andWhere("createdAt", "<=", endDate.toISOString())
             .select(
-                localDb.raw(
+                db.raw(
                     "COUNT(CASE WHEN LOWER(status) = LOWER('Delivered') THEN 1 END) as totalDelivered"
                 ),
-                localDb.raw(
+                db.raw(
                     "COUNT(CASE WHEN LOWER(status) = LOWER('sent to kitchen') THEN 1 END) as totalSentToKitchen"
                 ),
-                localDb.raw(
+                db.raw(
                     "COUNT(CASE WHEN LOWER(status) = LOWER('ready for delivery') THEN 1 END) as totalReadyForDelivery"
                 ),
-                localDb.raw(
+                db.raw(
                     "COUNT(CASE WHEN LOWER(status) = LOWER('out for delivery') THEN 1 END) as totalOutForDelivery"
                 ),
-                localDb.raw(
+                db.raw(
                     "COUNT(CASE WHEN LOWER(status) = LOWER('Cancelled') THEN 1 END) as totalCancelled"
                 ),
-                localDb.raw(
+                db.raw(
                     `AVG(CASE WHEN LOWER(status) = LOWER('Delivered') AND assignedAt IS NOT NULL AND deliveredAt IS NOT NULL THEN (JULIANDAY(deliveredAt) - JULIANDAY(assignedAt)) * 1440 END) as avgDeliveryTime`
                 )
             )
             .first();
         const hourlyData = new Array(24).fill(0);
-        const orders = await localDb("orders")
+        const orders = await db("orders")
             .where("isDeleted", false)
             .andWhere("createdAt", ">=", startDate.toISOString())
             .andWhere("createdAt", "<=", endDate.toISOString())
@@ -200,7 +200,7 @@ export class OrderDatabaseOperations {
             hourlyData[hour]++;
 
             // Get order items for each order
-            const items = await localDb("order_items")
+            const items = await db("order_items")
                 .innerJoin(
                     "menu_items",
                     "order_items.menuItemId",
@@ -236,7 +236,7 @@ export class OrderDatabaseOperations {
             newOrders.push(newOrder);
         }
 
-        const topItems = await localDb("order_items")
+        const topItems = await db("order_items")
             .innerJoin("menu_items", "order_items.menuItemId", "menu_items.id")
             .innerJoin("orders", "order_items.orderId", "orders.id")
             .where("order_items.isDeleted", false)
@@ -247,7 +247,7 @@ export class OrderDatabaseOperations {
             .groupBy("menu_items.id", "menu_items.name")
             .select(
                 "menu_items.name",
-                localDb.raw("SUM(order_items.quantity) as count")
+                db.raw("SUM(order_items.quantity) as count")
             )
             .orderBy("count", "desc")
             .limit(8);
@@ -256,7 +256,7 @@ export class OrderDatabaseOperations {
     }
     static async getOrdersByFilter(filter: FilterType): Promise<Order[]> {
         try {
-            const query = localDb("orders").where("isDeleted", false);
+            const query = db("orders").where("isDeleted", false);
             if (filter.searchTerm.trim()) {
                 query
                     .andWhere("customerName", "like", `%${filter.searchTerm}%`)
@@ -298,7 +298,7 @@ export class OrderDatabaseOperations {
 
             for (const order of orders) {
                 // Get order items
-                const items = await localDb("order_items")
+                const items = await db("order_items")
                     .innerJoin(
                         "menu_items",
                         "order_items.menuItemId",
@@ -322,7 +322,7 @@ export class OrderDatabaseOperations {
 
                 // Get delivery person data if assigned
                 if (order.deliveryPersonId) {
-                    const deliveryPerson = await localDb("delivery_persons")
+                    const deliveryPerson = await db("delivery_persons")
                         .where("id", order.deliveryPersonId)
                         .andWhere("isDeleted", false)
                         .first();
@@ -345,7 +345,7 @@ export class OrderDatabaseOperations {
     }
 
     static async updateOrder(order: Order): Promise<any> {
-        const trx = await localDb.transaction();
+        const trx = await db.transaction();
         try {
             const now = new Date().toISOString();
 
@@ -419,7 +419,7 @@ export class OrderDatabaseOperations {
     }
 
     static async deleteOrder(id: string): Promise<any> {
-        const trx = await localDb.transaction();
+        const trx = await db.transaction();
         try {
             const now = new Date().toISOString();
             await trx("orders").where("id", id).update({
@@ -440,7 +440,7 @@ export class OrderDatabaseOperations {
     static async cancelOrder(id: string): Promise<any> {
         try {
             const now = new Date().toISOString();
-            await localDb("orders").where("id", id).update({
+            await db("orders").where("id", id).update({
                 updatedAt: now,
                 cancelledAt: now,
                 status: "cancelled",
@@ -453,7 +453,7 @@ export class OrderDatabaseOperations {
     static async readyOrder(id: string): Promise<any> {
         try {
             const now = new Date().toISOString();
-            await localDb("orders").where("id", id).update({
+            await db("orders").where("id", id).update({
                 updatedAt: now,
                 readyAt: now,
                 status: "ready for delivery",
@@ -466,7 +466,7 @@ export class OrderDatabaseOperations {
     static async markDeliveredOrder(id: string): Promise<any> {
         try {
             const now = new Date().toISOString();
-            await localDb("orders").where("id", id).update({
+            await db("orders").where("id", id).update({
                 updatedAt: now,
                 deliveredAt: now,
                 status: "delivered",

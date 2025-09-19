@@ -20,7 +20,6 @@ export async function up(knex) {
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
     table.timestamp('cancelledAt');
     table.timestamp('deliveredAt');
-    table.timestamp('syncedAt');
     table.boolean('isDeleted').defaultTo(false);
     table.index(['status']);
     table.index(['customerPhone']);

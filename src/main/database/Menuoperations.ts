@@ -1,4 +1,4 @@
-import { localDb } from "./index.js";
+import { db } from "./index.js";
 import { MenuItem, OrderItem } from "@/types/Menu.js";
 import { randomUUID } from "crypto";
 import Logger from "electron-log";
@@ -20,7 +20,7 @@ export class MenuDatabaseOperations {
         createdAt: now,
         updatedAt: now,
       };
-      await localDb("menu_items").insert(newMenuItem);
+      await db("menu_items").insert(newMenuItem);
       Logger.info(`Menu item created: ${newMenuItem.name}`);
       return {
         ...newMenuItem,
@@ -33,7 +33,7 @@ export class MenuDatabaseOperations {
 
   static async getMenuItems(): Promise<MenuItem[]> {
     try {
-      const rows = await localDb("menu_items")
+      const rows = await db("menu_items")
         .where("isDeleted", false)
         .orderBy("category", "asc")
         .orderBy("name", "asc");
@@ -48,7 +48,7 @@ export class MenuDatabaseOperations {
 
   static async getMenuItemsByCategory(category: string): Promise<MenuItem[]> {
     try {
-      const rows = await localDb("menu_items")
+      const rows = await db("menu_items")
         .where("category", category)
         .andWhere("isDeleted", false)
         .andWhere("isAvailable", true)
@@ -69,7 +69,7 @@ export class MenuDatabaseOperations {
     try {
       const now = new Date().toISOString();
 
-      await localDb("menu_items")
+      await db("menu_items")
         .where("id", id)
         .update({
           ...updates,
@@ -80,7 +80,7 @@ export class MenuDatabaseOperations {
           
         });
 
-      const updatedItem = await localDb("menu_items").where("id", id).first();
+      const updatedItem = await db("menu_items").where("id", id).first();
 
       if (!updatedItem) {
         throw new Error("Menu item not found after update");
@@ -100,10 +100,9 @@ export class MenuDatabaseOperations {
     try {
       const now = new Date().toISOString();
 
-      await localDb("menu_items").where("id", id).update({
+      await db("menu_items").where("id", id).update({
         isDeleted: true,
         updatedAt: now,
-        
       });
 
       Logger.info(`Menu item deleted: ${id}`);
@@ -114,7 +113,7 @@ export class MenuDatabaseOperations {
 
   static async getMenuItemById(id: string): Promise<MenuItem | null> {
     try {
-      const row = await localDb("menu_items")
+      const row = await db("menu_items")
         .where("id", id)
         .andWhere("isDeleted", false)
         .first();
@@ -126,7 +125,7 @@ export class MenuDatabaseOperations {
 
   static async getMenuItemsByName(name: string): Promise<MenuItem[]> {
     try {
-      const rows = await localDb("menu_items")
+      const rows = await db("menu_items")
         .where("isDeleted", false)
         .andWhere("isAvailable", true)
         .where(function () {
@@ -153,7 +152,7 @@ export class MenuDatabaseOperations {
 
   static async getCategories(): Promise<string[]> {
     try {
-      const rows = await localDb("menu_items")
+      const rows = await db("menu_items")
         .distinct("category")
         .where("isDeleted", false)
         .orderBy("category", "asc");

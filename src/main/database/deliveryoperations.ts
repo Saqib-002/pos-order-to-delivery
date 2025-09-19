@@ -1,4 +1,4 @@
-import { localDb } from "./index.js";
+import { db } from "./index.js";
 import { DeliveryPerson } from "@/types/delivery";
 import { randomUUID } from "crypto";
 import Logger from "electron-log";
@@ -23,7 +23,7 @@ export class DeliveryDatabaseOperations {
             };
             console.log(newDeliveryPerson);
 
-            await localDb("delivery_persons").insert(newDeliveryPerson);
+            await db("delivery_persons").insert(newDeliveryPerson);
             Logger.info(`Delivery person created: ${newDeliveryPerson.name}`);
             return newDeliveryPerson;
         } catch (error) {
@@ -34,7 +34,7 @@ export class DeliveryDatabaseOperations {
     // Get all delivery persons
     static async getDeliveryPersons(): Promise<DeliveryPerson[]> {
         try {
-            let query = localDb("delivery_persons")
+            let query = db("delivery_persons")
                 .where("isDeleted", false)
                 .orderBy("name", "asc");
             const deliveryPersons = await query;
@@ -53,18 +53,18 @@ export class DeliveryDatabaseOperations {
         deliveryPersonId: string
     ): Promise<any> {
         try {
-            const stats = await await localDb("orders")
+            const stats = await await db("orders")
                 .where("deliveryPersonId", deliveryPersonId)
                 .andWhere("isDeleted", false)
                 .select(
-                    localDb.raw("COUNT(*) as totalAssigned"),
-                    localDb.raw(
+                    db.raw("COUNT(*) as totalAssigned"),
+                    db.raw(
                         "COUNT(CASE WHEN LOWER(status) = LOWER('Delivered') THEN 1 END) as totalDelivered"
                     ),
-                    localDb.raw(
+                    db.raw(
                         "COUNT(CASE WHEN LOWER(status) = LOWER('Cancelled') THEN 1 END) as totalCancelled"
                     ),
-                    localDb.raw(`
+                    db.raw(`
                           AVG(
                             CASE 
                               WHEN LOWER(status) = LOWER('Delivered') AND assignedAt IS NOT NULL AND deliveredAt IS NOT NULL 
@@ -94,14 +94,14 @@ export class DeliveryDatabaseOperations {
         try {
             const now = new Date().toISOString();
 
-            await localDb("delivery_persons")
+            await db("delivery_persons")
                 .where("id", id)
                 .update({
                     ...updates,
                     updatedAt: now,
                 });
 
-            const updatedPerson = await localDb("delivery_persons")
+            const updatedPerson = await db("delivery_persons")
                 .where("id", id)
                 .first();
 
@@ -121,7 +121,7 @@ export class DeliveryDatabaseOperations {
         try {
             const now = new Date().toISOString();
 
-            await localDb("delivery_persons").where("id", id).update({
+            await db("delivery_persons").where("id", id).update({
                 isDeleted: true,
                 updatedAt: now,
             });
@@ -139,7 +139,7 @@ export class DeliveryDatabaseOperations {
         try {
             const now = new Date().toISOString();
             // Update the order with delivery person assignment
-            await localDb("orders").where("id", orderId).update({
+            await db("orders").where("id", orderId).update({
                 deliveryPersonId: deliveryPersonId,
                 assignedAt: now,
                 status: "Out for Delivery",

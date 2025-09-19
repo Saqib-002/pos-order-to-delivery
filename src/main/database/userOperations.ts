@@ -1,6 +1,5 @@
-import { localDb } from './index.js';
+import { db } from './index.js';
 import { User } from '@/types/user.js';
-import Logger from 'electron-log';
 import  jwt from 'jsonwebtoken';
 
 // In-memory session store
@@ -24,7 +23,7 @@ export class UserDatabaseOperations {
         updatedAt: now
       };
 
-      await localDb('users').insert(user);
+      await db('users').insert(user);
       
       const { password, ...userWithoutPassword } = user;
       return {
@@ -45,7 +44,7 @@ export class UserDatabaseOperations {
   static async loginUser(username: string, userPassword: string): Promise<{ token: string; user: Omit<User, 'password'|'syncAt'> }> {
     try {
       const bcrypt = await import('bcrypt');
-      const row = await localDb('users')
+      const row = await db('users')
         .where('username', username)
         .andWhere('isDeleted', false)
         .first();
@@ -86,7 +85,7 @@ export class UserDatabaseOperations {
 
   static async getUsers(): Promise<Omit<User, 'password'|'syncAt'>[]> {
     try {
-      const rows = await localDb('users')
+      const rows = await db('users')
         .where('isDeleted', false)
         .select('*');
       
@@ -122,11 +121,11 @@ export class UserDatabaseOperations {
         updateData.password = await bcrypt.hash(userData.password, 10);
       }
 
-      await localDb('users')
+      await db('users')
         .where('id', userData.id)
         .update(updateData);
 
-      const updatedUser = await localDb('users')
+      const updatedUser = await db('users')
         .where('id', userData.id)
         .first();
 
@@ -162,7 +161,7 @@ export class UserDatabaseOperations {
 
   static async deleteUser(userId: string): Promise<void> {
     try {
-      await localDb('users')
+      await db('users')
         .where('id', userId)
         .update({
           isDeleted: true,

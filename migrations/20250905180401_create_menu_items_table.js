@@ -13,7 +13,6 @@ export async function up(knex) {
     table.string('ingredients');
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
-    table.timestamp('syncedAt');
     table.boolean('isDeleted').defaultTo(false);
     
     table.index(['category']);

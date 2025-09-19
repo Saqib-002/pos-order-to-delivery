@@ -1,9 +1,9 @@
-import { localDb } from '../database/index.js';
+import { db } from '../database/index.js';
 import Logger from 'electron-log';
 
 export async function renumberDay(day: string): Promise<void> {
   try {
-    const orders = await localDb('orders')
+    const orders = await db('orders')
       .whereRaw('DATE(created_at) = ?', [day])
       .andWhere('is_deleted', false)
       .orderBy('created_at', 'asc')
@@ -21,7 +21,7 @@ export async function renumberDay(day: string): Promise<void> {
     });
     
     if (updates.length > 0) {
-      await localDb.transaction(async (trx) => {
+      await db.transaction(async (trx) => {
         for (const update of updates) {
           await trx('orders')
             .where('id', update.id)
