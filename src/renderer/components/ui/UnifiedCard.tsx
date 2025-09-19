@@ -2,9 +2,9 @@ import React from "react";
 
 interface BaseCardData {
   id: string;
-  name: string;
+  name?: string;
   itemCount?: number;
-  color: string;
+  color?: string;
   description?: string;
   price?: number;
   isAvailable?: boolean;
@@ -21,7 +21,10 @@ interface UnifiedCardProps {
   showActions?: boolean;
 }
 
-const getColorClasses = (color: string, type: string) => {
+const getColorClasses = (color: string|undefined, type: string) => {
+  if (!color){
+    return 'bg-gray-500 text-white border-gray-500';
+  }
   const colorMap: { [key: string]: string } = {
     red: "bg-red-500 text-white border-red-500",
     blue: "bg-blue-500 text-white border-blue-500",

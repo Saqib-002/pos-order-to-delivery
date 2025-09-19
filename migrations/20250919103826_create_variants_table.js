@@ -1,0 +1,20 @@
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+export async function up(knex) {
+  return knex.schema.createTable('variants', function(table) {
+    table.string('id').primary();
+    table.string('groupName');
+    table.timestamp('createdAt').defaultTo(knex.fn.now());
+    table.timestamp('updatedAt').defaultTo(knex.fn.now());
+  });
+};
+
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+export async function down(knex) {
+  return knex.schema.dropTable('variants');
+};

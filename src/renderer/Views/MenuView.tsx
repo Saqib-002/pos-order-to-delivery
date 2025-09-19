@@ -476,6 +476,13 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
                   </h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {subcategories.length === 0 && (
+                    <div className="flex items-center justify-center">
+                      <p className="text-xl text-gray-500">
+                        No categories found. Please create a category.
+                      </p>
+                    </div>
+                  )}
                   {subcategories.map((subcategory) => (
                     <UnifiedCard
                       key={subcategory.id}
@@ -521,7 +528,7 @@ export const MenuView: React.FC<{token: string}> = ({token}) => {
         ) : currentView === "group" ? (
           <GroupView />
         ) : (
-          <VariantView />
+          <VariantView token={token}/>
         )}
 
         {/* Modals */}

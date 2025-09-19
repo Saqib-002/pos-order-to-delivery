@@ -3,10 +3,8 @@ import { toast } from "react-toastify";
 
 interface Variant {
   id: string;
-  name: string;
   groupName?: string;
-  variantCount: number;
-  color: string;
+  items:VariantItem[]
 }
 
 interface VariantItem {
@@ -19,6 +17,7 @@ interface CreateVariantModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  token:string;
   editingVariant?: Variant | null;
 }
 
@@ -26,6 +25,7 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  token,
   editingVariant,
 }) => {
   const [formData, setFormData] = useState({
@@ -40,11 +40,7 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
       setFormData({
         groupName: editingVariant.groupName || "",
       });
-      // TODO: Load existing variants for editing
-      setVariants([
-        { id: "1", name: "Naranja", priority: 0 },
-        { id: "2", name: "Limón", priority: 0 },
-      ]);
+      setVariants(editingVariant.items || []);
     } else {
       setFormData({
         groupName: "",
@@ -89,13 +85,20 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
       toast.error("Please add at least one variant");
       return;
     }
-
     setIsSubmitting(true);
-
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      let res;
+      if(!editingVariant){
+        res= await (window as any).electronAPI.createVariant(token,formData,variants);
+      }else{
+        res=await (window as any).electronAPI.updateVariant(token,{...formData,id:editingVariant!.id},variants);
+      }
+      if(!res.status){
+        toast.error(editingVariant
+          ? "Failed to edit variant"
+          : "Failed to save variant");
+        return
+      }
       toast.success(
         editingVariant
           ? "Variant updated successfully"

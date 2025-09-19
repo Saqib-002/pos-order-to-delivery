@@ -3,16 +3,15 @@
  * @returns { Promise<void> }
  */
 export async function up(knex) {
-  return knex.schema.createTable('sub_categories', function(table) {
+  return knex.schema.createTable('variant_items', function(table) {
     table.string('id').primary();
     table.string('name').notNullable();
-    table.string('color').notNullable();
-    table.boolean('isForMenu').defaultTo(false);
-    table.string('categoryId').notNullable();
+    table.integer('priority').notNullable();
+    table.string('variantId').notNullable();
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
 
-    table.foreign('categoryId').references('id').inTable('categories').onDelete('CASCADE');
+    table.foreign('variantId').references('id').inTable('variants').onDelete('CASCADE');
   });
 };
 
@@ -21,5 +20,5 @@ export async function up(knex) {
  * @returns { Promise<void> }
  */
 export async function down(knex) {
-  return knex.schema.dropTable('sub_categories');
+  return knex.schema.dropTable('variant_items');
 };

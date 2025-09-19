@@ -1,67 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { UnifiedCard } from "../ui/UnifiedCard";
 import { CreateVariantModal } from "./CreateVariantModal";
+import { VariantItem } from "@/types/Variants";
+import { toast } from "react-toastify";
 
 interface Variant {
   id: string;
-  name: string;
   groupName?: string;
-  variantCount: number;
-  color: string;
+  items:VariantItem[];
 }
 
-export const VariantView: React.FC = () => {
+export const VariantView: React.FC<{token:string}> = ({token}) => {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [isCreateVariantOpen, setIsCreateVariantOpen] = useState(false);
   const [editingVariant, setEditingVariant] = useState<Variant | null>(null);
 
+  const getVariants=async()=>{
+    const res=await (window as any).electronAPI.getVariants(token);
+    if(!res.status){
+      toast.error("Unable to get variants");
+      return
+    }
+    setVariants(res.data);
+  }
   // Mock data for variants
   useEffect(() => {
-    const mockVariants: Variant[] = [
-      {
-        id: "1",
-        name: "Size Variants",
-        groupName: "Pizza Sizes",
-        variantCount: 3,
-        color: "blue",
-      },
-      {
-        id: "2",
-        name: "Flavor Variants",
-        groupName: "Ice Cream",
-        variantCount: 5,
-        color: "green",
-      },
-      {
-        id: "3",
-        name: "Temperature",
-        groupName: "Beverages",
-        variantCount: 2,
-        color: "orange",
-      },
-      {
-        id: "4",
-        name: "Spice Level",
-        groupName: "Curry Dishes",
-        variantCount: 4,
-        color: "red",
-      },
-      {
-        id: "5",
-        name: "Crust Type",
-        groupName: "Pizza",
-        variantCount: 3,
-        color: "purple",
-      },
-      {
-        id: "6",
-        name: "Dressing",
-        groupName: "Salads",
-        variantCount: 6,
-        color: "teal",
-      },
-    ];
-    setVariants(mockVariants);
+    getVariants()
   }, []);
 
   const handleCreateVariant = () => {
@@ -74,17 +38,21 @@ export const VariantView: React.FC = () => {
     setIsCreateVariantOpen(true);
   };
 
-  const handleDeleteVariant = (variant: Variant) => {
-    if (window.confirm(`Are you sure you want to delete "${variant.name}"?`)) {
-      setVariants(variants.filter((v) => v.id !== variant.id));
-      // TODO: Call API to delete variant
+  const handleDeleteVariant = async(variant: Variant) => {
+    if (window.confirm(`Are you sure you want to delete "${variant.groupName}" with "${variant.items.length} variants"?`)) {
+      const res=await (window as any).electronAPI.deleteVariant(token,variant.id);
+      if(!res.status){
+        toast.error("Unable to delete variant");
+        return
+      }
+      getVariants();
     }
   };
 
   const handleVariantSuccess = () => {
     setIsCreateVariantOpen(false);
     setEditingVariant(null);
-    // TODO: Refresh variants from API
+    getVariants();
   };
 
   return (
@@ -117,10 +85,15 @@ export const VariantView: React.FC = () => {
 
       {/* Variants Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {!variants.length && (
+        <div className="text-center">
+          <p>No variants found. Please create one.</p>
+        </div>
+      )}
         {variants.map((variant) => (
           <UnifiedCard
             key={variant.id}
-            data={variant}
+            data={{id:variant.id,name:variant.groupName!==""?variant.groupName:variant.items.map(i=>i.name).join("-"),variantCount:variant.items.length}}
             type="variant"
             onEdit={() => handleEditVariant(variant)}
             onDelete={() => handleDeleteVariant(variant)}
@@ -131,6 +104,7 @@ export const VariantView: React.FC = () => {
       {/* Create/Edit Variant Modal */}
       <CreateVariantModal
         isOpen={isCreateVariantOpen}
+        token={token}
         onClose={() => {
           setIsCreateVariantOpen(false);
           setEditingVariant(null);

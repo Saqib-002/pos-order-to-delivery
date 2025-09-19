@@ -45,6 +45,7 @@ import {
     updateCategory,
     updateSubCategory,
 } from "./handlers/categories.js";
+import { createVariant, deleteVariant, getVariants, updateVariant } from "./handlers/variants.js";
 
 export function registerIpcHandlers() {
     // categories handlers
@@ -57,6 +58,11 @@ export function registerIpcHandlers() {
     ipcMain.handle("get-sub-categories", getSubCategories);
     ipcMain.handle("delete-sub-category", deleteSubCategory);
     ipcMain.handle("update-sub-category", updateSubCategory);
+    // variants handlers
+    ipcMain.handle("create-variant",createVariant);
+    ipcMain.handle("get-variants",getVariants);
+    ipcMain.handle("delete-variant",deleteVariant);
+    ipcMain.handle("update-variant",updateVariant);
 
     // Authentication handlers
     ipcMain.handle("register-user", registerUser);
