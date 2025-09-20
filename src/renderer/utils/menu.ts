@@ -9,7 +9,6 @@ export const getVariants = async (
         toast.error("Unable to get variants");
         return;
     }
-    console.log(res.data);
     setVariants(res.data);
 };
 export const getGroups = async (

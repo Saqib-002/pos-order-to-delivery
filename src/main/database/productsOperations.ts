@@ -22,7 +22,7 @@ export class ProductsDatabaseOperations {
             )) {
                 console.log(variantItemId, price);
                 const exists = await trx("products_variants")
-                    .where("id",variantItemId)
+                    .where("id", variantItemId)
                     .first();
                 if (!exists) {
                     console.error(
@@ -56,6 +56,68 @@ export class ProductsDatabaseOperations {
             await trx.commit();
         } catch (error) {
             await trx.rollback();
+            throw error;
+        }
+    }
+    static async getProducts() {
+        try {
+            let query = db("products")
+                .join(
+                    "sub_categories",
+                    "products.subcategoryId",
+                    "=",
+                    "sub_categories.id"
+                )
+                .select("products.*", "sub_categories.categoryId")
+                .orderBy("products.name", "asc");
+            const products = await query;
+            return products;
+        } catch (error) {
+            throw error;
+        }
+    }
+    static async updateProduct(productData: any, variantPrices: any, addonPages: any){
+        const trx=await db.transaction()
+        try {
+            const now = new Date().toISOString();
+            await trx("products").where("id", productData.id).update(productData);
+            await trx("products_variants").where("productId", productData.id).delete();
+            for (const [variantItemId, price] of Object.entries(variantPrices)) {
+                const newVariantPrice = {
+                    id: randomUUID(),
+                    variantId: variantItemId,
+                    productId: productData.id,
+                    price,
+                    createdAt: now,
+                    updatedAt: now,
+                };
+                await trx("products_variants").insert(newVariantPrice);
+            }
+            await trx("products_groups").where("productId", productData.id).delete();
+            const newAddonPages = [];
+            for (const addonPage of addonPages) {
+                newAddonPages.push({
+                    id: randomUUID(),
+                    productId: productData.id,
+                    minComplements: addonPage.minComplements,
+                    maxComplements: addonPage.maxComplements,
+                    freeAddons: addonPage.freeAddons,
+                    groupId: addonPage.selectedGroup,
+                    createdAt: now,
+                    updatedAt: now,
+                });
+            }
+            await trx("products_groups").insert(newAddonPages);
+            await trx.commit();
+        } catch (error) {
+            await trx.rollback();
+            throw error;
+        }
+    }
+    static async deleteProduct(id: string) {
+        try {
+            await db("products").where("id", id).delete();
+        } catch (error) {
             throw error;
         }
     }

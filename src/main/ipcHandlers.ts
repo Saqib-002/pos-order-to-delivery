@@ -47,7 +47,7 @@ import {
 } from "./handlers/categories.js";
 import { createVariant, deleteVariant, getVariants, updateVariant } from "./handlers/variants.js";
 import { createGroup, deleteGroup, getGroups, updateGroup } from "./handlers/group.js";
-import { createProduct } from "./handlers/products.js";
+import { createProduct, deleteProduct, getProducts, updateProduct } from "./handlers/products.js";
 
 export function registerIpcHandlers() {
     // categories handlers
@@ -72,6 +72,9 @@ export function registerIpcHandlers() {
     ipcMain.handle("update-group",updateGroup);
     // product handlers
     ipcMain.handle("create-product",createProduct);
+    ipcMain.handle("get-products",getProducts);
+    ipcMain.handle("update-product",updateProduct);
+    ipcMain.handle("delete-product",deleteProduct);
 
     // Authentication handlers
     ipcMain.handle("register-user", registerUser);

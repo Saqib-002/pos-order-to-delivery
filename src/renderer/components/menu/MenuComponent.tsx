@@ -34,6 +34,15 @@ interface Product {
   subcategoryId: string;
   isAvailable: boolean;
   color: string;
+  priority?: number;
+  tax?: number;
+  discount: number;
+  isDrink?: boolean;
+  isByWeight?: boolean;
+  isPerDiner?: boolean;
+  isOutstanding?: boolean;
+  isPlus18?: boolean;
+  image?: string;
 }
 
 interface MenuComponentProps {
@@ -80,75 +89,18 @@ export const MenuComponent: React.FC<MenuComponentProps> = ({ token }) => {
     }
     setSubcategories(res.data);
   };
+  const getProducts = async () => {
+    const res = await (window as any).electronAPI.getProducts(token);
+    if (!res.status) {
+      toast.error("Unable to get products");
+      return;
+    }
+    setProducts(res.data);
+  };
 
-  // Mock data - replace with actual API calls
   useEffect(() => {
     getCategories();
-
-    const mockProducts = [
-      {
-        id: "1",
-        name: "Caesar Salad",
-        description: "Fresh romaine lettuce with caesar dressing",
-        price: 12.99,
-        categoryId: "1",
-        subcategoryId: "2",
-        isAvailable: true,
-        color: "green",
-      },
-      {
-        id: "2",
-        name: "Greek Salad",
-        description: "Mixed greens with feta cheese and olives",
-        price: 14.99,
-        categoryId: "1",
-        subcategoryId: "2",
-        isAvailable: true,
-        color: "green",
-      },
-      {
-        id: "3",
-        name: "Margherita Pizza",
-        description: "Classic pizza with tomato, mozzarella, and basil",
-        price: 16.99,
-        categoryId: "2",
-        subcategoryId: "4",
-        isAvailable: true,
-        color: "red",
-      },
-      {
-        id: "4",
-        name: "Pepperoni Pizza",
-        description: "Pizza topped with pepperoni and cheese",
-        price: 18.99,
-        categoryId: "2",
-        subcategoryId: "4",
-        isAvailable: true,
-        color: "red",
-      },
-      {
-        id: "5",
-        name: "Chicken Pasta",
-        description: "Creamy pasta with grilled chicken",
-        price: 15.99,
-        categoryId: "2",
-        subcategoryId: "3",
-        isAvailable: true,
-        color: "yellow",
-      },
-      {
-        id: "6",
-        name: "Tomato Soup",
-        description: "Classic tomato soup with herbs",
-        price: 8.99,
-        categoryId: "1",
-        subcategoryId: "1",
-        isAvailable: true,
-        color: "orange",
-      },
-    ];
-
-    setProducts(mockProducts);
+    getProducts();
   }, []);
 
   const handleCreateCategory = () => {
@@ -456,7 +408,6 @@ export const MenuComponent: React.FC<MenuComponentProps> = ({ token }) => {
         subcategories={subcategories}
         onFetchSubcategories={getSubcategories}
         onClearSubcategories={() => setSubcategories([])}
-        isEditMode={!!editingProduct}
       />
 
       <MenuModal

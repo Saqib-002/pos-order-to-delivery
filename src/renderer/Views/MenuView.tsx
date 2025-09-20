@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MenuComponent } from "../components/menu/MenuView";
+import { MenuComponent } from "../components/menu/MenuComponent";
 import { MenuStructureComponent } from "../components/menu/MenuStructureView";
 import { GroupView } from "../components/menu/GroupView";
 import { VariantView } from "../components/menu/VariantView";
