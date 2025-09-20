@@ -1,420 +1,272 @@
 import React, { useState, useEffect } from "react";
-import { UnifiedCard } from "../ui/UnifiedCard";
+import { toast } from "react-toastify";
+
 import { CategoryModal } from "./CategoryModal";
 import { SubcategoryModal } from "./SubcategoryModal";
 import { ProductModal } from "./ProductModal";
 import { MenuModal } from "./MenuModal";
-import { toast } from "react-toastify";
+import { MenuActionButtons } from "./MenuActionButtons";
+import { MenuBreadcrumb } from "./MenuBreadCrumb";
+import { MenuContentSections } from "./MenuContentSections";
 
-// ICONS
-import AddIcon from "../../assets/icons/add.svg?react";
+import {
+    Category,
+    Subcategory,
+    Product,
+    MenuComponentProps,
+} from "@/types/menu";
 
-interface Category {
-  id: string;
-  name: string;
-  itemCount?: number;
-  color: string;
-  type: "category" | "subcategory";
-}
-
-interface Subcategory {
-  id: string;
-  name: string;
-  itemCount: number;
-  color: string;
-  categoryId: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  categoryId: string;
-  subcategoryId: string;
-  isAvailable: boolean;
-  color: string;
-  priority?: number;
-  tax?: number;
-  discount: number;
-  isDrink?: boolean;
-  isByWeight?: boolean;
-  isPerDiner?: boolean;
-  isOutstanding?: boolean;
-  isPlus18?: boolean;
-  image?: string;
-}
-
-interface MenuComponentProps {
-  token: string;
-}
+type NavigationLevel = "categories" | "subcategories" | "products";
 
 export const MenuComponent: React.FC<MenuComponentProps> = ({ token }) => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
-  const [isCreateSubcategoryOpen, setIsCreateSubcategoryOpen] = useState(false);
-  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [editingSubcategory, setEditingSubcategory] =
-    useState<Subcategory | null>(null);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    // State for data
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
 
-  // Navigation state
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    null
-  );
-  const [selectedSubcategory, setSelectedSubcategory] =
-    useState<Subcategory | null>(null);
-  const [currentLevel, setCurrentLevel] = useState<
-    "categories" | "subcategories" | "products"
-  >("categories");
+    // State for modals
+    const [modals, setModals] = useState({
+        category: false,
+        subcategory: false,
+        product: false,
+        menu: false,
+    });
 
-  const getCategories = async () => {
-    const res = await (window as any).electronAPI.getCategories(token);
-    if (!res.status) {
-      toast.error("Unable to get categories");
-      return;
-    }
-    setCategories(res.data.map((c: any) => ({ ...c, name: c.categoryName })));
-  };
+    // State for editing
+    const [editing, setEditing] = useState({
+        category: null as Category | null,
+        subcategory: null as Subcategory | null,
+        product: null as Product | null,
+    });
 
-  const getSubcategories = async (id: string) => {
-    const res = await (window as any).electronAPI.getSubcategories(token, id);
-    if (!res.status) {
-      toast.error("Unable to get subcategories");
-      return;
-    }
-    setSubcategories(res.data);
-  };
-  const getProducts = async () => {
-    const res = await (window as any).electronAPI.getProducts(token);
-    if (!res.status) {
-      toast.error("Unable to get products");
-      return;
-    }
-    setProducts(res.data);
-  };
+    // Navigation state
+    const [navigation, setNavigation] = useState({
+        currentLevel: "categories" as NavigationLevel,
+        selectedCategory: null as Category | null,
+        selectedSubcategory: null as Subcategory | null,
+    });
 
-  useEffect(() => {
-    getCategories();
-    getProducts();
-  }, []);
+    // Data fetching functions
+    const fetchCategories = async () => {
+        try {
+            const res = await (window as any).electronAPI.getCategories(token);
+            if (!res.status) {
+                toast.error("Unable to get categories");
+                return;
+            }
+            setCategories(
+                res.data.map((c: any) => ({
+                    ...c,
+                    name: c.categoryName,
+                    type: "category",
+                }))
+            );
+        } catch (error) {
+            toast.error("Failed to fetch categories");
+        }
+    };
 
-  const handleCreateCategory = () => {
-    setEditingCategory(null);
-    setIsCreateCategoryOpen(true);
-  };
+    const fetchSubcategories = async (categoryId: string) => {
+        try {
+            const res = await (window as any).electronAPI.getSubcategories(
+                token,
+                categoryId
+            );
+            if (!res.status) {
+                toast.error("Unable to get subcategories");
+                return;
+            }
+            setSubcategories(
+                res.data.map((s: any) => ({
+                    ...s,
+                    type: "subcategory",
+                }))
+            );
+        } catch (error) {
+            toast.error("Failed to fetch subcategories");
+        }
+    };
 
-  const handleCreateSubcategory = () => {
-    setEditingSubcategory(null);
-    setIsCreateSubcategoryOpen(true);
-  };
+    const fetchProducts = async () => {
+        try {
+            const res = await (window as any).electronAPI.getProducts(token);
+            if (!res.status) {
+                toast.error("Unable to get products");
+                return;
+            }
+            setProducts(
+                res.data.map((p: any) => ({
+                    ...p,
+                    type: "product",
+                }))
+            );
+        } catch (error) {
+            toast.error("Failed to fetch products");
+        }
+    };
 
-  const handleCreateProduct = () => {
-    setEditingProduct(null);
-    setIsProductModalOpen(true);
-  };
+    // Initialize data
+    useEffect(() => {
+        fetchCategories();
+        fetchProducts();
+    }, [token]);
 
-  const handleCreateMenu = () => {
-    setIsCreateMenuOpen(true);
-  };
+    // Modal control functions
+    const openModal = (type: keyof typeof modals, editItem?: any) => {
+        setModals((prev) => ({ ...prev, [type]: true }));
+        if (editItem) {
+            setEditing((prev) => ({ ...prev, [type]: editItem }));
+        }
+    };
 
-  const handleEditCategory = (category: Category) => {
-    setEditingCategory(category);
-    setIsCreateCategoryOpen(true);
-  };
+    const closeModal = (type: keyof typeof modals) => {
+        setModals((prev) => ({ ...prev, [type]: false }));
+        setEditing((prev) => ({ ...prev, [type]: null }));
+    };
 
-  const handleEditSubcategory = (subcategory: Subcategory) => {
-    setEditingSubcategory(subcategory);
-    setIsCreateSubcategoryOpen(true);
-  };
+    // Navigation functions
+    const handleCategoryClick = (category: Category) => {
+        setNavigation({
+            currentLevel: "subcategories",
+            selectedCategory: category,
+            selectedSubcategory: null,
+        });
+        fetchSubcategories(category.id);
+    };
 
-  const handleEditProduct = (product: Product) => {
-    setEditingProduct(product);
-    setIsProductModalOpen(true);
-  };
+    const handleSubcategoryClick = (subcategory: Subcategory) => {
+        setNavigation((prev) => ({
+            ...prev,
+            currentLevel: "products",
+            selectedSubcategory: subcategory,
+        }));
+    };
 
-  const handleDeleteProduct = (product: Product) => {
-    if (window.confirm(`Are you sure you want to delete "${product.name}"?`)) {
-      setProducts(products.filter((p) => p.id !== product.id));
-      // TODO: Call API to delete product
-    }
-  };
+    const handleBackToCategories = () => {
+        setNavigation({
+            currentLevel: "categories",
+            selectedCategory: null,
+            selectedSubcategory: null,
+        });
+        setSubcategories([]);
+    };
 
-  // Navigation functions
-  const handleCategoryClick = (category: Category) => {
-    setSelectedCategory(category);
-    setSelectedSubcategory(null);
-    setCurrentLevel("subcategories");
-    getSubcategories(category.id);
-  };
+    const handleBackToSubcategories = () => {
+        setNavigation((prev) => ({
+            ...prev,
+            currentLevel: "subcategories",
+            selectedSubcategory: null,
+        }));
+    };
 
-  const handleSubcategoryClick = (subcategory: Subcategory) => {
-    setSelectedSubcategory(subcategory);
-    setCurrentLevel("products");
-  };
+    // Success handlers
+    const handleCategorySuccess = () => {
+        closeModal("category");
+        fetchCategories();
+    };
 
-  const handleBackToCategories = () => {
-    setSelectedCategory(null);
-    setSelectedSubcategory(null);
-    setCurrentLevel("categories");
-  };
+    const handleSubcategorySuccess = () => {
+        closeModal("subcategory");
+        if (navigation.selectedCategory) {
+            fetchSubcategories(navigation.selectedCategory.id);
+        }
+    };
 
-  const handleBackToSubcategories = () => {
-    setSelectedSubcategory(null);
-    setCurrentLevel("subcategories");
-  };
+    const handleProductSuccess = () => {
+        closeModal("product");
+        fetchProducts();
+    };
 
-  const getFilteredProducts = () => {
-    if (!selectedSubcategory) return [];
-    const filtered = products.filter(
-      (product) => product.subcategoryId === selectedSubcategory.id
+    const handleMenuSuccess = () => {
+        closeModal("menu");
+    };
+
+    // Delete handler
+    const handleDeleteProduct = (product: Product) => {
+        if (
+            window.confirm(`Are you sure you want to delete "${product.name}"?`)
+        ) {
+            setProducts((prev) => prev.filter((p) => p.id !== product.id));
+            // TODO: Call API to delete product
+        }
+    };
+
+    return (
+        <>
+            {/* Action Buttons */}
+            <MenuActionButtons
+                currentLevel={navigation.currentLevel}
+                onCreateCategory={() => openModal("category")}
+                onCreateSubcategory={() => openModal("subcategory")}
+                onCreateProduct={() => openModal("product")}
+                onCreateMenu={() => openModal("menu")}
+            />
+
+            {/* Breadcrumb Navigation */}
+            <MenuBreadcrumb
+                currentLevel={navigation.currentLevel}
+                selectedCategory={navigation.selectedCategory}
+                selectedSubcategory={navigation.selectedSubcategory}
+                onBackToCategories={handleBackToCategories}
+                onBackToSubcategories={handleBackToSubcategories}
+            />
+
+            {/* Content Sections */}
+            <MenuContentSections
+                currentLevel={navigation.currentLevel}
+                categories={categories}
+                subcategories={subcategories}
+                products={products}
+                selectedCategory={navigation.selectedCategory}
+                selectedSubcategory={navigation.selectedSubcategory}
+                onCategoryClick={handleCategoryClick}
+                onSubcategoryClick={handleSubcategoryClick}
+                onEditCategory={(category) => openModal("category", category)}
+                onEditSubcategory={(subcategory) =>
+                    openModal("subcategory", subcategory)
+                }
+                onEditProduct={(product) => openModal("product", product)}
+                onDeleteProduct={handleDeleteProduct}
+            />
+
+            {/* Modals */}
+            <CategoryModal
+                isOpen={modals.category}
+                token={token}
+                onClose={() => closeModal("category")}
+                onSuccess={handleCategorySuccess}
+                editingCategory={editing.category}
+            />
+
+            <SubcategoryModal
+                isOpen={modals.subcategory}
+                token={token}
+                onClose={() => closeModal("subcategory")}
+                onSuccess={handleSubcategorySuccess}
+                editingSubcategory={editing.subcategory}
+                categories={categories}
+            />
+
+            <ProductModal
+                token={token}
+                isOpen={modals.product}
+                onClose={() => {
+                    closeModal("product");
+                    setSubcategories([]); // Clear subcategories when modal closes
+                }}
+                onSuccess={handleProductSuccess}
+                product={editing.product}
+                categories={categories}
+                subcategories={subcategories}
+                onFetchSubcategories={fetchSubcategories}
+                onClearSubcategories={() => setSubcategories([])}
+            />
+
+            <MenuModal
+                isOpen={modals.menu}
+                onClose={() => closeModal("menu")}
+                onSuccess={handleMenuSuccess}
+            />
+        </>
     );
-    return filtered;
-  };
-
-  const handleCategorySuccess = () => {
-    setIsCreateCategoryOpen(false);
-    setEditingCategory(null);
-    getCategories();
-  };
-
-  const handleSubcategorySuccess = () => {
-    setIsCreateSubcategoryOpen(false);
-    setEditingSubcategory(null);
-    getSubcategories(selectedCategory!.id);
-  };
-
-  const handleProductSuccess = () => {
-    setIsProductModalOpen(false);
-    setEditingProduct(null);
-    // Refresh data
-  };
-
-  const handleMenuSuccess = () => {
-    setIsCreateMenuOpen(false);
-    // Refresh data
-  };
-
-  return (
-    <>
-      {/* Action Buttons Section */}
-      <div className="mb-4">
-        <div className="flex flex-wrap gap-4 items-center">
-          {/* Main Action Buttons */}
-          <div className="flex flex-wrap gap-4">
-            {currentLevel === "categories" && (
-              <button
-                onClick={handleCreateCategory}
-                className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
-              >
-                <AddIcon className="size-5" />
-                CREATE CATEGORY
-              </button>
-            )}
-
-            {currentLevel === "subcategories" && (
-              <button
-                onClick={handleCreateSubcategory}
-                className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
-              >
-                <AddIcon className="size-5" />
-                CREATE SUBCATEGORY
-              </button>
-            )}
-
-            {currentLevel === "products" && (
-              <button
-                onClick={handleCreateProduct}
-                className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
-              >
-                <AddIcon className="size-5" />
-                CREATE PRODUCT
-              </button>
-            )}
-
-            <button
-              onClick={handleCreateMenu}
-              className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
-            >
-              <AddIcon className="size-5" />
-              CREATE MENU
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Breadcrumb Navigation */}
-      {currentLevel !== "categories" && (
-        <div className="mb-4 flex justify-end">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <button
-              onClick={handleBackToCategories}
-              className="hover:text-gray-900 transition-colors duration-200"
-            >
-              Categories
-            </button>
-            {currentLevel === "subcategories" && selectedCategory && (
-              <>
-                <span>/</span>
-                <span className="text-gray-900 font-medium">
-                  {selectedCategory.name}
-                </span>
-              </>
-            )}
-            {currentLevel === "products" &&
-              selectedCategory &&
-              selectedSubcategory && (
-                <>
-                  <span>/</span>
-                  <button
-                    onClick={handleBackToSubcategories}
-                    className="hover:text-gray-900 transition-colors duration-200"
-                  >
-                    {selectedCategory.name}
-                  </button>
-                  <span>/</span>
-                  <span className="text-gray-900 font-medium">
-                    {selectedSubcategory.name}
-                  </span>
-                </>
-              )}
-          </div>
-        </div>
-      )}
-
-      {/* Dynamic Content Based on Current Level */}
-      {currentLevel === "categories" && (
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Categories</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {categories.length === 0 && (
-              <div className="flex items-center justify-center">
-                <p className="text-xl text-gray-500">
-                  No categories found. Please create a category.
-                </p>
-              </div>
-            )}
-            {categories.map((category) => (
-              <UnifiedCard
-                key={category.id}
-                data={category}
-                type="category"
-                onEdit={() => handleEditCategory(category)}
-                onClick={() => handleCategoryClick(category)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {currentLevel === "subcategories" && (
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Subcategories in {selectedCategory?.name}
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {subcategories.length === 0 && (
-              <div className="flex items-center justify-center">
-                <p className="text-xl text-gray-500">
-                  No categories found. Please create a category.
-                </p>
-              </div>
-            )}
-            {subcategories.map((subcategory) => (
-              <UnifiedCard
-                key={subcategory.id}
-                data={subcategory}
-                type="subcategory"
-                onEdit={() => handleEditSubcategory(subcategory)}
-                onClick={() => handleSubcategoryClick(subcategory)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {currentLevel === "products" && (
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Products in {selectedSubcategory?.name}
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {getFilteredProducts().length > 0 ? (
-              getFilteredProducts().map((product) => (
-                <UnifiedCard
-                  key={product.id}
-                  data={product}
-                  type="product"
-                  onEdit={() => handleEditProduct(product)}
-                  onDelete={() => handleDeleteProduct(product)}
-                />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-8">
-                <p className="text-gray-500">
-                  No products found in this subcategory.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Modals */}
-      <CategoryModal
-        isOpen={isCreateCategoryOpen}
-        token={token}
-        onClose={() => {
-          setIsCreateCategoryOpen(false);
-          setEditingCategory(null);
-        }}
-        onSuccess={handleCategorySuccess}
-        editingCategory={editingCategory}
-      />
-
-      <SubcategoryModal
-        isOpen={isCreateSubcategoryOpen}
-        token={token}
-        onClose={() => {
-          setIsCreateSubcategoryOpen(false);
-          setEditingSubcategory(null);
-        }}
-        onSuccess={handleSubcategorySuccess}
-        editingSubcategory={editingSubcategory}
-        categories={categories}
-      />
-
-      <ProductModal
-        token={token}
-        isOpen={isProductModalOpen}
-        onClose={() => {
-          setIsProductModalOpen(false);
-          setEditingProduct(null);
-          setSubcategories([]); // Clear subcategories when modal closes
-        }}
-        onSuccess={handleProductSuccess}
-        product={editingProduct}
-        categories={categories}
-        subcategories={subcategories}
-        onFetchSubcategories={getSubcategories}
-        onClearSubcategories={() => setSubcategories([])}
-      />
-
-      <MenuModal
-        isOpen={isCreateMenuOpen}
-        onClose={() => setIsCreateMenuOpen(false)}
-        onSuccess={handleMenuSuccess}
-      />
-    </>
-  );
 };

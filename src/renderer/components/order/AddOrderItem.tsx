@@ -1,5 +1,5 @@
 import { Item } from "@/types/order";
-import { MenuItem } from "@/types/Menu";
+import { MenuItem } from "@/types/menu";
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { IngredientSelector } from "./IngredientSelector";

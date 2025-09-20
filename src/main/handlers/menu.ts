@@ -1,6 +1,6 @@
 import { IpcMainInvokeEvent } from "electron";
 import { MenuDatabaseOperations } from "../database/Menuoperations.js";
-import { MenuItem, OrderItem } from "@/types/Menu.js";
+import { MenuItem, OrderItem } from "@/types/menu.js";
 import Logger from "electron-log";
 import { verifyToken } from "./auth.js";
 
