@@ -158,7 +158,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
       const variant = variants.find((v) => v.id === variantId);
       if (variant) {
         variant.items.forEach((item) => {
-          const itemKey = `${variantId}-${item.id}`;
+          const itemKey = item.id;
           if (!(itemKey in newPrices)) {
             newPrices[itemKey] = 0; // Default price for new items
           }
@@ -385,6 +385,16 @@ const ProductModal: React.FC<ProductModalProps> = ({
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log(formData,variantPrices,addonPages);
+      const newFormData:{[key: string]: any} = {
+        ...formData,
+      };
+      delete newFormData.categoryId;
+      const res=await (window as any).electronAPI.createProduct(token,newFormData,variantPrices,addonPages);
+      if(!res.status){
+        toast.error(`Failed to ${isEditMode ? "update" : "create"} product.`);
+        return;
+      }
       toast.success(
         `Product "${formData.name}" ${isEditMode ? "updated" : "created"} successfully!`
       );

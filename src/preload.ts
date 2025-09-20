@@ -82,6 +82,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getGroups:(token:string)=>ipcRenderer.invoke("get-groups",token),
   deleteGroup:(token:string,id:string)=>ipcRenderer.invoke("delete-group",token,id),
   updateGroup:(token:string,groupData:any,groupItems:any)=>ipcRenderer.invoke("update-group",token,groupData,groupItems),
+  // products
+  createProduct:(token:string,productData:any,variantPrices:any,addonPages:any)=>ipcRenderer.invoke("create-product",token,productData,variantPrices,addonPages),
+
+
 
   // Order operations
   saveOrder: (token: string, order: any) =>
