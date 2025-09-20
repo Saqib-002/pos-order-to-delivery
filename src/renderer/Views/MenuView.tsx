@@ -75,7 +75,7 @@ export const MenuView: React.FC<{ token: string }> = ({ token }) => {
   const getSubcategories = async (id: string) => {
     const res = await (window as any).electronAPI.getSubcategories(token, id);
     if (!res.status) {
-      toast.error("Unable to get categories");
+      toast.error("Unable to get subcategories");
       return;
     }
     setSubcategories(res.data);
@@ -357,17 +357,17 @@ export const MenuView: React.FC<{ token: string }> = ({ token }) => {
                       onClick={handleCreateCategory}
                       className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
                     >
-                      <AddIcon className="size-5"/>
+                      <AddIcon className="size-5" />
                       CREATE CATEGORY
                     </button>
                   )}
 
                   {currentLevel === "subcategories" && (
                     <button
-                    onClick={handleCreateSubcategory}
-                    className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
+                      onClick={handleCreateSubcategory}
+                      className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
                     >
-                    <AddIcon className="size-5"/>
+                      <AddIcon className="size-5" />
                       CREATE SUBCATEGORY
                     </button>
                   )}
@@ -377,7 +377,7 @@ export const MenuView: React.FC<{ token: string }> = ({ token }) => {
                       onClick={handleCreateProduct}
                       className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
                     >
-                    <AddIcon className="size-5"/>
+                      <AddIcon className="size-5" />
                       CREATE PRODUCT
                     </button>
                   )}
@@ -386,7 +386,7 @@ export const MenuView: React.FC<{ token: string }> = ({ token }) => {
                     onClick={handleCreateMenu}
                     className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
                   >
-                    <AddIcon className="size-5"/>
+                    <AddIcon className="size-5" />
                     CREATE MENU
                   </button>
                 </div>
@@ -507,7 +507,7 @@ export const MenuView: React.FC<{ token: string }> = ({ token }) => {
           onSuccess={handleSubcategorySuccess}
           editingSubcategory={editingSubcategory}
           categories={categories}
-          />
+        />
 
         <ProductModal
           token={token}
@@ -515,12 +515,14 @@ export const MenuView: React.FC<{ token: string }> = ({ token }) => {
           onClose={() => {
             setIsProductModalOpen(false);
             setEditingProduct(null);
+            setSubcategories([]); // Clear subcategories when modal closes
           }}
           onSuccess={handleProductSuccess}
           product={editingProduct}
           categories={categories}
           subcategories={subcategories}
           onFetchSubcategories={getSubcategories}
+          onClearSubcategories={() => setSubcategories([])}
           isEditMode={!!editingProduct}
         />
 

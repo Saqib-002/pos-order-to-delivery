@@ -6,7 +6,7 @@ interface Variant {
   id: string;
   name?: string;
   color: string;
-  items:VariantItem[]
+  items: VariantItem[];
 }
 
 interface VariantItem {
@@ -19,7 +19,7 @@ interface CreateVariantModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  token:string;
+  token: string;
   editingVariant?: Variant | null;
 }
 
@@ -38,11 +38,34 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
   const [variants, setVariants] = useState<VariantItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Get color classes for selection ring
+  const getColorClasses = (color: string, isSelected: boolean) => {
+    if (!isSelected) {
+      return "border-gray-200 hover:border-gray-300";
+    }
+
+    const colorMap: Record<string, string> = {
+      red: "border-red-500 ring-2 ring-red-500 ring-opacity-50",
+      blue: "border-blue-500 ring-2 ring-blue-500 ring-opacity-50",
+      green: "border-green-500 ring-2 ring-green-500 ring-opacity-50",
+      purple: "border-purple-500 ring-2 ring-purple-500 ring-opacity-50",
+      orange: "border-orange-500 ring-2 ring-orange-500 ring-opacity-50",
+      pink: "border-pink-500 ring-2 ring-pink-500 ring-opacity-50",
+      indigo: "border-indigo-500 ring-2 ring-indigo-500 ring-opacity-50",
+      yellow: "border-yellow-500 ring-2 ring-yellow-500 ring-opacity-50",
+      gray: "border-gray-500 ring-2 ring-gray-500 ring-opacity-50",
+    };
+
+    return (
+      colorMap[color] || "border-gray-500 ring-2 ring-gray-500 ring-opacity-50"
+    );
+  };
+
   useEffect(() => {
     if (editingVariant) {
       setFormData({
         name: editingVariant.name || "",
-        color: editingVariant.color || "red"
+        color: editingVariant.color || "red",
       });
       setVariants(editingVariant.items || []);
     } else {
@@ -93,16 +116,24 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
     setIsSubmitting(true);
     try {
       let res;
-      if(!editingVariant){
-        res= await (window as any).electronAPI.createVariant(token,formData,variants);
-      }else{
-        res=await (window as any).electronAPI.updateVariant(token,{...formData,id:editingVariant!.id},variants);
+      if (!editingVariant) {
+        res = await (window as any).electronAPI.createVariant(
+          token,
+          formData,
+          variants
+        );
+      } else {
+        res = await (window as any).electronAPI.updateVariant(
+          token,
+          { ...formData, id: editingVariant!.id },
+          variants
+        );
       }
-      if(!res.status){
-        toast.error(editingVariant
-          ? "Failed to edit variant"
-          : "Failed to save variant");
-        return
+      if (!res.status) {
+        toast.error(
+          editingVariant ? "Failed to edit variant" : "Failed to save variant"
+        );
+        return;
       }
       toast.success(
         editingVariant
@@ -136,16 +167,15 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               VARIANT GROUP NAME (OPTIONAL)
             </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
-                placeholder="Variant group name"
-              />
-              
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
+              placeholder="Variant group name"
+            />
           </div>
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -159,11 +189,10 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
                   onClick={() =>
                     setFormData({ ...formData, color: option.value })
                   }
-                  className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                  className={`p-3 rounded-lg border-2 transition-all duration-200 ${getColorClasses(
+                    option.value,
                     formData.color === option.value
-                      ? "border-gray-900 ring-2 ring-gray-300"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
+                  )}`}
                 >
                   <div
                     className={`w-full h-8 rounded ${option.color} mb-2`}
@@ -193,7 +222,7 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
                   }
                 }}
               />
-              
+
               <button
                 type="button"
                 onClick={addVariant}
@@ -249,9 +278,7 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
                         type="button"
                         onClick={() => removeVariant(variant.id)}
                         className="text-red-600 hover:text-red-800 transition-colors duration-200"
-                      >
-                        
-                      </button>
+                      ></button>
                     </div>
                   </div>
                 ))}

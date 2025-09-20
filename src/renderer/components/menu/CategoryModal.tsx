@@ -31,6 +31,29 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Get color classes for selection ring
+  const getColorClasses = (color: string, isSelected: boolean) => {
+    if (!isSelected) {
+      return "border-gray-200 hover:border-gray-300";
+    }
+
+    const colorMap: Record<string, string> = {
+      red: "border-red-500 ring-2 ring-red-500 ring-opacity-50",
+      blue: "border-blue-500 ring-2 ring-blue-500 ring-opacity-50",
+      green: "border-green-500 ring-2 ring-green-500 ring-opacity-50",
+      purple: "border-purple-500 ring-2 ring-purple-500 ring-opacity-50",
+      orange: "border-orange-500 ring-2 ring-orange-500 ring-opacity-50",
+      pink: "border-pink-500 ring-2 ring-pink-500 ring-opacity-50",
+      indigo: "border-indigo-500 ring-2 ring-indigo-500 ring-opacity-50",
+      yellow: "border-yellow-500 ring-2 ring-yellow-500 ring-opacity-50",
+      gray: "border-gray-500 ring-2 ring-gray-500 ring-opacity-50",
+    };
+
+    return (
+      colorMap[color] || "border-gray-500 ring-2 ring-gray-500 ring-opacity-50"
+    );
+  };
+
   useEffect(() => {
     if (editingCategory) {
       setFormData({
@@ -57,16 +80,25 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
     try {
       let res;
-      if(editingCategory){
-        res=await (window as any).electronAPI.updateCategory(token,editingCategory.id,{categoryName:formData.name,color:formData.color});
-      }else{
-        res=await (window as any).electronAPI.createCategory(token,{categoryName:formData.name,color:formData.color});
+      if (editingCategory) {
+        res = await (window as any).electronAPI.updateCategory(
+          token,
+          editingCategory.id,
+          { categoryName: formData.name, color: formData.color }
+        );
+      } else {
+        res = await (window as any).electronAPI.createCategory(token, {
+          categoryName: formData.name,
+          color: formData.color,
+        });
       }
-      if(!res.status){
-        toast.error(editingCategory
-          ? "Failed to edit category"
-          : "Failed to save category");
-        return
+      if (!res.status) {
+        toast.error(
+          editingCategory
+            ? "Failed to edit category"
+            : "Failed to save category"
+        );
+        return;
       }
       toast.success(
         editingCategory
@@ -85,7 +117,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-xl w-full mx-4">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
             {editingCategory ? "Edit Category" : "Create New Category"}
@@ -113,7 +145,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Color
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {colorOptions.map((option) => (
                 <button
                   key={option.value}
@@ -121,14 +153,13 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                   onClick={() =>
                     setFormData({ ...formData, color: option.value })
                   }
-                  className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                  className={`p-3 rounded-lg border-2 transition-all duration-200 ${getColorClasses(
+                    option.value,
                     formData.color === option.value
-                      ? "border-gray-900 ring-2 ring-gray-300"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
+                  )}`}
                 >
                   <div
-                    className={`w-full h-8 rounded ${option.color} mb-2`}
+                    className={`w-full h-12 rounded ${option.color} mb-2`}
                   ></div>
                   <span className="text-xs text-gray-700">{option.label}</span>
                 </button>
