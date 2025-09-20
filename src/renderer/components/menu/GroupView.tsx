@@ -3,8 +3,9 @@ import { UnifiedCard } from "../ui/UnifiedCard";
 import { CreateGroupModal } from "./CreateGroupModal";
 import { toast } from "react-toastify";
 import AddIcon from "../../assets/icons/add.svg?react";
+import { getGroups } from "@/renderer/utils/menu";
 
-interface Group {
+export interface Group {
     id: string;
     name: string;
     color: string;
@@ -22,17 +23,8 @@ export const GroupView: React.FC<{ token: string }> = ({ token }) => {
     const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
     const [editingGroup, setEditingGroup] = useState<Group | null>(null);
 
-    const getGroups = async () => {
-        (window as any).electronAPI.getGroups(token).then((res: any) => {
-            if (!res.status) {
-                toast.error("Unable to get groups");
-                return;
-            }
-            setGroups(res.data);
-        });
-    };
     useEffect(() => {
-        getGroups();
+        getGroups(token, setGroups);
     }, []);
 
     const handleCreateGroup = () => {
@@ -48,7 +40,7 @@ export const GroupView: React.FC<{ token: string }> = ({ token }) => {
     const handleGroupSuccess = () => {
         setIsCreateGroupOpen(false);
         setEditingGroup(null);
-        getGroups();
+        getGroups(token, setGroups);
     };
 
     return (

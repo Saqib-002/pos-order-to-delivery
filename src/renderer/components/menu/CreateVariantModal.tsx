@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 
 interface Variant {
   id: string;
-  groupName?: string;
+  name?: string;
   color: string;
   items:VariantItem[]
 }
@@ -31,7 +31,7 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
   editingVariant,
 }) => {
   const [formData, setFormData] = useState({
-    groupName: "",
+    name: "",
     color: "red",
   });
   const [newVariantName, setNewVariantName] = useState("");
@@ -41,13 +41,13 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
   useEffect(() => {
     if (editingVariant) {
       setFormData({
-        groupName: editingVariant.groupName || "",
+        name: editingVariant.name || "",
         color: editingVariant.color || "red"
       });
       setVariants(editingVariant.items || []);
     } else {
       setFormData({
-        groupName: "",
+        name: "",
         color: "red",
       });
       setVariants([]);
@@ -138,9 +138,9 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
             </label>
               <input
                 type="text"
-                value={formData.groupName}
+                value={formData.name}
                 onChange={(e) =>
-                  setFormData({ ...formData, groupName: e.target.value })
+                  setFormData({ ...formData, name: e.target.value })
                 }
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
                 placeholder="Variant group name"

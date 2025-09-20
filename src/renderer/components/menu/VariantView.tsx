@@ -4,10 +4,11 @@ import { CreateVariantModal } from "./CreateVariantModal";
 import { VariantItem } from "@/types/Variants";
 import { toast } from "react-toastify";
 import AddIcon from "../../assets/icons/add.svg?react";
+import { getVariants } from "@/renderer/utils/menu";
 
-interface Variant {
+export interface Variant {
     id: string;
-    groupName?: string;
+    name?: string;
     color: string;
     items: VariantItem[];
 }
@@ -17,17 +18,8 @@ export const VariantView: React.FC<{ token: string }> = ({ token }) => {
     const [isCreateVariantOpen, setIsCreateVariantOpen] = useState(false);
     const [editingVariant, setEditingVariant] = useState<Variant | null>(null);
 
-    const getVariants = async () => {
-        const res = await (window as any).electronAPI.getVariants(token);
-        if (!res.status) {
-            toast.error("Unable to get variants");
-            return;
-        }
-        setVariants(res.data);
-    };
-    // Mock data for variants
     useEffect(() => {
-        getVariants();
+        getVariants(token, setVariants);
     }, []);
 
     const handleCreateVariant = () => {
@@ -43,7 +35,7 @@ export const VariantView: React.FC<{ token: string }> = ({ token }) => {
     const handleDeleteVariant = async (variant: Variant) => {
         if (
             window.confirm(
-                `Are you sure you want to delete "${variant.groupName !== "" ? variant.groupName : variant.items.map((i) => i.name).join("-")}" with "${variant.items.length} variants"?`
+                `Are you sure you want to delete "${variant.name !== "" ? variant.name : variant.items.map((i) => i.name).join("-")}" with "${variant.items.length} variants"?`
             )
         ) {
             const res = await (window as any).electronAPI.deleteVariant(
@@ -54,14 +46,14 @@ export const VariantView: React.FC<{ token: string }> = ({ token }) => {
                 toast.error("Unable to delete variant");
                 return;
             }
-            getVariants();
+            getVariants(token, setVariants);
         }
     };
 
     const handleVariantSuccess = () => {
         setIsCreateVariantOpen(false);
         setEditingVariant(null);
-        getVariants();
+        getVariants(token,setVariants);
     };
 
     return (
@@ -93,8 +85,8 @@ export const VariantView: React.FC<{ token: string }> = ({ token }) => {
                         data={{
                             ...variant,
                             name:
-                                variant.groupName !== ""
-                                    ? variant.groupName
+                                variant.name !== ""
+                                    ? variant.name
                                     : variant.items
                                           .map((i) => i.name)
                                           .join("-"),

@@ -46,7 +46,7 @@ export class VariantsDatabaseOperations {
             let query = db("variants")
                 .select(
                     "variants.id as variantId",
-                    "variants.groupName",
+                    "variants.name",
                     "variants.color",
                     "variants.createdAt as variantCreatedAt",
                     "variants.updatedAt as variantUpdatedAt",
@@ -69,7 +69,7 @@ export class VariantsDatabaseOperations {
             rows.forEach((row) => {
                 const variant = {
                     id: row.variantId,
-                    groupName: row.groupName,
+                    name: row.name,
                     color:row.color,
                     createdAt: row.variantCreatedAt,
                     updatedAt: row.variantUpdatedAt,

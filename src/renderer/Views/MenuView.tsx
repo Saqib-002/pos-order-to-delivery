@@ -507,9 +507,10 @@ export const MenuView: React.FC<{ token: string }> = ({ token }) => {
           onSuccess={handleSubcategorySuccess}
           editingSubcategory={editingSubcategory}
           categories={categories}
-        />
+          />
 
         <ProductModal
+          token={token}
           isOpen={isProductModalOpen}
           onClose={() => {
             setIsProductModalOpen(false);
