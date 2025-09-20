@@ -129,6 +129,21 @@ const ProductModal: React.FC<ProductModalProps> = ({
             if (product.categoryId && onFetchSubcategories) {
                 onFetchSubcategories(product.categoryId);
             }
+            const getVariantAndGroups=async () => {
+                const res=await (window as any).electronAPI.getVariantIdByProductId(token,product.id)
+                if(!res.status){
+                    toast.error("Unable to get product's variant")
+                    return
+                }
+                handleVariantChange(res.data.variantId)
+                const groupRes=await (window as any).electronAPI.getAddOnPagesByProductId(token,product.id)
+                if(!groupRes.status){
+                    toast.error("Unable to get product's addon pages")
+                    return
+                }
+                setAddonPages(groupRes.data)
+            }
+            getVariantAndGroups()
         } else {
             setFormData({
                 name: "",

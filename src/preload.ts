@@ -87,8 +87,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getProducts:(token:string)=>ipcRenderer.invoke("get-products",token),
   deleteProduct:(token:string,id:string)=>ipcRenderer.invoke("delete-product",token,id),
   updateProduct:(token:string,productData:any,variantPrices:any,addonPages:any)=>ipcRenderer.invoke("update-product",token,productData,variantPrices,addonPages),
-
-
+  getVariantIdByProductId:(token:string,productId:string)=>ipcRenderer.invoke("get-variant-id-by-product-id",token,productId),
+  getAddOnPagesByProductId:(token:string,productId:string)=>ipcRenderer.invoke("get-add-on-pages-by-product-id",token,productId),
 
   // Order operations
   saveOrder: (token: string, order: any) =>

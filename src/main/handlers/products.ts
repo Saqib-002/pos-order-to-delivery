@@ -91,3 +91,35 @@ export const deleteProduct = async (
         };
     }
 };
+export const getVariantIdByProductId=async (event: IpcMainInvokeEvent, token: string, productId: string) => {
+    try {
+        await verifyToken(event, token);
+        const result = await ProductsDatabaseOperations.getVariantIdByProductId(productId);
+        return {
+            status: true,
+            data: result,
+        };
+    } catch (error) {
+        Logger.error("Error getting product variant:", error);
+        return {
+            status: false,
+            error: (error as Error).message,
+        };
+    }
+}
+export const getAddOnPagesByProductId=async (event: IpcMainInvokeEvent, token: string, productId: string) => {
+    try {
+        await verifyToken(event, token);
+        const result = await ProductsDatabaseOperations.getAddOnPagesByProductId(productId);
+        return {
+            status: true,
+            data: result,
+        }
+    } catch (error) {
+        Logger.error("Error getting product group:", error);
+        return {
+            status: false,
+            error: (error as Error).message,
+        }
+    }
+}
