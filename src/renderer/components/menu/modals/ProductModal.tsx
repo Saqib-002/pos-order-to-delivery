@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { CustomSelect } from "../ui/CustomSelect";
+import { CustomSelect } from "../../ui/CustomSelect";
 import { getGroups, getVariants } from "@/renderer/utils/menu";
-import { Variant } from "./VariantView";
-import { Group } from "./GroupView";
+import { Variant } from "../VariantView";
+import { Group } from "../GroupView";
 
 interface Product {
     id: string;

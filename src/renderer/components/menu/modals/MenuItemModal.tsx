@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { CustomSelect } from "../ui/CustomSelect";
-import { CategoryInput } from "./CategoryInput";
-import { MenuItemModalProps } from "./ModalTypes";
+import { CustomSelect } from "../../ui/CustomSelect";
+import { CategoryInput } from "../CategoryInput";
+import { MenuItemModalProps } from "../ModalTypes";
 
 export const MenuItemModal: React.FC<MenuItemModalProps> = ({
   isOpen,

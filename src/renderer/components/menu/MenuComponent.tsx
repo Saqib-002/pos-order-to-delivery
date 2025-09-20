@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
-import { CategoryModal } from "./CategoryModal";
-import { SubcategoryModal } from "./SubcategoryModal";
-import { ProductModal } from "./ProductModal";
-import { MenuModal } from "./MenuModal";
+import { CategoryModal } from "./modals/CategoryModal";
+import { SubcategoryModal } from "./modals/SubcategoryModal";
+import { ProductModal } from "./modals/ProductModal";
+import { MenuModal } from "./modals/MenuModal";
 import { MenuActionButtons } from "./MenuActionButtons";
 import { MenuBreadcrumb } from "./MenuBreadCrumb";
 import { MenuContentSections } from "./MenuContentSections";

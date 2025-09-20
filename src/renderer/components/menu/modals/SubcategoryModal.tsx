@@ -1,7 +1,7 @@
 import { colorOptions } from "@/renderer/utils/utils";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { CustomSelect } from "../ui/CustomSelect";
+import { CustomSelect } from "../../ui/CustomSelect";
 
 interface Category {
   id: string;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { MenuItem } from "@/types/menu";
 import { toast } from "react-toastify";
-import { MenuItemModal } from "../components/menu/MenuItemModal";
+import { MenuItemModal } from "../components/menu/modals/MenuItemModal";
 import { CustomSelect } from "../components/ui/CustomSelect";
 
 interface MenuManagementProps {

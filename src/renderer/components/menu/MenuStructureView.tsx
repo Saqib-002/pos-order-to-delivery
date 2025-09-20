@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { MenuPageModal } from "./MenuPageModal";
+import { MenuPageModal } from "./modals/MenuPageModal";
 
 interface MenuPageProduct {
   id: string;

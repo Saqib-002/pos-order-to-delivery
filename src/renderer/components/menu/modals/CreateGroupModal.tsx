@@ -1,10 +1,10 @@
 import { colorOptions } from "@/renderer/utils/utils";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import DeleteIcon from "../../assets/icons/delete.svg?react";
-import DocumentIcon from "../../assets/icons/document.svg?react";
-import CrossIcon from "../../assets/icons/cross.svg?react";
-import NoProductIcon from "../../assets/icons/no-procut.svg?react";
+import DeleteIcon from "../../../assets/icons/delete.svg?react";
+import DocumentIcon from "../../../assets/icons/document.svg?react";
+import CrossIcon from "../../../assets/icons/cross.svg?react";
+import NoProductIcon from "../../../assets/icons/no-procut.svg?react";
 
 interface Group {
   id: string;
