@@ -6,7 +6,7 @@ export async function up(knex) {
   return knex.schema.createTable('sub_categories', function(table) {
     table.string('id').primary();
     table.string('name').notNullable();
-    table.string('color').notNullable();
+    table.string('color').defaultTo('green');
     table.boolean('isForMenu').defaultTo(false);
     table.string('categoryId').notNullable();
     table.timestamp('createdAt').defaultTo(knex.fn.now());

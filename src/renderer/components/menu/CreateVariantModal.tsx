@@ -1,9 +1,11 @@
+import { colorOptions } from "@/renderer/utils/utils";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
 interface Variant {
   id: string;
   groupName?: string;
+  color: string;
   items:VariantItem[]
 }
 
@@ -30,6 +32,7 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
 }) => {
   const [formData, setFormData] = useState({
     groupName: "",
+    color: "red",
   });
   const [newVariantName, setNewVariantName] = useState("");
   const [variants, setVariants] = useState<VariantItem[]>([]);
@@ -39,11 +42,13 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
     if (editingVariant) {
       setFormData({
         groupName: editingVariant.groupName || "",
+        color: editingVariant.color || "red"
       });
       setVariants(editingVariant.items || []);
     } else {
       setFormData({
         groupName: "",
+        color: "red",
       });
       setVariants([]);
     }
@@ -131,17 +136,41 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               VARIANT GROUP NAME (OPTIONAL)
             </label>
-            <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={formData.groupName}
                 onChange={(e) =>
                   setFormData({ ...formData, groupName: e.target.value })
                 }
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
                 placeholder="Variant group name"
               />
               
+          </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              COLOR
+            </label>
+            <div className="grid grid-cols-9 gap-2">
+              {colorOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() =>
+                    setFormData({ ...formData, color: option.value })
+                  }
+                  className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                    formData.color === option.value
+                      ? "border-gray-900 ring-2 ring-gray-300"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <div
+                    className={`w-full h-8 rounded ${option.color} mb-2`}
+                  ></div>
+                  <span className="text-xs text-gray-700">{option.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 

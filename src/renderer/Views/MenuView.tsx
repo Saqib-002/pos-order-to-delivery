@@ -8,6 +8,9 @@ import { ProductModal } from "../components/menu/ProductModal";
 import { MenuModal } from "../components/menu/MenuModal";
 import { toast } from "react-toastify";
 
+// ICONS
+import AddIcon from "../assets/icons/add.svg?react";
+
 interface Category {
   id: string;
   name: string;
@@ -354,41 +357,17 @@ export const MenuView: React.FC<{ token: string }> = ({ token }) => {
                       onClick={handleCreateCategory}
                       className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
                     >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
+                      <AddIcon className="size-5"/>
                       CREATE CATEGORY
                     </button>
                   )}
 
                   {currentLevel === "subcategories" && (
                     <button
-                      onClick={handleCreateSubcategory}
-                      className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
+                    onClick={handleCreateSubcategory}
+                    className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
                     >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
+                    <AddIcon className="size-5"/>
                       CREATE SUBCATEGORY
                     </button>
                   )}
@@ -398,19 +377,7 @@ export const MenuView: React.FC<{ token: string }> = ({ token }) => {
                       onClick={handleCreateProduct}
                       className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
                     >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
+                    <AddIcon className="size-5"/>
                       CREATE PRODUCT
                     </button>
                   )}
@@ -419,19 +386,7 @@ export const MenuView: React.FC<{ token: string }> = ({ token }) => {
                     onClick={handleCreateMenu}
                     className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                      />
-                    </svg>
+                    <AddIcon className="size-5"/>
                     CREATE MENU
                   </button>
                 </div>

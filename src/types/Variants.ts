@@ -1,6 +1,7 @@
 export interface Variant{
     id: string;
     groupName?: string;
+    color: string;
     createdAt: string;
     updatedAt: string;
     items?: VariantItem[];

@@ -1,9 +1,15 @@
+import { colorOptions } from "@/renderer/utils/utils";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import DeleteIcon from "../../assets/icons/delete.svg?react"
+import DocumentIcon from "../../assets/icons/document.svg?react"
+import CrossIcon from "../../assets/icons/cross.svg?react"
+import NoProductIcon from "../../assets/icons/no-procut.svg?react"
 
 interface Group {
     id: string;
     name: string;
+    color: string;
     items: Complement[];
 }
 
@@ -38,6 +44,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 }) => {
     const [formData, setFormData] = useState({
         name: "",
+        color: "red",
     });
     const [newComplement, setNewComplement] = useState({
         name: "",
@@ -61,11 +68,13 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         if (editingGroup) {
             setFormData({
                 name: editingGroup.name,
+                color: editingGroup.color,
             });
             setComplements(editingGroup.items);
         } else {
             setFormData({
                 name: "",
+                color: "red",
             });
             setComplements([]);
         }
@@ -167,7 +176,11 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         }
     };
     const handleDeleteGroup = (id: string) => {
-        if (window.confirm(`Are you sure you want to delete this "${editingGroup?.name}" with ${complements.length} items?`)) {
+        if (
+            window.confirm(
+                `Are you sure you want to delete this "${editingGroup?.name}" with ${complements.length} items?`
+            )
+        ) {
             (window as any).electronAPI
                 .deleteGroup(token, id)
                 .then((res: any) => {
@@ -202,20 +215,49 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             GROUP NAME *
                         </label>
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="text"
-                                value={formData.name}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        name: e.target.value,
-                                    })
-                                }
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="Enter group name"
-                                required
-                            />
+                        <input
+                            type="text"
+                            value={formData.name}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    name: e.target.value,
+                                })
+                            }
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
+                            placeholder="Enter group name"
+                            required
+                        />
+                    </div>
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            COLOR
+                        </label>
+                        <div className="grid grid-cols-12 gap-2">
+                            {colorOptions.map((option) => (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    onClick={() =>
+                                        setFormData({
+                                            ...formData,
+                                            color: option.value,
+                                        })
+                                    }
+                                    className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                                        formData.color === option.value
+                                            ? "border-gray-900 ring-2 ring-gray-300"
+                                            : "border-gray-200 hover:border-gray-300"
+                                    }`}
+                                >
+                                    <div
+                                        className={`w-full h-8 rounded ${option.color} mb-2`}
+                                    ></div>
+                                    <span className="text-xs text-gray-700">
+                                        {option.label}
+                                    </span>
+                                </button>
+                            ))}
                         </div>
                     </div>
 
@@ -402,19 +444,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                                                         }
                                                         className="text-red-600 hover:text-red-800 transition-colors duration-200"
                                                     >
-                                                        <svg
-                                                            className="w-5 h-5"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                            />
-                                                        </svg>
+                                                        <DeleteIcon className="size-5" />
                                                     </button>
                                                 </td>
                                             </tr>
@@ -432,19 +462,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                             onClick={() => setShowAssociatedProducts(true)}
                             className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
                         >
-                            <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                />
-                            </svg>
+                            <DocumentIcon className="size-4" />
                             See associated products
                         </button>
                     </div>
@@ -503,19 +521,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                                     }
                                     className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
                                 >
-                                    <svg
-                                        className="w-6 h-6"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M6 18L18 6M6 6l12 12"
-                                        />
-                                    </svg>
+                                    <CrossIcon className="size-6"/>
                                 </button>
                             </div>
                         </div>
@@ -549,19 +555,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
                             {associatedProducts.length === 0 && (
                                 <div className="text-center py-8">
-                                    <svg
-                                        className="w-12 h-12 text-gray-400 mx-auto mb-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                                        />
-                                    </svg>
+                                    <NoProductIcon className="size-12 text-gray-400 mb-4 mx-auto"/>
                                     <p className="text-gray-500">
                                         No associated products found
                                     </p>

@@ -6,6 +6,7 @@ export async function up(knex) {
   return knex.schema.createTable('groups', function(table) {
     table.string('id').primary();
     table.string('name').notNullable();
+    table.string('color').defaultTo('green');
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
   });

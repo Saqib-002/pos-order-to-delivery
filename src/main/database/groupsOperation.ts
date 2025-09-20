@@ -47,6 +47,7 @@ export class GroupsDatabaseOperations {
                 .select(
                     "groups.id as groupId",
                     "groups.name",
+                    "groups.color",
                     "groups.createdAt as groupCreatedAt",
                     "groups.updatedAt as groupUpdatedAt",
                     "group_items.id as itemId",
@@ -66,6 +67,7 @@ export class GroupsDatabaseOperations {
                 const group = {
                     id: row.groupId,
                     name: row.name,
+                    color: row.color,
                     createdAt: row.groupCreatedAt,
                     updatedAt: row.groupUpdatedAt,
                     items: [],
