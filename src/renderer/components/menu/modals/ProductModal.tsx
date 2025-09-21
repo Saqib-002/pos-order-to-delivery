@@ -216,11 +216,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
     // Handle variant item price change
     const handleVariantItemPriceChange = (
-        variantId: string,
         itemId: string,
         price: number
     ) => {
-        const itemKey = `${variantId}-${itemId}`;
+        const itemKey = itemId;
         setVariantPrices((prev) => ({
             ...prev,
             [itemKey]: price,
@@ -384,7 +383,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
             toast.error("Please select a subcategory.");
             return;
         }
-        if (!variantPrices.length || !addonPages.length) {
+        if (!Object.keys(variantPrices).length || !addonPages.length) {
             toast.error("Please add at least one variant and addon page.");
             return;
         }
@@ -398,7 +397,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
             };
             delete newFormData.categoryId;
             let res;
-            if (product) {
+            if (!product) {
                 res = await (window as any).electronAPI.createProduct(
                     token,
                     newFormData,
@@ -408,7 +407,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
             } else {
                 res = await (window as any).electronAPI.updateProduct(
                     token,
-                    newFormData,
+                    {id:product.id,...newFormData},
                     variantPrices,
                     addonPages
                 );
@@ -936,8 +935,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                                         {variant.items.map(
-                                                            (item) => {
-                                                                const itemKey = `${variant.id}-${item.id}`;
+                                                            (item) => {;
                                                                 return (
                                                                     <div
                                                                         key={
@@ -961,7 +959,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                                                                                 min="0"
                                                                                 value={
                                                                                     variantPrices[
-                                                                                        itemKey
+                                                                                        item.id
                                                                                     ] ||
                                                                                     0
                                                                                 }
@@ -969,7 +967,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
                                                                                     e
                                                                                 ) =>
                                                                                     handleVariantItemPriceChange(
-                                                                                        variant.id,
                                                                                         item.id,
                                                                                         parseFloat(
                                                                                             e

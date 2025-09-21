@@ -22,7 +22,7 @@ export const createProduct = async (
             data: result,
         };
     } catch (error) {
-        Logger.error("Error creating order:", error);
+        Logger.error("Error creating product:", error);
         return {
             status: false,
             error: (error as Error).message,

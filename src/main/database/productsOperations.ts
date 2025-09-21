@@ -20,15 +20,6 @@ export class ProductsDatabaseOperations {
             for (const [variantItemId, price] of Object.entries(
                 variantPrices
             )) {
-                console.log(variantItemId, price);
-                const exists = await trx("products_variants")
-                    .where("id", variantItemId)
-                    .first();
-                if (!exists) {
-                    console.error(
-                        `Variant with ID ${variantItemId} does not exist`
-                    );
-                }
                 const newVariantPrice = {
                     id: randomUUID(),
                     variantId: variantItemId,
