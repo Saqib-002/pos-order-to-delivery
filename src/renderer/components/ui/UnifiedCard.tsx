@@ -16,16 +16,23 @@ interface BaseCardData {
 
 interface UnifiedCardProps {
   data: BaseCardData;
-  type: "category" | "subcategory" | "product" | "group" | "variant";
+  type:
+    | "category"
+    | "subcategory"
+    | "product"
+    | "group"
+    | "variant"
+    | "menuPage"
+    | "menu";
   onEdit: () => void;
   onDelete?: () => void;
   onClick?: () => void;
   showActions?: boolean;
 }
 
-const getColorClasses = (color: string|undefined, type: string) => {
-  if (!color){
-    return 'bg-gray-500 text-white border-gray-500';
+const getColorClasses = (color: string | undefined, type: string) => {
+  if (!color) {
+    return "bg-gray-500 text-white border-gray-500";
   }
   const colorMap: { [key: string]: string } = {
     red: "bg-red-500 text-white border-red-500",
@@ -59,7 +66,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
       case "subcategory":
         return (
           <div
-            className={`relative p-4 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 ${isClickable ? "cursor-pointer group" : ""}`}
+            className={`relative p-3 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 ${isClickable ? "cursor-pointer group" : ""}`}
           >
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold text-white text-lg truncate">
@@ -75,7 +82,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                     className="p-1 rounded-full transition-colors duration-200"
                     title="Edit"
                   >
-                    <EditIcon className="size-4"/>
+                    <EditIcon className="size-5" />
                   </button>
                 </div>
               )}
@@ -94,7 +101,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
       case "product":
         return (
           <div
-            className={`relative p-4 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 group`}
+            className={`relative p-3 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 group`}
           >
             <div className="flex items-center justify-between mb-0">
               <h3 className="font-semibold text-white text-lg truncate">
@@ -110,7 +117,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                     className="p-1 rounded-full transition-colors duration-200"
                     title="Edit product"
                   >
-                    <EditIcon className="size-4"/>
+                    <EditIcon className="size-5" />
                   </button>
 
                   {onDelete && (
@@ -122,7 +129,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                       className="p-1 rounded-full transition-colors duration-200"
                       title="Delete product"
                     >
-                      <DeleteIcon className="size-4"/>
+                      <DeleteIcon className="size-5" />
                     </button>
                   )}
                 </div>
@@ -137,21 +144,20 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
               <span className="text-lg font-semibold text-white">
                 ${data.price?.toFixed(2)}
               </span>
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${
-                  data.isAvailable
-                    ? "bg-green-500 text-white"
-                    : "bg-red-500 text-white"
-                }`}
-              >
-                {data.isAvailable ? "Available" : "Unavailable"}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-xs px-2 py-1 rounded-full border border-gray-300">
-                Product
-              </span>
+              <div className="flex items-center gap-2 justify-between">
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${
+                    data.isAvailable
+                      ? "bg-green-500 text-white"
+                      : "bg-red-500 text-white"
+                  }`}
+                >
+                  {data.isAvailable ? "Available" : "Unavailable"}
+                </span>
+                <span className="text-xs px-2 py-1 rounded-full border border-gray-300">
+                  Product
+                </span>
+              </div>
             </div>
           </div>
         );
@@ -159,7 +165,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
       case "group":
         return (
           <div
-            className={`relative p-4 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 group`}
+            className={`relative p-3 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 group`}
           >
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold text-white text-lg truncate">
@@ -175,7 +181,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                     className="p-1 rounded-full transition-colors duration-200"
                     title="Edit group"
                   >
-                    <EditIcon className="size-4"/>
+                    <EditIcon className="size-5" />
                   </button>
                 </div>
               )}
@@ -194,14 +200,14 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
       case "variant":
         return (
           <div
-            className={`relative p-2 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 cursor-pointer group`}
+            className={`relative p-3 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 cursor-pointer group`}
           >
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold text-white text-lg truncate">
                 {data.name}
               </h3>
               {showActions && (
-                <div className="flex flex-col items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -210,7 +216,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                     className="p-1 rounded-full transition-colors duration-200"
                     title="Edit variant"
                   >
-                    <EditIcon className="size-4"/>
+                    <EditIcon className="size-5" />
                   </button>
 
                   {onDelete && (
@@ -222,7 +228,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                       className="p-1 rounded-full transition-colors duration-200"
                       title="Delete variant"
                     >
-                      <DeleteIcon className="size-4"/>
+                      <DeleteIcon className="size-5" />
                     </button>
                   )}
                 </div>
@@ -240,6 +246,117 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
               <span className="text-xs px-2 py-1 rounded-full border border-gray-300">
                 Variant
               </span>
+            </div>
+          </div>
+        );
+
+      case "menuPage":
+        return (
+          <div
+            className={`relative p-2 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 group`}
+          >
+            <div className="flex items-center justify-between mb-0">
+              <h3 className="font-semibold text-white text-lg truncate">
+                {data.name}
+              </h3>
+              {showActions && (
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit();
+                    }}
+                    className="p-1 rounded-full transition-colors duration-200"
+                    title="Edit menu page"
+                  >
+                    <EditIcon className="size-4" />
+                  </button>
+                  {onDelete && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete();
+                      }}
+                      className="p-1 rounded-full transition-colors duration-200"
+                      title="Delete menu page"
+                    >
+                      <DeleteIcon className="size-4" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-white opacity-90 mb-0 line-clamp-2">
+              {data.description}
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-white opacity-90">
+                {data.itemCount} products
+              </span>
+              <span className="text-xs px-2 py-1 rounded-full border border-gray-300">
+                Menu Page
+              </span>
+            </div>
+          </div>
+        );
+
+      case "menu":
+        return (
+          <div
+            className={`relative p-2 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 group`}
+          >
+            <div className="flex items-center justify-between mb-0">
+              <h3 className="font-semibold text-white text-lg truncate">
+                {data.name}
+              </h3>
+              {showActions && (
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit();
+                    }}
+                    className="p-1 rounded-full transition-colors duration-200"
+                    title="Edit menu"
+                  >
+                    <EditIcon className="size-4" />
+                  </button>
+                  {onDelete && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete();
+                      }}
+                      className="p-1 rounded-full transition-colors duration-200"
+                      title="Delete menu"
+                    >
+                      <DeleteIcon className="size-4" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-white opacity-90 mb-0 line-clamp-2">
+              {data.description}
+            </p>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-lg font-semibold text-white">
+                €{Number(data.price || 0).toFixed(2)}
+              </span>
+              <div className="flex items-center gap-2 justify-between">
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${
+                    data.isAvailable
+                      ? "bg-green-500 text-white"
+                      : "bg-red-500 text-white"
+                  }`}
+                >
+                  {data.isAvailable ? "Available" : "Unavailable"}
+                </span>
+                <span className="text-xs px-2 py-1 rounded-full border border-gray-300">
+                  Menu
+                </span>
+              </div>
             </div>
           </div>
         );

@@ -1,6 +1,15 @@
 import React from "react";
 import { UnifiedCard } from "../ui/UnifiedCard";
-import { ContentSectionProps,Category, Subcategory, Product, ProductSectionProps, SectionWrapperProps, SubcategorySectionProps, CategorySectionProps } from "@/types/menu";
+import {
+  ContentSectionProps,
+  Category,
+  Subcategory,
+  Product,
+  ProductSectionProps,
+  SectionWrapperProps,
+  SubcategorySectionProps,
+  CategorySectionProps,
+} from "@/types/Menu";
 
 export const MenuContentSections: React.FC<ContentSectionProps> = ({
   currentLevel,
@@ -33,7 +42,7 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
             onEditCategory={onEditCategory}
           />
         );
-      
+
       case "subcategories":
         return (
           <SubcategorySection
@@ -43,7 +52,7 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
             onEditSubcategory={onEditSubcategory}
           />
         );
-      
+
       case "products":
         return (
           <ProductSection
@@ -53,7 +62,7 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
             onDeleteProduct={onDeleteProduct}
           />
         );
-      
+
       default:
         return null;
     }

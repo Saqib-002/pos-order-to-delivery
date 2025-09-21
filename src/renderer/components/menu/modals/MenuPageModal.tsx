@@ -5,6 +5,7 @@ import { CustomSelect } from "../../ui/CustomSelect";
 interface MenuPageProduct {
   id: string;
   name: string;
+  productId: string;
   supplement: number;
   priority: number;
 }
@@ -41,33 +42,78 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
     supplement: 0,
     priority: 0,
   });
+  const [availableProducts, setAvailableProducts] = useState<
+    { value: string; label: string; productId?: string; disabled?: boolean }[]
+  >([]);
 
-  // Available products for selection
-  const availableProducts = [
-    { value: "Coca Cola", label: "Coca Cola" },
-    { value: "Water", label: "Water" },
-    { value: "Chicken Kebab", label: "Chicken Kebab" },
-    { value: "Lamb Kebab", label: "Lamb Kebab" },
-    { value: "Chicken Durum", label: "Chicken Durum" },
-    { value: "Falafel", label: "Falafel" },
-    { value: "Hamburger", label: "Hamburger" },
-    { value: "Pizza", label: "Pizza" },
-    { value: "Pasta", label: "Pasta" },
-    { value: "Salad", label: "Salad" },
-    { value: "Soup", label: "Soup" },
-    { value: "Rice", label: "Rice" },
-    { value: "French Fries", label: "French Fries" },
-    { value: "Meat", label: "Meat" },
-    { value: "Soft Drink", label: "Soft Drink" },
-  ];
+  // Fetch products from API
+  const fetchProducts = async () => {
+    try {
+      const res = await (window as any).electronAPI.getProducts(token);
+      if (!res.status) {
+        toast.error("Unable to get products");
+        return;
+      }
+
+      const addedProductNames = products.map((p) => p.name);
+      const availableProducts = res.data.filter(
+        (product: any) => !addedProductNames.includes(product.name)
+      );
+
+      const productOptions = availableProducts.map((product: any) => ({
+        value: product.id,
+        label: product.name,
+        productId: product.id,
+      }));
+
+      if (productOptions.length === 0) {
+        productOptions.push({
+          value: "",
+          label: "No products available to add",
+          disabled: true,
+        });
+      }
+
+      setAvailableProducts(productOptions);
+    } catch (error) {
+      toast.error("Failed to fetch products");
+    }
+  };
+
+  // Fetch existing menu page products
+  const fetchMenuPageProducts = async (menuPageId: string) => {
+    try {
+      const res = await (window as any).electronAPI.getMenuPageProducts(
+        token,
+        menuPageId
+      );
+      if (res.status && res.data) {
+        const existingProducts = res.data.map((product: any) => ({
+          id: product.id,
+          name: product.productName,
+          productId: product.productId,
+          supplement: Number(product.supplement) || 0,
+          priority: Number(product.priority) || 0,
+        }));
+        setProducts(existingProducts);
+      }
+    } catch (error) {
+      console.error("Failed to fetch menu page products:", error);
+    }
+  };
 
   useEffect(() => {
+    if (isOpen) {
+      fetchProducts();
+    }
+
     if (editingMenuPage) {
       setFormData({
         name: editingMenuPage.name,
         description: editingMenuPage.description || "",
       });
-      setProducts(editingMenuPage.products || []);
+      // Fetch existing products from database
+      fetchMenuPageProducts(editingMenuPage.id);
     } else {
       setFormData({
         name: "",
@@ -80,7 +126,14 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
       supplement: 0,
       priority: 0,
     });
-  }, [editingMenuPage, isOpen]);
+  }, [editingMenuPage, isOpen, token]);
+
+  // Refetch products when the products list changes
+  useEffect(() => {
+    if (isOpen) {
+      fetchProducts();
+    }
+  }, [products, isOpen]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -108,13 +161,22 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
 
   const handleAddProduct = () => {
     if (!newProduct.name.trim()) {
-      toast.error("Please enter a product name");
+      toast.error("Please select a product");
+      return;
+    }
+
+    const selectedOption = availableProducts.find(
+      (opt) => opt.value === newProduct.name
+    );
+    if (!selectedOption || selectedOption.disabled) {
+      toast.error("No products available to add");
       return;
     }
 
     const product: MenuPageProduct = {
-      id: Date.now().toString(),
-      name: newProduct.name,
+      id: `temp_${Date.now()}`,
+      name: selectedOption.label,
+      productId: selectedOption.productId || selectedOption.value,
       supplement: newProduct.supplement,
       priority: newProduct.priority,
     };
@@ -144,12 +206,83 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
       return;
     }
 
+    if (products.length === 0) {
+      toast.error("Please add at least one product to the menu page");
+      return;
+    }
+
     try {
-      // TODO: Replace with actual API call
-      console.log("Menu Page Data:", {
-        ...formData,
-        products,
-      });
+      if (editingMenuPage) {
+        // Update existing menu page
+        const res = await (window as any).electronAPI.updateMenuPage(
+          token,
+          editingMenuPage.id,
+          formData
+        );
+        if (!res.status) {
+          toast.error("Failed to update menu page");
+          return;
+        }
+
+        const existingProductsRes = await (
+          window as any
+        ).electronAPI.getMenuPageProducts(token, editingMenuPage.id);
+        const existingProducts = existingProductsRes.status
+          ? existingProductsRes.data
+          : [];
+
+        const currentProductIds = products
+          .filter((p) => !p.id.startsWith("temp_"))
+          .map((p) => p.id);
+        const productsToRemove = existingProducts.filter(
+          (existing: any) => !currentProductIds.includes(existing.id)
+        );
+
+        for (const productToRemove of productsToRemove) {
+          await (window as any).electronAPI.removeProductFromMenuPage(
+            token,
+            editingMenuPage.id,
+            productToRemove.productId
+          );
+        }
+
+        // Add new products
+        for (const product of products) {
+          if (product.id.startsWith("temp_")) {
+            // New product - add to menu page
+            await (window as any).electronAPI.addProductToMenuPage(
+              token,
+              editingMenuPage.id,
+              product.productId,
+              product.name,
+              product.supplement,
+              product.priority
+            );
+          }
+        }
+      } else {
+        // Create new menu page
+        const res = await (window as any).electronAPI.createMenuPage(
+          token,
+          formData
+        );
+        if (!res.status) {
+          toast.error("Failed to create menu page");
+          return;
+        }
+
+        // Add products to the new menu page
+        for (const product of products) {
+          await (window as any).electronAPI.addProductToMenuPage(
+            token,
+            res.data.id,
+            product.productId,
+            product.name,
+            product.supplement,
+            product.priority
+          );
+        }
+      }
 
       toast.success(
         editingMenuPage
@@ -162,12 +295,22 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
     }
   };
 
-  const handleEliminate = () => {
+  const handleEliminate = async () => {
     if (window.confirm("Are you sure you want to delete this menu page?")) {
-      // TODO: Replace with actual API call
-      console.log("Delete menu page:", editingMenuPage?.id);
-      toast.success("Menu page deleted successfully");
-      onSuccess();
+      try {
+        const res = await (window as any).electronAPI.deleteMenuPage(
+          token,
+          editingMenuPage!.id
+        );
+        if (!res.status) {
+          toast.error("Failed to delete menu page");
+          return;
+        }
+        toast.success("Menu page deleted successfully");
+        onSuccess();
+      } catch (error) {
+        toast.error("Failed to delete menu page");
+      }
     }
   };
 
@@ -253,8 +396,17 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                     options={availableProducts}
                     value={newProduct.name}
                     onChange={handleProductSelect}
-                    placeholder="Select a product"
+                    placeholder={
+                      availableProducts.length === 1 &&
+                      availableProducts[0].disabled
+                        ? "No products available"
+                        : "Select a product"
+                    }
                     className="w-full"
+                    disabled={
+                      availableProducts.length === 1 &&
+                      availableProducts[0].disabled
+                    }
                   />
                 </div>
 
@@ -263,7 +415,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                     SUPPLEMENT
                   </label>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-gray-500 text-sm">
+                    <span className="absolute left-2 top-3 text-gray-500 text-sm">
                       €
                     </span>
                     <input
@@ -271,7 +423,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                       name="supplement"
                       value={newProduct.supplement}
                       onChange={handleNewProductChange}
-                      className="w-full pl-6 pr-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full pl-6 pr-2 py-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       min="0"
                       step="0.01"
                     />
@@ -287,7 +439,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                     name="priority"
                     value={newProduct.priority}
                     onChange={handleNewProductChange}
-                    className="w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full px-2 py-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     min="0"
                   />
                 </div>
@@ -296,7 +448,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                   <button
                     type="button"
                     onClick={handleAddProduct}
-                    className="px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-md transition-colors duration-200 flex items-center gap-2"
+                    className="px-3 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-md transition-colors duration-200 flex items-center gap-2"
                   >
                     <svg
                       className="w-4 h-4"
@@ -336,7 +488,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="text-sm text-gray-600">
-                          € {product.supplement.toFixed(2)}
+                          € {Number(product.supplement).toFixed(2)}
                         </span>
                         <span className="text-sm text-gray-600">
                           Priority: {product.priority}

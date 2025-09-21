@@ -1,4 +1,4 @@
-import { MenuItem } from "@/types/menu";
+import { MenuItem } from "@/types/Menu";
 
 export interface MenuItemModalProps {
   isOpen: boolean;

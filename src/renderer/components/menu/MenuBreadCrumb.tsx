@@ -1,4 +1,4 @@
-import { BreadcrumbProps } from "@/types/menu";
+import { BreadcrumbProps } from "@/types/Menu";
 import React from "react";
 
 export const MenuBreadcrumb: React.FC<BreadcrumbProps> = ({
@@ -20,12 +20,14 @@ export const MenuBreadcrumb: React.FC<BreadcrumbProps> = ({
           onClick={onBackToCategories}
           isClickable
         />
-        
+
         {selectedCategory && (
           <>
             <span className="text-gray-400">/</span>
             {currentLevel === "subcategories" ? (
-            <span className="text-gray-900 font-medium">{selectedCategory.name}</span>
+              <span className="text-gray-900 font-medium">
+                {selectedCategory.name}
+              </span>
             ) : (
               <BreadcrumbLink
                 label={selectedCategory.name}
@@ -35,11 +37,13 @@ export const MenuBreadcrumb: React.FC<BreadcrumbProps> = ({
             )}
           </>
         )}
-        
+
         {selectedSubcategory && currentLevel === "products" && (
           <>
             <span className="text-gray-400">/</span>
-            <span className="text-gray-900 font-medium">{selectedSubcategory.name}</span>
+            <span className="text-gray-900 font-medium">
+              {selectedSubcategory.name}
+            </span>
           </>
         )}
       </nav>
@@ -53,17 +57,15 @@ interface BreadcrumbLinkProps {
   isClickable: boolean;
 }
 
-const BreadcrumbLink: React.FC<BreadcrumbLinkProps> = ({ 
-  label, 
-  onClick, 
-  isClickable 
+const BreadcrumbLink: React.FC<BreadcrumbLinkProps> = ({
+  label,
+  onClick,
+  isClickable,
 }) => (
   <button
     onClick={isClickable ? onClick : undefined}
     className={`transition-colors duration-200 ${
-      isClickable 
-        ? "hover:text-gray-900 cursor-pointer" 
-        : "cursor-default"
+      isClickable ? "hover:text-gray-900 cursor-pointer" : "cursor-default"
     }`}
     disabled={!isClickable}
   >

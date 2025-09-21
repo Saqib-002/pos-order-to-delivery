@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 interface SelectOption {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 interface CustomSelectProps {
@@ -14,6 +15,7 @@ interface CustomSelectProps {
   className?: string;
   disabled?: boolean;
   portalClassName?: string;
+  maxHeight?: string;
 }
 
 export const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -24,6 +26,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   className = "",
   disabled = false,
   portalClassName = "",
+  maxHeight = "max-h-60",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
@@ -36,7 +39,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         !selectRef.current.contains(event.target as Node)
       ) {
         const target = event.target as Element;
-        if (!target.closest(`.${portalClassName}`)) {
+        if (portalClassName && !target.closest(`.${portalClassName}`)) {
           setIsOpen(false);
         }
       }
@@ -53,7 +56,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 
   const selectedOption = options.find((option) => option.value === value);
 
-  const handleOptionClick = (optionValue: string) => {
+  const handleOptionClick = (optionValue: string, isDisabled?: boolean) => {
+    if (isDisabled) return;
     onChange(optionValue);
     setIsOpen(false);
   };
@@ -95,12 +99,12 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         selectRef.current &&
         createPortal(
           <div
-            className={`fixed z-[9999] bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-auto ${portalClassName}`}
+            className={`fixed z-[9999] bg-white border border-gray-200 rounded-md shadow-xl ${maxHeight} overflow-auto ${portalClassName}`}
             style={{
               top: selectRef.current.getBoundingClientRect().bottom + 4,
               left: selectRef.current.getBoundingClientRect().left,
               width: selectRef.current.getBoundingClientRect().width,
-              minWidth: "200px",
+              minWidth: "auto",
             }}
           >
             {options.map((option) => (
@@ -110,12 +114,15 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  handleOptionClick(option.value);
+                  handleOptionClick(option.value, option.disabled);
                 }}
-                className={`w-full px-3 py-2 text-left text-sm hover:bg-indigo-500 hover:text-white transition-colors duration-150 ${
-                  value === option.value
-                    ? "bg-indigo-100 text-indigo-900 font-medium"
-                    : "text-gray-900"
+                disabled={option.disabled}
+                className={`w-full px-3 py-2 text-left text-sm transition-colors duration-150 ${
+                  option.disabled
+                    ? "text-gray-400 cursor-not-allowed bg-gray-50"
+                    : value === option.value
+                      ? "bg-indigo-100 text-indigo-900 font-medium hover:bg-indigo-200"
+                      : "text-gray-900 hover:bg-indigo-500 hover:text-white"
                 }`}
               >
                 {option.label}

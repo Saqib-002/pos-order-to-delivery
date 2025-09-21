@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { MenuPageModal } from "./modals/MenuPageModal";
+import { MenuModal } from "./modals/MenuModal";
+import { UnifiedCard } from "../ui/UnifiedCard";
+import NoMenuIcon from "../../assets/icons/no-menu.svg?react";
+import NoMenuPageIcon from "../../assets/icons/no-menu-page.svg?react";
 
 interface MenuPageProduct {
   id: string;
   name: string;
+  productId: string;
   supplement: number;
   priority: number;
 }
@@ -18,11 +23,28 @@ interface MenuPage {
   updatedAt?: string;
 }
 
+interface MenuPageAssociation {
+  id: string;
+  pageId: string;
+  pageName: string;
+  minimum: number;
+  maximum: number;
+  priority: number;
+  kitchenPriority: string;
+  multiple: string;
+}
+
 interface Menu {
   id: string;
   name: string;
+  subcategoryId: string;
+  description: string;
   price: number;
-  color: string;
+  priority: number;
+  tax: number;
+  discount: number;
+  outstanding: boolean;
+  menuPageAssociations: MenuPageAssociation[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -37,137 +59,41 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
   const [menuPages, setMenuPages] = useState<MenuPage[]>([]);
   const [menus, setMenus] = useState<Menu[]>([]);
   const [isMenuPageModalOpen, setIsMenuPageModalOpen] = useState(false);
-  const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
+  const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [editingMenuPage, setEditingMenuPage] = useState<MenuPage | null>(null);
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
 
-  // Mock data - replace with actual API calls
+  // Fetch data from API
   useEffect(() => {
-    // Mock data for menu pages
-    const mockMenuPages: MenuPage[] = [
-      {
-        id: "1",
-        name: "Drinks",
-        description: "Beverages and drinks",
-        products: [
-          { id: "1", name: "Coca Cola", supplement: 2.5, priority: 1 },
-          { id: "2", name: "Water", supplement: 1.0, priority: 2 },
-        ],
-      },
-      {
-        id: "2",
-        name: "Box Kebab Menu",
-        description: "Kebab in a box",
-        products: [
-          { id: "3", name: "Chicken Kebab", supplement: 0, priority: 1 },
-          { id: "4", name: "Lamb Kebab", supplement: 2.0, priority: 2 },
-        ],
-      },
-      {
-        id: "3",
-        name: "Menu Status",
-        description: "Status menu items",
-        products: [],
-      },
-      {
-        id: "4",
-        name: "Durum Menu",
-        description: "Durum wraps",
-        products: [
-          { id: "5", name: "Chicken Durum", supplement: 0, priority: 1 },
-        ],
-      },
-      {
-        id: "5",
-        name: "Menu Status Flafel",
-        description: "Falafel menu",
-        products: [],
-      },
-      {
-        id: "6",
-        name: "Big Plate Menu",
-        description: "Large portion meals",
-        products: [],
-      },
-      {
-        id: "7",
-        name: "Hamburger Menu",
-        description: "Burger options",
-        products: [],
-      },
-      {
-        id: "8",
-        name: "Kebab Menu",
-        description: "Traditional kebab",
-        products: [],
-      },
-      {
-        id: "9",
-        name: "Menu Kebab Flafel",
-        description: "Kebab and falafel combo",
-        products: [],
-      },
-      {
-        id: "10",
-        name: "Lahmacum Menu",
-        description: "Turkish pizza",
-        products: [],
-      },
-      {
-        id: "11",
-        name: "Rice And Meat Dish Menu",
-        description: "Rice with meat",
-        products: [],
-      },
-      {
-        id: "12",
-        name: "Menu Plato Falafel",
-        description: "Falafel plate",
-        products: [],
-      },
-      {
-        id: "13",
-        name: "Regular Dish Menu",
-        description: "Standard dishes",
-        products: [],
-      },
-      {
-        id: "14",
-        name: "Potato And Rice Dish Menu",
-        description: "Potato and rice combo",
-        products: [],
-      },
-      {
-        id: "15",
-        name: "Menu Plate French Fries And Meat",
-        description: "Fries with meat",
-        products: [],
-      },
-      {
-        id: "16",
-        name: "Menu Plate Only Meat And Sauce",
-        description: "Meat with sauce",
-        products: [],
-      },
-      {
-        id: "17",
-        name: "2 L Soft Drink",
-        description: "Large soft drinks",
-        products: [],
-      },
-    ];
-
-    // Mock data for menus
-    const mockMenus: Menu[] = [
-      { id: "1", name: "Kebab Menu", price: 7.0, color: "yellow" },
-      { id: "2", name: "Durum Menu", price: 7.5, color: "blue" },
-      { id: "3", name: "Menu Box kebab", price: 6.5, color: "green" },
-      { id: "4", name: "Lahmacun menu", price: 8.0, color: "yellow" },
-    ];
-
-    setMenuPages(mockMenuPages);
-    setMenus(mockMenus);
+    fetchMenuPages();
+    fetchMenus();
   }, []);
+
+  const fetchMenuPages = async () => {
+    try {
+      const res = await (window as any).electronAPI.getMenuPages(token);
+      if (!res.status) {
+        toast.error("Unable to get menu pages");
+        return;
+      }
+      setMenuPages(res.data);
+    } catch (error) {
+      toast.error("Failed to fetch menu pages");
+    }
+  };
+
+  const fetchMenus = async () => {
+    try {
+      const res = await (window as any).electronAPI.getMenus(token);
+      if (!res.status) {
+        toast.error("Unable to get menus");
+        return;
+      }
+      setMenus(res.data);
+    } catch (error) {
+      toast.error("Failed to fetch menus");
+    }
+  };
 
   const handleCreateMenuPage = () => {
     setEditingMenuPage(null);
@@ -176,7 +102,7 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
 
   const handleCreateMenu = () => {
     setEditingMenu(null);
-    setIsCreateMenuOpen(true);
+    setIsMenuModalOpen(true);
   };
 
   const handleEditMenuPage = (menuPage: MenuPage) => {
@@ -186,48 +112,57 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
 
   const handleEditMenu = (menu: Menu) => {
     setEditingMenu(menu);
-    setIsCreateMenuOpen(true);
+    setIsMenuModalOpen(true);
   };
 
-  const handleDeleteMenuPage = (menuPage: MenuPage) => {
+  const handleDeleteMenuPage = async (menuPage: MenuPage) => {
     if (window.confirm(`Are you sure you want to delete "${menuPage.name}"?`)) {
-      setMenuPages(menuPages.filter((p) => p.id !== menuPage.id));
-      // TODO: Call API to delete menu page
+      try {
+        const res = await (window as any).electronAPI.deleteMenuPage(
+          token,
+          menuPage.id
+        );
+        if (!res.status) {
+          toast.error("Failed to delete menu page");
+          return;
+        }
+        toast.success("Menu page deleted successfully");
+        fetchMenuPages(); // Refresh data
+      } catch (error) {
+        toast.error("Failed to delete menu page");
+      }
     }
   };
 
-  const handleDeleteMenu = (menu: Menu) => {
+  const handleDeleteMenu = async (menu: Menu) => {
     if (window.confirm(`Are you sure you want to delete "${menu.name}"?`)) {
-      setMenus(menus.filter((m) => m.id !== menu.id));
-      // TODO: Call API to delete menu
+      try {
+        const res = await (window as any).electronAPI.deleteMenu(
+          token,
+          menu.id
+        );
+        if (!res.status) {
+          toast.error("Failed to delete menu");
+          return;
+        }
+        toast.success("Menu deleted successfully");
+        fetchMenus(); // Refresh data
+      } catch (error) {
+        toast.error("Failed to delete menu");
+      }
     }
-  };
-
-  const getMenuColorClasses = (color: string) => {
-    const colorMap: Record<string, string> = {
-      yellow: "bg-yellow-100 border-yellow-200",
-      blue: "bg-blue-100 border-blue-200",
-      green: "bg-green-100 border-green-200",
-      red: "bg-red-100 border-red-200",
-      purple: "bg-purple-100 border-purple-200",
-      orange: "bg-orange-100 border-orange-200",
-      pink: "bg-pink-100 border-pink-200",
-      indigo: "bg-indigo-100 border-indigo-200",
-      gray: "bg-gray-100 border-gray-200",
-    };
-    return colorMap[color] || "bg-gray-100 border-gray-200";
   };
 
   const handleMenuPageSuccess = () => {
     setIsMenuPageModalOpen(false);
     setEditingMenuPage(null);
-    // Refresh data
+    fetchMenuPages(); // Refresh data
   };
 
   const handleMenuSuccess = () => {
-    setIsCreateMenuOpen(false);
+    setIsMenuModalOpen(false);
     setEditingMenu(null);
-    // Refresh data
+    fetchMenus(); // Refresh data
   };
 
   return (
@@ -237,13 +172,13 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
         <div className="flex flex-wrap gap-4 items-center">
           <button
             onClick={handleCreateMenuPage}
-            className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors duration-200 font-medium"
+            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors duration-200 font-medium"
           >
             CREATE PAGES
           </button>
           <button
             onClick={handleCreateMenu}
-            className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors duration-200 font-medium"
+            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors duration-200 font-medium"
           >
             CREATE MENUS
           </button>
@@ -254,60 +189,38 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Menu pages</h2>
-          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {menuPages.map((page) => (
-            <div
-              key={page.id}
-              className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium text-gray-900 text-sm">
-                  {page.name}
-                </h3>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleEditMenuPage(page)}
-                    className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleDeleteMenuPage(page)}
-                    className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
+          {menuPages.length > 0 ? (
+            menuPages.map((page) => (
+              <UnifiedCard
+                key={page.id}
+                data={{
+                  id: page.id,
+                  name: page.name,
+                  description: page.description,
+                  itemCount: page.products?.length || 0,
+                  color: "blue", // Default color for menu pages
+                }}
+                type="menuPage"
+                onEdit={() => handleEditMenuPage(page)}
+                onDelete={() => handleDeleteMenuPage(page)}
+              />
+            ))
+          ) : (
+            <div className="col-span-full flex flex-col items-center justify-center py-8 text-center">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-0">
+                <NoMenuPageIcon />
               </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-0">
+                No Menu Pages
+              </h3>
+              <p className="text-gray-500 mb-0">
+                Get started by creating your first menu page.
+              </p>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
@@ -315,64 +228,39 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Menus</h2>
-          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {menus.map((menu) => (
-            <div
-              key={menu.id}
-              className={`bg-white rounded-lg border p-4 shadow-sm hover:shadow-md transition-shadow duration-200 ${getMenuColorClasses(menu.color)}`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium text-gray-900 text-sm">
-                  {menu.name}
-                </h3>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleEditMenu(menu)}
-                    className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleDeleteMenu(menu)}
-                    className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
+          {menus.length > 0 ? (
+            menus.map((menu) => (
+              <UnifiedCard
+                key={menu.id}
+                data={{
+                  id: menu.id,
+                  name: menu.name,
+                  description: menu.description,
+                  price: menu.price,
+                  isAvailable: !menu.outstanding, // Assuming outstanding means not available
+                  color: "orange", // Default color for menus
+                }}
+                type="menu"
+                onEdit={() => handleEditMenu(menu)}
+                onDelete={() => handleDeleteMenu(menu)}
+              />
+            ))
+          ) : (
+            <div className="col-span-full flex flex-col items-center justify-center py-8 text-center">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-0">
+                <NoMenuIcon />
               </div>
-              <div className="text-lg font-semibold text-gray-900">
-                €{menu.price.toFixed(2)}
-              </div>
-              <div className="text-xs text-gray-500 uppercase">MENUS</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-0">
+                No Menus
+              </h3>
+              <p className="text-gray-500 mb-0">
+                Get started by creating your first menu.
+              </p>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
@@ -385,6 +273,18 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
         }}
         onSuccess={handleMenuPageSuccess}
         editingMenuPage={editingMenuPage}
+        token={token}
+      />
+
+      {/* Menu Modal */}
+      <MenuModal
+        isOpen={isMenuModalOpen}
+        onClose={() => {
+          setIsMenuModalOpen(false);
+          setEditingMenu(null);
+        }}
+        onSuccess={handleMenuSuccess}
+        editingMenu={editingMenu}
         token={token}
       />
     </>

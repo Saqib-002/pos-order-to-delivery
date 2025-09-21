@@ -1,5 +1,5 @@
 import { db } from "./index.js";
-import { MenuItem, OrderItem } from "@/types/menu.js";
+import { MenuItem, OrderItem } from "@/types/Menu.js";
 import { randomUUID } from "crypto";
 import Logger from "electron-log";
 

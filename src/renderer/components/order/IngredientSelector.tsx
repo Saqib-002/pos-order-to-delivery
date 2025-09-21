@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { MenuItem } from "@/types/menu";
+import { MenuItem } from "@/types/Menu";
 
 interface IngredientSelectorProps {
   menuItem: MenuItem | null;
