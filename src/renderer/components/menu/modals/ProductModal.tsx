@@ -69,6 +69,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
             minComplements: number;
             maxComplements: number;
             freeAddons: number;
+            pageNo: number;
             selectedGroup: string;
         }>
     >([
@@ -77,6 +78,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
             minComplements: 0,
             maxComplements: 0,
             freeAddons: 0,
+            pageNo: 1,
             selectedGroup: "",
         },
     ]);
@@ -129,21 +131,41 @@ const ProductModal: React.FC<ProductModalProps> = ({
             if (product.categoryId && onFetchSubcategories) {
                 onFetchSubcategories(product.categoryId);
             }
-            const getVariantAndGroups=async () => {
-                const res=await (window as any).electronAPI.getVariantIdByProductId(token,product.id)
-                if(!res.status){
-                    toast.error("Unable to get product's variant")
-                    return
+            const getVariantAndGroups = async () => {
+                const res = await (
+                    window as any
+                ).electronAPI.getVariantsByProductId(token, product.id);
+                if (!res.status) {
+                    toast.error("Unable to get product's variant");
+                    return;
                 }
-                handleVariantChange(res.data.variantId)
-                const groupRes=await (window as any).electronAPI.getAddOnPagesByProductId(token,product.id)
-                if(!groupRes.status){
-                    toast.error("Unable to get product's addon pages")
-                    return
+                const newPrices = res.data.reduce((obj: any, item: any) => {
+                    obj[item.id] = item.price;
+                    return obj;
+                }, {});
+                handleVariantChange(res.data[0].variantId,newPrices);
+                const groupRes = await (
+                    window as any
+                ).electronAPI.getAddOnPagesByProductId(token, product.id);
+                if (!groupRes.status) {
+                    toast.error("Unable to get product's addon pages");
+                    return;
                 }
-                setAddonPages(groupRes.data)
-            }
-            getVariantAndGroups()
+                setAddonPages(
+                    groupRes.data.map((page: any) => {
+                        return {
+                            id: page.id,
+                            minComplements: page.minComplements,
+                            maxComplements: page.maxComplements,
+                            freeAddons: page.freeAddons,
+                            selectedGroup: page.selectedGroup,
+                            pageNo: page.pageNo,
+                        };
+                    })
+                );
+                setSelectedAddonPage(groupRes.data[0].pageNo);
+            };
+            getVariantAndGroups();
         } else {
             setFormData({
                 name: "",
@@ -162,9 +184,20 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 isOutstanding: false,
                 isPlus18: false,
             });
+            setAddonPages([
+                {
+                    id: 1,
+                    minComplements: 0,
+                    maxComplements: 0,
+                    freeAddons: 0,
+                    selectedGroup: "",
+                    pageNo: 1,
+                },
+            ]);
+            setSelectedVariant("");
+            setVariantPrices({});
         }
     }, [product, isOpen]);
-
     // Get category options for CustomSelect
     const getCategoryOptions = () => {
         return [
@@ -196,10 +229,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
     };
 
     // Handle variant selection
-    const handleVariantChange = (variantId: string) => {
+    const handleVariantChange = (variantId: string, newVariantPrices?: any) => {
         setSelectedVariant(variantId);
         // Initialize prices for new variant items
-        const newPrices = { ...variantPrices };
+        const newPrices = newVariantPrices
+            ? { ...newVariantPrices }
+            : { ...variantPrices };
         if (variantId) {
             const variant = variants.find((v) => v.id === variantId);
             if (variant) {
@@ -215,10 +250,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
     };
 
     // Handle variant item price change
-    const handleVariantItemPriceChange = (
-        itemId: string,
-        price: number
-    ) => {
+    const handleVariantItemPriceChange = (itemId: string, price: number) => {
         const itemKey = itemId;
         setVariantPrices((prev) => ({
             ...prev,
@@ -236,6 +268,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
     // Add new addon page
     const addAddonPage = () => {
         const newPageId = Math.max(...addonPages.map((p) => p.id)) + 1;
+        const newPageNo = Math.max(...addonPages.map((p) => p.pageNo)) + 1;
         setAddonPages((prev) => [
             ...prev,
             {
@@ -243,35 +276,40 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 minComplements: 0,
                 maxComplements: 0,
                 freeAddons: 0,
+                pageNo: newPageNo,
                 selectedGroup: "",
             },
         ]);
-        setSelectedAddonPage(newPageId);
+        setSelectedAddonPage(newPageNo);
     };
 
     // Remove addon page
-    const removeAddonPage = (pageId: number) => {
+    const removeAddonPage = (pageNo: number) => {
         if (addonPages.length > 1) {
-            setAddonPages((prev) => prev.filter((page) => page.id !== pageId));
-            if (selectedAddonPage === pageId) {
-                setSelectedAddonPage(addonPages[0].id);
+            setAddonPages((prev) =>
+                prev.filter((page) => page.pageNo !== pageNo)
+            );
+            if (selectedAddonPage === pageNo) {
+                setSelectedAddonPage(addonPages[0].pageNo);
             }
         }
     };
 
     // Handle plugin group selection for a specific page
-    const handlePagePluginGroupChange = (pageId: number, groupId: string) => {
+    const handlePagePluginGroupChange = (pageNo: number, groupId: string) => {
         setAddonPages((prev) =>
             prev.map((page) =>
-                page.id === pageId ? { ...page, selectedGroup: groupId } : page
+                page.pageNo === pageNo
+                    ? { ...page, selectedGroup: groupId }
+                    : page
             )
         );
     };
 
     // Get available groups for a page (exclude already selected groups from other pages)
-    const getAvailableGroupsForPage = (currentPageId: number) => {
+    const getAvailableGroupsForPage = (currentPageNo: number) => {
         const selectedGroups = addonPages
-            .filter((page) => page.id !== currentPageId)
+            .filter((page) => page.pageNo !== currentPageNo)
             .map((page) => page.selectedGroup)
             .filter(Boolean);
 
@@ -280,13 +318,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
     // Handle addon page setup changes
     const handleAddonPageSetupChange = (
-        pageId: number,
+        pageNo: number,
         field: string,
         value: number
     ) => {
         setAddonPages((prev) =>
             prev.map((page) =>
-                page.id === pageId ? { ...page, [field]: value } : page
+                page.pageNo === pageNo ? { ...page, [field]: value } : page
             )
         );
     };
@@ -294,15 +332,19 @@ const ProductModal: React.FC<ProductModalProps> = ({
     // Get current page data
     const getCurrentPageData = () => {
         return (
-            addonPages.find((page) => page.id === selectedAddonPage) ||
+            addonPages.find((page) => page.pageNo === selectedAddonPage) ||
             addonPages[0]
         );
     };
 
     // Check if current page has required fields filled to enable adding new page
     const canAddNewPage = () => {
-        const currentPage = getCurrentPageData();
-        return currentPage.selectedGroup !== "";
+        const lastPage = addonPages[addonPages.length - 1];
+        return (
+            !groups.every((group) =>
+                addonPages.some((page) => page.selectedGroup === group.id)
+            ) && lastPage.selectedGroup !== ""
+        );
     };
 
     // Calculate price breakdown
@@ -387,7 +429,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
             toast.error("Please add at least one variant and addon page.");
             return;
         }
-
         setIsSubmitting(true);
         try {
             // Simulate API call
@@ -407,7 +448,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
             } else {
                 res = await (window as any).electronAPI.updateProduct(
                     token,
-                    {id:product.id,...newFormData},
+                    { id: product.id, ...newFormData },
                     variantPrices,
                     addonPages
                 );
@@ -935,7 +976,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                                         {variant.items.map(
-                                                            (item) => {;
+                                                            (item) => {
                                                                 return (
                                                                     <div
                                                                         key={
@@ -959,7 +1000,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
                                                                                 min="0"
                                                                                 value={
                                                                                     variantPrices[
-                                                                                        item.id
+                                                                                        item
+                                                                                            .id
                                                                                     ] ||
                                                                                     0
                                                                                 }
@@ -1032,12 +1074,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
                                                     type="button"
                                                     onClick={() =>
                                                         setSelectedAddonPage(
-                                                            page.id
+                                                            page.pageNo
                                                         )
                                                     }
                                                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                                                         selectedAddonPage ===
-                                                        page.id
+                                                        page.pageNo
                                                             ? "bg-orange-500 text-white"
                                                             : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                                     }`}
@@ -1050,7 +1092,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                                                         type="button"
                                                         onClick={() =>
                                                             removeAddonPage(
-                                                                page.id
+                                                                page.pageNo
                                                             )
                                                         }
                                                         className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors duration-200"

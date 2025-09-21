@@ -8,6 +8,7 @@ export async function up(knex) {
     table.integer('freeAddons').notNullable();
     table.integer('maxComplements').notNullable();
     table.integer('minComplements').notNullable();
+    table.integer('pageNo').notNullable();
     table.string('groupId').notNullable();
     table.string('productId').notNullable();
     table.timestamp('createdAt').defaultTo(knex.fn.now());

@@ -91,10 +91,10 @@ export const deleteProduct = async (
         };
     }
 };
-export const getVariantIdByProductId=async (event: IpcMainInvokeEvent, token: string, productId: string) => {
+export const getVariantsByProductId=async (event: IpcMainInvokeEvent, token: string, productId: string) => {
     try {
         await verifyToken(event, token);
-        const result = await ProductsDatabaseOperations.getVariantIdByProductId(productId);
+        const result = await ProductsDatabaseOperations.getVariantsByProductId(productId);
         return {
             status: true,
             data: result,

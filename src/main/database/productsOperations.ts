@@ -31,10 +31,11 @@ export class ProductsDatabaseOperations {
                 await trx("products_variants").insert(newVariantPrice);
             }
             const newAddonPages = [];
-            for (const addonPage of addonPages) {
+            for (const [index,addonPage] of addonPages.entries()) {
                 newAddonPages.push({
                     id: randomUUID(),
                     productId: newProduct.id,
+                    pageNo: index + 1,
                     minComplements: addonPage.minComplements,
                     maxComplements: addonPage.maxComplements,
                     freeAddons: addonPage.freeAddons,
@@ -105,6 +106,7 @@ export class ProductsDatabaseOperations {
                     minComplements: addonPage.minComplements,
                     maxComplements: addonPage.maxComplements,
                     freeAddons: addonPage.freeAddons,
+                    pageNo: addonPage.pageNo,
                     groupId: addonPage.selectedGroup,
                     createdAt: now,
                     updatedAt: now,
@@ -124,9 +126,9 @@ export class ProductsDatabaseOperations {
             throw error;
         }
     }
-    static async getVariantIdByProductId(productId: string) {
+    static async getVariantsByProductId(productId: string) {
         try {
-            const variantId = await db("products_variants")
+            const variants = await db("products_variants")
                 .join(
                     "variant_items",
                     "products_variants.variantId",
@@ -134,9 +136,11 @@ export class ProductsDatabaseOperations {
                     "variant_items.id"
                 )
                 .where("products_variants.productId", productId)
-                .select("variant_items.variantId as variantId")
-                .first();
-            return variantId;
+                .select("variant_items.variantId as variantId",
+                    "products_variants.price as price",
+                    "products_variants.variantId as id"
+                )
+            return variants;
         } catch (error) {
             throw error;
         }
@@ -147,10 +151,11 @@ export class ProductsDatabaseOperations {
                 .where("products_groups.productId", productId)
                 .select("products_groups.id as id",
                     "products_groups.freeAddons",
+                    "products_groups.pageNo",
                     "products_groups.maxComplements",
                     "products_groups.minComplements",
                     "products_groups.groupId as selectedGroup"
-                )
+                ).orderBy("products_groups.pageNo", "asc");
             return addOnPages;
         } catch (error) {
             throw error;
