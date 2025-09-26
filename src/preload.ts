@@ -158,22 +158,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   deleteUser: (token: string, userId: string) =>
     ipcRenderer.invoke("delete-user", token, userId),
 
-  // menu item operations
-  createMenuItem: (
-    token: string,
-    menuItemData: Omit<MenuItem, "id" | "createdAt" | "updatedAt">
-  ) => ipcRenderer.invoke("create-menu-item", token, menuItemData),
-  getMenuItems: (token: string) => ipcRenderer.invoke("get-menu-items", token),
-  getMenuItemsByCategory: (token: string, category: string) =>
-    ipcRenderer.invoke("get-menu-items-by-category", token, category),
-  updateMenuItem: (token: string, id: string, updates: Partial<MenuItem>) =>
-    ipcRenderer.invoke("update-menu-item", token, id, updates),
-  deleteMenuItem: (token: string, id: string) =>
-    ipcRenderer.invoke("delete-menu-item", token, id),
-  getMenuItemById: (token: string, id: string) =>
-    ipcRenderer.invoke("get-menu-item-by-id", token, id),
-  getMenuItemsByName: (token: string, name: string) =>
-    ipcRenderer.invoke("get-menu-items-by-name", token, name),
 
   // delivery operations
   createDeliveryPerson: (

@@ -19,15 +19,6 @@ import {
   updateUser,
 } from "./handlers/auth.js";
 import {
-  createMenuItem,
-  getMenuItems,
-  getMenuItemsByCategory,
-  updateMenuItem,
-  deleteMenuItem,
-  getMenuItemById,
-  getMenuItemsByName,
-} from "./handlers/menu.js";
-import {
   assignDeliveryPersonToOrder,
   createDeliveryPerson,
   deleteDeliveryPerson,
@@ -117,15 +108,6 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-order-analytics", getOrderAnalytics);
   ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
   ipcMain.handle("update-order", updateOrder);
-
-  // Menu Item handlers
-  ipcMain.handle("create-menu-item", createMenuItem);
-  ipcMain.handle("get-menu-items", getMenuItems);
-  ipcMain.handle("get-menu-items-by-category", getMenuItemsByCategory);
-  ipcMain.handle("update-menu-item", updateMenuItem);
-  ipcMain.handle("delete-menu-item", deleteMenuItem);
-  ipcMain.handle("get-menu-item-by-id", getMenuItemById);
-  ipcMain.handle("get-menu-items-by-name", getMenuItemsByName);
 
   // delivery person handlers
   ipcMain.handle("create-delivery-person", createDeliveryPerson);
