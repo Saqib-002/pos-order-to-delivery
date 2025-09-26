@@ -1,16 +1,3 @@
-export interface MenuItem {
-  id: string;
-  name: string;
-  description?: string;
-  price: number;
-  category: string;
-  isAvailable: boolean;
-  ingredients?: string[];
-  createdAt: string;
-  updatedAt: string;
-  syncedAt?: string;
-  isDeleted?: boolean;
-}
 
 export interface OrderItem {
   id: string;

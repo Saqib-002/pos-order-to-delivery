@@ -8,7 +8,6 @@ export const VIEWS = {
   DELIVERY_MANAGEMENT: "delivery-management",
   REPORTS: "reports",
   USERS: "users",
-  MENU: "menu",
   MENU_STRUCTURE: "menu-structure",
 } as const;
 
@@ -26,7 +25,6 @@ export const navItems = [
     roles: ["admin"],
   },
   { view: VIEWS.REPORTS, label: "Reports", roles: ["admin"] },
-  { view: VIEWS.MENU, label: "Menu Items", roles: ["admin"] },
   { view: VIEWS.MENU_STRUCTURE, label: "Menu Structure", roles: ["admin"] },
   { view: VIEWS.USERS, label: "Users", roles: ["admin"] },
 ];

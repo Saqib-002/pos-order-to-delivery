@@ -11,7 +11,6 @@ import { DeliveryManagement } from "./Views/DeliveryManagement";
 import { DeliveryView } from "./Views/DeliveryView";
 import { KitchenView } from "./Views/KitchenView";
 import { LoginView } from "./Views/LoginView";
-import { MenuManagement } from "./Views/MenuManagement";
 import { MenuView } from "./Views/MenuView";
 import { OrderView } from "./Views/OrderView";
 import { ReportView } from "./Views/ReportView";
@@ -98,10 +97,6 @@ const App: React.FC = () => {
           setFilter={setFilter}
         />
       ),
-      roles: ["admin"],
-    },
-    [VIEWS.MENU]: {
-      component: <MenuManagement token={auth.token!} />,
       roles: ["admin"],
     },
     [VIEWS.MENU_STRUCTURE]: {

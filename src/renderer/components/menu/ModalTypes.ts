@@ -1,14 +1,3 @@
-import { MenuItem } from "@/types/Menu";
-
-export interface MenuItemModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  token: string | null;
-  categories: string[];
-  onSuccess: () => void;
-  editingItem?: MenuItem | null;
-}
-
 export interface CategoryInputProps {
   customCategory: string;
   onCustomCategoryChange: (value: string) => void;
