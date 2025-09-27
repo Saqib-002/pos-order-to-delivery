@@ -1,5 +1,3 @@
-import { JSX } from "react";
-
 interface CustomButtonProps {
     type: "submit" | "button";
     onClick?: () => void;

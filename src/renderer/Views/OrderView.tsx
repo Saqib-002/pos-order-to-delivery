@@ -25,7 +25,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                 <OrderComponent />
             </div>
             <div className="bg-gray-100 col-span-9 h-full shadow-md border border-gray-300 rounded-md">
-                <OrderMenu />
+                <OrderMenu token={token} />
             </div>
         </div>
     );

@@ -53,7 +53,8 @@ import {
   createProduct,
   deleteProduct,
   getAddOnPagesByProductId,
-  getProducts,
+  getAllProducts,
+  getProductsByCatId,
   getVariantsByProductId,
   updateProduct,
 } from "./handlers/products.js";
@@ -85,7 +86,8 @@ export function registerIpcHandlers() {
   ipcMain.handle("update-group", updateGroup);
   // product handlers
   ipcMain.handle("create-product", createProduct);
-  ipcMain.handle("get-products", getProducts);
+  ipcMain.handle("get-all-products", getAllProducts);
+  ipcMain.handle("get-products-by-cat-id", getProductsByCatId);
   ipcMain.handle("update-product", updateProduct);
   ipcMain.handle("delete-product", deleteProduct);
   ipcMain.handle("get-variants-by-product-id", getVariantsByProductId);

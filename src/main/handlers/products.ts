@@ -29,10 +29,26 @@ export const createProduct = async (
         };
     }
 };
-export const getProducts = async (event: IpcMainInvokeEvent, token: string) => {
+export const getAllProducts = async (event: IpcMainInvokeEvent, token: string) => {
     try {
         await verifyToken(event, token);
-        const result = await ProductsDatabaseOperations.getProducts();
+        const result = await ProductsDatabaseOperations.getAllProducts();
+        return {
+            status: true,
+            data: result,
+        };
+    } catch (error) {
+        Logger.error("Error getting products:", error);
+        return {
+            status: false,
+            error: (error as Error).message,
+        };
+    }
+};
+export const getProductsByCatId = async (event: IpcMainInvokeEvent, token: string, subcatId: string) => {
+    try {
+        await verifyToken(event, token);
+        const result = await ProductsDatabaseOperations.getProductsByCatId(subcatId);
         return {
             status: true,
             data: result,

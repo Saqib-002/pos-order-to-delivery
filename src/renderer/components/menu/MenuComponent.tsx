@@ -15,6 +15,7 @@ import {
   Product,
   MenuComponentProps,
 } from "@/types/Menu";
+import { fetchCategories, fetchProducts, fetchSubcategories } from "@/renderer/utils/menu";
 
 type NavigationLevel = "categories" | "subcategories" | "products";
 
@@ -46,69 +47,12 @@ export const MenuComponent: React.FC<MenuComponentProps> = ({ token }) => {
     selectedSubcategory: null as Subcategory | null,
   });
 
-  // Data fetching functions
-  const fetchCategories = async () => {
-    try {
-      const res = await (window as any).electronAPI.getCategories(token);
-      if (!res.status) {
-        toast.error("Unable to get categories");
-        return;
-      }
-      setCategories(
-        res.data.map((c: any) => ({
-          ...c,
-          name: c.categoryName,
-          type: "category",
-        }))
-      );
-    } catch (error) {
-      toast.error("Failed to fetch categories");
-    }
-  };
-
-  const fetchSubcategories = async (categoryId: string) => {
-    try {
-      const res = await (window as any).electronAPI.getSubcategories(
-        token,
-        categoryId
-      );
-      if (!res.status) {
-        toast.error("Unable to get subcategories");
-        return;
-      }
-      setSubcategories(
-        res.data.map((s: any) => ({
-          ...s,
-          type: "subcategory",
-        }))
-      );
-    } catch (error) {
-      toast.error("Failed to fetch subcategories");
-    }
-  };
-
-  const fetchProducts = async () => {
-    try {
-      const res = await (window as any).electronAPI.getProducts(token);
-      if (!res.status) {
-        toast.error("Unable to get products");
-        return;
-      }
-      setProducts(
-        res.data.map((p: any) => ({
-          ...p,
-          type: "product",
-        }))
-      );
-    } catch (error) {
-      toast.error("Failed to fetch products");
-    }
-  };
+  
 
   // Initialize data
   useEffect(() => {
-    fetchCategories();
-    fetchProducts();
+    fetchCategories(token, setCategories);
+    fetchProducts(token,setProducts);
   }, [token]);
 
   // Modal control functions
@@ -131,7 +75,7 @@ export const MenuComponent: React.FC<MenuComponentProps> = ({ token }) => {
       selectedCategory: category,
       selectedSubcategory: null,
     });
-    fetchSubcategories(category.id);
+    fetchSubcategories(category.id,token,setSubcategories);
   };
 
   const handleSubcategoryClick = (subcategory: Subcategory) => {
@@ -162,19 +106,19 @@ export const MenuComponent: React.FC<MenuComponentProps> = ({ token }) => {
   // Success handlers
   const handleCategorySuccess = () => {
     closeModal("category");
-    fetchCategories();
+    fetchCategories(token,setCategories);
   };
 
   const handleSubcategorySuccess = () => {
     closeModal("subcategory");
     if (navigation.selectedCategory) {
-      fetchSubcategories(navigation.selectedCategory.id);
+      fetchSubcategories(navigation.selectedCategory.id,token,setSubcategories);
     }
   };
 
   const handleProductSuccess = () => {
     closeModal("product");
-    fetchProducts();
+    fetchProducts(token,setProducts);
   };
 
   const handleMenuSuccess = () => {
@@ -256,7 +200,7 @@ export const MenuComponent: React.FC<MenuComponentProps> = ({ token }) => {
         product={editing.product}
         categories={categories}
         subcategories={subcategories}
-        onFetchSubcategories={fetchSubcategories}
+        onFetchSubcategories={(id)=>fetchSubcategories(id,token,setSubcategories)}
         onClearSubcategories={() => setSubcategories([])}
       />
 

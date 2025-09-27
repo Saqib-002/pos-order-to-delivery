@@ -51,7 +51,7 @@ export class ProductsDatabaseOperations {
             throw error;
         }
     }
-    static async getProducts() {
+    static async getAllProducts() {
         try {
             let query = db("products")
                 .join(
@@ -60,6 +60,23 @@ export class ProductsDatabaseOperations {
                     "=",
                     "sub_categories.id"
                 )
+                .select("products.*", "sub_categories.categoryId")
+                .orderBy("products.name", "asc");
+            const products = await query;
+            return products;
+        } catch (error) {
+            throw error;
+        }
+    }
+    static async getProductsByCatId(subcatId:string) {
+        try {
+            let query = db("products")
+                .join(
+                    "sub_categories",
+                    "products.subcategoryId",
+                    "=",
+                    "sub_categories.id"
+                ).where("sub_categories.categoryId", subcatId)
                 .select("products.*", "sub_categories.categoryId")
                 .orderBy("products.name", "asc");
             const products = await query;

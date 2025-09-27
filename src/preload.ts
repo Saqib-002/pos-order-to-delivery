@@ -104,7 +104,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
       variantPrices,
       addonPages
     ),
-  getProducts: (token: string) => ipcRenderer.invoke("get-products", token),
+  getAllProducts: (token: string) => ipcRenderer.invoke("get-all-products", token),
+  getProductsByCatId: (token: string, catId: string) =>
+    ipcRenderer.invoke("get-products-by-cat-id", token, catId),
   deleteProduct: (token: string, id: string) =>
     ipcRenderer.invoke("delete-product", token, id),
   updateProduct: (
