@@ -5,7 +5,7 @@
 export async function up(knex) {
   return knex.schema.createTable('customers', function(table) {
     table.string('id').primary();
-    table.string('phone').notNullable();
+    table.string('phone').notNullable().unique();
     table.string('name').notNullable();
     table.string('cif');
     table.string('email');

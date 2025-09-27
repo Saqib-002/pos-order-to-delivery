@@ -1,22 +1,85 @@
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import AddIcon from "../../../assets/icons/add.svg?react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddressModal from "./AddressModal";
 import { Tooltip } from "react-tooltip";
 import { toast } from "react-toastify";
+import { debounce } from "lodash";
 
 interface CustomerModalProps {
     setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     token: string | null;
 }
 
-const CustomerModal = ({ setIsOpen,token }: CustomerModalProps) => {
+const CustomerModal = ({ setIsOpen, token }: CustomerModalProps) => {
     const [address, setAddress] = useState("");
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [isEditing, setIsEditing] = useState(false);
+    const [phone, setPhone] = useState("");
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [isSelected, setIsSelected] = useState(false);
+    const fetchCustomers = debounce(async (phone: string) => {
+        if (!phone || phone.length < 3) {
+            setCustomers([]);
+            setShowDropdown(false);
+            return;
+        }
+        try {
+            const res = await (window as any).electronAPI.getCustomersByPhone(token, phone);
+            if (res.status) {
+                setCustomers(res.data);
+                setShowDropdown(true);
+            } else {
+                setCustomers([]);
+                setShowDropdown(false);
+            }
+        } catch (error) {
+            console.error("Error fetching customers:", error);
+            setCustomers([]);
+            setShowDropdown(false);
+        }
+    }, 500);
+    useEffect(() => {
+        if (!isSelected) {
+            fetchCustomers(phone);
+        } else {
+            setCustomers([]);
+            setShowDropdown(false);
+        }
+        return () => {
+            fetchCustomers.cancel();
+        };
+    }, [phone]);
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPhone(e.target.value);
+        setIsSelected(false);
+    };
+    const handlePhoneBlur = () => {
+        setTimeout(() => {
+            setShowDropdown(false);
+        }, 200);
+    };
+    const handleCustomerSelect = (customer: Customer) => {
+        fetchCustomers.cancel();
+        setIsSelected(true);
+        setPhone(customer.phone);
+        setAddress(customer.address || "");
+        setShowDropdown(false);
+        const form = document.querySelector("form");
+        if (form) {
+            (form.querySelector("[name='name']") as HTMLInputElement).value = customer.name || "";
+            (form.querySelector("[name='cif']") as HTMLInputElement).value = customer.cif || "";
+            (form.querySelector("[name='email']") as HTMLInputElement).value = customer.email || "";
+            (form.querySelector("[name='comments']") as HTMLTextAreaElement).value = customer.comments || "";
+            setIsEditing(true);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!address){
+        if (!address) {
             toast.error("Please add a customer address");
             return;
         }
@@ -24,13 +87,16 @@ const CustomerModal = ({ setIsOpen,token }: CustomerModalProps) => {
         const formData = new FormData(e.target as HTMLFormElement);
         const customer = Object.fromEntries(formData.entries());
         customer.address = address;
-        const res= await (window as any).electronAPI.createCustomer(token,customer);
-        console.log(res);
-        if(!res.status){
-            toast.error(res.error || "Failed to add customer. Please try again.");
+        let res;
+        if (!isEditing) {
+            res = await (window as any).electronAPI.createCustomer(token, customer);
+        } else {
+            res = await (window as any).electronAPI.upsertCustomer(token, customer);
+        }
+        if (!res.status) {
+            toast.error(isEditing ? "Failed to edit customer" : "Failed to add customer");
             return;
         }
-        toast.success("Customer added successfully");
         setIsOpen(false);
     };
     const formatAddress = (address: string) => {
@@ -44,7 +110,7 @@ const CustomerModal = ({ setIsOpen,token }: CustomerModalProps) => {
                     return value || "";
                 })
                 .filter(Boolean)
-                .join(", ") +", " +(parts[1]?.split("=")[1] || "")
+                .join(", ") + ", " + (parts[1]?.split("=")[1] || "")
         );
     };
     return (
@@ -70,14 +136,40 @@ const CustomerModal = ({ setIsOpen,token }: CustomerModalProps) => {
                         </button>
                     </div>
                     <form onSubmit={handleSubmit}>
-                        <CustomInput
-                            type="tel"
-                            name="phone"
-                            label="Phone"
-                            placeholder="+1 (555) 123-4567"
-                            required
-                            otherClasses="mb-4"
-                        />
+                        <div className="relative">
+
+                            <CustomInput
+                                type="tel"
+                                name="phone"
+                                label="Phone"
+                                placeholder="+1 (555) 123-4567"
+                                required
+                                otherClasses="mb-4"
+                                value={phone}
+                                onChange={handlePhoneChange}
+                                onBlur={handlePhoneBlur}
+                                onFocus={() => setShowDropdown(true)}
+                            />
+                            {showDropdown && customers.length > 0 && (
+                                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                    {customers.map((customer, index) => (
+                                        <div
+                                            key={index}
+                                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                            onClick={() => handleCustomerSelect(customer)}
+                                        >
+                                            <p className="font-medium">{customer.name}</p>
+                                            <p className="text-sm text-gray-600">{customer.phone}</p>
+                                            {customer.address && (
+                                                <p className="text-sm text-gray-500 truncate">
+                                                    {formatAddress(customer.address)}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                         <div className="grid grid-cols-3 gap-2">
                             <CustomInput
                                 type="text"

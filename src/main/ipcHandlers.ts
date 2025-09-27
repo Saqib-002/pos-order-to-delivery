@@ -59,7 +59,7 @@ import {
 } from "./handlers/products.js";
 import { setupMenuPagesHandlers } from "./handlers/menuPages.js";
 import { setupMenusHandlers } from "./handlers/menus.js";
-import { createCustomer } from "./handlers/customers.js";
+import { createCustomer, getCustomersByPhone, updateCustomer } from "./handlers/customers.js";
 
 export function registerIpcHandlers() {
   // categories handlers
@@ -93,7 +93,8 @@ export function registerIpcHandlers() {
 
   // Customer handlers
   ipcMain.handle("create-customer", createCustomer);
-  // ipcMain.handle("get-customers", getCustomers);
+  ipcMain.handle("get-customers-by-phone", getCustomersByPhone);
+  ipcMain.handle("upsert-customer", updateCustomer);
   // ipcMain.handle("delete-customer", deleteCustomer);
   // ipcMain.handle("update-customer", updateCustomer);
 

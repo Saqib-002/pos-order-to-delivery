@@ -128,6 +128,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // customer operations
   createCustomer: (token: string, customer: any) =>
     ipcRenderer.invoke("create-customer", token, customer),
+  getCustomersByPhone: (token: string, phone: string) =>
+    ipcRenderer.invoke("get-customers-by-phone", token, phone),
+  upsertCustomer: (token: string, customer: any) =>
+    ipcRenderer.invoke("upsert-customer", token, customer),
 
 
   // Order operations
