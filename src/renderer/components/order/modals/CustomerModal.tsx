@@ -93,7 +93,12 @@ const CustomerModal = ({ setIsOpen, token }: CustomerModalProps) => {
         } else {
             res = await (window as any).electronAPI.upsertCustomer(token, customer);
         }
+        console.log(res);
         if (!res.status) {
+            if(res.error.includes("customers_phone_unique")){
+                toast.error("Customer already exists");
+                return;
+            }
             toast.error(isEditing ? "Failed to edit customer" : "Failed to add customer");
             return;
         }
