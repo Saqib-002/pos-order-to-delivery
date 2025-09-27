@@ -5,7 +5,6 @@ import { User } from '@/types/user';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// In-memory session store (keep existing functionality)
 const sessions: { [token: string]: { userId: string; role: string; expires: number } } = {};
 
 export async function registerUser(_: any,token:string, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<{ status: boolean; data?: Omit<User, 'syncAt'>,error?:string }> {

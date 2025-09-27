@@ -125,6 +125,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getAddOnPagesByProductId: (token: string, productId: string) =>
     ipcRenderer.invoke("get-add-on-pages-by-product-id", token, productId),
 
+  // customer operations
+  createCustomer: (token: string, customer: any) =>
+    ipcRenderer.invoke("create-customer", token, customer),
+
+
   // Order operations
   saveOrder: (token: string, order: any) =>
     ipcRenderer.invoke("save-order", token, order),

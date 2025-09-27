@@ -4,19 +4,33 @@ import AddIcon from "../../../assets/icons/add.svg?react";
 import { useState } from "react";
 import AddressModal from "./AddressModal";
 import { Tooltip } from "react-tooltip";
+import { toast } from "react-toastify";
 
 interface CustomerModalProps {
     setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    token: string | null;
 }
 
-const CustomerModal = ({ setIsOpen }: CustomerModalProps) => {
+const CustomerModal = ({ setIsOpen,token }: CustomerModalProps) => {
     const [address, setAddress] = useState("");
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!address){
+            toast.error("Please add a customer address");
+            return;
+        }
         // Handle form submission here, e.g., add customer to order
         const formData = new FormData(e.target as HTMLFormElement);
-        console.log(Object.fromEntries(formData.entries()));
+        const customer = Object.fromEntries(formData.entries());
+        customer.address = address;
+        const res= await (window as any).electronAPI.createCustomer(token,customer);
+        console.log(res);
+        if(!res.status){
+            toast.error(res.error || "Failed to add customer. Please try again.");
+            return;
+        }
+        toast.success("Customer added successfully");
         setIsOpen(false);
     };
     const formatAddress = (address: string) => {

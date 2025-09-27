@@ -20,7 +20,8 @@ export const OrderView: React.FC<OrderViewProps> = ({
     return (
         <div className="grid grid-cols-12 gap-4 h-[calc(100vh-7.5rem)]">
             <div className="col-span-3 bg-gray-100 border border-gray-300 rounded-md shadow-md h-full">
-                <OrderComponentHeader />
+                <OrderComponentHeader token={token}/>
+                <div className="h-[1px] bg-gray-400 shadow-xs"></div>
                 <OrderComponent />
             </div>
             <div className="bg-gray-100 col-span-9 h-full shadow-md border border-gray-300 rounded-md">

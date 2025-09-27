@@ -59,6 +59,7 @@ import {
 } from "./handlers/products.js";
 import { setupMenuPagesHandlers } from "./handlers/menuPages.js";
 import { setupMenusHandlers } from "./handlers/menus.js";
+import { createCustomer } from "./handlers/customers.js";
 
 export function registerIpcHandlers() {
   // categories handlers
@@ -89,6 +90,12 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-product", deleteProduct);
   ipcMain.handle("get-variants-by-product-id", getVariantsByProductId);
   ipcMain.handle("get-add-on-pages-by-product-id", getAddOnPagesByProductId);
+
+  // Customer handlers
+  ipcMain.handle("create-customer", createCustomer);
+  // ipcMain.handle("get-customers", getCustomers);
+  // ipcMain.handle("delete-customer", deleteCustomer);
+  // ipcMain.handle("update-customer", updateCustomer);
 
   // Authentication handlers
   ipcMain.handle("register-user", registerUser);

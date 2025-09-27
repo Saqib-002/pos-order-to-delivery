@@ -2,7 +2,7 @@ import { useState } from "react";
 import AddIcon from "../../assets/icons/add.svg?react";
 import CustomerModal from "./modals/CustomerModal";
 
-const OrderComponentHeader = () => {
+const OrderComponentHeader = ({token}: {token: string | null}) => {
   const [isCustomerModalOpen, setIsCustomerModalOpen]=useState(false);
     return (
       <>
@@ -15,7 +15,7 @@ const OrderComponentHeader = () => {
             </div>
         </div>
         {
-          isCustomerModalOpen && <CustomerModal setIsOpen={setIsCustomerModalOpen} />
+          isCustomerModalOpen && <CustomerModal setIsOpen={setIsCustomerModalOpen} token={token}/>
         }
       </>
     );

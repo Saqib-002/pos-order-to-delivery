@@ -71,7 +71,7 @@ const AddressModal = ({ setIsOpen,setAddress }: AddressModalProps) => {
                             onClick={() => setIsOpen(false)}
                             type="button"
                         />
-                        <CustomButton label="Add Customer" type="submit" />
+                        <CustomButton label="Add Address" type="submit" />
                     </div>
                 </form>
             </div>
