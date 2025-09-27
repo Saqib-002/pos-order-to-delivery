@@ -76,7 +76,7 @@ export class ProductsDatabaseOperations {
                     "products.subcategoryId",
                     "=",
                     "sub_categories.id"
-                ).where("sub_categories.categoryId", subcatId)
+                ).where("products.subcategoryId", subcatId)
                 .select("products.*", "sub_categories.categoryId")
                 .orderBy("products.name", "asc");
             const products = await query;

@@ -3,6 +3,7 @@ interface CustomButtonProps {
     onClick?: () => void;
     className?: string;
     label?: string;
+    postLabel?: string;
     Icon?: React.ReactElement;
     variant?: "primary" | "secondary" | "transparent" | "yellow" | "red" | "orange";
 }
@@ -11,6 +12,7 @@ const CustomButton = ({
     onClick,
     className,
     label,
+    postLabel,
     Icon,
     variant,
 }: CustomButtonProps) => {
@@ -40,6 +42,7 @@ const CustomButton = ({
         >
             {Icon && Icon}
             {label}
+            {postLabel && <p>{postLabel}</p>}
         </button>
     );
 };
