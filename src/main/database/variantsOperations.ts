@@ -70,7 +70,7 @@ export class VariantsDatabaseOperations {
                 const variant = {
                     id: row.variantId,
                     name: row.name,
-                    color:row.color,
+                    color: row.color,
                     createdAt: row.variantCreatedAt,
                     updatedAt: row.variantUpdatedAt,
                     items: [],
@@ -104,27 +104,67 @@ export class VariantsDatabaseOperations {
         variantData: Omit<Variant, "createdAt" | "updatedAt">,
         variantItems: VariantItem[]
     ) {
-        const trx=await db.transaction()
+        const trx = await db.transaction();
         try {
             const now = new Date().toISOString();
             await trx("variants")
                 .where("id", variantData.id)
                 .update(variantData);
-            await trx("variant_items")
+            const existingItems = await trx("variant_items")
                 .where("variantId", variantData.id)
-                .delete();
-            for (const item of variantItems) {
-                await trx("variant_items").insert({
-                    ...item,
-                    id: randomUUID(),
-                    variantId: variantData.id,
-                    createdAt: now,
-                    updatedAt: now,
-                });
+                .select("id");
+            const providedItemIds = new Set(
+                variantItems.map((item) => item.id).filter((id) => id)
+            );
+            const itemsToDelete = existingItems.filter(
+                (item) => !providedItemIds.has(item.id)
+            );
+            if (itemsToDelete.length > 0) {
+                const itemIdsToDelete = itemsToDelete.map((item) => item.id);
+                await trx("variant_items")
+                    .where("variantId", variantData.id)
+                    .whereIn("id", itemIdsToDelete)
+                    .delete();
             }
-            await trx.commit()
+            const existingAttachedProducts = await trx("products_variants")
+                .leftJoin(
+                    "variant_items",
+                    "products_variants.variantId",
+                    "variant_items.variantId"
+                )
+                .where("variant_items.variantId", variantData.id);
+            for (const item of variantItems) {
+                const existingItem = await trx("variant_items")
+                    .where("variantId", variantData.id)
+                    .andWhere("id", item.id)
+                    .first();
+                if (existingItem) {
+                    await trx("variant_items")
+                        .where("variantId", variantData.id)
+                        .andWhere("id", item.id)
+                        .update(item);
+                } else {
+                    await trx("variant_items").insert({
+                        ...item,
+                        id: randomUUID(),
+                        variantId: variantData.id,
+                        createdAt: now,
+                        updatedAt: now,
+                    });
+                    for (const p of existingAttachedProducts) {
+                        await trx("products_variants").insert({
+                            id: randomUUID(),
+                            productId: p.productId,
+                            variantId: variantData.id,
+                            createdAt: now,
+                            updatedAt: now,
+                        });
+                    }
+                }
+            }
+            await trx.commit();
         } catch (error) {
-            await trx.rollback()
+            await trx.rollback();
             throw error;
         }
     }

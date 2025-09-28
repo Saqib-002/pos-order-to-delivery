@@ -5,9 +5,9 @@
 export async function up(knex) {
   return knex.schema.createTable('products_groups', function(table) {
     table.string('id').primary();
-    table.integer('freeAddons').notNullable();
-    table.integer('maxComplements').notNullable();
-    table.integer('minComplements').notNullable();
+    table.integer('freeAddons').notNullable().defaultTo(0);
+    table.integer('maxComplements').notNullable().defaultTo(0);
+    table.integer('minComplements').notNullable().defaultTo(0);
     table.integer('pageNo').notNullable();
     table.string('groupId').notNullable();
     table.string('productId').notNullable();

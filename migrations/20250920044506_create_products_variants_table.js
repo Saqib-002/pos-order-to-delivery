@@ -5,7 +5,7 @@
 export async function up(knex) {
   return knex.schema.createTable('products_variants', function(table) {
     table.string('id').primary();
-    table.float('price').notNullable();
+    table.float('price').notNullable().defaultTo(0);
     table.string('variantId').notNullable();
     table.string('productId').notNullable();
     table.timestamp('createdAt').defaultTo(knex.fn.now());

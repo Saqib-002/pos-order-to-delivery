@@ -44,6 +44,7 @@ const OrderTakingForm = ({product,setProduct,token}:OrderTakingFormProps) => {
     useEffect(()=>{
         getVariantAndGroups();
     },[])
+    console.log("product",product);
     console.log("variants",variants);
     console.log("addonpages",addOnPages);
     return (

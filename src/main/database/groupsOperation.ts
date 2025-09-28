@@ -99,19 +99,47 @@ export class GroupsDatabaseOperations {
         }
     }
     static async updateGroup(
-            groupData: Omit<Group, "createdAt" | "updatedAt">,
-            groupItems: GroupItem[]
-        ) {
-            const trx=await db.transaction()
-            try {
-                const now = new Date().toISOString();
-                await trx("groups")
-                    .where("id", groupData.id)
-                    .update(groupData);
+        groupData: Omit<Group, "createdAt" | "updatedAt">,
+        groupItems: GroupItem[]
+    ) {
+        const trx = await db.transaction();
+        try {
+            const now = new Date().toISOString();
+            await trx("groups").where("id", groupData.id).update(groupData);
+            const existingItems = await trx("group_items")
+                .where("groupId", groupData.id)
+                .select("id");
+            const providedItemIds = new Set(
+                groupItems.map((item) => item.id).filter((id) => id)
+            );
+            const itemsToDelete = existingItems.filter(
+                (item) => !providedItemIds.has(item.id)
+            );
+            if (itemsToDelete.length > 0) {
+                const itemIdsToDelete = itemsToDelete.map((item) => item.id);
                 await trx("group_items")
                     .where("groupId", groupData.id)
+                    .whereIn("id", itemIdsToDelete)
                     .delete();
-                for (const item of groupItems) {
+            }
+            const existingAttachedProducts = await trx("products_groups")
+                .leftJoin(
+                    "group_items",
+                    "products_groups.groupId",
+                    "group_items.groupId"
+                )
+                .where("group_items.groupId", groupData.id);
+            for (const item of groupItems) {
+                const existingItem = await trx("group_items")
+                    .where("groupId", groupData.id)
+                    .andWhere("id", item.id)
+                    .first();
+                if (existingItem) {
+                    await trx("group_items")
+                        .where("groupId", groupData.id)
+                        .andWhere("id", item.id)
+                        .update(item);
+                } else {
                     await trx("group_items").insert({
                         ...item,
                         id: randomUUID(),
@@ -119,11 +147,26 @@ export class GroupsDatabaseOperations {
                         createdAt: now,
                         updatedAt: now,
                     });
+                    for (const p of existingAttachedProducts) {
+                        const pageNo = await trx("products_groups")
+                            .where("productId", p.productId)
+                            .select("max(pageNo) as pageNo")
+                            .first();
+                        await trx("products_groups").insert({
+                            id: randomUUID(),
+                            productId: p.productId,
+                            groupId: groupData.id,
+                            pageNo: pageNo ? pageNo.pageNo + 1 : 1,
+                            createdAt: now,
+                            updatedAt: now,
+                        });
+                    }
                 }
-                await trx.commit()
-            } catch (error) {
-                await trx.rollback()
-                throw error;
             }
+            await trx.commit();
+        } catch (error) {
+            await trx.rollback();
+            throw error;
         }
+    }
 }
