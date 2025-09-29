@@ -122,13 +122,6 @@ export class GroupsDatabaseOperations {
           .whereIn("id", itemIdsToDelete)
           .delete();
       }
-      const existingAttachedProducts = await trx("products_groups")
-        .leftJoin(
-          "group_items",
-          "products_groups.groupId",
-          "group_items.groupId"
-        )
-        .where("group_items.groupId", groupData.id);
       for (const item of groupItems) {
         const existingItem = await trx("group_items")
           .where("groupId", groupData.id)
@@ -147,20 +140,6 @@ export class GroupsDatabaseOperations {
             createdAt: now,
             updatedAt: now,
           });
-          for (const p of existingAttachedProducts) {
-            const pageNo = await trx("products_groups")
-              .where("productId", p.productId)
-              .select("max(pageNo) as pageNo")
-              .first();
-            await trx("products_groups").insert({
-              id: randomUUID(),
-              productId: p.productId,
-              groupId: groupData.id,
-              pageNo: pageNo ? pageNo.pageNo + 1 : 1,
-              createdAt: now,
-              updatedAt: now,
-            });
-          }
         }
       }
       await trx.commit();

@@ -125,14 +125,19 @@ export class VariantsDatabaseOperations {
                     .where("variantId", variantData.id)
                     .whereIn("id", itemIdsToDelete)
                     .delete();
+                await trx("products_variants")
+                    .whereIn("variantId", itemIdsToDelete)
+                    .delete();
             }
             const existingAttachedProducts = await trx("products_variants")
                 .leftJoin(
                     "variant_items",
                     "products_variants.variantId",
-                    "variant_items.variantId"
+                    "variant_items.id"
                 )
-                .where("variant_items.variantId", variantData.id);
+                .where("variant_items.variantId", variantData.id)
+                .distinct("products_variants.productId")
+                .select("products_variants.productId as productId");
             for (const item of variantItems) {
                 const existingItem = await trx("variant_items")
                     .where("variantId", variantData.id)
@@ -144,9 +149,10 @@ export class VariantsDatabaseOperations {
                         .andWhere("id", item.id)
                         .update(item);
                 } else {
+                    const newItemId=randomUUID();
                     await trx("variant_items").insert({
                         ...item,
-                        id: randomUUID(),
+                        id: newItemId,
                         variantId: variantData.id,
                         createdAt: now,
                         updatedAt: now,
@@ -155,7 +161,7 @@ export class VariantsDatabaseOperations {
                         await trx("products_variants").insert({
                             id: randomUUID(),
                             productId: p.productId,
-                            variantId: variantData.id,
+                            variantId: newItemId,
                             createdAt: now,
                             updatedAt: now,
                         });
