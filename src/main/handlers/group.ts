@@ -75,3 +75,19 @@ export const updateGroup = async (event: IpcMainInvokeEvent, token: string, grou
         };
     }
 }
+export const getAttachProductsByGroupId= async (event: IpcMainInvokeEvent, token: string, groupId: string) => {
+    try {
+        await verifyToken(event, token);
+        const result = await GroupsDatabaseOperations.getAttachProductsByGroupId(groupId);
+        return {
+            status: true,
+            data: result,
+        };
+    } catch (error) {
+        Logger.error("Error updating group:", error);
+        return {
+            status: false,
+            error: (error as Error).message,
+        };
+    }
+}

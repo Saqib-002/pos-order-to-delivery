@@ -46,6 +46,7 @@ import {
 import {
   createGroup,
   deleteGroup,
+  getAttachProductsByGroupId,
   getGroups,
   updateGroup,
 } from "./handlers/group.js";
@@ -84,6 +85,8 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-groups", getGroups);
   ipcMain.handle("delete-group", deleteGroup);
   ipcMain.handle("update-group", updateGroup);
+  ipcMain.handle("get-attach-products-by-group-id", getAttachProductsByGroupId);
+
   // product handlers
   ipcMain.handle("create-product", createProduct);
   ipcMain.handle("get-all-products", getAllProducts);

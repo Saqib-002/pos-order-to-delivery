@@ -90,6 +90,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("delete-group", token, id),
   updateGroup: (token: string, groupData: any, groupItems: any) =>
     ipcRenderer.invoke("update-group", token, groupData, groupItems),
+  getAttachProductsByGroupId: (token: string, groupId: string) =>
+    ipcRenderer.invoke("get-attach-products-by-group-id", token, groupId),
   // products
   createProduct: (
     token: string,

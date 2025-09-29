@@ -29,10 +29,10 @@ interface CreateGroupModalProps {
 }
 
 interface AssociatedProduct {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
+  productId: string;
+  productName: string;
+  productPrice: number;
+  subcategoryName: string;
 }
 
 const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
@@ -54,7 +54,25 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   const [complements, setComplements] = useState<Complement[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAssociatedProducts, setShowAssociatedProducts] = useState(false);
+  const [associatedProducts, setAssociatedProducts] = useState<AssociatedProduct[] | null>(null);
 
+  const fetchAssociatedProducts = async () => {
+    try {
+      const response = await (window as any).electronAPI.getAttachProductsByGroupId(
+        token,
+        editingGroup!.id
+      );
+      console.log(response);
+      if (!response.status) {
+        toast.error("Failed to fetch associated products");
+        return;
+      } else {
+        setAssociatedProducts(response.data);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch associated products");
+    }
+  }
   // Get color classes for selection ring
   const getColorClasses = (color: string, isSelected: boolean) => {
     if (!isSelected) {
@@ -78,15 +96,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     );
   };
 
-  // Mock data for associated products
-  const associatedProducts: AssociatedProduct[] = [
-    { id: "1", name: "Margherita Pizza", price: 12.99, category: "Pizza" },
-    { id: "2", name: "Pepperoni Pizza", price: 14.99, category: "Pizza" },
-    { id: "3", name: "Caesar Salad", price: 8.99, category: "Salad" },
-    { id: "4", name: "Chicken Wings", price: 9.99, category: "Appetizer" },
-    { id: "5", name: "Chocolate Cake", price: 6.99, category: "Dessert" },
-  ];
-
   useEffect(() => {
     if (editingGroup) {
       setFormData({
@@ -106,6 +115,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       price: 0,
       priority: 0,
     });
+
   }, [editingGroup, isOpen]);
 
   const addComplement = () => {
@@ -445,16 +455,19 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           )}
 
           {/* Associated Products Link */}
-          <div className="mb-6">
+          {editingGroup && <div className="mb-6">
             <button
               type="button"
-              onClick={() => setShowAssociatedProducts(true)}
+              onClick={() => {
+                fetchAssociatedProducts();
+                setShowAssociatedProducts(true)
+              }}
               className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
             >
               <DocumentIcon className="size-4" />
               See associated products
             </button>
-          </div>
+          </div>}
 
           {/* Action Buttons */}
           <div
@@ -513,32 +526,27 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {associatedProducts.map((product) => (
+                {associatedProducts && associatedProducts.map((product) => (
                   <div
-                    key={product.id}
+                    key={product.productId}
                     className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="font-medium text-gray-900 text-sm">
-                        {product.name}
+                        {product.productName}
                       </h4>
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                        {product.category}
+                        {product.subcategoryName}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
                       <span className="text-lg font-semibold text-gray-900">
-                        €{product.price.toFixed(2)}
+                        €{product.productPrice.toFixed(2)}
                       </span>
-                      <button className="text-indigo-600 hover:text-indigo-800 text-sm">
-                        View Details
-                      </button>
-                    </div>
                   </div>
                 ))}
               </div>
 
-              {associatedProducts.length === 0 && (
+              {associatedProducts &&associatedProducts.length === 0 && (
                 <div className="text-center py-8">
                   <NoProductIcon className="size-12 text-gray-400 mb-4 mx-auto" />
                   <p className="text-gray-500">No associated products found</p>

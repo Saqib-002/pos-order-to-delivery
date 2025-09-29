@@ -148,4 +148,25 @@ export class GroupsDatabaseOperations {
       throw error;
     }
   }
+  static async getAttachProductsByGroupId(groupId: string) {
+    try {
+      const products = await db("products_groups")
+        .join(
+          "products",
+          "products_groups.productId",
+          "=",
+          "products.id"
+        ).join("sub_categories", "products.subcategoryId", "=", "sub_categories.id")
+        .where("products_groups.groupId", groupId)
+        .select(
+          "products.id as productId",
+          "products.name as productName",
+          "products.price as productPrice",
+          "sub_categories.name as subcategoryName"
+        );
+      return products;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
