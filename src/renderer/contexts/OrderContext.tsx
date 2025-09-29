@@ -18,6 +18,13 @@ interface OrderItem {
   }>;
   quantity: number;
   totalPrice: number;
+  menuContext?: {
+    menuId: string;
+    menuName: string;
+    menuPageId: string;
+    menuPageName: string;
+    supplement: number;
+  };
 }
 
 interface OrderContextType {

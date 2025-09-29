@@ -11,6 +11,23 @@ interface OrderTakingFormProps {
   token: string | null;
 }
 
+interface MenuPageProduct {
+  id: string;
+  productId: string;
+  name: string;
+  supplement: number;
+  priority: number;
+}
+
+interface MenuPage {
+  id: string;
+  name: string;
+  description?: string;
+  products: MenuPageProduct[];
+  minComplements: number;
+  maxComplements: number;
+}
+
 interface AddonPage {
   id: string;
   minComplements: number;
@@ -48,6 +65,18 @@ const OrderTakingForm = ({
   const [variantItems, setVariantItems] = useState<any[] | null>(null);
   const [addOnPages, setAddonPages] = useState<AddonPage[] | null>(null);
   const [groups, setGroups] = useState<Group[] | null>(null);
+  const [menuPages, setMenuPages] = useState<MenuPage[]>([]);
+  const [currentMenuPageIndex, setCurrentMenuPageIndex] = useState(0);
+  const [selectedMenuProducts, setSelectedMenuProducts] = useState<Set<string>>(
+    new Set()
+  );
+  const [isMenuMode, setIsMenuMode] = useState(false);
+  const [currentMenuProduct, setCurrentMenuProduct] = useState<any>(null);
+  const [processedMenuProducts, setProcessedMenuProducts] = useState<
+    Set<string>
+  >(new Set());
+  const [menuMinRequired, setMenuMinRequired] = useState(0);
+  const [menuMaxAllowed, setMenuMaxAllowed] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
   const [selectedComplements, setSelectedComplements] = useState<{
@@ -109,9 +138,132 @@ const OrderTakingForm = ({
     }
   };
 
+  const fetchMenuPages = async () => {
+    if (!token || !(product as any).menuId) {
+      console.log("Missing token or menuId:", {
+        token: !!token,
+        menuId: (product as any).menuId,
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      console.log("Fetching menu pages for menu:", (product as any).menuId);
+
+      // Get menu page associations for this menu
+      const associationsRes = await (
+        window as any
+      ).electronAPI.getMenuPageAssociations(token, (product as any).menuId);
+      console.log("Menu page associations response:", associationsRes);
+
+      if (!associationsRes.status) {
+        toast.error("Unable to get menu page associations");
+        return;
+      }
+
+      // Get all menu pages
+      const pagesRes = await (window as any).electronAPI.getMenuPages(token);
+      console.log("All menu pages response:", pagesRes);
+
+      if (!pagesRes.status) {
+        toast.error("Unable to get menu pages");
+        return;
+      }
+
+      // Filter pages that belong to this menu
+      const associatedPageIds = associationsRes.data.map(
+        (assoc: any) => assoc.menuPageId
+      );
+      console.log("Associated page IDs:", associatedPageIds);
+
+      const filteredPages = pagesRes.data.filter((page: any) =>
+        associatedPageIds.includes(page.id)
+      );
+      console.log("Filtered pages:", filteredPages);
+
+      // Fetch products for each menu page
+      const pagesWithProducts = await Promise.all(
+        filteredPages.map(async (page: any) => {
+          const productsRes = await (
+            window as any
+          ).electronAPI.getMenuPageProducts(token, page.id);
+
+          // Find the association data for this page to get min/max values
+          const association = associationsRes.data.find(
+            (assoc: any) => assoc.menuPageId === page.id
+          );
+
+          // Fetch actual product details for each menu page product
+          const productsWithDetails = productsRes.status
+            ? await Promise.all(
+                productsRes.data.map(async (menuProduct: any) => {
+                  try {
+                    // Get all products and find the one we need
+                    const allProductsRes = await (
+                      window as any
+                    ).electronAPI.getAllProducts(token);
+                    if (allProductsRes.status) {
+                      const product = allProductsRes.data.find(
+                        (p: any) => p.id === menuProduct.productId
+                      );
+                      if (product) {
+                        return {
+                          ...menuProduct,
+                          name: product.name,
+                          description: product.description,
+                          price: product.price,
+                          tax: product.tax,
+                        };
+                      }
+                    }
+                    return menuProduct;
+                  } catch (error) {
+                    console.error("Error fetching product details:", error);
+                    return menuProduct;
+                  }
+                })
+              )
+            : [];
+
+          return {
+            ...page,
+            products: productsWithDetails,
+            minComplements: association?.minimum || 0,
+            maxComplements: association?.maximum || 0,
+          };
+        })
+      );
+
+      console.log("Final pages with products:", pagesWithProducts);
+      setMenuPages(pagesWithProducts);
+      setCurrentMenuPageIndex(0);
+
+      // Set min/max requirements from the first page
+      if (pagesWithProducts.length > 0) {
+        setMenuMinRequired(pagesWithProducts[0].minComplements || 0);
+        setMenuMaxAllowed(pagesWithProducts[0].maxComplements || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching menu pages:", error);
+      toast.error("Failed to fetch menu pages");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    getVariantAndGroups();
-  }, []);
+    if (product && token) {
+      // Check if this is a menu
+      if ((product as any).isMenu) {
+        setIsMenuMode(true);
+        fetchMenuPages();
+      } else {
+        setIsMenuMode(false);
+        getVariantAndGroups();
+      }
+    }
+  }, [product, token]);
 
   const currentAddonPage = addOnPages?.[currentPage];
   const currentGroup = groups?.find(
@@ -221,6 +373,110 @@ const OrderTakingForm = ({
     );
   };
 
+  const resetMenuProcessing = () => {
+    setProcessedMenuProducts(new Set());
+    setMenuMinRequired(0);
+    setMenuMaxAllowed(0);
+    setCurrentMenuPageIndex(0);
+  };
+
+  const handleMenuProductSelect = async (menuProduct: any) => {
+    try {
+      // Get the actual product details
+      const allProductsRes = await (window as any).electronAPI.getAllProducts(
+        token
+      );
+      if (allProductsRes.status) {
+        const actualProduct = allProductsRes.data.find(
+          (p: any) => p.id === menuProduct.productId
+        );
+        if (actualProduct) {
+          // Create a product object for the OrderTakingForm
+          const productForForm = {
+            ...actualProduct,
+            isMenuProduct: true,
+            menuContext: {
+              menuId: (product as any).menuId,
+              menuName: product.name,
+              menuPageId: menuPages[currentMenuPageIndex].id,
+              menuPageName: menuPages[currentMenuPageIndex].name,
+              supplement: Number(menuProduct.supplement || 0),
+            },
+          };
+
+          // Switch to regular product mode to process this product
+          setCurrentMenuProduct(menuProduct);
+          setIsMenuMode(false);
+          setProduct(productForForm as any);
+
+          // Load variants and groups for this product
+          await getVariantAndGroups();
+        }
+      }
+    } catch (error) {
+      console.error("Error processing menu product:", error);
+      toast.error("Failed to process menu product");
+    }
+  };
+
+  const processMenuProducts = async () => {
+    try {
+      const currentMenuPage = menuPages[currentMenuPageIndex];
+      if (!currentMenuPage) return;
+
+      for (const productId of selectedMenuProducts) {
+        const menuProduct = currentMenuPage.products.find(
+          (p: any) => p.productId === productId
+        );
+        if (menuProduct) {
+          // Get the actual product details
+          const allProductsRes = await (
+            window as any
+          ).electronAPI.getAllProducts(token);
+          if (allProductsRes.status) {
+            const actualProduct = allProductsRes.data.find(
+              (p: any) => p.id === productId
+            );
+            if (actualProduct) {
+              // Calculate price with supplement
+              const supplement = Number(menuProduct.supplement || 0);
+              const totalPrice = actualProduct.price + supplement;
+              const productTaxRate = (actualProduct.tax || 0) / 100;
+              const baseProductPrice = totalPrice / (1 + productTaxRate);
+              const productTaxAmount = totalPrice - baseProductPrice;
+
+              // Add to order with menu context
+              addToOrder({
+                productId: actualProduct.id,
+                productName: actualProduct.name,
+                productPrice: Math.round(baseProductPrice * 100) / 100,
+                productTax: Math.round(productTaxAmount * 100) / 100,
+                variantId: "",
+                variantName: "Default",
+                variantPrice: 0,
+                complements: [],
+                quantity: 1,
+                totalPrice: Math.round(totalPrice * 100) / 100,
+                menuContext: {
+                  menuId: (product as any).menuId,
+                  menuName: product.name,
+                  menuPageId: currentMenuPage.id,
+                  menuPageName: currentMenuPage.name,
+                  supplement: supplement,
+                },
+              });
+            }
+          }
+        }
+      }
+
+      toast.success("Menu items added to order!");
+      setProduct(null);
+    } catch (error) {
+      toast.error("Failed to add menu items to order");
+    }
+  };
+
   const handleAddToOrder = () => {
     if (!selectedVariant) {
       toast.error("Please select a variant");
@@ -275,9 +531,39 @@ const OrderTakingForm = ({
     };
 
     addToOrder(orderItem);
-
     toast.success("Item added to order!");
-    setProduct(null);
+
+    // If this is a menu product, check if we need to continue processing
+    if ((product as any).isMenuProduct) {
+      // Add this product to processed list
+      const newProcessed = new Set(processedMenuProducts);
+      newProcessed.add(product.id);
+      setProcessedMenuProducts(newProcessed);
+
+      // Check if we've met the minimum requirement
+      if (newProcessed.size >= menuMinRequired) {
+        // Minimum met, close the modal
+        resetMenuProcessing();
+        setProduct(null);
+        toast.success(
+          `Menu processing complete! ${newProcessed.size} products processed.`
+        );
+      } else {
+        // Need more products, go back to menu selection
+        setIsMenuMode(true);
+        setCurrentMenuProduct(null);
+        // Reset form state
+        setSelectedVariant(null);
+        setSelectedComplements({});
+        setQuantity(1);
+        setCurrentPage(0);
+        toast.info(
+          `Processed ${newProcessed.size}/${menuMinRequired} products. Please select another product.`
+        );
+      }
+    } else {
+      setProduct(null);
+    }
   };
 
   if (isLoading) {
@@ -293,14 +579,207 @@ const OrderTakingForm = ({
     );
   }
 
+  // Menu mode render
+  if (isMenuMode) {
+    const currentMenuPage = menuPages[currentMenuPageIndex];
+    const isLastPage = currentMenuPageIndex === menuPages.length - 1;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          {/* Header */}
+          <div className="flex justify-between items-center p-6 border-b">
+            <div>
+              <h2 className="text-xl font-semibold text-indigo-500">
+                {product.name}
+              </h2>
+              <p className="text-gray-600">
+                {menuPages.length > 0
+                  ? `Page ${currentMenuPageIndex + 1} of ${menuPages.length}`
+                  : "No pages available"}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setProduct(null)}
+              className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+            >
+              &times;
+            </button>
+          </div>
+
+          <div className="p-6">
+            {menuPages.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg
+                    className="w-6 h-6 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No Menu Pages
+                </h3>
+                <p className="text-gray-500">
+                  This menu has no pages configured yet.
+                </p>
+              </div>
+            ) : currentMenuPage ? (
+              <>
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    {currentMenuPage.name}
+                  </h3>
+                  {currentMenuPage.description && (
+                    <p className="text-gray-600">
+                      {currentMenuPage.description}
+                    </p>
+                  )}
+                  <div className="mt-2 text-sm text-gray-500">
+                    {processedMenuProducts.size > 0 ? (
+                      <span>
+                        Processed {processedMenuProducts.size}/{menuMinRequired}{" "}
+                        products.
+                        {processedMenuProducts.size < menuMinRequired
+                          ? " Select another product."
+                          : " Complete!"}
+                      </span>
+                    ) : (
+                      `Select ${menuMinRequired > 0 ? `at least ${menuMinRequired}` : "any"} product${menuMinRequired !== 1 ? "s" : ""}`
+                    )}
+                  </div>
+                </div>
+
+                {/* Products Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  {currentMenuPage.products
+                    .sort((a, b) => a.priority - b.priority)
+                    .map((menuProduct) => (
+                      <div
+                        key={menuProduct.id}
+                        onClick={() => {
+                          if (
+                            !processedMenuProducts.has(menuProduct.productId)
+                          ) {
+                            handleMenuProductSelect(menuProduct);
+                          }
+                        }}
+                        className={`border rounded-lg p-4 transition-all ${
+                          processedMenuProducts.has(menuProduct.productId)
+                            ? "border-green-300 bg-green-50 cursor-not-allowed opacity-60"
+                            : "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-gray-800">
+                            {menuProduct.name}
+                          </h4>
+                          {Number(menuProduct.supplement || 0) > 0 && (
+                            <span className="text-sm font-medium text-indigo-600">
+                              +€{Number(menuProduct.supplement || 0).toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {Number(menuProduct.supplement || 0) > 0
+                            ? "Additional charge"
+                            : "Included"}
+                        </div>
+                        <div className="mt-2 text-sm font-medium">
+                          {processedMenuProducts.has(menuProduct.productId) ? (
+                            <span className="text-green-600">✓ Processed</span>
+                          ) : (
+                            <span className="text-indigo-600">
+                              Click to process
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Simple Navigation */}
+                <div className="flex justify-between items-center">
+                  <div className="text-sm text-gray-600">
+                    Click on any product to process it
+                  </div>
+                  <div className="flex gap-3">
+                    {currentMenuPageIndex > 0 && (
+                      <button
+                        onClick={() => {
+                          setCurrentMenuPageIndex((prev) => prev - 1);
+                        }}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                      >
+                        Previous Page
+                      </button>
+                    )}
+                    {!isLastPage && (
+                      <button
+                        onClick={() => {
+                          setCurrentMenuPageIndex((prev) => prev + 1);
+                        }}
+                        className="px-6 py-2 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600"
+                      >
+                        Next Page
+                      </button>
+                    )}
+                    {processedMenuProducts.size >= menuMinRequired ? (
+                      <button
+                        onClick={() => {
+                          resetMenuProcessing();
+                          setProduct(null);
+                        }}
+                        className="px-6 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600"
+                      >
+                        Complete Menu ({processedMenuProducts.size} products)
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          resetMenuProcessing();
+                          setProduct(null);
+                        }}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading menu pages...</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Regular product mode render
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-semibold text-indigo-500">
-            {product.name}
-          </h2>
+          <div>
+            <h2 className="text-xl font-semibold text-indigo-500">
+              {product.name}
+            </h2>
+          </div>
           <button
             type="button"
             onClick={() => setProduct(null)}

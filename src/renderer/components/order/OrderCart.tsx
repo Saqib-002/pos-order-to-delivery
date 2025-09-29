@@ -18,6 +18,13 @@ interface OrderItem {
   }>;
   quantity: number;
   totalPrice: number;
+  menuContext?: {
+    menuId: string;
+    menuName: string;
+    menuPageId: string;
+    menuPageName: string;
+    supplement: number;
+  };
 }
 
 interface OrderCartProps {
@@ -78,6 +85,17 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 <h3 className="font-medium text-gray-800">
                   {item.productName}
                 </h3>
+                {item.menuContext && (
+                  <div className="text-xs text-indigo-600 mb-1">
+                    From: {item.menuContext.menuName} -{" "}
+                    {item.menuContext.menuPageName}
+                    {item.menuContext.supplement > 0 && (
+                      <span className="ml-1">
+                        (+€{item.menuContext.supplement.toFixed(2)})
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="text-sm text-gray-600 space-y-1">
                   <div className="flex justify-between">
                     <span>Base Product</span>

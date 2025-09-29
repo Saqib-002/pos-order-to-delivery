@@ -163,3 +163,37 @@ export const fetchProductsByCatIdForOrder = async (
     toast.error("Failed to fetch products");
   }
 };
+
+// Fetch menus by subcategory
+export const fetchMenusBySubcategory = async (
+  token: string | null,
+  subcategoryId: string,
+  setMenus: React.Dispatch<React.SetStateAction<any>>
+) => {
+  try {
+    const res = await (window as any).electronAPI.getMenusBySubcategory(
+      token,
+      subcategoryId
+    );
+    if (!res.status) {
+      toast.error("Unable to get menus");
+      return;
+    }
+
+    // Debug: Log the menu data structure
+    console.log("Menu data from API:", res.data);
+
+    setMenus(
+      res.data.map((m: any) => {
+        return {
+          ...m,
+          type: "menu",
+          price:
+            typeof m.price === "string" ? parseFloat(m.price) : m.price || 0,
+        };
+      })
+    );
+  } catch (error) {
+    toast.error("Failed to fetch menus");
+  }
+};
