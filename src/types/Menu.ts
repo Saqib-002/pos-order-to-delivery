@@ -1,4 +1,3 @@
-
 export interface OrderItem {
   id: string;
   orderId: string;
@@ -52,6 +51,7 @@ export interface Product extends BaseMenuEntity {
   isPerDiner?: boolean;
   isOutstanding?: boolean;
   isPlus18?: boolean;
+  isForMenu?: boolean;
   image?: string;
   type: "product";
 }

@@ -12,7 +12,7 @@ export const Navigation = ({
     userRole: string | undefined;
     onLogout: () => void;
 }) => (
-    <nav className="flex justify-between items-center mb-6 pb-4 border-b border-slate-300">
+    <nav className="flex justify-between items-center pb-4 border-b border-slate-300">
         <div className="flex items-center gap-2">
             <img src="./assets/logo.png" alt="Logo" className="size-6" />
             <h1 className="text-2xl font-bold">Delivery System</h1>
