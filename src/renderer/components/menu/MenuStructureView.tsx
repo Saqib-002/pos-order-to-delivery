@@ -127,7 +127,7 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
           return;
         }
         toast.success("Menu page deleted successfully");
-        fetchMenuPages(); // Refresh data
+        fetchMenuPages(); 
       } catch (error) {
         toast.error("Failed to delete menu page");
       }
@@ -146,7 +146,7 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
           return;
         }
         toast.success("Menu deleted successfully");
-        fetchMenus(); // Refresh data
+        fetchMenus(); 
       } catch (error) {
         toast.error("Failed to delete menu");
       }
@@ -156,13 +156,13 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
   const handleMenuPageSuccess = () => {
     setIsMenuPageModalOpen(false);
     setEditingMenuPage(null);
-    fetchMenuPages(); // Refresh data
+    fetchMenuPages(); 
   };
 
   const handleMenuSuccess = () => {
     setIsMenuModalOpen(false);
     setEditingMenu(null);
-    fetchMenus(); // Refresh data
+    fetchMenus(); 
   };
 
   return (
