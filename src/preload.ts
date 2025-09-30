@@ -200,38 +200,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("update-menu-page", token, id, menuPageData,products),
   deleteMenuPage: (token: string, id: string) =>
     ipcRenderer.invoke("delete-menu-page", token, id),
-  addProductToMenuPage: (
-    token: string,
-    menuPageId: string,
-    productId: string,
-    productName: string,
-    supplement?: number,
-    priority?: number
-  ) =>
-    ipcRenderer.invoke(
-      "add-product-to-menu-page",
-      token,
-      menuPageId,
-      productId,
-      productName,
-      supplement,
-      priority
-    ),
   getMenuPageProducts: (token: string, menuPageId: string) =>
     ipcRenderer.invoke("get-menu-page-products", token, menuPageId),
-  removeProductFromMenuPage: (
-    token: string,
-    menuPageId: string,
-    productId: string
-  ) =>
-    ipcRenderer.invoke(
-      "remove-product-from-menu-page",
-      token,
-      menuPageId,
-      productId
-    ),
-  updateMenuPageProduct: (token: string, id: string, updates: any) =>
-    ipcRenderer.invoke("update-menu-page-product", token, id, updates),
 
   // Menus operations
   getMenus: (token: string) => ipcRenderer.invoke("get-menus", token),

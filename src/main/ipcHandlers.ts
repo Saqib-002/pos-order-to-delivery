@@ -100,8 +100,13 @@ export function registerIpcHandlers() {
   ipcMain.handle("create-customer", createCustomer);
   ipcMain.handle("get-customers-by-phone", getCustomersByPhone);
   ipcMain.handle("upsert-customer", updateCustomer);
-  // ipcMain.handle("delete-customer", deleteCustomer);
-  // ipcMain.handle("update-customer", updateCustomer);
+  
+  // Menu Pages handlers
+  ipcMain.handle("create-menu-page", createMenuPage);
+  ipcMain.handle("get-menu-pages", getMenuPages);
+  ipcMain.handle("update-menu-page", updateMenuPage);
+  ipcMain.handle("delete-menu-page", deleteMenuPage);
+  ipcMain.handle("get-menu-page-products", getMenuPageProducts);
 
   // Authentication handlers
   ipcMain.handle("register-user", registerUser);
@@ -130,12 +135,6 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-delivery-person", deleteDeliveryPerson);
   ipcMain.handle("assign-delivery-person", assignDeliveryPersonToOrder);
 
-  // Menu Pages handlers
-  ipcMain.handle("create-menu-page", createMenuPage);
-  ipcMain.handle("get-menu-pages", getMenuPages);
-  ipcMain.handle("update-menu-page", updateMenuPage);
-  ipcMain.handle("delete-menu-page", deleteMenuPage);
-  ipcMain.handle("get-menu-page-products", getMenuPageProducts);
 
 
   // Menus handlers
