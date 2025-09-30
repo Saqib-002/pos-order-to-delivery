@@ -173,15 +173,10 @@ export const fetchMenusBySubcategory = async (
       token,
       subcategoryId
     );
-    console.log(res);
     if (!res.status) {
       toast.error("Unable to get menus");
       return;
     }
-
-    // Debug: Log the menu data structure
-    console.log("Menu data from API:", res.data);
-
     setMenus(
       res.data.map((m: any) => {
         return {

@@ -60,7 +60,7 @@ import {
   updateProduct,
 } from "./handlers/products.js";
 import { createMenuPage, deleteMenuPage, getMenuPageProducts, getMenuPages, updateMenuPage } from "./handlers/menuPages.js";
-import { setupMenusHandlers } from "./handlers/menus.js";
+import {  createMenu, deleteMenu, getMenuPageAssociations, getMenus, getMenusBySubcategory, updateMenu } from "./handlers/menus.js";
 import { createCustomer, getCustomersByPhone, updateCustomer } from "./handlers/customers.js";
 
 export function registerIpcHandlers() {
@@ -108,6 +108,14 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-menu-page", deleteMenuPage);
   ipcMain.handle("get-menu-page-products", getMenuPageProducts);
 
+  // Menus handlers
+  ipcMain.handle("create-menu", createMenu);
+  ipcMain.handle("get-menus", getMenus);
+  ipcMain.handle("get-menus-by-subcategory", getMenusBySubcategory);
+  ipcMain.handle("update-menu", updateMenu);
+  ipcMain.handle("delete-menu", deleteMenu);
+  ipcMain.handle("get-menu-page-associations", getMenuPageAssociations);
+
   // Authentication handlers
   ipcMain.handle("register-user", registerUser);
   ipcMain.handle("login-user", loginUser);
@@ -135,8 +143,4 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-delivery-person", deleteDeliveryPerson);
   ipcMain.handle("assign-delivery-person", assignDeliveryPersonToOrder);
 
-
-
-  // Menus handlers
-  setupMenusHandlers();
 }

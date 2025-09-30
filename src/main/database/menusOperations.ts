@@ -4,10 +4,11 @@ import { randomUUID } from "crypto";
 import Logger from "electron-log";
 
 export class MenusOperations {
-  // Menus CRUD Operations
   static async createMenu(
-    menu: Omit<Menu, "id" | "createdAt" | "updatedAt" | "isDeleted">
+    menu: Omit<Menu, "id" | "createdAt" | "updatedAt" | "isDeleted">,
+    MenuPageAssociations: Omit<MenuPageAssociation, "id" | "createdAt" | "updatedAt">[]
   ): Promise<Menu> {
+    const trx=await db.transaction();
     try {
       const now = new Date().toISOString();
       const id = randomUUID();
@@ -18,10 +19,23 @@ export class MenusOperations {
         updatedAt: now,
         isDeleted: false,
       };
-      await db("menus").insert(newMenu);
-      Logger.info(`Menu created: ${newMenu.name}`);
+      await trx("menus").insert(newMenu);
+      const newMenuPageAssociations = [];
+      for (const association of MenuPageAssociations) {
+        const newAssociation = {
+          ...association,
+          id: randomUUID(),
+          menuId: id,
+          createdAt: now,
+          updatedAt: now,
+        };
+        newMenuPageAssociations.push(newAssociation);
+      }
+      await trx("menu_page_associations").insert(newMenuPageAssociations);
+      await trx.commit();
       return newMenu;
     } catch (error) {
+      await trx.rollback();
       throw error;
     }
   }
@@ -49,39 +63,60 @@ export class MenusOperations {
     }
   }
 
-  static async getMenuById(id: string): Promise<Menu | null> {
-    try {
-      const menu = await db("menus")
-        .where("id", id)
-        .andWhere("isDeleted", false)
-        .first();
-      return menu || null;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   static async updateMenu(
     id: string,
-    updates: Partial<Menu>
+    updates: Partial<Menu>,
+    MenuPageAssociations: Partial<MenuPageAssociation>[]
   ): Promise<Menu> {
+    const trx=await db.transaction();
     try {
       const now = new Date().toISOString();
-      await db("menus")
+      const updatedMenu = (await trx("menus")
         .where("id", id)
         .update({
           ...updates,
           updatedAt: now,
-        });
+        }).returning("*"))[0] as Menu;
+        const existingAssociations = await trx("menu_page_associations")
+        .where("menuId", id)
+        .select("id");
+        const providedItemIds = new Set(
+          MenuPageAssociations.map((item) => item.id).filter((id) => id))
+        const toDelete = existingAssociations
+          .map((item) => item.id)
+          .filter((id) => !providedItemIds.has(id));
+        if (toDelete.length > 0) {
+          await trx("menu_page_associations").whereIn("id", toDelete).delete();
+        }
+        for (const association of MenuPageAssociations) {
+          const existingAssociations= await trx("menu_page_associations")
+            .where("id", association.id)
+            .andWhere("menuId", id)
+            .andWhere("menuPageId", association.menuPageId)
+            .first();
+            if (existingAssociations) {
+              await trx("menu_page_associations")
+                .where("id", existingAssociations.id)
+                .update({
+                  ...association,
+                  updatedAt: now,
+                });
+            }else{
+              const newAssociation = {
+                ...association,
+                id: randomUUID(),
+                menuId: id,
+                createdAt: now,
+                updatedAt: now,
+              };
+              await trx("menu_page_associations").insert(newAssociation);
+            }
+        }
 
-      const updatedMenu = await db("menus").where("id", id).first();
-      if (!updatedMenu) {
-        throw new Error("Menu not found after update");
-      }
-
-      Logger.info(`Menu updated: ${id}`);
+      await trx.commit();
       return updatedMenu;
     } catch (error) {
+      await trx.rollback();
       throw error;
     }
   }
@@ -99,41 +134,6 @@ export class MenusOperations {
     }
   }
 
-  // Menu Page Associations Operations
-  static async addMenuPageAssociation(
-    menuId: string,
-    menuPageId: string,
-    pageName: string,
-    minimum: number = 1,
-    maximum: number = 1,
-    priority: number = 0,
-    kitchenPriority: string = "Priority 1",
-    multiple: string = "No"
-  ): Promise<MenuPageAssociation> {
-    try {
-      const now = new Date().toISOString();
-      const id = randomUUID();
-      const association = {
-        id,
-        menuId,
-        menuPageId,
-        pageName,
-        minimum,
-        maximum,
-        priority,
-        kitchenPriority,
-        multiple,
-        createdAt: now,
-        updatedAt: now,
-      };
-      await db("menu_page_associations").insert(association);
-      Logger.info(`Menu page association created: ${pageName}`);
-      return association;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   static async getMenuPageAssociations(menuId: string): Promise<MenuPageAssociation[]> {
     try {
       const associations = await db("menu_page_associations")
@@ -145,46 +145,4 @@ export class MenusOperations {
     }
   }
 
-  static async updateMenuPageAssociation(
-    id: string,
-    updates: Partial<MenuPageAssociation>
-  ): Promise<MenuPageAssociation> {
-    try {
-      const now = new Date().toISOString();
-      await db("menu_page_associations")
-        .where("id", id)
-        .update({
-          ...updates,
-          updatedAt: now,
-        });
-
-      const updatedAssociation = await db("menu_page_associations").where("id", id).first();
-      if (!updatedAssociation) {
-        throw new Error("Menu page association not found after update");
-      }
-
-      Logger.info(`Menu page association updated: ${id}`);
-      return updatedAssociation;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async removeMenuPageAssociation(id: string): Promise<void> {
-    try {
-      await db("menu_page_associations").where("id", id).delete();
-      Logger.info(`Menu page association removed: ${id}`);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async removeAllMenuPageAssociations(menuId: string): Promise<void> {
-    try {
-      await db("menu_page_associations").where("menuId", menuId).delete();
-      Logger.info(`All menu page associations removed for menu: ${menuId}`);
-    } catch (error) {
-      throw error;
-    }
-  }
 }

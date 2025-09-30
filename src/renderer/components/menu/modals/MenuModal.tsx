@@ -15,7 +15,7 @@ interface MenuPage {
 
 interface MenuPageAssociation {
     id: string;
-    pageId: string;
+    menuPageId: string;
     pageName: string;
     minimum: number;
     maximum: number;
@@ -74,7 +74,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
         MenuPageAssociation[]
     >([]);
     const [newPageAssociation, setNewPageAssociation] = useState({
-        pageId: "",
+        menuPageId: "",
         minimum: 1,
         maximum: 1,
         priority: 0,
@@ -129,7 +129,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
 
             // Filter out already added menu pages
             const addedPageIds = menuPageAssociations.map(
-                (assoc) => assoc.pageId
+                (assoc) => assoc.menuPageId
             );
             const availablePages = res.data.filter(
                 (page: any) => !addedPageIds.includes(page.id)
@@ -163,7 +163,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
             if (res.status && res.data) {
                 const existingAssociations = res.data.map((assoc: any) => ({
                     id: assoc.id,
-                    pageId: assoc.menuPageId,
+                    menuPageId: assoc.menuPageId,
                     pageName: assoc.pageName,
                     minimum: assoc.minimum,
                     maximum: assoc.maximum,
@@ -211,7 +211,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
             setMenuPageAssociations([]);
         }
         setNewPageAssociation({
-            pageId: "",
+            menuPageId: "",
             minimum: 1,
             maximum: 1,
             priority: 0,
@@ -265,18 +265,18 @@ export const MenuModal: React.FC<MenuModalProps> = ({
     const handlePageSelect = (value: string) => {
         setNewPageAssociation((prev) => ({
             ...prev,
-            pageId: value,
+            menuPageId: value,
         }));
     };
 
     const handleAddPageAssociation = () => {
-        if (!newPageAssociation.pageId) {
+        if (!newPageAssociation.menuPageId) {
             toast.error("Please select a menu page");
             return;
         }
 
         const selectedOption = availableMenuPages.find(
-            (option) => option.value === newPageAssociation.pageId
+            (option) => option.value === newPageAssociation.menuPageId
         );
         if (!selectedOption || selectedOption.disabled) {
             toast.error("No menu pages available to add");
@@ -284,7 +284,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
         }
 
         const selectedPage = menuPages.find(
-            (page) => page.id === newPageAssociation.pageId
+            (page) => page.id === newPageAssociation.menuPageId
         );
         if (!selectedPage) {
             toast.error("Selected menu page not found");
@@ -293,7 +293,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
 
         const association: MenuPageAssociation = {
             id: `temp_${Date.now()}`,
-            pageId: newPageAssociation.pageId,
+            menuPageId: newPageAssociation.menuPageId,
             pageName: selectedPage.name,
             minimum: newPageAssociation.minimum,
             maximum: newPageAssociation.maximum,
@@ -304,7 +304,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
 
         setMenuPageAssociations((prev) => [...prev, association]);
         setNewPageAssociation({
-            pageId: "",
+            menuPageId: "",
             minimum: 1,
             maximum: 1,
             priority: 0,
@@ -344,85 +344,27 @@ export const MenuModal: React.FC<MenuModalProps> = ({
 
         try {
             if (editingMenu) {
-                // Update existing menu
                 const res = await (window as any).electronAPI.updateMenu(
                     token,
                     editingMenu.id,
-                    formData
+                    formData,
+                    menuPageAssociations
                 );
+                console.log(res,menuPageAssociations);
                 if (!res.status) {
                     toast.error("Failed to update menu");
                     return;
                 }
-
-                // Get existing menu page associations from database
-                const existingAssociationsRes = await (
-                    window as any
-                ).electronAPI.getMenuPageAssociations(token, editingMenu.id);
-                const existingAssociations = existingAssociationsRes.status
-                    ? existingAssociationsRes.data
-                    : [];
-
-                // Find associations to remove (exist in DB but not in current associations)
-                const currentAssociationIds = menuPageAssociations
-                    .filter((assoc) => !assoc.id.startsWith("temp_"))
-                    .map((assoc) => assoc.id);
-                const associationsToRemove = existingAssociations.filter(
-                    (existing: any) =>
-                        !currentAssociationIds.includes(existing.id)
-                );
-
-                // Remove deleted associations
-                for (const associationToRemove of associationsToRemove) {
-                    await (window as any).electronAPI.removeMenuPageAssociation(
-                        token,
-                        associationToRemove.id
-                    );
-                }
-
-                // Add new associations
-                for (const association of menuPageAssociations) {
-                    if (association.id.startsWith("temp_")) {
-                        // New association - add to menu
-                        await (
-                            window as any
-                        ).electronAPI.addMenuPageAssociation(
-                            token,
-                            editingMenu.id,
-                            association.pageId,
-                            association.pageName,
-                            association.minimum,
-                            association.maximum,
-                            association.priority,
-                            association.kitchenPriority,
-                            association.multiple
-                        );
-                    }
-                }
             } else {
-                // Create new menu
                 const res = await (window as any).electronAPI.createMenu(
                     token,
-                    formData
+                    formData,
+                    menuPageAssociations
                 );
+                console.log(res);
                 if (!res.status) {
                     toast.error("Failed to create menu");
                     return;
-                }
-
-                // Add menu page associations
-                for (const association of menuPageAssociations) {
-                    await (window as any).electronAPI.addMenuPageAssociation(
-                        token,
-                        res.data.id,
-                        association.pageId,
-                        association.pageName,
-                        association.minimum,
-                        association.maximum,
-                        association.priority,
-                        association.kitchenPriority,
-                        association.multiple
-                    );
                 }
             }
 
@@ -615,7 +557,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                     </label>
                                     <CustomSelect
                                         options={availableMenuPages}
-                                        value={newPageAssociation.pageId}
+                                        value={newPageAssociation.menuPageId}
                                         onChange={handlePageSelect}
                                         placeholder={
                                             availableMenuPages.length === 1 &&

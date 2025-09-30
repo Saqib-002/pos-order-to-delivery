@@ -207,45 +207,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getMenus: (token: string) => ipcRenderer.invoke("get-menus", token),
   getMenusBySubcategory: (token: string, subcategoryId: string) =>
     ipcRenderer.invoke("get-menus-by-subcategory", token, subcategoryId),
-  getMenuById: (token: string, id: string) =>
-    ipcRenderer.invoke("get-menu-by-id", token, id),
-  createMenu: (token: string, menuData: any) =>
-    ipcRenderer.invoke("create-menu", token, menuData),
-  updateMenu: (token: string, id: string, updates: any) =>
-    ipcRenderer.invoke("update-menu", token, id, updates),
+  createMenu: (token: string, menuData: any, MenuPageAssociations: any) =>
+    ipcRenderer.invoke("create-menu", token, menuData, MenuPageAssociations),
+  updateMenu: (token: string, id: string, updates: any, MenuPageAssociations: any) =>
+    ipcRenderer.invoke("update-menu", token, id, updates, MenuPageAssociations),
   deleteMenu: (token: string, id: string) =>
     ipcRenderer.invoke("delete-menu", token, id),
-  addMenuPageAssociation: (
-    token: string,
-    menuId: string,
-    menuPageId: string,
-    pageName: string,
-    minimum?: number,
-    maximum?: number,
-    priority?: number,
-    kitchenPriority?: string,
-    multiple?: string
-  ) =>
-    ipcRenderer.invoke(
-      "add-menu-page-association",
-      token,
-      menuId,
-      menuPageId,
-      pageName,
-      minimum,
-      maximum,
-      priority,
-      kitchenPriority,
-      multiple
-    ),
   getMenuPageAssociations: (token: string, menuId: string) =>
     ipcRenderer.invoke("get-menu-page-associations", token, menuId),
-  updateMenuPageAssociation: (token: string, id: string, updates: any) =>
-    ipcRenderer.invoke("update-menu-page-association", token, id, updates),
-  removeMenuPageAssociation: (token: string, id: string) =>
-    ipcRenderer.invoke("remove-menu-page-association", token, id),
-  removeAllMenuPageAssociations: (token: string, menuId: string) =>
-    ipcRenderer.invoke("remove-all-menu-page-associations", token, menuId),
 
   // Order change notifications
   onOrderChange: (callback: (change: any) => void) => {
