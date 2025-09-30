@@ -113,7 +113,6 @@ export const fetchProductsByCatId = async (
   }
 };
 
-// Order-specific functions that filter out menu-only products
 export const fetchProductsForOrder = async (
   token: string,
   setProducts: React.Dispatch<React.SetStateAction<any>>
@@ -164,7 +163,6 @@ export const fetchProductsByCatIdForOrder = async (
   }
 };
 
-// Fetch menus by subcategory
 export const fetchMenusBySubcategory = async (
   token: string | null,
   subcategoryId: string,
@@ -175,6 +173,7 @@ export const fetchMenusBySubcategory = async (
       token,
       subcategoryId
     );
+    console.log(res);
     if (!res.status) {
       toast.error("Unable to get menus");
       return;

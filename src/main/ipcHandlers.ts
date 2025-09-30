@@ -59,7 +59,7 @@ import {
   getVariantsByProductId,
   updateProduct,
 } from "./handlers/products.js";
-import { setupMenuPagesHandlers } from "./handlers/menuPages.js";
+import { createMenuPage, deleteMenuPage, getMenuPageProducts, getMenuPages, updateMenuPage } from "./handlers/menuPages.js";
 import { setupMenusHandlers } from "./handlers/menus.js";
 import { createCustomer, getCustomersByPhone, updateCustomer } from "./handlers/customers.js";
 
@@ -131,7 +131,12 @@ export function registerIpcHandlers() {
   ipcMain.handle("assign-delivery-person", assignDeliveryPersonToOrder);
 
   // Menu Pages handlers
-  setupMenuPagesHandlers();
+  ipcMain.handle("create-menu-page", createMenuPage);
+  ipcMain.handle("get-menu-pages", getMenuPages);
+  ipcMain.handle("update-menu-page", updateMenuPage);
+  ipcMain.handle("delete-menu-page", deleteMenuPage);
+  ipcMain.handle("get-menu-page-products", getMenuPageProducts);
+
 
   // Menus handlers
   setupMenusHandlers();

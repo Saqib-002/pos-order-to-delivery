@@ -194,12 +194,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Menu Pages operations
   getMenuPages: (token: string) => ipcRenderer.invoke("get-menu-pages", token),
-  getMenuPageById: (token: string, id: string) =>
-    ipcRenderer.invoke("get-menu-page-by-id", token, id),
-  createMenuPage: (token: string, menuPageData: any) =>
-    ipcRenderer.invoke("create-menu-page", token, menuPageData),
-  updateMenuPage: (token: string, id: string, updates: any) =>
-    ipcRenderer.invoke("update-menu-page", token, id, updates),
+  createMenuPage: (token: string, menuPageData: any,products: any) =>
+    ipcRenderer.invoke("create-menu-page", token, menuPageData,products),
+  updateMenuPage: (token: string, id: string, menuPageData: any,products:any) =>
+    ipcRenderer.invoke("update-menu-page", token, id, menuPageData,products),
   deleteMenuPage: (token: string, id: string) =>
     ipcRenderer.invoke("delete-menu-page", token, id),
   addProductToMenuPage: (

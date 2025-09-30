@@ -6,20 +6,21 @@ import DeleteIcon from "../../../assets/icons/delete.svg?react";
 import AddIcon from "../../../assets/icons/add.svg?react";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
+import { MenuPageProduct } from "@/types/menuPages";
 
-interface MenuPageProduct {
-  id: string;
-  name: string;
-  productId: string;
-  supplement: number;
-  priority: number;
-}
+// interface MenuPageProduct {
+//   id: string;
+//   name: string;
+//   productId: string;
+//   supplement: number;
+//   priority: number;
+// }
 
 interface MenuPage {
   id: string;
   name: string;
   description: string;
-  products: MenuPageProduct[];
+  products: Omit<MenuPageProduct, "menuPageId"|"createdAt"| "updatedAt">[];
 }
 
 interface MenuPageModalProps {
@@ -41,7 +42,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
     name: "",
     description: "",
   });
-  const [products, setProducts] = useState<MenuPageProduct[]>([]);
+  const [products, setProducts] = useState<Omit<MenuPageProduct, "menuPageId"|"createdAt"| "updatedAt">[]>([]);
   const [newProduct, setNewProduct] = useState({
     name: "",
     supplement: 0,
@@ -65,9 +66,9 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
         return;
       }
 
-      const addedProductNames = products.map((p) => p.name);
+      const addedProductNames = products.map((p) => p.productName);
       const availableProducts = res.data.filter(
-        (product: any) => !addedProductNames.includes(product.name)
+        (product: any) => !addedProductNames.includes(product.productName)
       );
 
       const productOptions = availableProducts.map((product: any) => ({
@@ -100,7 +101,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
       if (res.status && res.data) {
         const existingProducts = res.data.map((product: any) => ({
           id: product.id,
-          name: product.productName,
+          productName: product.productName,
           productId: product.productId,
           supplement: Number(product.supplement) || 0,
           priority: Number(product.priority) || 0,
@@ -183,9 +184,9 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
       return;
     }
 
-    const product: MenuPageProduct = {
+    const product: Omit<MenuPageProduct, "menuPageId"|"createdAt"| "updatedAt"> = {
       id: `temp_${Date.now()}`,
-      name: selectedOption.label,
+      productName: selectedOption.label,
       productId: selectedOption.productId || selectedOption.value,
       supplement: newProduct.supplement,
       priority: newProduct.priority,
@@ -223,77 +224,28 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
 
     try {
       if (editingMenuPage) {
-        // Update existing menu page
         const res = await (window as any).electronAPI.updateMenuPage(
           token,
           editingMenuPage.id,
-          formData
+          formData,
+          products
         );
         if (!res.status) {
+          console.log(res);
           toast.error("Failed to update menu page");
           return;
         }
-
-        const existingProductsRes = await (
-          window as any
-        ).electronAPI.getMenuPageProducts(token, editingMenuPage.id);
-        const existingProducts = existingProductsRes.status
-          ? existingProductsRes.data
-          : [];
-
-        const currentProductIds = products
-          .filter((p) => !p.id.startsWith("temp_"))
-          .map((p) => p.id);
-        const productsToRemove = existingProducts.filter(
-          (existing: any) => !currentProductIds.includes(existing.id)
-        );
-
-        for (const productToRemove of productsToRemove) {
-          await (window as any).electronAPI.removeProductFromMenuPage(
-            token,
-            editingMenuPage.id,
-            productToRemove.productId
-          );
-        }
-
-        // Add new products
-        for (const product of products) {
-          if (product.id.startsWith("temp_")) {
-            // New product - add to menu page
-            await (window as any).electronAPI.addProductToMenuPage(
-              token,
-              editingMenuPage.id,
-              product.productId,
-              product.name,
-              product.supplement,
-              product.priority
-            );
-          }
-        }
       } else {
-        // Create new menu page
         const res = await (window as any).electronAPI.createMenuPage(
           token,
-          formData
+          formData,
+          products
         );
         if (!res.status) {
           toast.error("Failed to create menu page");
           return;
         }
-
-        // Add products to the new menu page
-        for (const product of products) {
-          await (window as any).electronAPI.addProductToMenuPage(
-            token,
-            res.data.id,
-            product.productId,
-            product.name,
-            product.supplement,
-            product.priority
-          );
-        }
       }
-
       toast.success(
         editingMenuPage
           ? "Menu page updated successfully"
@@ -455,7 +407,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                     >
                       <div className="flex-1">
                         <span className="font-medium text-gray-900">
-                          {product.name}
+                          {product.productName}
                         </span>
                       </div>
                       <div className="flex items-center gap-4">
