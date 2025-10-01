@@ -1,100 +1,74 @@
-import React, { useState } from "react";
+import React, { useState, memo } from "react";
 import { MenuComponent } from "../components/menu/MenuComponent";
 import { MenuStructureComponent } from "../components/menu/MenuStructureView";
 import { GroupView } from "../components/menu/GroupView";
 import { VariantView } from "../components/menu/VariantView";
-
-export const MenuView: React.FC<{ token: string }> = ({ token }) => {
-  const [currentView, setCurrentView] = useState<
-    "menu" | "menu-structure" | "group" | "variant"
-  >("menu");
-
+import CustomButton from "../components/ui/CustomButton";
+const VIEW_CONFIG = {
+  menu: {
+    title: "Menus",
+    description: "Create and manage categories, subcategories, and products.",
+  },
+  "menu-structure": {
+    title: "Menu Structure",
+    description: "Create menus and menu pages.",
+  },
+  group: {
+    title: "Groups",
+    description: "Create and manage menu groups and options.",
+  },
+  variant: {
+    title: "Variants",
+    description: "Create and manage product variants and options.",
+  },
+} as const;
+type ViewKey = keyof typeof VIEW_CONFIG;
+const MenuHeader: React.FC<{ currentView: ViewKey; onViewChange: (view: ViewKey) => void }> = memo(
+  ({ currentView, onViewChange }) => {
+    const config = VIEW_CONFIG[currentView];
+    const toggleViews: ViewKey[] = ["menu", "menu-structure", "group", "variant"];
+    return (
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-0">
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-gray-900">{config.title}</h1>
+          </div>
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            {toggleViews.map((view) => (
+              <CustomButton type="button" key={view} onClick={() => onViewChange(view)} label={view.charAt(0).toUpperCase() + view.replace(/-/g, " ").slice(1)} variant="transparent" className={`${currentView === view ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                }`} />
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <p className="text-gray-600">{config.description}</p>
+        </div>
+      </div>
+    );
+  }
+);
+export const MenuView: React.FC<{ token: string }> = memo(({ token }) => {
+  const [currentView, setCurrentView] = useState<ViewKey>("menu");
+  const renderContent = () => {
+    switch (currentView) {
+      case "menu":
+        return <MenuComponent token={token} />;
+      case "menu-structure":
+        return <MenuStructureComponent token={token} />;
+      case "group":
+        return <GroupView token={token} />;
+      case "variant":
+        return <VariantView token={token} />;
+      default:
+        return null;
+    }
+  };
   return (
     <div className="min-h-screen">
       <div className="max-w-[98%] mx-auto">
-        {/* Header Section */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-0">
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold text-gray-900">
-                {currentView === "menu"
-                  ? "Menus"
-                  : currentView === "menu-structure"
-                    ? "Menu Structure"
-                    : currentView === "group"
-                      ? "Groups"
-                      : "Variants"}
-              </h1>
-            </div>
-
-            {/* View Toggle Buttons */}
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setCurrentView("menu")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  currentView === "menu"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Menu
-              </button>
-              <button
-                onClick={() => setCurrentView("menu-structure")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  currentView === "menu-structure"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Menu Structure
-              </button>
-              <button
-                onClick={() => setCurrentView("group")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  currentView === "group"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Groups
-              </button>
-              <button
-                onClick={() => setCurrentView("variant")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  currentView === "variant"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Variants
-              </button>
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-gray-600">
-              {currentView === "menu"
-                ? "Create and manage categories, subcategories, and products."
-                : currentView === "menu-structure"
-                  ? "Create menus and menu pages."
-                  : currentView === "group"
-                    ? "Create and manage menu groups and options."
-                    : "Create and manage product variants and options."}
-            </p>
-          </div>
-        </div>
-
-        {/* Conditional Content Based on View */}
-        {currentView === "menu" ? (
-          <MenuComponent token={token} />
-        ) : currentView === "menu-structure" ? (
-          <MenuStructureComponent token={token} />
-        ) : currentView === "group" ? (
-          <GroupView token={token} />
-        ) : (
-          <VariantView token={token} />
-        )}
+        <MenuHeader currentView={currentView} onViewChange={setCurrentView} />
+        {renderContent()}
       </div>
     </div>
   );
-};
+});

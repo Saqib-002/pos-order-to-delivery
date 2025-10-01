@@ -2,6 +2,8 @@ import { colorOptions } from "@/renderer/utils/utils";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { CustomSelect } from "../../ui/CustomSelect";
+import CustomInput from "../../shared/CustomInput";
+import CustomButton from "../../ui/CustomButton";
 
 interface Category {
   id: string;
@@ -155,21 +157,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Subcategory Name
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Enter subcategory name"
-              required
-            />
-          </div>
+          <CustomInput label="Subcategory Name" name="name" type="text" placeholder="Enter subcategory name" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} otherClasses="mb-4"/>
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -213,23 +201,13 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
           </div>
 
           <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors duration-200"
-            >
-              Cancel
-            </button>
-            <button
+            <CustomButton type="button" onClick={onClose} label="Cancel" variant="secondary"/>
+            <CustomButton
               type="submit"
+              label={editingSubcategory ? "Update" : "Create"}
+              isLoading={isSubmitting}
               disabled={isSubmitting}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-md transition-colors duration-200 flex items-center gap-2"
-            >
-              {isSubmitting && (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              )}
-              {editingSubcategory ? "Update" : "Create"}
-            </button>
+            />
           </div>
         </form>
       </div>

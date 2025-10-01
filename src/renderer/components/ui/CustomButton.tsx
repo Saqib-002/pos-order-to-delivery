@@ -4,8 +4,10 @@ interface CustomButtonProps {
     className?: string;
     label?: string;
     postLabel?: string;
+    isLoading?: boolean;
     Icon?: React.ReactElement;
     variant?: "primary" | "secondary" | "transparent" | "yellow" | "red" | "orange";
+    [key: string]: any;
 }
 const CustomButton = ({
     type,
@@ -13,8 +15,10 @@ const CustomButton = ({
     className,
     label,
     postLabel,
+    isLoading,
     Icon,
     variant,
+    ...rest
 }: CustomButtonProps) => {
     const getVariant = () => {
         switch (variant) {
@@ -39,8 +43,14 @@ const CustomButton = ({
             type={type}
             onClick={onClick}
             className={`flex justify-center items-center gap-2 px-4 py-2 cursor-pointer font-medium border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-colors duration-300 ${getVariant()} ${className}`}
+            {...rest}
         >
-            {Icon && Icon}
+            {isLoading ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (<>
+                {Icon && Icon}
+            </>)
+            }
             {label}
             {postLabel && <p>{postLabel}</p>}
         </button>

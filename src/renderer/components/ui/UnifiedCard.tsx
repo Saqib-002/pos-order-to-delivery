@@ -30,6 +30,115 @@ interface UnifiedCardProps {
   showActions?: boolean;
 }
 
+interface Config {
+  padding: string;
+  iconSize: string;
+  actionsLayout: "row" | "col";
+  headerMb: string;
+  footerMb: string;
+  hasDelete: boolean;
+  getBody: (data: BaseCardData) => React.ReactNode;
+  getLeft: (data: BaseCardData) => { text: string; className: string };
+  getRight: (data: BaseCardData) => React.ReactNode[];
+}
+
+const configs: Record<UnifiedCardProps["type"], Config> = {
+  category: {
+    padding: "p-3",
+    iconSize: "size-5",
+    actionsLayout: "col",
+    headerMb: "mb-2",
+    footerMb: "",
+    hasDelete: false,
+    getBody: () => null,
+    getLeft: (data) => ({ text: `${data.itemCount || 0} Subcategories`, className: "text-sm text-white opacity-90" }),
+    getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Category</span>],
+  },
+  subcategory: {
+    padding: "p-3",
+    iconSize: "size-5",
+    actionsLayout: "col",
+    headerMb: "mb-2",
+    footerMb: "",
+    hasDelete: false,
+    getBody: () => null,
+    getLeft: (data) => ({ text: `${data.itemCount || 0} Products`, className: "text-sm text-white opacity-90" }),
+    getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Subcategory</span>],
+  },
+  product: {
+    padding: "p-3",
+    iconSize: "size-5",
+    actionsLayout: "row",
+    headerMb: "mb-0",
+    footerMb: "mb-2",
+    hasDelete: true,
+    getBody: (data) => <p className="text-xs text-white opacity-90 mb-2 line-clamp-2">{data.description}</p>,
+    getLeft: (data) => ({ text: `$${Number(data.price || 0).toFixed(2)}`, className: "text-lg font-semibold text-white" }),
+    getRight: (data) => [
+      <span
+        key="avail"
+        className={`text-xs px-2 py-1 rounded-full ${data.isAvailable ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}
+      >
+        {data.isAvailable ? "Available" : "Unavailable"}
+      </span>,
+      <span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Product</span>,
+    ],
+  },
+  group: {
+    padding: "p-3",
+    iconSize: "size-5",
+    actionsLayout: "col",
+    headerMb: "mb-2",
+    footerMb: "",
+    hasDelete: false,
+    getBody: () => null,
+    getLeft: (data) => ({ text: `${data.itemCount || 0} items`, className: "text-sm text-white opacity-90" }),
+    getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Group</span>],
+  },
+  variant: {
+    padding: "p-3",
+    iconSize: "size-5",
+    actionsLayout: "row",
+    headerMb: "mb-2",
+    footerMb: "",
+    hasDelete: true,
+    getBody: (data) =>
+      data.groupName ? <p className="text-xs opacity-75 mb-2 truncate">Group: {data.groupName}</p> : null,
+    getLeft: (data) => ({ text: `${data.variantCount || 0} variants`, className: "text-sm text-white opacity-90" }),
+    getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Variant</span>],
+  },
+  menuPage: {
+    padding: "p-2",
+    iconSize: "size-4",
+    actionsLayout: "row",
+    headerMb: "mb-0",
+    footerMb: "",
+    hasDelete: true,
+    getBody: (data) => <p className="text-xs text-white opacity-90 mb-0 line-clamp-2">{data.description}</p>,
+    getLeft: (data) => ({ text: `${data.itemCount || 0} products`, className: "text-sm text-white opacity-90" }),
+    getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Menu Page</span>],
+  },
+  menu: {
+    padding: "p-2",
+    iconSize: "size-4",
+    actionsLayout: "row",
+    headerMb: "mb-0",
+    footerMb: "mb-2",
+    hasDelete: true,
+    getBody: (data) => <p className="text-xs text-white opacity-90 mb-0 line-clamp-2">{data.description}</p>,
+    getLeft: (data) => ({ text: `€${Number(data.price || 0).toFixed(2)}`, className: "text-lg font-semibold text-white" }),
+    getRight: (data) => [
+      <span
+        key="avail"
+        className={`text-xs px-2 py-1 rounded-full ${data.isAvailable ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}
+      >
+        {data.isAvailable ? "Available" : "Unavailable"}
+      </span>,
+      <span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Menu</span>,
+    ],
+  },
+};
+
 const getColorClasses = (color: string | undefined, type: string) => {
   if (!color) {
     return "bg-gray-500 text-white border-gray-500";
@@ -59,314 +168,64 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
 }) => {
   const colorClasses = getColorClasses(data.color, type);
   const isClickable = !!onClick;
+  const config = configs[type];
+  if (!config) return null;
 
-  const renderContent = () => {
-    switch (type) {
-      case "category":
-      case "subcategory":
-        return (
-          <div
-            className={`relative p-3 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 hover:scale-105 ${isClickable ? "cursor-pointer group" : ""}`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-white text-lg truncate">
-                {data.name}
-              </h3>
-              {showActions && (
-                <div className="flex flex-col items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit();
-                    }}
-                    className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-gray-200"
-                    title="Edit"
-                  >
-                    <EditIcon className="size-5" />
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-white opacity-90">
-                {data.itemCount} {type === "category" ? "Subcategories" : "Products"}
-              </span>
-              <span className="text-xs px-2 py-1 rounded-full border border-gray-300">
-                {type === "category" ? "Category" : "Subcategory"}
-              </span>
-            </div>
-          </div>
-        );
+  const { padding, iconSize, actionsLayout, headerMb, footerMb, hasDelete } = config;
+  const bodyContent = config.getBody(data);
+  const left = config.getLeft(data);
+  const rightContent = config.getRight(data);
 
-      case "product":
-        return (
-          <div
-            className={`relative p-3 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 group`}
-          >
-            <div className="flex items-center justify-between mb-0">
-              <h3 className="font-semibold text-white text-lg truncate">
-                {data.name}
-              </h3>
-              {showActions && (
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit();
-                    }}
-                    className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-gray-200"
-                    title="Edit product"
-                  >
-                    <EditIcon className="size-5" />
-                  </button>
-
-                  {onDelete && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete();
-                      }}
-                      className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-red-200"
-                      title="Delete product"
-                    >
-                      <DeleteIcon className="size-5" />
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <p className="text-xs text-white opacity-90 mb-2 line-clamp-2">
-              {data.description}
-            </p>
-
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-lg font-semibold text-white">
-                ${data.price?.toFixed(2)}
-              </span>
-              <div className="flex items-center gap-2 justify-between">
-                <span
-                  className={`text-xs px-2 py-1 rounded-full ${
-                    data.isAvailable
-                      ? "bg-green-500 text-white"
-                      : "bg-red-500 text-white"
-                  }`}
-                >
-                  {data.isAvailable ? "Available" : "Unavailable"}
-                </span>
-                <span className="text-xs px-2 py-1 rounded-full border border-gray-300">
-                  Product
-                </span>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "group":
-        return (
-          <div
-            className={`relative p-3 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 group`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-white text-lg truncate">
-                {data.name}
-              </h3>
-              {showActions && (
-                <div className="flex flex-col items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit();
-                    }}
-                    className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-gray-200"
-                    title="Edit group"
-                  >
-                    <EditIcon className="size-5" />
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-white opacity-90">
-                {data.itemCount} items
-              </span>
-              <span className="text-xs px-2 py-1 rounded-full border border-gray-300">
-                Group
-              </span>
-            </div>
-          </div>
-        );
-
-      case "variant":
-        return (
-          <div
-            className={`relative p-3 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 cursor-pointer group`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-white text-lg truncate">
-                {data.name}
-              </h3>
-              {showActions && (
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit();
-                    }}
-                    className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-gray-200"
-                    title="Edit variant"
-                  >
-                    <EditIcon className="size-5" />
-                  </button>
-
-                  {onDelete && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete();
-                      }}
-                      className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-red-200"
-                      title="Delete variant"
-                    >
-                      <DeleteIcon className="size-5" />
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-            {data.groupName && (
-              <p className="text-xs opacity-75 mb-2 truncate">
-                Group: {data.groupName}
-              </p>
-            )}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-white opacity-90">
-                {data.variantCount} variants
-              </span>
-              <span className="text-xs px-2 py-1 rounded-full border border-gray-300">
-                Variant
-              </span>
-            </div>
-          </div>
-        );
-
-      case "menuPage":
-        return (
-          <div
-            className={`relative p-2 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 group`}
-          >
-            <div className="flex items-center justify-between mb-0">
-              <h3 className="font-semibold text-white text-lg truncate">
-                {data.name}
-              </h3>
-              {showActions && (
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit();
-                    }}
-                    className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-gray-200"
-                    title="Edit menu page"
-                  >
-                    <EditIcon className="size-4" />
-                  </button>
-                  {onDelete && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete();
-                      }}
-                      className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-red-200"
-                      title="Delete menu page"
-                    >
-                      <DeleteIcon className="size-4" />
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-            <p className="text-xs text-white opacity-90 mb-0 line-clamp-2">
-              {data.description}
-            </p>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-white opacity-90">
-                {data.itemCount} products
-              </span>
-              <span className="text-xs px-2 py-1 rounded-full border border-gray-300">
-                Menu Page
-              </span>
-            </div>
-          </div>
-        );
-
-      case "menu":
-        return (
-          <div
-            className={`relative p-2 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 group`}
-          >
-            <div className="flex items-center justify-between mb-0">
-              <h3 className="font-semibold text-white text-lg truncate">
-                {data.name}
-              </h3>
-              {showActions && (
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit();
-                    }}
-                    className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-gray-200"
-                    title="Edit menu"
-                  >
-                    <EditIcon className="size-4" />
-                  </button>
-                  {onDelete && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete();
-                      }}
-                      className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-red-200"
-                      title="Delete menu"
-                    >
-                      <DeleteIcon className="size-4" />
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-            <p className="text-xs text-white opacity-90 mb-0 line-clamp-2">
-              {data.description}
-            </p>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-lg font-semibold text-white">
-                €{Number(data.price || 0).toFixed(2)}
-              </span>
-              <div className="flex items-center gap-2 justify-between">
-                <span
-                  className={`text-xs px-2 py-1 rounded-full ${
-                    data.isAvailable
-                      ? "bg-green-500 text-white"
-                      : "bg-red-500 text-white"
-                  }`}
-                >
-                  {data.isAvailable ? "Available" : "Unavailable"}
-                </span>
-                <span className="text-xs px-2 py-1 rounded-full border border-gray-300">
-                  Menu
-                </span>
-              </div>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
+  const renderActions = () => {
+    if (!showActions) return null;
+    const createButton = (
+      onClick: () => void,
+      hoverClass: string,
+      title: string,
+      Icon: React.ComponentType<{ className: string }>
+    ) => (
+      <button
+        key={title}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        className={`p-1 rounded-full transition-colors duration-200 cursor-pointer ${hoverClass}`}
+        title={title}
+      >
+        <Icon className={iconSize} />
+      </button>
+    );
+    const actionClass = `opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex ${
+      actionsLayout === "col" ? "flex-col items-center gap-1" : "items-center gap-1"
+    }`;
+    return (
+      <div className={actionClass}>
+        {createButton(onEdit, "hover:text-gray-200", "Edit", EditIcon)}
+        {hasDelete && onDelete && createButton(onDelete, "hover:text-red-200", "Delete", DeleteIcon)}
+      </div>
+    );
   };
 
-  return <div onClick={onClick}>{renderContent()}</div>;
+  return (
+    <div onClick={onClick}>
+      <div
+        className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 hover:scale-105 group ${
+          isClickable ? "cursor-pointer" : ""
+        }`}
+      >
+        <div className={`flex items-center justify-between ${headerMb}`}>
+          <h3 className="font-semibold text-white text-lg truncate">{data.name}</h3>
+          {renderActions()}
+        </div>
+        {bodyContent}
+        <div className={`flex items-center justify-between ${footerMb}`}>
+          <span className={left.className}>{left.text}</span>
+          <div className="flex items-center gap-2">{rightContent}</div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export { UnifiedCard };
