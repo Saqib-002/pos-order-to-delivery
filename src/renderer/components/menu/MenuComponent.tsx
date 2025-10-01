@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { toast } from "react-toastify";
 
 import { CategoryModal } from "./modals/CategoryModal";
 import { SubcategoryModal } from "./modals/SubcategoryModal";
@@ -54,7 +53,6 @@ export const MenuComponent: React.FC<MenuComponentProps> = ({ token }) => {
     fetchCategories(token, setCategories);
     fetchProducts(token,setProducts);
   }, [token]);
-
   // Modal control functions
   const openModal = (type: keyof typeof modals, editItem?: any) => {
     setModals((prev) => ({ ...prev, [type]: true }));

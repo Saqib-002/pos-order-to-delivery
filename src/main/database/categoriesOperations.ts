@@ -27,7 +27,12 @@ export class CategoryDatabaseOperations {
   }
   static async getCategories() {
     try {
-      let query = db("categories").orderBy("categoryName", "asc");
+      let query = db("categories")
+        .select(
+          "categories.*",
+          db.raw('(SELECT COUNT(*) FROM sub_categories WHERE "categoryId" = categories.id) as "itemCount"')
+        )
+        .orderBy("categories.categoryName", "asc");
       const categories = await query;
       return categories;
     } catch (error) {
@@ -85,6 +90,7 @@ export class SubCategoriesOperations {
     try {
       let query = db("sub_categories")
         .where("categoryId", categoryId)
+        .select("sub_categories.*", db.raw('(SELECT COUNT(*) FROM products WHERE "subcategoryId" = sub_categories.id) as "itemCount"'))
         .orderBy("name", "asc");
       const subCategories = await query;
       return subCategories;

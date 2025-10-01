@@ -66,7 +66,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
       case "subcategory":
         return (
           <div
-            className={`relative p-3 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-shadow duration-200 ${isClickable ? "cursor-pointer group" : ""}`}
+            className={`relative p-3 rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 hover:scale-105 ${isClickable ? "cursor-pointer group" : ""}`}
           >
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold text-white text-lg truncate">
@@ -79,7 +79,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                       e.stopPropagation();
                       onEdit();
                     }}
-                    className="p-1 rounded-full transition-colors duration-200"
+                    className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-gray-200"
                     title="Edit"
                   >
                     <EditIcon className="size-5" />
@@ -89,7 +89,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-white opacity-90">
-                {data.itemCount} items
+                {data.itemCount} {type === "category" ? "Subcategories" : "Products"}
               </span>
               <span className="text-xs px-2 py-1 rounded-full border border-gray-300">
                 {type === "category" ? "Category" : "Subcategory"}
@@ -114,7 +114,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                       e.stopPropagation();
                       onEdit();
                     }}
-                    className="p-1 rounded-full transition-colors duration-200"
+                    className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-gray-200"
                     title="Edit product"
                   >
                     <EditIcon className="size-5" />
@@ -126,7 +126,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                         e.stopPropagation();
                         onDelete();
                       }}
-                      className="p-1 rounded-full transition-colors duration-200"
+                      className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-red-200"
                       title="Delete product"
                     >
                       <DeleteIcon className="size-5" />
@@ -178,7 +178,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                       e.stopPropagation();
                       onEdit();
                     }}
-                    className="p-1 rounded-full transition-colors duration-200"
+                    className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-gray-200"
                     title="Edit group"
                   >
                     <EditIcon className="size-5" />
@@ -213,7 +213,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                       e.stopPropagation();
                       onEdit();
                     }}
-                    className="p-1 rounded-full transition-colors duration-200"
+                    className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-gray-200"
                     title="Edit variant"
                   >
                     <EditIcon className="size-5" />
@@ -225,7 +225,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                         e.stopPropagation();
                         onDelete();
                       }}
-                      className="p-1 rounded-full transition-colors duration-200"
+                      className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-red-200"
                       title="Delete variant"
                     >
                       <DeleteIcon className="size-5" />
@@ -266,7 +266,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                       e.stopPropagation();
                       onEdit();
                     }}
-                    className="p-1 rounded-full transition-colors duration-200"
+                    className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-gray-200"
                     title="Edit menu page"
                   >
                     <EditIcon className="size-4" />
@@ -277,7 +277,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                         e.stopPropagation();
                         onDelete();
                       }}
-                      className="p-1 rounded-full transition-colors duration-200"
+                      className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-red-200"
                       title="Delete menu page"
                     >
                       <DeleteIcon className="size-4" />
@@ -316,7 +316,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                       e.stopPropagation();
                       onEdit();
                     }}
-                    className="p-1 rounded-full transition-colors duration-200"
+                    className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-gray-200"
                     title="Edit menu"
                   >
                     <EditIcon className="size-4" />
@@ -327,7 +327,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
                         e.stopPropagation();
                         onDelete();
                       }}
-                      className="p-1 rounded-full transition-colors duration-200"
+                      className="p-1 rounded-full transition-colors duration-200 cursor-pointer hover:text-red-200"
                       title="Delete menu"
                     >
                       <DeleteIcon className="size-4" />

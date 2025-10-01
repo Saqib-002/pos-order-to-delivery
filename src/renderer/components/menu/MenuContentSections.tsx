@@ -2,9 +2,6 @@ import React from "react";
 import { UnifiedCard } from "../ui/UnifiedCard";
 import {
   ContentSectionProps,
-  Category,
-  Subcategory,
-  Product,
   ProductSectionProps,
   SectionWrapperProps,
   SubcategorySectionProps,
