@@ -237,91 +237,33 @@ export class OrderDatabaseOperations {
 
   //   return { ...ordersStats, hourlyData, topItems, orders: newOrders };
   // }
-  // static async getOrdersByFilter(filter: FilterType): Promise<Order[]> {
-  //   try {
-  //     const query = db("orders").where("isDeleted", false);
-  //     if (filter.searchTerm.trim()) {
-  //       query
-  //         .andWhere("customerName", "like", `%${filter.searchTerm}%`)
-  //         .orWhere("customerPhone", "like", `%${filter.searchTerm}%`)
-  //         .orWhere("orderId", "like", `%${filter.searchTerm}%`);
-  //     }
-  //     if (filter.selectedDate) {
-  //       const selectedDate = new Date(filter.selectedDate)
-  //         .toISOString()
-  //         .split("T")[0];
-  //       query.whereRaw("DATE(createdAt) = ?", [selectedDate]);
-  //     }
-  //     if (
-  //       filter.selectedStatus[0] !== "all" &&
-  //       filter.selectedStatus.length > 0
-  //     ) {
-  //       query.whereRaw(
-  //         "LOWER(status) IN (" +
-  //           filter.selectedStatus.map(() => "?").join(",") +
-  //           ")",
-  //         filter.selectedStatus.map((s) => s.toLowerCase())
-  //       );
-  //     }
-  //     const rows = await query;
-  //     const orders: Order[] = rows.map((row) => ({
-  //       id: row.id,
-  //       orderId: row.orderId,
-  //       customer: {
-  //         name: row.customerName,
-  //         phone: row.customerPhone,
-  //         address: row.customerAddress,
-  //       },
-  //       items: [],
-  //       status: row.status,
-  //       deliveryPersonId: row.deliveryPersonId,
-  //       createdAt: row.createdAt,
-  //       updatedAt: row.updatedAt,
-  //     }));
-
-  //     for (const order of orders) {
-  //       // Get order items
-  //       const items = await db("order_items")
-  //         .innerJoin("menu_items", "order_items.menuItemId", "menu_items.id")
-  //         .where("order_items.orderId", order.id)
-  //         .andWhere("order_items.isDeleted", false)
-  //         .andWhere("menu_items.isDeleted", false);
-  //       order.items = items.map((item) => ({
-  //         id: item.menuItemId,
-  //         name: item.name,
-  //         category: item.category,
-  //         ingredients:
-  //           item.customIngredients === ""
-  //             ? item.ingredients?.split(",")
-  //             : item.customIngredients?.split(","),
-  //         quantity: item.quantity,
-  //         price: item.price,
-  //         specialInstructions: item.specialInstructions || "",
-  //       }));
-
-  //       // Get delivery person data if assigned
-  //       if (order.deliveryPersonId) {
-  //         const deliveryPerson = await db("delivery_persons")
-  //           .where("id", order.deliveryPersonId)
-  //           .andWhere("isDeleted", false)
-  //           .first();
-
-  //         if (deliveryPerson) {
-  //           order.deliveryPerson = {
-  //             id: deliveryPerson.id,
-  //             name: deliveryPerson.name,
-  //             phone: deliveryPerson.phone,
-  //             vehicleType: deliveryPerson.vehicleType,
-  //             licenseNo: deliveryPerson.licenseNo,
-  //           };
-  //         }
-  //       }
-  //     }
-  //     return orders;
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
+  static async getOrdersByFilter(filter: FilterType): Promise<Order[]> {
+    try {
+      const query= db("orders");
+      if(filter.searchTerm){
+        query.where(function() {
+          this.where("customerName", "like", `%${filter.searchTerm}%`)
+          .orWhere("customerPhone", "like", `%${filter.searchTerm}%`)
+          .orWhere("orderId", filter.searchTerm);
+        });
+      }
+      if(filter.selectedDate){
+        const startDate = new Date(filter.selectedDate);
+        startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date(filter.selectedDate);
+        endDate.setHours(23, 59, 59, 999);
+        query.andWhere("createdAt", ">=", startDate.toISOString())
+        .andWhere("createdAt", "<=", endDate.toISOString());
+      }
+      if(filter.selectedStatus.length>0){
+        query.whereIn("status", filter.selectedStatus);
+      }
+      const orders = await query;
+      return orders;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   // static async updateOrder(order: Order): Promise<any> {
   //   const trx = await db.transaction();

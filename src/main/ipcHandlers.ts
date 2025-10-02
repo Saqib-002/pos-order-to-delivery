@@ -4,7 +4,7 @@ import {
   // deleteOrder,
   // getOrderAnalytics,
   // getOrders,
-  // getOrdersByFilter,
+  getOrdersByFilter,
   // markDeliveredOrder,
   // readyOrder,
   // updateOrder,
@@ -132,7 +132,7 @@ export function registerIpcHandlers() {
   // ipcMain.handle("mark-delivered-order", markDeliveredOrder);
   // ipcMain.handle("get-orders", getOrders);
   // ipcMain.handle("get-order-analytics", getOrderAnalytics);
-  // ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
+  ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
   // ipcMain.handle("update-order", updateOrder);
 
   // delivery person handlers

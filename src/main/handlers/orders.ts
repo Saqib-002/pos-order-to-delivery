@@ -111,21 +111,21 @@ export const saveOrder = async (event: IpcMainInvokeEvent,token:string, order: O
 //         }
 //     }
 // };
-// export const getOrdersByFilter = async (event: IpcMainInvokeEvent,token:string,filter:any) => {
-//     try {
-//         const res= await OrderDatabaseOperations.getOrdersByFilter(filter);
-//         return {
-//             status:true,
-//             data:res
-//         }
-//     } catch (error) {
-//         Logger.error("Error getting orders:", error);
-//         return {
-//             status:false,
-//             error:(error as Error).message
-//         }
-//     }
-// };
+export const getOrdersByFilter = async (event: IpcMainInvokeEvent,token:string,filter:any) => {
+    try {
+        const res= await OrderDatabaseOperations.getOrdersByFilter(filter);
+        return {
+            status:true,
+            data:res
+        }
+    } catch (error) {
+        Logger.error("Error getting orders:", error);
+        return {
+            status:false,
+            error:(error as Error).message
+        }
+    }
+};
 
 // export const updateOrder = async (event: IpcMainInvokeEvent,token:string, order: Order) => {
 //     try {
