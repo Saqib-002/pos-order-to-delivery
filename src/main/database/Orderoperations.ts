@@ -259,7 +259,38 @@ export class OrderDatabaseOperations {
         query.whereIn("status", filter.selectedStatus);
       }
       const orders = await query;
-      return orders;
+      const newOrders=[]
+      for (const order of orders){
+        const items = await db("order_items")
+        .where("orderId", order.id);
+        const newOrder = {
+          customer: {
+            name: order.customerName,
+            phone: order.customerPhone,
+            address: order.customerAddress,
+            cif: order.customerCIF,
+            email: order.customerEmail,
+            comments: order.customerComments,
+          },
+          createdAt: order.createdAt,
+          orderId: order.orderId,
+          status: order.status,
+          paymentType: order.paymentType,
+          orderType: order.orderType,
+          updatedAt: order.updatedAt,
+          notes: order.notes,
+          id: order.id,
+          items: items.map((item) => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            specialInstructions: item.specialInstructions,
+          }))
+        };
+        newOrders.push(newOrder);
+      }
+      return newOrders;
     } catch (error) {
       throw error;
     }

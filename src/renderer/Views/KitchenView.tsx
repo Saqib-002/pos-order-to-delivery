@@ -31,7 +31,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
         setFilter({
             selectedDate: null,
             searchTerm: "",
-            selectedStatus: ["sent to kitchen"],
+            selectedStatus: ["pending"],
         });
     }, [token, setFilter]);
 
