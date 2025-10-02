@@ -957,16 +957,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
           <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-4">
             <CustomButton type="button" onClick={onClose} variant="secondary" label="Cancel"/>
             <CustomButton type="submit" disabled={isSubmitting} variant="orange" label={product ? "Save Changes" : "Create Product"} isLoading={isSubmitting}/>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-6 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-400 text-white font-medium rounded-md transition-colors duration-200 flex items-center gap-2"
-            >
-              {isSubmitting && (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              )}
-              {product ? "Save Changes" : "Create Product"}
-            </button>
           </div>
         </form>
       </div>

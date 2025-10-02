@@ -63,11 +63,12 @@ const SubcategorySelection: React.FC<SubcategorySelectionProps> = ({
                 id: subcategory.id,
                 name: subcategory.name,
                 color: subcategory.color,
-                itemCount: 0, // We don't have item count for subcategories in this context
+                itemCount: subcategory.itemCount || 0,
+                menuCount: subcategory.menuCount || 0,
               }}
               type="subcategory"
               onClick={() => onSubcategorySelect(subcategory)}
-              onEdit={() => {}} // No edit functionality in order context
+              onEdit={() => {}}
               showActions={false}
             />
             {selectedSubcategory?.id === subcategory.id && (

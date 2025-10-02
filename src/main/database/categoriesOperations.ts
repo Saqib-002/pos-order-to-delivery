@@ -90,7 +90,7 @@ export class SubCategoriesOperations {
     try {
       let query = db("sub_categories")
         .where("categoryId", categoryId)
-        .select("sub_categories.*", db.raw('(SELECT COUNT(*) FROM products WHERE "subcategoryId" = sub_categories.id) as "itemCount"'))
+        .select("sub_categories.*", db.raw('(SELECT COUNT(*) FROM products WHERE "subcategoryId" = sub_categories.id) as "itemCount"'),db.raw('(SELECT COUNT(*) FROM menus WHERE "subcategoryId" = sub_categories.id) as "menuCount"'))
         .orderBy("name", "asc");
       const subCategories = await query;
       return subCategories;

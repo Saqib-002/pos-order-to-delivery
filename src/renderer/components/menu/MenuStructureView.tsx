@@ -14,6 +14,7 @@ interface MenuPage {
   name: string;
   description: string;
   products: Omit<MenuPageProduct, "menuPageId"|"createdAt"| "updatedAt">[];
+  itemCount?:number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -63,7 +64,6 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
     fetchMenuPages();
     fetchMenus();
   }, []);
-
   const fetchMenuPages = async () => {
     try {
       const res = await (window as any).electronAPI.getMenuPages(token);
@@ -159,7 +159,6 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
     setEditingMenu(null);
     fetchMenus(); // Refresh data
   };
-
   return (
     <>
         <div className="flex flex-wrap gap-4 items-center mb-4">
@@ -182,7 +181,7 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
                   id: page.id,
                   name: page.name,
                   description: page.description,
-                  itemCount: page.products?.length || 0,
+                  itemCount: page.itemCount || 0,
                   color: "blue", // Default color for menu pages
                 }}
                 type="menuPage"

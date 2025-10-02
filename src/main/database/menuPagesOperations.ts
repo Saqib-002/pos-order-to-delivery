@@ -45,6 +45,7 @@ export class MenuPagesOperations {
         try {
             const menuPages = await db("menu_pages")
                 .where("isDeleted", false)
+                .select("menu_pages.*", db.raw('(SELECT COUNT(*) FROM menu_page_products WHERE "menuPageId" = menu_pages.id) as "itemCount"'))
                 .orderBy("name", "asc");
             return menuPages;
         } catch (error) {

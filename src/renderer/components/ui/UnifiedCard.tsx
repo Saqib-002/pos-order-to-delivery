@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import EditIcon from "../../assets/icons/edit.svg?react";
 import DeleteIcon from "../../assets/icons/delete.svg?react";
 
@@ -6,6 +6,7 @@ interface BaseCardData {
   id: string;
   name?: string;
   itemCount?: number;
+  menuCount?: number;
   color?: string;
   description?: string;
   price?: number;
@@ -38,7 +39,7 @@ interface Config {
   footerMb: string;
   hasDelete: boolean;
   getBody: (data: BaseCardData) => React.ReactNode;
-  getLeft: (data: BaseCardData) => { text: string; className: string };
+  getLeft: (data: BaseCardData) => { text: ReactNode; className: string };
   getRight: (data: BaseCardData) => React.ReactNode[];
 }
 
@@ -62,7 +63,15 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     footerMb: "",
     hasDelete: false,
     getBody: () => null,
-    getLeft: (data) => ({ text: `${data.itemCount || 0} Products`, className: "text-sm text-white opacity-90" }),
+    getLeft: (data) => ({
+      text: (
+        <>
+          <span>{`${data.itemCount || 0} Products`}</span>
+          <span>{`${data.menuCount || 0} Menus`}</span>
+        </>
+      ),
+      className: "text-sm text-white opacity-90 flex flex-col gap-0.5",
+    }),
     getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Subcategory</span>],
   },
   product: {
@@ -220,7 +229,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
         </div>
         {bodyContent}
         <div className={`flex items-center justify-between ${footerMb}`}>
-          <span className={left.className}>{left.text}</span>
+          <div className={left.className}>{left.text}</div>
           <div className="flex items-center gap-2">{rightContent}</div>
         </div>
       </div>

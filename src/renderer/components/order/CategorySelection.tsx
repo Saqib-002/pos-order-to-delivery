@@ -57,7 +57,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({
                 id: category.id,
                 name: category.categoryName,
                 color: category.color,
-                itemCount: 0,
+                itemCount: category.itemCount || 0,
               }}
               type="category"
               onClick={() => onCategorySelect(category)}

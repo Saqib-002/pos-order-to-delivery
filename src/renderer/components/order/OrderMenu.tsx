@@ -102,7 +102,6 @@ const OrderMenu = ({ token }: OrderMenuProps) => {
       menuId: menu.id,
     } as any);
   };
-
   return (
     <div className="h-full flex flex-col">
       {selectedProduct && (
