@@ -11,7 +11,7 @@ export async function up(knex) {
     table.float("discount").notNullable();
     table.float("tax").notNullable();
     table.string("description");
-    table.integer("imgUrl");
+    table.string("imgUrl");
     table.boolean("isAvailable");
     table.boolean("isByWeight");
     table.boolean("isDrink");

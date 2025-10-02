@@ -14,10 +14,17 @@ export interface Order {
     name: string;
     phone: string;
     address: string;
+    email: string;
+    cif?: string;
+    comments?: string;
+    createdAt?: string;
+    updatedAt?: string;
   };
   orderId?: number;
   items: Item[];
   status: string;
+  orderType?: string;
+  paymentType?: string;
   createdAt: string;
   updatedAt?: string;
   readyAt?: string;

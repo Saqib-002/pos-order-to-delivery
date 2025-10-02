@@ -20,9 +20,10 @@ const OrderComponent = ({ token }: OrderComponentProps) => {
     setIsProcessingModalOpen(true);
   };
 
-  const handleProcessOrderSubmit = (orderData: any) => {
+  const handleProcessOrderSubmit = async (orderData: any) => {
     // TODO: Call the saveOrder API when ready
-    // const result = await (window as any).electronAPI.saveOrder(token, orderData);
+    const result = await (window as any).electronAPI.saveOrder(token, orderData);
+    console.log("Order save result:", result);
 
     console.log("Processing order:", orderData);
     alert("Order logged to console (API call commented out)");

@@ -8,7 +8,7 @@ export async function up(knex) {
     table.string('name').notNullable();
     table.float('price').notNullable();
     table.integer('priority').notNullable();
-    table.integer('imgUrl');
+    table.string('imgUrl');
     table.string('groupId').notNullable();
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());

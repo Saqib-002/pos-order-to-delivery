@@ -181,6 +181,9 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         id: selectedCustomer.id,
         name: selectedCustomer.name,
         phone: selectedCustomer.phone,
+        cif: selectedCustomer.cif || "",
+        email: selectedCustomer.email || "",
+        comments: selectedCustomer.comments || "",
         address:
           orderType === "delivery" ? selectedCustomer.address : "In-store",
       },

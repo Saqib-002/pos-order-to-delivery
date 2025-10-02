@@ -1,14 +1,14 @@
 import { ipcMain } from "electron";
 import {
-  cancelOrder,
-  deleteOrder,
-  getOrderAnalytics,
-  getOrders,
-  getOrdersByFilter,
-  markDeliveredOrder,
-  readyOrder,
+  // cancelOrder,
+  // deleteOrder,
+  // getOrderAnalytics,
+  // getOrders,
+  // getOrdersByFilter,
+  // markDeliveredOrder,
+  // readyOrder,
+  // updateOrder,
   saveOrder,
-  updateOrder,
 } from "./handlers/orders.js";
 import {
   deleteUser,
@@ -126,14 +126,14 @@ export function registerIpcHandlers() {
 
   // Order handlers (with same authorization logic)
   ipcMain.handle("save-order", saveOrder);
-  ipcMain.handle("delete-order", deleteOrder);
-  ipcMain.handle("cancel-order", cancelOrder);
-  ipcMain.handle("ready-order", readyOrder);
-  ipcMain.handle("mark-delivered-order", markDeliveredOrder);
-  ipcMain.handle("get-orders", getOrders);
-  ipcMain.handle("get-order-analytics", getOrderAnalytics);
-  ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
-  ipcMain.handle("update-order", updateOrder);
+  // ipcMain.handle("delete-order", deleteOrder);
+  // ipcMain.handle("cancel-order", cancelOrder);
+  // ipcMain.handle("ready-order", readyOrder);
+  // ipcMain.handle("mark-delivered-order", markDeliveredOrder);
+  // ipcMain.handle("get-orders", getOrders);
+  // ipcMain.handle("get-order-analytics", getOrderAnalytics);
+  // ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
+  // ipcMain.handle("update-order", updateOrder);
 
   // delivery person handlers
   ipcMain.handle("create-delivery-person", createDeliveryPerson);
