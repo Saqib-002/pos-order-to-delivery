@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import OrderCart from "./OrderCart";
 import OrderProcessingModal from "./OrderProcessingModal";
 import { useOrder } from "../../contexts/OrderContext";
+import { toast } from "react-toastify";
 
 interface OrderComponentProps {
   token: string | null;
@@ -21,13 +22,13 @@ const OrderComponent = ({ token }: OrderComponentProps) => {
   };
 
   const handleProcessOrderSubmit = async (orderData: any) => {
-    // TODO: Call the saveOrder API when ready
     const result = await (window as any).electronAPI.saveOrder(token, orderData);
-    console.log("Order save result:", result);
-
-    console.log("Processing order:", orderData);
-    alert("Order logged to console (API call commented out)");
-    clearOrder(); // Clear the cart after processing
+    if(!result.status) {
+      toast.error("Unable to save order");
+      return;
+    }
+    toast.success("Order saved successfully");
+    clearOrder();
   };
 
   return (

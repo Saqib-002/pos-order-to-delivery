@@ -92,10 +92,6 @@ const CustomerModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!address) {
-      toast.error("Please add a customer address");
-      return;
-    }
     // Handle form submission here, e.g., add customer to order
     const formData = new FormData(e.target as HTMLFormElement);
     const customer = Object.fromEntries(formData.entries());
@@ -106,7 +102,6 @@ const CustomerModal = ({
     } else {
       res = await (window as any).electronAPI.upsertCustomer(token, customer);
     }
-    console.log(res);
     if (!res.status) {
       if (res.error.includes("customers_phone_unique")) {
         toast.error("Customer already exists");

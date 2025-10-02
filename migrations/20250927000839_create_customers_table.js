@@ -10,7 +10,7 @@ export async function up(knex) {
     table.string('cif');
     table.string('email');
     table.string('comments');
-    table.string('address').notNullable();
+    table.string('address');
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
   });
