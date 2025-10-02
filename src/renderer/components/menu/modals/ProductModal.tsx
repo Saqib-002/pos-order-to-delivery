@@ -4,6 +4,11 @@ import { CustomSelect } from "../../ui/CustomSelect";
 import { getGroups, getVariants } from "@/renderer/utils/menu";
 import { Variant } from "../VariantView";
 import { Group } from "../GroupView";
+import CrossIcon from "../../../assets/icons/cross.svg?react";
+import AddIcon from "../../../assets/icons/add.svg?react";
+import CheckMark from "../../../assets/icons/mark.svg?react";
+import CustomInput from "../../shared/CustomInput";
+import CustomButton from "../../ui/CustomButton";
 
 interface Product {
   id: string;
@@ -53,7 +58,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
     "general" | "variants" | "printers"
   >("general");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showAssociatedProducts, setShowAssociatedProducts] = useState(false);
 
   // Variants and Add-ons state
   const [selectedVariant, setSelectedVariant] = useState<string>("");
@@ -486,7 +490,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">
@@ -494,26 +497,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              className="text-gray-400 cursor-pointer hover:text-gray-600 transition-colors duration-200"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <CrossIcon className="size-6" />
             </button>
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="px-6 py-2 border-b border-gray-200">
           <div className="flex space-x-8">
             {[
@@ -524,7 +514,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`py-2 px-1 text-sm font-medium border-b-2 transition-colors duration-200 ${
+                className={`cursor-pointer py-2 px-1 text-sm font-medium border-b-2 transition-colors duration-200 ${
                   activeTab === tab.id
                     ? "border-orange-500 text-orange-600"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -556,7 +546,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           isAvailable: !formData.isAvailable,
                         })
                       }
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+                      className={`cursor-pointer relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
                         formData.isAvailable ? "bg-orange-500" : "bg-gray-200"
                       }`}
                     >
@@ -580,11 +570,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           isOutOfStock: e.target.checked,
                         })
                       }
-                      className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded cursor-pointer"
                     />
                     <label
                       htmlFor="outOfStock"
-                      className="text-sm text-gray-700"
+                      className="text-sm text-gray-700 cursor-pointer"
                     >
                       Product out of stock
                     </label>
@@ -598,24 +588,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   Basic Product Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      NAME *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          name: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                      placeholder="Enter product name"
-                      required
-                    />
-                  </div>
+                  <CustomInput label="NAME *" name="name" type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} inputClasses="focus:ring-orange-500 focus:border-orange-500" placeholder="Enter product name" required/>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       ASSOCIATED CATEGORY *
@@ -694,97 +667,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   Pricing and Financials
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      PRICE *
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-2 text-gray-500">
-                        €
-                      </span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={formData.price}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            price: parseFloat(e.target.value) || 0,
-                          })
-                        }
-                        className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        placeholder="0"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      PRIORITY
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={formData.priority}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          priority: parseInt(e.target.value) || 0,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      TAX
-                    </label>
-                    <div className="relative">
-                      <span className="absolute right-3 top-2 text-gray-500">
-                        %
-                      </span>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={formData.tax}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            tax: parseInt(e.target.value) || 0,
-                          })
-                        }
-                        className="w-full pr-8 pl-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        placeholder="10"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      DISCOUNT
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-2 text-gray-500">
-                        €
-                      </span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={formData.discount}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            discount: parseFloat(e.target.value) || 0,
-                          })
-                        }
-                        className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
+                  <CustomInput label="PRICE *" name="price" type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})} inputClasses="focus:ring-orange-500 focus:border-orange-500 pl-8" placeholder="0" step="0.01" min="0" preLabel="€" required otherClasses="relative"/>
+                  <CustomInput label="PRIORITY" name="priority" type="number" value={formData.priority} onChange={(e) => setFormData({...formData, priority: parseInt(e.target.value) || 0})} inputClasses="focus:ring-orange-500 focus:border-orange-500" placeholder="0" min="0" required/>
+                  <CustomInput label="TAX (%)" name="tax" type="number" value={formData.tax} onChange={(e) => setFormData({...formData, tax: parseInt(e.target.value) || 0})} inputClasses="focus:ring-orange-500 focus:border-orange-500 pr-8" placeholder="10" min="0" max="100" required otherClasses="relative" postLabel="%"/>
+                  <CustomInput label="DISCOUNT" name="discount" type="number" value={formData.discount} onChange={(e) => setFormData({...formData, discount: parseFloat(e.target.value) || 0})} inputClasses="focus:ring-orange-500 focus:border-orange-500 pl-8" placeholder="0" step="0.01" min="0" required otherClasses="relative" preLabel="€"/>
                 </div>
 
                 {/* Price Breakdown Display */}
@@ -876,11 +762,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
                             [attr.key]: e.target.checked,
                           })
                         }
-                        className="h-4 w-4 accent-orange-600"
+                        className="h-4 w-4 accent-orange-600 cursor-pointer"
                       />
                       <label
                         htmlFor={attr.key}
-                        className="text-sm text-gray-700"
+                        className="text-sm text-gray-700 cursor-pointer"
                       >
                         {attr.label}
                       </label>
@@ -939,26 +825,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                                 key={item.id}
                                 className="flex items-center gap-2 bg-white p-2 rounded border"
                               >
-                                <label className="text-sm text-gray-600 min-w-[100px]">
-                                  {item.name}:
-                                </label>
-                                <div className="flex items-center gap-1">
-                                  <span className="text-gray-500">€</span>
-                                  <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={variantPrices[item.id] || 0}
-                                    onChange={(e) =>
-                                      handleVariantItemPriceChange(
-                                        item.id,
-                                        parseFloat(e.target.value) || 0
-                                      )
-                                    }
-                                    className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500"
-                                    placeholder="0.00"
-                                  />
-                                </div>
+                                <CustomInput type="number" value={variantPrices[item.id] || 0} onChange={(e) => handleVariantItemPriceChange(item.id, parseFloat(e.target.value) || 0)} inputClasses="pl-8" otherClasses="relative w-full" placeholder="0.00" min="0" step="0.01" preLabel="€" label={item.name} name="price"/>
                               </div>
                             );
                           })}
@@ -1003,7 +870,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setSelectedAddonPage(page.pageNo)}
-                          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                          className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                             selectedAddonPage === page.pageNo
                               ? "bg-orange-500 text-white"
                               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -1013,39 +880,14 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         </button>
                         {/* Show remove button only on added pages (not page 1) */}
                         {index > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => removeAddonPage(page.pageNo)}
-                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors duration-200"
-                          >
-                            ×
-                          </button>
+                          <CustomButton variant="red" label="×" type="button" onClick={() => removeAddonPage(page.pageNo)} className="absolute -top-2 -right-2 size-5 !rounded-full !p-0 text-xs"/>
                         )}
                       </div>
                     ))}
 
                     {/* Add New Page Button */}
                     {canAddNewPage() && (
-                      <button
-                        type="button"
-                        onClick={addAddonPage}
-                        className="flex items-center gap-1 px-4 py-1 border-2 border-dashed border-gray-300 rounded-md text-gray-600 hover:border-orange-500 hover:text-orange-600 transition-colors duration-200"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                          />
-                        </svg>
-                        Add Page
-                      </button>
+                      <CustomButton type="button" onClick={addAddonPage} variant="transparent" label="Add Page" Icon={<AddIcon/>} className="border-2 border-dashed border-gray-300 text-gray-600 hover:border-orange-500 hover:text-orange-600"/>
                     )}
                   </div>
 
@@ -1058,60 +900,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Minimum number of complements
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={getCurrentPageData().minComplements}
-                          onChange={(e) =>
-                            handleAddonPageSetupChange(
-                              selectedAddonPage,
-                              "minComplements",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Maximum number of complements
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={getCurrentPageData().maxComplements}
-                          onChange={(e) =>
-                            handleAddonPageSetupChange(
-                              selectedAddonPage,
-                              "maxComplements",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          No. of free add-ons
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={getCurrentPageData().freeAddons}
-                          onChange={(e) =>
-                            handleAddonPageSetupChange(
-                              selectedAddonPage,
-                              "freeAddons",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        />
-                      </div>
+                        <CustomInput type="number" label="Minimum number of complements" name="minComplements" value={getCurrentPageData().minComplements} onChange={(e) => handleAddonPageSetupChange(selectedAddonPage, "minComplements", parseInt(e.target.value) || 0)} inputClasses="focus:ring-orange-500 focus:border-orange-500" placeholder="0" min="0" otherClasses="w-full"/>
+                        <CustomInput type="number" label="Maximum number of complements" name="maxComplements" value={getCurrentPageData().maxComplements} onChange={(e) => handleAddonPageSetupChange(selectedAddonPage, "maxComplements", parseInt(e.target.value) || 0)} inputClasses="focus:ring-orange-500 focus:border-orange-500" placeholder="0" min="0" otherClasses="w-full"/>
+                        <CustomInput type="number" label="Number of free add-ons" name="freeAddons" value={getCurrentPageData().freeAddons} onChange={(e) => handleAddonPageSetupChange(selectedAddonPage, "freeAddons", parseInt(e.target.value) || 0)} inputClasses="focus:ring-orange-500 focus:border-orange-500" placeholder="0" min="0" otherClasses="w-full"/>
                     </div>
                   </div>
                 </div>
@@ -1133,7 +924,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       onClick={() =>
                         handlePagePluginGroupChange(selectedAddonPage, group.id)
                       }
-                      className={`relative px-4 py-3 rounded-md text-sm font-medium text-white transition-colors duration-200 ${getPluginGroupColorClasses(group.color)} ${
+                      className={`cursor-pointer relative px-4 py-3 rounded-md text-sm font-medium text-white transition-colors duration-200 ${getPluginGroupColorClasses(group.color)} ${
                         getCurrentPageData().selectedGroup === group.id
                           ? `ring-2 ${getPluginGroupRingClasses(group.color)} ring-offset-2`
                           : ""
@@ -1144,17 +935,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         <div
                           className={`absolute -top-3 -right-2 w-5 h-5 ${getPluginGroupCheckmarkClasses(group.color)} rounded-full flex items-center justify-center`}
                         >
-                          <svg
-                            className="w-3 h-3 text-white"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
+                          <CheckMark className="w-3 h-3 text-white"/>
                         </div>
                       )}
                     </button>
@@ -1173,14 +954,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200"
-            >
-              Cancel
-            </button>
+          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-4">
+            <CustomButton type="button" onClick={onClose} variant="secondary" label="Cancel"/>
+            <CustomButton type="submit" disabled={isSubmitting} variant="orange" label={product ? "Save Changes" : "Create Product"} isLoading={isSubmitting}/>
             <button
               type="submit"
               disabled={isSubmitting}
@@ -1194,50 +970,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
           </div>
         </form>
       </div>
-
-      {/* Associated Products Modal */}
-      {showAssociatedProducts && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-60">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900">
-                  Associated Products
-                </h3>
-                <button
-                  onClick={() => setShowAssociatedProducts(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="px-6 py-4 border-t border-gray-200">
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setShowAssociatedProducts(false)}
-                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors duration-200"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

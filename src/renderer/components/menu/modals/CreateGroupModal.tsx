@@ -5,6 +5,8 @@ import DeleteIcon from "../../../assets/icons/delete.svg?react";
 import DocumentIcon from "../../../assets/icons/document.svg?react";
 import CrossIcon from "../../../assets/icons/cross.svg?react";
 import NoProductIcon from "../../../assets/icons/no-procut.svg?react";
+import CustomInput from "../../shared/CustomInput";
+import CustomButton from "../../ui/CustomButton";
 
 interface Group {
   id: string;
@@ -224,34 +226,12 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {editingGroup ? "EDIT PLUGIN GROUP" : "CREATE PLUGIN GROUP"}
-            </h2>
-          </div>
-        </div>
+        <h2 className="text-xl font-semibold text-gray-900 px-6 py-4 border-b border-gray-200">
+          {editingGroup ? "EDIT PLUGIN GROUP" : "CREATE PLUGIN GROUP"}
+        </h2>
 
         <form onSubmit={handleSubmit} className="p-6">
-          {/* Group Name */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              GROUP NAME *
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  name: e.target.value,
-                })
-              }
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
-              placeholder="Enter group name"
-              required
-            />
-          </div>
+          <CustomInput label="GROUP NAME *" name="name" type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Enter group name" required />
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               COLOR
@@ -287,78 +267,13 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               Add New Complement
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  COMPLEMENT NAME *
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={newComplement.name}
-                    onChange={(e) =>
-                      setNewComplement({
-                        ...newComplement,
-                        name: e.target.value,
-                      })
-                    }
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Enter complement name"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  PRICE *
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={newComplement.price}
-                    onChange={(e) =>
-                      setNewComplement({
-                        ...newComplement,
-                        price: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="€ 0"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  PRIORITY
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min="0"
-                    value={newComplement.priority}
-                    onChange={(e) =>
-                      setNewComplement({
-                        ...newComplement,
-                        priority: parseInt(e.target.value) || 0,
-                      })
-                    }
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
+              <CustomInput label="COMPLEMENT NAME *" name="complement-name" type="text" value={newComplement.name} onChange={(e) => setNewComplement({ ...newComplement, name: e.target.value })} placeholder="Enter complement name" />
+              <CustomInput label="PRICE *" name="price" type="number" step="0.01" min="0" value={newComplement.price} onChange={(e) => setNewComplement({ ...newComplement, price: parseFloat(e.target.value) || 0 })} placeholder="0" preLabel="€" otherClasses="relative" inputClasses="pl-8" />
+              <CustomInput label="PRIORITY" name="priority" type="number" min="0" value={newComplement.priority} onChange={(e) => setNewComplement({ ...newComplement, priority: parseInt(e.target.value) || 0 })} placeholder="0" />
             </div>
 
             <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={addComplement}
-                className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-md transition-colors duration-200"
-              >
-                ADD
-              </button>
+              <CustomButton type="button" onClick={addComplement} variant="orange" label="ADD" />
             </div>
           </div>
 
@@ -390,58 +305,19 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                     {complements.map((complement) => (
                       <tr key={complement.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <input
-                            type="text"
-                            value={complement.name}
-                            onChange={(e) =>
-                              updateComplement(
-                                complement.id,
-                                "name",
-                                e.target.value
-                              )
-                            }
-                            className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                          />
+                          <CustomInput label="" name={`complement-name-${complement.id}`} type="text" value={complement.name} onChange={(e) => updateComplement(complement.id, "name", e.target.value)} placeholder="Enter complement name" />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-1">
-                            <span className="text-gray-500">€</span>
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={complement.price}
-                              onChange={(e) =>
-                                updateComplement(
-                                  complement.id,
-                                  "price",
-                                  parseFloat(e.target.value) || 0
-                                )
-                              }
-                              className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                            />
-                          </div>
+                          <CustomInput label="" name={`price-${complement.id}`} type="number" step="0.01" min="0" value={complement.price} onChange={(e) => updateComplement(complement.id, "price", parseFloat(e.target.value) || 0)} placeholder="0" preLabel="€" inputClasses="!w-28 pl-8" />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <input
-                            type="number"
-                            min="0"
-                            value={complement.priority}
-                            onChange={(e) =>
-                              updateComplement(
-                                complement.id,
-                                "priority",
-                                parseInt(e.target.value) || 0
-                              )
-                            }
-                            className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                          />
+                          <CustomInput label="" name={`priority-${complement.id}`} type="number" min="0" value={complement.priority} onChange={(e) => updateComplement(complement.id, "priority", parseInt(e.target.value) || 0)} placeholder="0" inputClasses="!w-20" />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
                             type="button"
                             onClick={() => removeComplement(complement.id)}
-                            className="text-red-600 hover:text-red-800 transition-colors duration-200"
+                            className="cursor-pointer text-red-600 hover:text-red-800 transition-colors duration-200"
                           >
                             <DeleteIcon className="size-5" />
                           </button>
@@ -462,7 +338,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 fetchAssociatedProducts();
                 setShowAssociatedProducts(true)
               }}
-              className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+              className="cursor-pointer text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
             >
               <DocumentIcon className="size-4" />
               See associated products
@@ -474,33 +350,12 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             className={`flex ${editingGroup ? "justify-between" : "justify-end"} items-center`}
           >
             {editingGroup && (
-              <button
-                type="button"
-                className="text-red-600 hover:text-red-800 text-sm"
-                onClick={() => handleDeleteGroup(editingGroup.id)}
-              >
-                Eliminate
-              </button>
+              <CustomButton type="button" onClick={() => handleDeleteGroup(editingGroup.id)} variant="transparent" label="ELIMINATE" className="text-red-500 hover:text-red-700" />
             )}
 
             <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-400 text-white font-medium rounded-md transition-colors duration-200 flex items-center gap-2"
-              >
-                {isSubmitting && (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                )}
-                Keep
-              </button>
+              <CustomButton type="button" onClick={onClose} variant="secondary" label="CANCEL" />
+              <CustomButton type="submit" disabled={isSubmitting} variant="yellow" label="KEEP" isLoading={isSubmitting} />
             </div>
           </div>
         </form>
@@ -539,14 +394,14 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                         {product.subcategoryName}
                       </span>
                     </div>
-                      <span className="text-lg font-semibold text-gray-900">
-                        €{product.productPrice.toFixed(2)}
-                      </span>
+                    <span className="text-lg font-semibold text-gray-900">
+                      €{product.productPrice.toFixed(2)}
+                    </span>
                   </div>
                 ))}
               </div>
 
-              {associatedProducts &&associatedProducts.length === 0 && (
+              {associatedProducts && associatedProducts.length === 0 && (
                 <div className="text-center py-8">
                   <NoProductIcon className="size-12 text-gray-400 mb-4 mx-auto" />
                   <p className="text-gray-500">No associated products found</p>

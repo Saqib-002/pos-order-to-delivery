@@ -5,27 +5,22 @@ import { MenuModal } from "./modals/MenuModal";
 import { UnifiedCard } from "../ui/UnifiedCard";
 import NoMenuIcon from "../../assets/icons/no-menu.svg?react";
 import NoMenuPageIcon from "../../assets/icons/no-menu-page.svg?react";
+import { MenuPageProduct } from "@/types/menuPages";
+import CustomButton from "../ui/CustomButton";
 
-interface MenuPageProduct {
-  id: string;
-  name: string;
-  productId: string;
-  supplement: number;
-  priority: number;
-}
 
 interface MenuPage {
   id: string;
   name: string;
   description: string;
-  products: MenuPageProduct[];
+  products: Omit<MenuPageProduct, "menuPageId"|"createdAt"| "updatedAt">[];
   createdAt?: string;
   updatedAt?: string;
 }
 
 interface MenuPageAssociation {
   id: string;
-  pageId: string;
+  menuPageId: string;
   pageName: string;
   minimum: number;
   maximum: number;
@@ -167,23 +162,10 @@ export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
 
   return (
     <>
-      {/* Action Buttons Section */}
-      <div className="mb-4">
-        <div className="flex flex-wrap gap-4 items-center">
-          <button
-            onClick={handleCreateMenuPage}
-            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors duration-200 font-medium"
-          >
-            CREATE PAGES
-          </button>
-          <button
-            onClick={handleCreateMenu}
-            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors duration-200 font-medium"
-          >
-            CREATE MENUS
-          </button>
+        <div className="flex flex-wrap gap-4 items-center mb-4">
+          <CustomButton type="button" onClick={handleCreateMenuPage} label="Create Menu Page" variant="orange"/>
+          <CustomButton type="button" onClick={handleCreateMenu} label="Create Menu" variant="orange"/>
         </div>
-      </div>
 
       {/* Menu Pages Section */}
       <div className="mb-8">

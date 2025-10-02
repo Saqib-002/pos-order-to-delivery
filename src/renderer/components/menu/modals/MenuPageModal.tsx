@@ -8,14 +8,6 @@ import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { MenuPageProduct } from "@/types/menuPages";
 
-// interface MenuPageProduct {
-//   id: string;
-//   name: string;
-//   productId: string;
-//   supplement: number;
-//   priority: number;
-// }
-
 interface MenuPage {
   id: string;
   name: string;
@@ -309,23 +301,17 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                 inputClasses="focus:ring-orange-500"
                 otherClasses="mb-4"
               />
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  DESCRIPTION
-                </label>
-                <input
-                  type="text"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Brief description (maximum 40 characters)"
-                  maxLength={40}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  {formData.description.length}/40 characters
-                </p>
-              </div>
+              <CustomInput
+                label="Description"
+                name="description"
+                type="text"
+                placeholder="Brief description (maximum 40 characters)"
+                value={formData.description}
+                onChange={handleInputChange}
+                inputClasses="focus:ring-orange-500"
+                otherClasses="mb-4"
+                maxLength={40}
+              />
             </div>
 
             {/* Product Addition Section */}

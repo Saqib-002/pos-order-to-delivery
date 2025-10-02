@@ -1,6 +1,9 @@
 import { colorOptions } from "@/renderer/utils/utils";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import CustomInput from "../../shared/CustomInput";
+import CustomButton from "../../ui/CustomButton";
+import DeleteIcon from "../../../assets/icons/delete.svg?react";
 
 interface Variant {
   id: string;
@@ -153,30 +156,12 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {editingVariant ? "EDIT VARIANT" : "CREATE VARIANT"}
-            </h2>
-          </div>
-        </div>
+        <h2 className="text-xl font-semibold text-gray-900 px-6 py-4 border-b border-gray-200">
+          {editingVariant ? "EDIT VARIANT" : "CREATE VARIANT"}
+        </h2>
 
         <form onSubmit={handleSubmit} className="p-6">
-          {/* Variant Group Name */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              VARIANT GROUP NAME (OPTIONAL)
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
-              placeholder="Variant group name"
-            />
-          </div>
+          <CustomInput label="VARIANT GROUP NAME (OPTIONAL)" type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Variant group name" name="name" otherClasses="mb-4"/>
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               COLOR
@@ -203,34 +188,15 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
             </div>
           </div>
 
-          {/* Add New Variant Section */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              VARIANT NAME
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={newVariantName}
-                onChange={(e) => setNewVariantName(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Variant name"
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addVariant();
-                  }
-                }}
-              />
-
-              <button
-                type="button"
-                onClick={addVariant}
-                className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-md transition-colors duration-200"
-              >
-                ADD
-              </button>
-            </div>
+          <div className="mb-6 flex items-center gap-2">
+            <CustomInput label="VARIANT NAME" type="text" name="variantName" value={newVariantName} onChange={(e) => setNewVariantName(e.target.value)} placeholder="Variant name" onKeyPress={(e: any) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addVariant();
+              }
+            }} otherClasses="w-full" />
+            <CustomButton type="button" label="ADD" onClick={addVariant} className="self-end" variant="orange"/>
+            
           </div>
 
           {/* Variants List */}
@@ -242,43 +208,16 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
                     key={variant.id}
                     className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
                   >
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        NAME
-                      </label>
-                      <input
-                        type="text"
-                        value={variant.name}
-                        onChange={(e) =>
-                          updateVariant(variant.id, "name", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                      />
-                    </div>
-                    <div className="w-24">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        PRIORITY
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={variant.priority}
-                        onChange={(e) =>
-                          updateVariant(
-                            variant.id,
-                            "priority",
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                      />
-                    </div>
+                    <CustomInput label="NAME" type="text" name="variantName" value={variant.name} onChange={(e) => updateVariant(variant.id, "name", e.target.value)} placeholder="Variant name" otherClasses="w-full"/>
+                    <CustomInput label="PRIORITY" type="number" name="priority" value={variant.priority} onChange={(e) => updateVariant(variant.id, "priority", parseInt(e.target.value) || 0)} placeholder="Priority" otherClasses="w-24" min="0"/>
                     <div className="pt-6">
                       <button
                         type="button"
                         onClick={() => removeVariant(variant.id)}
-                        className="text-red-600 hover:text-red-800 transition-colors duration-200"
-                      ></button>
+                        className="cursor-pointer text-red-600 hover:text-red-800 transition-colors duration-200"
+                      >
+                        <DeleteIcon className="size-5" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -288,23 +227,8 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-md transition-colors duration-200"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-400 text-white font-medium rounded-md transition-colors duration-200 flex items-center gap-2"
-            >
-              {isSubmitting && (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              )}
-              Keep
-            </button>
+            <CustomButton type="button" label="Cancel" onClick={onClose} variant="secondary"/>
+            <CustomButton type="submit" label="Keep" isLoading={isSubmitting} disabled={isSubmitting} variant="yellow"/>
           </div>
         </form>
       </div>

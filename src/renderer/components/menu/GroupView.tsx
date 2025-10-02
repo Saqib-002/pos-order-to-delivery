@@ -3,6 +3,7 @@ import { UnifiedCard } from "../ui/UnifiedCard";
 import { CreateGroupModal } from "./modals/CreateGroupModal";
 import AddIcon from "../../assets/icons/add.svg?react";
 import { getGroups } from "@/renderer/utils/menu";
+import CustomButton from "../ui/CustomButton";
 
 export interface Group {
   id: string;
@@ -44,16 +45,8 @@ export const GroupView: React.FC<{ token: string }> = ({ token }) => {
 
   return (
     <div className="space-y-6">
-      {/* Action Buttons Section */}
       <div className="flex flex-wrap gap-4 items-center">
-        {/* Main Action Button */}
-        <button
-          onClick={handleCreateGroup}
-          className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
-        >
-          <AddIcon className="size-5" />
-          CREATE GROUP
-        </button>
+        <CustomButton type="button" label="CREATE GROUP" variant="yellow" onClick={handleCreateGroup}/>
       </div>
       
       <div className="">

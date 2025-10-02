@@ -5,6 +5,7 @@ import { VariantItem } from "@/types/Variants";
 import { toast } from "react-toastify";
 import AddIcon from "../../assets/icons/add.svg?react";
 import { getVariants } from "@/renderer/utils/menu";
+import CustomButton from "../ui/CustomButton";
 
 export interface Variant {
   id: string;
@@ -60,14 +61,13 @@ export const VariantView: React.FC<{ token: string }> = ({ token }) => {
     <div className="space-y-6">
       {/* Action Buttons Section */}
       <div className="flex flex-wrap gap-4 items-center">
-        {/* Main Action Button */}
-        <button
+        <CustomButton 
           onClick={handleCreateVariant}
-          className="flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
-        >
-          <AddIcon className="size-5" />
-          CREATE VARIANT
-        </button>
+          label="Create Variant"
+          variant="orange"
+          type="button"
+          Icon={<AddIcon className="size-5"/>}
+        />
       </div>
 
       <div className="">
