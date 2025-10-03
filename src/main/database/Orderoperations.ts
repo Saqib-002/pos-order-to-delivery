@@ -92,6 +92,14 @@ export class OrderDatabaseOperations {
             throw error;
         }
     }
+    static async getOrderItems(orderId: string): Promise<any[]> {
+        try {
+            const items = await db("order_items").where("orderId", orderId);
+            return items;
+        } catch (error) {
+            throw error;
+        }
+    }
 
     // static async getOrders(): Promise<Order[]> {
     //   try {
@@ -318,20 +326,15 @@ export class OrderDatabaseOperations {
                         comments: order.customerComments,
                     },
                     createdAt: order.createdAt,
+                    updatedAt: order.updatedAt,
                     orderId: order.orderId,
                     status: order.status,
                     paymentType: order.paymentType,
                     orderType: order.orderType,
-                    updatedAt: order.updatedAt,
                     notes: order.notes,
+                    isPaid: order.isPaid,
                     id: order.id,
-                    items: items.map((item) => ({
-                        id: item.id,
-                        name: item.name,
-                        quantity: item.quantity,
-                        price: item.price,
-                        specialInstructions: item.specialInstructions,
-                    })),
+                    items
                 };
                 newOrders.push(newOrder);
             }

@@ -14,6 +14,7 @@ export async function up(knex) {
     table.string('customerComments');
     table.string('notes');
     table.string('orderType');
+    table.boolean('isPaid').defaultTo(false);
     table.string('paymentType');
     table.string('status').defaultTo('pending');
     table.timestamp('createdAt').defaultTo(knex.fn.now());

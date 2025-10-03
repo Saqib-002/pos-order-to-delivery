@@ -1,46 +1,36 @@
-export interface Item {
+export interface OrderItem {
   id: string;
-  name: string;
+  productId: string;
+  productName: string;
+  productPrice: number;
+  productTax: number;
+  variantId: string;
+  variantName: string;
+  variantPrice: number;
+  complements: Array<{
+    groupId: string;
+    groupName: string;
+    itemId: string;
+    itemName: string;
+    price: number;
+  }>;
   quantity: number;
-  ingredients?: string[];
-  customIngredients?: string[];
-  specialInstructions?: string;
-  price?: number;
-  category?: string;
+  totalPrice: number;
+  menuContext?: {
+    menuId: string;
+    menuName: string;
+    menuPageId: string;
+    menuPageName: string;
+    supplement: number;
+  };
 }
 export interface Order {
   id: string;
-  orderId?: number;
+  orderId: string;
   status: string;
-  createdAt: string;
   updatedAt?: string;
-  customer: {
-    name: string;
-    phone: string;
-    address: string;
-    email: string;
-    cif?: string;
-    comments?: string;
-    createdAt?: string;
-    updatedAt?: string;
-  };
-  items: Item[];
-  orderType?: string;
-  paymentType?: string;
-  readyAt?: string;
-  cancelledAt?: string;
-  deliveredAt?: string;
-  syncAt?: string;
-  isDeleted?: boolean;
-  deliveryPersonId?: string;
-  deliveryPerson?: {
-    id: string;
-    name: string;
-    phone: string;
-    vehicleType: string;
-    licenseNo?: string;
-  };
-  notes?: string;
+  createdAt?: string;
+  items?: OrderItem[];
 }
 export interface FilterType {
   searchTerm: string;

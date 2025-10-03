@@ -1,39 +1,6 @@
+import { Order, OrderItem } from "@/types/order";
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { toast } from "react-toastify";
 
-interface OrderItem {
-  id: string;
-  productId: string;
-  productName: string;
-  productPrice: number;
-  productTax: number;
-  variantId: string;
-  variantName: string;
-  variantPrice: number;
-  complements: Array<{
-    groupId: string;
-    groupName: string;
-    itemId: string;
-    itemName: string;
-    price: number;
-  }>;
-  quantity: number;
-  totalPrice: number;
-  menuContext?: {
-    menuId: string;
-    menuName: string;
-    menuPageId: string;
-    menuPageName: string;
-    supplement: number;
-  };
-}
-interface Order {
-  id: string;
-  orderId: string;
-  status: string;
-  updatedAt?: string;
-  createdAt?: string;
-}
 
 interface OrderContextType {
   orderItems: OrderItem[];

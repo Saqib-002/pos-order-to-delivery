@@ -74,22 +74,20 @@ export const updateItemQuantity=async(event: IpcMainInvokeEvent,token:string, it
         };
     }
 }
-// export const deleteOrder = async (event: IpcMainInvokeEvent,token:string, id: string) => {
-//     try {
-//         const result = await OrderDatabaseOperations.deleteOrder(id);
-//         Logger.info(`Order ${id} deleted successfully`);
-//         return {
-//             status:true,
-//             data:result
-//         };
-//     } catch (error) {
-//         Logger.error(`Error deleting order ${id}:`, error);
-//         return {
-//             status:false,
-//             error:(error as Error).message
-//         };
-//     }
-// };
+export const getOrderItems = async (event: IpcMainInvokeEvent,token:string, orderId: string) => {
+    try {
+        const result = await OrderDatabaseOperations.getOrderItems(orderId);
+        return {
+            status:true,
+            data:result
+        };
+    } catch (error) {
+        return {
+            status:false,
+            error:(error as Error).message
+        };
+    }
+};
 // export const cancelOrder = async (event: IpcMainInvokeEvent,token:string, id: string) => {
 //     try {
 //         const result = await OrderDatabaseOperations.cancelOrder(id);

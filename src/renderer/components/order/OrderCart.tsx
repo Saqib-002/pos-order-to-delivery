@@ -65,7 +65,6 @@ const OrderCart: React.FC<OrderCartProps> = ({
   }
   const handleRemoveItem = async (itemId: string) => {
     const res=await (window as any).electronAPI.removeItemFromOrder(token,orderId,itemId);
-    console.log(res);
     if (!res.status){
       toast.error(`Error removing item`);
       return;
@@ -81,9 +80,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     onClearOrder();
   };
   const handleUpdateQuantity =async (itemId: string, quantity: number) => {
-    console.log("Updating quantity", itemId, quantity);
     const res=await (window as any).electronAPI.updateItemQuantity(token,itemId,quantity);
-    console.log(res);
     if (!res.status){
       toast.error(`Error updating quantity`);
       return;

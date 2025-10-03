@@ -2,6 +2,7 @@ import { ipcMain } from "electron";
 import {
   addItemToOrder,
   deleteOrder,
+  getOrderItems,
   // cancelOrder,
   // deleteOrder,
   // getOrderAnalytics,
@@ -134,6 +135,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("remove-item-from-order", removeItemFromOrder);
   ipcMain.handle("delete-order", deleteOrder);
   ipcMain.handle("update-item-quantity", updateItemQuantity);
+  ipcMain.handle("get-order-items", getOrderItems)
   // ipcMain.handle("delete-order", deleteOrder);
   // ipcMain.handle("cancel-order", cancelOrder);
   // ipcMain.handle("ready-order", readyOrder);

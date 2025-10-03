@@ -4,6 +4,7 @@ import OrderProcessingModal from "./OrderProcessingModal";
 import { useOrder } from "../../contexts/OrderContext";
 import { toast } from "react-toastify";
 import { Order } from "@/types/order";
+import { StringToComplements } from "@/renderer/utils/order";
 
 interface OrderComponentProps {
   token: string | null;
@@ -23,6 +24,7 @@ const OrderComponent = ({
     clearOrder,
     addToOrder,
     order,
+    setOrder,
   } = useOrder();
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
@@ -49,52 +51,21 @@ const OrderComponent = ({
     clearOrder();
     refreshOrdersCallback();
   };
-  const handleOrderClick = (order: Order) => {
-    // Clear current cart
-    clearOrder();
-
-    // Load order items back into cart
-    order.items.forEach((item) => {
-      // Parse special instructions to extract variant and add-ons info
-      const specialInstructions = item.specialInstructions || "";
-      const variantMatch = specialInstructions.match(/Variant: ([^,]+)/);
-      const addonsMatch = specialInstructions.match(/Add-ons: (.+)/);
-
-      // Convert order item back to cart item format
-      const cartItem = {
-        productId: item.id,
-        productName: item.name,
-        productPrice: item.price || 0,
-        productTax: 0, 
-        variantId: `variant_${item.id}`, 
-        variantName: variantMatch ? variantMatch[1] : "Default",
-        variantPrice: 0,
-        complements: addonsMatch
-          ? addonsMatch[1].split(", ").map((addon, index) => ({
-              groupId: `group_${index}`,
-              groupName: "Add-ons",
-              itemId: `addon_${index}`,
-              itemName: addon.trim(),
-              price: 0, 
-            }))
-          : [],
-        quantity: item.quantity,
-        totalPrice: (item.price || 0) * item.quantity,
-      };
-      addToOrder({...cartItem,id:""});
-    });
-
-    // Set editing mode
-    setIsEditingOrder(true);
-    setEditingOrderId(order.id);
-
+  const handleOrderClick = async (order: Order) => {
+    setOrder(order);
+    console.log(order);
+    if (order.items) {
+      order.items.forEach((item: any) => {
+        addToOrder({ ...item, complements: StringToComplements(item.complements) });
+      });
+    }
   };
   return (
     <>
       {orderItems.length > 0 ? (
         <OrderCart
-        token={token}
-        orderId={order!.id}
+          token={token}
+          orderId={order!.id}
           orderItems={orderItems}
           onRemoveItem={removeFromOrder}
           onUpdateQuantity={updateQuantity}
@@ -113,7 +84,7 @@ const OrderComponent = ({
                 >
                   <div className="flex flex-col items-start gap-2">
                     <p>
-                      {order.orderType?.toUpperCase()}
+                      {/* {order.orderType?order.orderType?.toUpperCase():"Not Selected"} */}
                       <span className="border-2 border-green-500 bg-green-300 rounded-full px-2 py-[2px] text-xs  ml-2">
                         PAID
                       </span>
@@ -123,13 +94,13 @@ const OrderComponent = ({
                   </div>
                   <p className="text-2xl">
                     €
-                    {order.items
+                    {order.items?order.items
                       .reduce(
                         (total, item) =>
-                          total + (item?.price || 0) * item.quantity,
+                          total + (item.totalPrice || 0) * item.quantity,
                         0
                       )
-                      .toFixed(2)}
+                      .toFixed(2):"0.00"}
                   </p>
                 </button>
               ))}

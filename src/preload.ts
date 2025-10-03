@@ -25,19 +25,6 @@ interface MenuItem {
   isDeleted?: boolean;
 }
 
-interface OrderItem {
-  id: string;
-  orderId: string;
-  menuItemId: string;
-  quantity: number;
-  unitPrice: number;
-  specialInstructions?: string;
-  createdAt: string;
-  updatedAt: string;
-  syncedAt?: string;
-  isDeleted?: boolean;
-  menuItem?: MenuItem;
-}
 interface DeliveryPerson {
   id: string;
   name: string;
@@ -147,6 +134,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("remove-item-from-order", token, orderId, itemId),
   updateItemQuantity: (token: string, orderId: string, itemId: string, quantity: number) =>
     ipcRenderer.invoke("update-item-quantity", token, orderId, itemId, quantity),
+  getOrderItems: (token: string, orderId: string) =>
+    ipcRenderer.invoke("get-order-items", token, orderId),
   deleteOrder: (token: string, id: string) =>
     ipcRenderer.invoke("delete-order", token, id),
   cancelOrder: (token: string, id: string) =>
