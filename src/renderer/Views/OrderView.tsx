@@ -3,6 +3,7 @@ import OrderComponent from "../components/order/OrderComponent";
 import OrderMenu from "../components/order/OrderMenu";
 import OrderComponentHeader from "../components/order/OrderComponentHeader";
 import { OrderProvider } from "../contexts/OrderContext";
+import { useEffect } from "react";
 interface OrderViewProps {
   orders: Order[];
   token: string | null;
@@ -18,13 +19,22 @@ export const OrderView: React.FC<OrderViewProps> = ({
   filter,
   setFilter,
 }) => {
+  const now = new Date();
+  const localMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(),5,0,0);
+  useEffect(() => {
+    setFilter({
+      searchTerm: "",
+      selectedDate: localMidnight,
+      selectedStatus: [],
+    });
+  }, []);
   return (
     <OrderProvider>
       <div className="grid grid-cols-12 h-[calc(100vh-6rem)]">
         <div className="col-span-3 border-r border-gray-300 h-full flex flex-col">
           <OrderComponentHeader token={token} />
           <div className="h-[1px] bg-gray-400"></div>
-          <OrderComponent token={token} />
+          <OrderComponent token={token} orders={orders} />
         </div>
         <div className="col-span-9 h-full flex flex-col">
           <OrderMenu token={token} />

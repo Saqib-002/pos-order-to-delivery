@@ -13,6 +13,7 @@ export const useOrderManagement = (auth: AuthState, filter: FilterType) => {
                 auth.token,
                 filter
             );
+            console.log("Fetched orders:", res,filter);
             if (!res.status) {
                 toast.error("Error fetching orders");
                 return;

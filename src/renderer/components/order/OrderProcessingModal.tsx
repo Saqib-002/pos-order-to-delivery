@@ -197,10 +197,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         category: "Food",
         specialInstructions: `Variant: ${item.variantName}${item.complements.length > 0 ? `, Add-ons: ${item.complements.map((c) => c.itemName).join(", ")}` : ""}`,
       })),
-      status: "pending",
+      status: "sent to kitchen",
       notes: notes || `Order total: €${calculateTotal().toFixed(2)}`,
     };
-
+    console.log("Processing order:", orderData);
     onProcessOrder(orderData);
     onClose();
   };
