@@ -6,14 +6,12 @@ import { OrderProvider } from "../contexts/OrderContext";
 import { useEffect } from "react";
 interface OrderViewProps {
   orders: Order[];
-  token: string | null;
   refreshOrdersCallback: () => void;
   filter: FilterType;
   setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
 }
 
 export const OrderView: React.FC<OrderViewProps> = ({
-  token,
   orders,
   refreshOrdersCallback,
   filter,
@@ -39,16 +37,15 @@ export const OrderView: React.FC<OrderViewProps> = ({
     <OrderProvider>
       <div className="grid grid-cols-12 h-[calc(100vh-6rem)]">
         <div className="col-span-3 border-r border-gray-300 h-full flex flex-col">
-          <OrderComponentHeader token={token} />
+          <OrderComponentHeader />
           <div className="h-[1px] bg-gray-400"></div>
           <OrderComponent
-            token={token}
             orders={orders}
             refreshOrdersCallback={refreshOrdersCallback}
           />
         </div>
         <div className="col-span-9 h-full flex flex-col">
-          <OrderMenu token={token} />
+          <OrderMenu />
         </div>
       </div>
     </OrderProvider>

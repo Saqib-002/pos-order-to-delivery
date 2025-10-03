@@ -42,7 +42,7 @@ interface MenuModalProps {
     onClose: () => void;
     onSuccess: () => void;
     editingMenu: Menu | null;
-    token: string;
+    token: string | null;
 }
 
 export const MenuModal: React.FC<MenuModalProps> = ({

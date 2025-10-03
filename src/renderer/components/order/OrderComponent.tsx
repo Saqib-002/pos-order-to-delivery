@@ -5,15 +5,14 @@ import { useOrder } from "../../contexts/OrderContext";
 import { toast } from "react-toastify";
 import { Order } from "@/types/order";
 import { StringToComplements } from "@/renderer/utils/order";
+import { useAuth } from "@/renderer/contexts/AuthContext";
 
 interface OrderComponentProps {
-  token: string | null;
   orders: Order[];
   refreshOrdersCallback: () => void;
 }
 
 const OrderComponent = ({
-  token,
   orders,
   refreshOrdersCallback,
 }: OrderComponentProps) => {
@@ -29,6 +28,7 @@ const OrderComponent = ({
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+  const {auth:{token}}=useAuth();
 
   const handleProcessOrder = () => {
     if (orderItems.length === 0) {

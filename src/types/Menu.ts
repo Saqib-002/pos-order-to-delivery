@@ -56,9 +56,6 @@ export interface Product extends BaseMenuEntity {
   type: "product";
 }
 
-export interface MenuComponentProps {
-  token: string;
-}
 
 export interface ActionButtonsProps {
   currentLevel: "categories" | "subcategories" | "products";

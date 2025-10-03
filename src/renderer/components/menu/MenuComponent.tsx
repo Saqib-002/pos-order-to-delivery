@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 
 import { CategoryModal } from "./modals/CategoryModal";
 import { SubcategoryModal } from "./modals/SubcategoryModal";
@@ -12,17 +12,18 @@ import {
   Category,
   Subcategory,
   Product,
-  MenuComponentProps,
 } from "@/types/Menu";
 import { fetchCategories, fetchProducts, fetchSubcategories } from "@/renderer/utils/menu";
+import { useAuth } from "@/renderer/contexts/AuthContext";
 
 type NavigationLevel = "categories" | "subcategories" | "products";
 
-export const MenuComponent: React.FC<MenuComponentProps> = ({ token }) => {
+export const MenuComponent = () => {
   // State for data
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const {auth:{token}}=useAuth();
 
   // State for modals
   const [modals, setModals] = useState({

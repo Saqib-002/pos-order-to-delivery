@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
-import { User } from "@/types/user";
 import { toast } from "react-toastify";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import { DeliveryPerson } from "@/types/delivery";
+import { useAuth } from "../contexts/AuthContext";
 
-export const DeliveryManagement: React.FC<{ token: string | null }> = ({
-  token,
-}) => {
+export const DeliveryManagement = () => {
   const [deliveryPersons, setDeliveryPersons] = useState<DeliveryPerson[]>([]);
   const [newDeliveryPerson, setNewDeliveryPerson] = useState({
     name: "",
@@ -25,6 +23,8 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
   const [editEmailError, setEditEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [editPhoneError, setEditPhoneError] = useState("");
+  const { auth: { token } } = useAuth();
+
 
   useEffect(() => {
     fetchDeliveryPersons();
@@ -502,11 +502,10 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
             <div className="flex gap-2">
               <button
                 onClick={() => setSelectedVehicleType("all")}
-                className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                  selectedVehicleType === "all"
+                className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${selectedVehicleType === "all"
                     ? "bg-indigo-600 text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                  }`}
               >
                 All Vehicles
               </button>
@@ -514,11 +513,10 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                 <button
                   key={vehicleType}
                   onClick={() => setSelectedVehicleType(vehicleType)}
-                  className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                    selectedVehicleType === vehicleType
+                  className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${selectedVehicleType === vehicleType
                       ? "bg-indigo-600 text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                    }`}
                 >
                   {getVehicleTypeLabel(vehicleType)}
                 </button>
@@ -792,11 +790,10 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                       const error = validateEmail(newDeliveryPerson.email);
                       setEmailError(error);
                     }}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${
-                      emailError
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${emailError
                         ? "border-red-300 focus:ring-red-600 focus:border-red-600"
                         : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
-                    }`}
+                      }`}
                     placeholder="Enter email address"
                   />
                   {emailError && (
@@ -815,11 +812,10 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                       const error = validatePhone(newDeliveryPerson.phone);
                       setPhoneError(error);
                     }}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${
-                      phoneError
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${phoneError
                         ? "border-red-300 focus:ring-red-600 focus:border-red-600"
                         : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
-                    }`}
+                      }`}
                     placeholder="Enter phone number"
                   />
                   {phoneError && (
@@ -955,11 +951,10 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                       );
                       setEditEmailError(error);
                     }}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${
-                      editEmailError
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${editEmailError
                         ? "border-red-300 focus:ring-red-600 focus:border-red-600"
                         : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
-                    }`}
+                      }`}
                     placeholder="Enter email address"
                   />
                   {editEmailError && (
@@ -983,11 +978,10 @@ export const DeliveryManagement: React.FC<{ token: string | null }> = ({
                         setEditPhoneError(error);
                       }
                     }}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${
-                      editPhoneError
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${editPhoneError
                         ? "border-red-300 focus:ring-red-600 focus:border-red-600"
                         : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
-                    }`}
+                      }`}
                     placeholder="Enter phone number"
                   />
                   {editPhoneError && (

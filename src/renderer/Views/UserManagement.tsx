@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import { User } from "@/types/user";
 import { toast } from "react-toastify";
 import { CustomSelect } from "../components/ui/CustomSelect";
+import { useAuth } from "../contexts/AuthContext";
 
-export const UserManagement: React.FC<{ token: string | null }> = ({
-  token,
-}) => {
+export const UserManagement = () => {
   const [users, setUsers] = useState<Omit<User, "password">[]>([]);
   const [newUser, setNewUser] = useState({
     username: "",
@@ -21,6 +20,8 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
   const [selectedRole, setSelectedRole] = useState("all");
   const [emailError, setEmailError] = useState("");
   const [editEmailError, setEditEmailError] = useState("");
+  const { auth: { token } } = useAuth();
+
 
   useEffect(() => {
     fetchUsers();
@@ -406,11 +407,10 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
             <div className="flex gap-2">
               <button
                 onClick={() => setSelectedRole("all")}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                  selectedRole === "all"
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${selectedRole === "all"
                     ? "bg-indigo-600 text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                  }`}
               >
                 All Roles
               </button>
@@ -418,11 +418,10 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
                 <button
                   key={role}
                   onClick={() => setSelectedRole(role)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    selectedRole === role
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${selectedRole === role
                       ? "bg-indigo-600 text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                    }`}
                 >
                   {getRoleLabel(role)}
                 </button>
@@ -663,11 +662,10 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
                       const error = validateEmail(newUser.email);
                       setEmailError(error);
                     }}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${
-                      emailError
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${emailError
                         ? "border-red-300 focus:ring-red-600 focus:border-red-600"
                         : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
-                    }`}
+                      }`}
                     placeholder="Enter email address"
                   />
                   {emailError && (
@@ -809,11 +807,10 @@ export const UserManagement: React.FC<{ token: string | null }> = ({
                       const error = validateEmail(editingUser.email || "");
                       setEditEmailError(error);
                     }}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${
-                      editEmailError
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${editEmailError
                         ? "border-red-300 focus:ring-red-600 focus:border-red-600"
                         : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
-                    }`}
+                      }`}
                     placeholder="Enter email address"
                   />
                   {editEmailError && (

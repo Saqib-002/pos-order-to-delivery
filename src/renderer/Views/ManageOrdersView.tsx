@@ -10,7 +10,6 @@ import PersonIcon from "../assets/icons/person.svg?react";
 
 interface ManageOrdersViewProps {
   orders: Order[];
-  token: string | null;
   refreshOrdersCallback: () => void;
 }
 
@@ -23,7 +22,6 @@ interface FilterState {
 
 export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
   orders,
-  token,
   refreshOrdersCallback,
 }) => {
   const [filters, setFilters] = useState<FilterState>({

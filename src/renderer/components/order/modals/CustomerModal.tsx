@@ -7,16 +7,15 @@ import { Tooltip } from "react-tooltip";
 import { toast } from "react-toastify";
 import { debounce } from "lodash";
 import { Customer } from "@/types/customers";
+import { useAuth } from "@/renderer/contexts/AuthContext";
 
 interface CustomerModalProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  token: string | null;
   onCustomerCreated?: (customer: Customer) => void;
 }
 
 const CustomerModal = ({
   setIsOpen,
-  token,
   onCustomerCreated,
 }: CustomerModalProps) => {
   const [address, setAddress] = useState("");
@@ -26,6 +25,7 @@ const CustomerModal = ({
   const [phone, setPhone] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
+  const {auth:{token}}=useAuth();
   const fetchCustomers = debounce(async (phone: string) => {
     if (!phone || phone.length < 3) {
       setCustomers([]);

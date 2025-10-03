@@ -69,7 +69,7 @@ export const fetchSubcategories = async (
   }
 };
 export const fetchProducts = async (
-  token: string,
+  token: string | null,
   setProducts: React.Dispatch<React.SetStateAction<any>>
 ) => {
   try {

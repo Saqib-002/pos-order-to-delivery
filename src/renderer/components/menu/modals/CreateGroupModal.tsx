@@ -27,7 +27,7 @@ interface CreateGroupModalProps {
   onClose: () => void;
   onSuccess: () => void;
   editingGroup?: Group | null;
-  token: string;
+  token: string | null;
 }
 
 interface AssociatedProduct {

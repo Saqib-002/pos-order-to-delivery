@@ -11,10 +11,10 @@ import { OrderRow } from "../components/kitchen/OrderRow.view";
 import TotalOrdersIcon from "../assets/icons/total-orders.svg?react";
 import HighPriorityIcon from "../assets/icons/high-priority.svg?react";
 import ThunderIcon from "../assets/icons/thunder.svg?react";
+import { useAuth } from "../contexts/AuthContext";
 
 interface KitchenViewProps {
     orders: Order[];
-    token: string | null;
     filter: FilterType;
     setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
     refreshOrdersCallback: () => void;
@@ -22,11 +22,11 @@ interface KitchenViewProps {
 
 export const KitchenView: React.FC<KitchenViewProps> = ({
     orders,
-    token,
     filter,
     setFilter,
     refreshOrdersCallback,
 }) => {
+    const {auth:{token}}=useAuth();
     useEffect(() => {
         setFilter({
             selectedDate: null,

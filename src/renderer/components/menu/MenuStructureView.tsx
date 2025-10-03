@@ -7,6 +7,7 @@ import NoMenuIcon from "../../assets/icons/no-menu.svg?react";
 import NoMenuPageIcon from "../../assets/icons/no-menu-page.svg?react";
 import { MenuPageProduct } from "@/types/menuPages";
 import CustomButton from "../ui/CustomButton";
+import { useAuth } from "@/renderer/contexts/AuthContext";
 
 
 interface MenuPage {
@@ -45,19 +46,14 @@ interface Menu {
   updatedAt?: string;
 }
 
-interface MenuStructureComponentProps {
-  token: string;
-}
-
-export const MenuStructureComponent: React.FC<MenuStructureComponentProps> = ({
-  token,
-}) => {
+export const MenuStructureComponent = () => {
   const [menuPages, setMenuPages] = useState<MenuPage[]>([]);
   const [menus, setMenus] = useState<Menu[]>([]);
   const [isMenuPageModalOpen, setIsMenuPageModalOpen] = useState(false);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [editingMenuPage, setEditingMenuPage] = useState<MenuPage | null>(null);
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
+  const {auth:{token}}=useAuth();
 
   // Fetch data from API
   useEffect(() => {

@@ -1,35 +1,20 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { useAuth } from "../contexts/AuthContext";
 
 export const LoginView: React.FC<{
-  onLogin: (token: string, user: any) => void;
+  onLogin: () => void;
 }> = ({ onLogin }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const { login } = useAuth();
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    try {
-      const res = await (window as any).electronAPI.loginUser({
-        username,
-        userPassword: password,
-      });
-      if (!res.status) {
-        toast.error("Login failed. Please check your credentials.");
-        setIsLoading(false);
-        return;
-      }
-      const { token, user } = res;
-      onLogin(token, user);
-      toast.success(`Welcome, ${user.name}!`);
-    } catch (error) {
-      console.error("Login failed:", error);
-      toast.error("Login failed. Please check your credentials.");
-    } finally {
-      setIsLoading(false);
-    }
+    const res=await login(username, password);
+    if(res) onLogin();
+    setIsLoading(false);
   };
 
   return (

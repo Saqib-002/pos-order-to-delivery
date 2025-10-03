@@ -12,22 +12,22 @@ import ThunderIcon from "../assets/icons/thunder.svg?react";
 import MarkIcon from "../assets/icons/mark.svg?react";
 import GroupIcon from "../assets/icons/group.svg?react";
 import SearchIcon from "../assets/icons/search.svg?react";
+import { useAuth } from "../contexts/AuthContext";
 
 
 interface DeliveryViewProps {
     orders: Order[];
-    token: string | null;
     refreshOrdersCallback: () => void;
     filter: FilterType;
     setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
 }
 export const DeliveryView: React.FC<DeliveryViewProps> = ({
     orders,
-    token,
     refreshOrdersCallback,
     filter,
     setFilter,
 }) => {
+    const {auth:{token}}=useAuth();
     const [deliveryPerson, setDeliveryPerson] = useState<{
         id: string;
         name: string;

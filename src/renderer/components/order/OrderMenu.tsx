@@ -5,24 +5,21 @@ import {
   fetchMenusBySubcategory,
 } from "@/renderer/utils/menu";
 import { Category, SubCategory } from "@/types/categories";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Product } from "@/types/Menu";
 import OrderTakingForm from "./OrderTakingForm";
 import CategorySelection from "./CategorySelection";
 import SubcategorySelection from "./SubcategorySelection";
 import ProductGrid from "./ProductGrid";
 import BreadcrumbNavigation from "./BreadcrumbNavigation";
-import { UnifiedCard } from "../ui/UnifiedCard";
+import { useAuth } from "@/renderer/contexts/AuthContext";
 
-interface OrderMenuProps {
-  token: string | null;
-}
-
-const OrderMenu = ({ token }: OrderMenuProps) => {
+const OrderMenu = () => {
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [subCategories, setSubCategories] = useState<SubCategory[] | null>(
     null
   );
+  const {auth:{token}}=useAuth();
   const [products, setProducts] = useState<Product[] | null>(null);
   const [menus, setMenus] = useState<any[] | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);

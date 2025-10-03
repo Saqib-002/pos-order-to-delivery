@@ -17,7 +17,6 @@ export interface AnalyticsType {
 
 export interface ReportViewProps {
     orders: Order[];
-    token: string | null;
     setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
     filter: FilterType;
     setFilter: React.Dispatch<React.SetStateAction<FilterType>>;

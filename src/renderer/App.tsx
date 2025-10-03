@@ -16,6 +16,7 @@ import { MenuView } from "./Views/MenuView";
 import { OrderView } from "./Views/OrderView";
 import { ReportView } from "./Views/ReportView";
 import { UserManagement } from "./Views/UserManagement";
+import { useAuth } from "./contexts/AuthContext";
 
 interface ViewConfig {
   component: JSX.Element;
@@ -24,29 +25,24 @@ interface ViewConfig {
 
 const App: React.FC = () => {
   const [view, setView] = useState<string>(VIEWS.LOGIN);
-  const [auth, setAuth] = useState<AuthState>({ token: null, user: null });
   const [filter, setFilter] = useState<FilterType>({
     searchTerm: "",
     selectedDate: null,
     selectedStatus: ["all"],
   });
+  const {auth,logout}=useAuth();
 
   const { orders, setOrders, refreshOrdersCallback } = useOrderManagement(
     auth,
     filter
   );
-
-  const handleLogin = (token: string, user: Omit<User, "password">) => {
-    setAuth({ token, user });
+  const handleLogin = () => {
     setView(VIEWS.ORDER);
   };
-
   const handleLogout = async () => {
     try {
-      await (window as any).electronAPI.logoutUser(auth.token);
-      setAuth({ token: null, user: null });
+      await logout();
       setView(VIEWS.LOGIN);
-      toast.success("Logged out successfully");
     } catch (error) {
       toast.error("Failed to log out");
     }
@@ -57,7 +53,6 @@ const App: React.FC = () => {
       component: (
         <OrderView
           orders={orders}
-          token={auth.token!}
           refreshOrdersCallback={refreshOrdersCallback}
           filter={filter}
           setFilter={setFilter}
@@ -70,7 +65,6 @@ const App: React.FC = () => {
           orders={orders}
           filter={filter}
           setFilter={setFilter}
-          token={auth.token!}
           refreshOrdersCallback={refreshOrdersCallback}
         />
       ),
@@ -80,7 +74,6 @@ const App: React.FC = () => {
       component: (
         <DeliveryView
           orders={orders}
-          token={auth.token!}
           refreshOrdersCallback={refreshOrdersCallback}
           filter={filter}
           setFilter={setFilter}
@@ -91,7 +84,6 @@ const App: React.FC = () => {
     [VIEWS.REPORTS]: {
       component: (
         <ReportView
-          token={auth.token}
           orders={orders}
           setOrders={setOrders}
           filter={filter}
@@ -101,22 +93,21 @@ const App: React.FC = () => {
       roles: ["admin"],
     },
     [VIEWS.MENU_STRUCTURE]: {
-      component: <MenuView token={auth.token!} />,
+      component: <MenuView />,
       roles: ["admin"],
     },
     [VIEWS.USERS]: {
-      component: <UserManagement token={auth.token!} />,
+      component: <UserManagement />,
       roles: ["admin"],
     },
     [VIEWS.DELIVERY_MANAGEMENT]: {
-      component: <DeliveryManagement token={auth.token!} />,
+      component: <DeliveryManagement  />,
       roles: ["admin"],
     },
     [VIEWS.MANAGE_ORDERS]: {
       component: (
         <ManageOrdersView
           orders={orders}
-          token={auth.token!}
           refreshOrdersCallback={refreshOrdersCallback}
         />
       ),
