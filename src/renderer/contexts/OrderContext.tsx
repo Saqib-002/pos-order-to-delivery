@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
+import { toast } from "react-toastify";
 
 interface OrderItem {
   id: string;
@@ -26,10 +27,19 @@ interface OrderItem {
     supplement: number;
   };
 }
+interface Order {
+  id: string;
+  orderId: string;
+  status: string;
+  updatedAt?: string;
+  createdAt?: string;
+}
 
 interface OrderContextType {
   orderItems: OrderItem[];
-  addToOrder: (item: Omit<OrderItem, "id">) => void;
+  order: Order | null;
+  setOrder: React.Dispatch<React.SetStateAction<Order | null>>;
+  addToOrder: ( item: OrderItem) => void;
   removeFromOrder: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearOrder: () => void;
@@ -52,14 +62,10 @@ interface OrderProviderProps {
 
 export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [order, setOrder] = useState<Order | null>(null)
 
-  const addToOrder = (newItem: Omit<OrderItem, "id">) => {
-    const orderItem: OrderItem = {
-      ...newItem,
-      id: `${newItem.productId}-${newItem.variantId}-${Date.now()}`,
-    };
-
-    setOrderItems((prev) => [...prev, orderItem]);
+  const addToOrder = async (newItem: OrderItem) => {
+    setOrderItems((prev) => [...prev, newItem]);
   };
 
   const removeFromOrder = (itemId: string) => {
@@ -71,21 +77,21 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
       prev.map((item) =>
         item.id === itemId
           ? {
-              ...item,
-              quantity,
-              totalPrice:
-                Math.round(
-                  (item.productPrice +
-                    item.productTax +
-                    item.variantPrice +
-                    item.complements.reduce(
-                      (sum, comp) => sum + comp.price,
-                      0
-                    )) *
-                    quantity *
-                    100
-                ) / 100,
-            }
+            ...item,
+            quantity,
+            totalPrice:
+              Math.round(
+                (item.productPrice +
+                  item.productTax +
+                  item.variantPrice +
+                  item.complements.reduce(
+                    (sum, comp) => sum + comp.price,
+                    0
+                  )) *
+                quantity *
+                100
+              ) / 100,
+          }
           : item
       )
     );
@@ -101,6 +107,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 
   const value: OrderContextType = {
     orderItems,
+    order,
+    setOrder,
     addToOrder,
     removeFromOrder,
     updateQuantity,

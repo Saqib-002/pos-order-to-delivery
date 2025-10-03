@@ -22,6 +22,7 @@ const OrderComponent = ({
     updateQuantity,
     clearOrder,
     addToOrder,
+    order,
   } = useOrder();
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
@@ -80,7 +81,7 @@ const OrderComponent = ({
         quantity: item.quantity,
         totalPrice: (item.price || 0) * item.quantity,
       };
-      addToOrder(cartItem);
+      addToOrder({...cartItem,id:""});
     });
 
     // Set editing mode
@@ -92,6 +93,8 @@ const OrderComponent = ({
     <>
       {orderItems.length > 0 ? (
         <OrderCart
+        token={token}
+        orderId={order!.id}
           orderItems={orderItems}
           onRemoveItem={removeFromOrder}
           onUpdateQuantity={updateQuantity}

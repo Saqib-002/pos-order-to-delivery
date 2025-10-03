@@ -10,6 +10,10 @@ export interface Item {
 }
 export interface Order {
   id: string;
+  orderId?: number;
+  status: string;
+  createdAt: string;
+  updatedAt?: string;
   customer: {
     name: string;
     phone: string;
@@ -20,13 +24,9 @@ export interface Order {
     createdAt?: string;
     updatedAt?: string;
   };
-  orderId?: number;
   items: Item[];
-  status: string;
   orderType?: string;
   paymentType?: string;
-  createdAt: string;
-  updatedAt?: string;
   readyAt?: string;
   cancelledAt?: string;
   deliveredAt?: string;

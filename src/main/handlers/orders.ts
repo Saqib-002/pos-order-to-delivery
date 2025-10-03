@@ -3,22 +3,77 @@ import { IpcMainInvokeEvent } from "electron";
 import { Order } from "@/types/order.js";
 import { OrderDatabaseOperations } from "../database/Orderoperations.js";
 
-export const saveOrder = async (event: IpcMainInvokeEvent,token:string, order: Order) => {
+export const saveOrder = async (event: IpcMainInvokeEvent,token:string,item:any) => {
     try {
-        const result = await OrderDatabaseOperations.saveOrder(order);
+        const result = await OrderDatabaseOperations.saveOrder(item);
         return {
             status:true,
             data:result
         }
     } catch (error) {
-        Logger.error("Error saving order:", error);
         return {
             status:false,
             error:(error as Error).message
         }
     }
 };
-
+export const addItemToOrder = async (event: IpcMainInvokeEvent,token:string, orderId: string,item:any) => {
+    try {
+        const result = await OrderDatabaseOperations.addItemToOrder(orderId,item);
+        return {
+            status:true,
+            data:result
+        }
+    } catch (error) {
+        return {
+            status:false,
+            error:(error as Error).message
+        }
+    }
+};
+export const removeItemFromOrder = async (event: IpcMainInvokeEvent,token:string, orderId: string,itemId:string) => {
+    try {
+        const result = await OrderDatabaseOperations.removeItemFromOrder(orderId,itemId);
+        return {
+            status:true,
+            data:result
+        }
+    }
+    catch (error) {
+        return {
+            status:false,
+            error:(error as Error).message
+        }
+    }
+}
+export const deleteOrder = async (event: IpcMainInvokeEvent,token:string, id: string) => {
+    try {
+        const result = await OrderDatabaseOperations.deleteOrder(id);
+        return {
+            status:true,
+            data:result
+        };
+    } catch (error) {
+        return {
+            status:false,
+            error:(error as Error).message
+        };
+    }
+};
+export const updateItemQuantity=async(event: IpcMainInvokeEvent,token:string, itemId:string,quantity:number)=>{
+    try {
+        const result = await OrderDatabaseOperations.updateItemQuantity(itemId,quantity);
+        return {
+            status:true,
+            data:result
+        };
+    } catch (error) {
+        return {
+            status:false,
+            error:(error as Error).message
+        };
+    }
+}
 // export const deleteOrder = async (event: IpcMainInvokeEvent,token:string, id: string) => {
 //     try {
 //         const result = await OrderDatabaseOperations.deleteOrder(id);

@@ -6,8 +6,8 @@ export async function up(knex) {
   return knex.schema.createTable('orders', function(table) {
     table.string('id').primary();
     table.string('orderId');
-    table.string('customerName').notNullable();
-    table.string('customerPhone').notNullable();
+    table.string('customerName');
+    table.string('customerPhone');
     table.string('customerCIF');
     table.string('customerEmail');
     table.string('customerAddress');

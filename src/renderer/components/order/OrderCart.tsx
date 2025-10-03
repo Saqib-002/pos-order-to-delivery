@@ -1,4 +1,5 @@
 import React from "react";
+import { toast } from "react-toastify";
 
 interface OrderItem {
   id: string;
@@ -28,6 +29,8 @@ interface OrderItem {
 }
 
 interface OrderCartProps {
+  token: string | null;
+  orderId: string;
   orderItems: OrderItem[];
   onRemoveItem: (itemId: string) => void;
   onUpdateQuantity: (itemId: string, quantity: number) => void;
@@ -36,6 +39,8 @@ interface OrderCartProps {
 }
 
 const OrderCart: React.FC<OrderCartProps> = ({
+  token,
+  orderId,
   orderItems,
   onRemoveItem,
   onUpdateQuantity,
@@ -45,7 +50,6 @@ const OrderCart: React.FC<OrderCartProps> = ({
   const calculateTotal = () => {
     return orderItems.reduce((total, item) => total + item.totalPrice, 0);
   };
-
   if (orderItems.length === 0) {
     return (
       <div className="p-4">
@@ -59,6 +63,33 @@ const OrderCart: React.FC<OrderCartProps> = ({
       </div>
     );
   }
+  const handleRemoveItem = async (itemId: string) => {
+    const res=await (window as any).electronAPI.removeItemFromOrder(token,orderId,itemId);
+    console.log(res);
+    if (!res.status){
+      toast.error(`Error removing item`);
+      return;
+    }
+    onRemoveItem(itemId);
+  };
+  const handleClearOrder = async () => {
+    const res=await (window as any).electronAPI.deleteOrder(token,orderId);
+    if (!res.status){
+      toast.error(`Error clearing order`);
+      return;
+    }
+    onClearOrder();
+  };
+  const handleUpdateQuantity =async (itemId: string, quantity: number) => {
+    console.log("Updating quantity", itemId, quantity);
+    const res=await (window as any).electronAPI.updateItemQuantity(token,itemId,quantity);
+    console.log(res);
+    if (!res.status){
+      toast.error(`Error updating quantity`);
+      return;
+    }
+    onUpdateQuantity(itemId, quantity);
+  };
 
   return (
     <div className="h-full flex flex-col">
@@ -66,7 +97,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       <div className="flex justify-between items-center p-4 pb-2">
         <h2 className="text-lg font-semibold text-gray-800">Your Order</h2>
         <button
-          onClick={onClearOrder}
+          onClick={handleClearOrder}
           className="text-sm text-red-600 hover:text-red-800"
         >
           Clear
@@ -127,7 +158,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 )}
               </div>
               <button
-                onClick={() => onRemoveItem(item.id)}
+                onClick={() => handleRemoveItem(item.id)}
                 className="text-red-500 hover:text-red-700 text-sm ml-2"
               >
                 ✕
@@ -138,7 +169,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() =>
-                    onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))
+                    handleUpdateQuantity(item.id, Math.max(1, item.quantity - 1))
                   }
                   className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-sm hover:bg-gray-50"
                 >
@@ -148,7 +179,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                   {item.quantity}
                 </span>
                 <button
-                  onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                  onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                   className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-sm hover:bg-gray-50"
                 >
                   +

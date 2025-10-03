@@ -118,3 +118,9 @@ export const refreshOrders = async (
         showToast.error("Error fetching orders");
     }
 };
+
+export const ComplementsToString = (complements: any[]) => {
+    if (complements.length === 0) return "";
+    let result = complements.map(c => `${c.groupId}|${c.groupName}|${c.itemId}|${c.itemName}|${c.price}`).join('=');
+    return result;
+};

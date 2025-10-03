@@ -1,14 +1,18 @@
 import { ipcMain } from "electron";
 import {
+  addItemToOrder,
+  deleteOrder,
   // cancelOrder,
   // deleteOrder,
   // getOrderAnalytics,
   // getOrders,
   getOrdersByFilter,
+  removeItemFromOrder,
   // markDeliveredOrder,
   // readyOrder,
   // updateOrder,
   saveOrder,
+  updateItemQuantity,
 } from "./handlers/orders.js";
 import {
   deleteUser,
@@ -126,6 +130,10 @@ export function registerIpcHandlers() {
 
   // Order handlers (with same authorization logic)
   ipcMain.handle("save-order", saveOrder);
+  ipcMain.handle("add-item-to-order", addItemToOrder);
+  ipcMain.handle("remove-item-from-order", removeItemFromOrder);
+  ipcMain.handle("delete-order", deleteOrder);
+  ipcMain.handle("update-item-quantity", updateItemQuantity);
   // ipcMain.handle("delete-order", deleteOrder);
   // ipcMain.handle("cancel-order", cancelOrder);
   // ipcMain.handle("ready-order", readyOrder);

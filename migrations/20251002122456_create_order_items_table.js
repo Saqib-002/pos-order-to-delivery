@@ -5,11 +5,19 @@
 export async function up(knex) {
   return knex.schema.createTable('order_items', function(table) {
     table.string('id').primary();
-    table.string('name').notNullable();
-    table.string('category').notNullable();
+    table.string('productName').notNullable();
+    table.string('productDescription').notNullable();
+    table.string('productId').notNullable();
+    table.float('productPrice').notNullable().defaultTo(0.00);
+    table.float('productDiscount').notNullable().defaultTo(0.00);
+    table.integer('productPriority').notNullable();
+    table.float('productTax').notNullable();
     table.integer('quantity').defaultTo(1);
-    table.float('price').defaultTo(0.00);
-    table.string('specialInstructions').defaultTo('');
+    table.float('totalPrice').defaultTo(0.00);
+    table.string('variantId');
+    table.string('variantName');
+    table.float('variantPrice');
+    table.string('complements');
     table.string('orderId');
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());

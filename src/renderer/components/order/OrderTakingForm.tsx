@@ -4,6 +4,7 @@ import { Group, GroupItem } from "@/types/groups";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useOrder } from "../../contexts/OrderContext";
+import { ComplementsToString } from "@/renderer/utils/order";
 
 interface OrderTakingFormProps {
   product: Product;
@@ -41,6 +42,9 @@ interface OrderItem {
   productId: string;
   productName: string;
   productPrice: number;
+  productDescription: string;
+  productPriority: number;
+  productDiscount: number;
   productTax: number;
   variantId: string;
   variantName: string;
@@ -51,6 +55,7 @@ interface OrderItem {
     itemId: string;
     itemName: string;
     price: number;
+    priority: number;
   }>;
   quantity: number;
   totalPrice: number;
@@ -61,7 +66,7 @@ const OrderTakingForm = ({
   setProduct,
   token,
 }: OrderTakingFormProps) => {
-  const { addToOrder } = useOrder();
+  const { orderItems, addToOrder,order,setOrder } = useOrder();
   const [variantItems, setVariantItems] = useState<any[] | null>(null);
   const [addOnPages, setAddonPages] = useState<AddonPage[] | null>(null);
   const [groups, setGroups] = useState<Group[] | null>(null);
@@ -197,33 +202,33 @@ const OrderTakingForm = ({
           // Fetch actual product details for each menu page product
           const productsWithDetails = productsRes.status
             ? await Promise.all(
-                productsRes.data.map(async (menuProduct: any) => {
-                  try {
-                    // Get all products and find the one we need
-                    const allProductsRes = await (
-                      window as any
-                    ).electronAPI.getAllProducts(token);
-                    if (allProductsRes.status) {
-                      const product = allProductsRes.data.find(
-                        (p: any) => p.id === menuProduct.productId
-                      );
-                      if (product) {
-                        return {
-                          ...menuProduct,
-                          name: product.name,
-                          description: product.description,
-                          price: product.price,
-                          tax: product.tax,
-                        };
-                      }
+              productsRes.data.map(async (menuProduct: any) => {
+                try {
+                  // Get all products and find the one we need
+                  const allProductsRes = await (
+                    window as any
+                  ).electronAPI.getAllProducts(token);
+                  if (allProductsRes.status) {
+                    const product = allProductsRes.data.find(
+                      (p: any) => p.id === menuProduct.productId
+                    );
+                    if (product) {
+                      return {
+                        ...menuProduct,
+                        name: product.name,
+                        description: product.description,
+                        price: product.price,
+                        tax: product.tax,
+                      };
                     }
-                    return menuProduct;
-                  } catch (error) {
-                    console.error("Error fetching product details:", error);
-                    return menuProduct;
                   }
-                })
-              )
+                  return menuProduct;
+                } catch (error) {
+                  console.error("Error fetching product details:", error);
+                  return menuProduct;
+                }
+              })
+            )
             : [];
 
           return {
@@ -447,6 +452,7 @@ const OrderTakingForm = ({
 
               // Add to order with menu context
               addToOrder({
+                id:"",
                 productId: actualProduct.id,
                 productName: actualProduct.name,
                 productPrice: Math.round(baseProductPrice * 100) / 100,
@@ -477,7 +483,7 @@ const OrderTakingForm = ({
     }
   };
 
-  const handleAddToOrder = () => {
+  const handleAddToOrder = async () => {
     if (!selectedVariant) {
       toast.error("Please select a variant");
       return;
@@ -504,6 +510,9 @@ const OrderTakingForm = ({
     const orderItem: OrderItem = {
       productId: product.id,
       productName: product.name,
+      productDescription: product.description || "",
+      productPriority: product.priority || 0,
+      productDiscount: product.discount || 0,
       productPrice: calculateBaseProductPrice(),
       productTax: calculateProductTaxAmount(),
       variantId: selectedVariant.id,
@@ -522,6 +531,7 @@ const OrderTakingForm = ({
               itemId,
               itemName: item?.name || "",
               price: item?.price || 0,
+              priority: item?.priority || 0,
             };
           });
         }
@@ -529,8 +539,23 @@ const OrderTakingForm = ({
       quantity,
       totalPrice: calculateTotalPrice(),
     };
-
-    addToOrder(orderItem);
+    const newComplement = ComplementsToString(orderItem.complements);
+    if (orderItems.length === 0) {
+      const res = await (window as any).electronAPI.saveOrder(token, { ...orderItem, complements: newComplement });
+      if (!res.status) {
+        toast.error("Unable to save order");
+        return;
+      }
+      addToOrder({...orderItem, id: res.data.itemId});
+      setOrder(res.data.order);
+    } else {
+      const res = await (window as any).electronAPI.addItemToOrder(token, order!.id, { ...orderItem, complements: newComplement });
+      if (!res.status) {
+        toast.error("Unable to update order");
+        return;
+      }
+      addToOrder({...orderItem, id: res.data.itemId});
+    }
     toast.success("Item added to order!");
 
     // If this is a menu product, check if we need to continue processing
@@ -673,11 +698,10 @@ const OrderTakingForm = ({
                             handleMenuProductSelect(menuProduct);
                           }
                         }}
-                        className={`border rounded-lg p-4 transition-all ${
-                          processedMenuProducts.has(menuProduct.productId)
-                            ? "border-green-300 bg-green-50 cursor-not-allowed opacity-60"
-                            : "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer"
-                        }`}
+                        className={`border rounded-lg p-4 transition-all ${processedMenuProducts.has(menuProduct.productId)
+                          ? "border-green-300 bg-green-50 cursor-not-allowed opacity-60"
+                          : "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer"
+                          }`}
                       >
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="font-medium text-gray-800">
@@ -803,11 +827,10 @@ const OrderTakingForm = ({
                 {variantItems.map((item) => (
                   <label
                     key={item.id}
-                    className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
-                      selectedVariant?.id === item.id
-                        ? "border-indigo-500 bg-indigo-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
+                    className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${selectedVariant?.id === item.id
+                      ? "border-indigo-500 bg-indigo-50"
+                      : "border-gray-200 hover:border-gray-300"
+                      }`}
                   >
                     <input
                       type="radio"
@@ -849,12 +872,11 @@ const OrderTakingForm = ({
                 <div className="flex flex-wrap gap-2 text-sm">
                   {currentAddonPage.minComplements > 0 && (
                     <span
-                      className={`px-2 py-1 rounded-full font-medium ${
-                        (selectedComplements[currentGroup.id]?.length || 0) >=
+                      className={`px-2 py-1 rounded-full font-medium ${(selectedComplements[currentGroup.id]?.length || 0) >=
                         currentAddonPage.minComplements
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                        }`}
                     >
                       Min: {currentAddonPage.minComplements}
                     </span>
@@ -881,11 +903,10 @@ const OrderTakingForm = ({
                     <button
                       key={item.id}
                       onClick={() => handleComplementToggle(item.id)}
-                      className={`p-3 border rounded-lg text-left transition-colors ${
-                        isSelected
-                          ? "border-indigo-500 bg-indigo-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
+                      className={`p-3 border rounded-lg text-left transition-colors ${isSelected
+                        ? "border-indigo-500 bg-indigo-50"
+                        : "border-gray-200 hover:border-gray-300"
+                        }`}
                     >
                       <div className="font-medium">{item.name}</div>
                       <div className="text-sm text-gray-600">
@@ -976,9 +997,8 @@ const OrderTakingForm = ({
               {addOnPages.map((_, index) => (
                 <div
                   key={index}
-                  className={`w-2 h-2 rounded-full ${
-                    index === currentPage ? "bg-indigo-500" : "bg-gray-300"
-                  }`}
+                  className={`w-2 h-2 rounded-full ${index === currentPage ? "bg-indigo-500" : "bg-gray-300"
+                    }`}
                 />
               ))}
             </div>
@@ -1009,11 +1029,10 @@ const OrderTakingForm = ({
                 type="button"
                 onClick={handleNext}
                 disabled={!canProceed()}
-                className={`px-6 py-2 rounded-lg font-medium ${
-                  canProceed()
-                    ? "bg-indigo-500 text-white hover:bg-indigo-600"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
+                className={`px-6 py-2 rounded-lg font-medium ${canProceed()
+                  ? "bg-indigo-500 text-white hover:bg-indigo-600"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
               >
                 {canGoNext() ? "Next" : "Add to Order"}
               </button>
