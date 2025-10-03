@@ -174,15 +174,15 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
                   onClick={() =>
                     setFormData({ ...formData, color: option.value })
                   }
-                  className={`p-3 rounded-lg border-2 transition-all duration-200 ${getColorClasses(
+                  className={`p-3 rounded-full flex items-center justify-center border-2 transition-all duration-200 ${getColorClasses(
                     option.value,
                     formData.color === option.value
                   )}`}
                 >
                   <div
-                    className={`w-full h-8 rounded ${option.color} mb-2`}
+                    className={`w-8 h-8 rounded-full ${option.color}`}
                   ></div>
-                  <span className="text-xs text-gray-700">{option.label}</span>
+                  {/* <span className="text-xs text-gray-700">{option.label}</span> */}
                 </button>
               ))}
             </div>

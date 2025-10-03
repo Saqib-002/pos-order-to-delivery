@@ -9,6 +9,22 @@ export const showToast = {
   ),
   error: debounce((message: string) => toast.error(message), TOAST_DEBOUNCE_MS),
 };
+export const formatAddress = (address: string) => {
+  if (!address) return "No address provided";
+
+  if (address.includes("|")) {
+    return address
+      .split("|")
+      .map((part) => {
+        const [key, value] = part.split("=");
+        return value || part;
+      })
+      .join(", ");
+  }
+
+  return address;
+};
+
 export const colorOptions = [
   { value: "red", label: "Red", color: "bg-red-500" },
   { value: "blue", label: "Blue", color: "bg-blue-500" },
