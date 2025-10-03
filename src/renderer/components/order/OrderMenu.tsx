@@ -142,16 +142,9 @@ const OrderMenu = ({ token }: OrderMenuProps) => {
               {(products && products.length > 0) ||
               (menus && menus.length > 0) ? (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    Available Items
-                  </h3>
-
                   {/* Products */}
                   {products && products.length > 0 && (
                     <div className="mb-6">
-                      <h4 className="text-md font-medium text-gray-700 mb-3">
-                        Products
-                      </h4>
                       <ProductGrid
                         products={products}
                         onProductSelect={setSelectedProduct}

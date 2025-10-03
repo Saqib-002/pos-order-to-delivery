@@ -20,7 +20,14 @@ export const OrderView: React.FC<OrderViewProps> = ({
   setFilter,
 }) => {
   const now = new Date();
-  const localMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(),5,0,0);
+  const localMidnight = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    5,
+    0,
+    0
+  );
   useEffect(() => {
     setFilter({
       searchTerm: "",
@@ -34,7 +41,11 @@ export const OrderView: React.FC<OrderViewProps> = ({
         <div className="col-span-3 border-r border-gray-300 h-full flex flex-col">
           <OrderComponentHeader token={token} />
           <div className="h-[1px] bg-gray-400"></div>
-          <OrderComponent token={token} orders={orders} />
+          <OrderComponent
+            token={token}
+            orders={orders}
+            refreshOrdersCallback={refreshOrdersCallback}
+          />
         </div>
         <div className="col-span-9 h-full flex flex-col">
           <OrderMenu token={token} />

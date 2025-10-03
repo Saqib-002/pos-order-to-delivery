@@ -823,7 +823,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                             return (
                               <div
                                 key={item.id}
-                                className="flex items-center gap-2 bg-white p-2 rounded border"
+                                className="flex items-center gap-2"
                               >
                                 <CustomInput type="number" value={variantPrices[item.id] || 0} onChange={(e) => handleVariantItemPriceChange(item.id, parseFloat(e.target.value) || 0)} inputClasses="pl-8" otherClasses="relative w-full" placeholder="0.00" min="0" step="0.01" preLabel="€" label={item.name} name="price"/>
                               </div>

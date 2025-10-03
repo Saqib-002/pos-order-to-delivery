@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import CustomerModal from "./modals/CustomerModal";
+import { toast } from "react-toastify";
 
 interface OrderItem {
   id: string;
@@ -39,6 +40,8 @@ interface OrderProcessingModalProps {
   orderItems: OrderItem[];
   onProcessOrder: (orderData: any) => void;
   token: string | null;
+  isEditing?: boolean;
+  editingOrderId?: string | null;
 }
 
 const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
@@ -47,9 +50,13 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   orderItems,
   onProcessOrder,
   token,
+  isEditing = false,
+  editingOrderId = null,
 }) => {
   const [customerSearch, setCustomerSearch] = useState("");
-  const [orderType, setOrderType] = useState<"pickup" | "delivery">("pickup");
+  const [orderType, setOrderType] = useState<"pickup" | "delivery" | "dine-in">(
+    "pickup"
+  );
   const [paymentType, setPaymentType] = useState<"cash" | "card">("cash");
   const [notes, setNotes] = useState("");
   const [searchResults, setSearchResults] = useState<Customer[]>([]);
@@ -165,12 +172,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
 
   const handleProcessOrder = () => {
     if (!selectedCustomer) {
-      alert("Please select a customer");
+      toast.error("Please select a customer");
       return;
     }
 
     if (orderType === "delivery" && !selectedCustomer.address.trim()) {
-      alert(
+      toast.error(
         "Selected customer has no address. Please select a different customer or change to pickup."
       );
       return;
@@ -185,10 +192,14 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         email: selectedCustomer.email || "",
         comments: selectedCustomer.comments || "",
         address:
-          orderType === "delivery" ? selectedCustomer.address : "In-store",
+          orderType === "delivery"
+            ? selectedCustomer.address
+            : orderType === "dine-in"
+              ? "Dine-in"
+              : "In-store",
       },
       orderType,
-      paymentType: orderType === "pickup" ? paymentType : "cash",
+      paymentType: orderType === "delivery" ? "pending" : paymentType,
       items: orderItems.map((item) => ({
         id: item.productId,
         name: item.productName,
@@ -213,7 +224,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-xl font-semibold text-indigo-500">
-            Process Order
+            {isEditing ? "Edit Order" : "Process Order"}
           </h2>
           <button
             type="button"
@@ -348,7 +359,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               Order Type
             </h3>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <button
                 type="button"
                 onClick={() => setOrderType("pickup")}
@@ -373,6 +384,18 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 <div className="text-xl mb-1">🚚</div>
                 <div className="font-medium text-sm">Delivery</div>
               </button>
+              <button
+                type="button"
+                onClick={() => setOrderType("dine-in")}
+                className={`p-3 border rounded-lg text-center transition-colors ${
+                  orderType === "dine-in"
+                    ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <div className="text-xl mb-1">🍽️</div>
+                <div className="font-medium text-sm">Dine In</div>
+              </button>
             </div>
           </div>
 
@@ -393,8 +416,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             </div>
           )}
 
-          {/* Payment Type (only for pickup) */}
-          {orderType === "pickup" && (
+          {/* Payment Type (only for pickup and dine-in) */}
+          {(orderType === "pickup" || orderType === "dine-in") && (
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 Payment Type
@@ -424,6 +447,23 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   <div className="text-xl mb-1">💳</div>
                   <div className="font-medium text-sm">Card</div>
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* Payment Status Info (only for delivery) */}
+          {orderType === "delivery" && (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="text-yellow-500 text-lg">💳</div>
+                <div className="flex-1">
+                  <div className="text-sm font-semibold text-yellow-800 mb-2">
+                    Payment Status
+                  </div>
+                  <div className="text-yellow-700 text-sm leading-relaxed">
+                    Payment will be collected upon delivery (Cash on Delivery)
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -500,7 +540,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               onClick={handleProcessOrder}
               className="px-6 py-2 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 transition-colors"
             >
-              Process Order
+              {isEditing ? "Update Order" : "Process Order"}
             </button>
           </div>
         </div>
