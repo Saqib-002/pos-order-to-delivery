@@ -236,7 +236,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               COLOR
             </label>
-            <div className="grid grid-cols-12 gap-2">
+            <div className="grid grid-cols-9 gap-2">
               {colorOptions.map((option) => (
                 <button
                   key={option.value}
@@ -247,15 +247,15 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                       color: option.value,
                     })
                   }
-                  className={`p-3 rounded-lg border-2 transition-all duration-200 ${getColorClasses(
+                  className={`p-2 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${getColorClasses(
                     option.value,
                     formData.color === option.value
                   )}`}
                 >
                   <div
-                    className={`w-full h-8 rounded ${option.color} mb-2`}
+                    className={`w-8 h-8 rounded-full ${option.color}`}
                   ></div>
-                  <span className="text-xs text-gray-700">{option.label}</span>
+                  {/* <span className="text-xs text-gray-700">{option.label}</span> */}
                 </button>
               ))}
             </div>
@@ -268,7 +268,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <CustomInput label="COMPLEMENT NAME *" name="complement-name" type="text" value={newComplement.name} onChange={(e) => setNewComplement({ ...newComplement, name: e.target.value })} placeholder="Enter complement name" />
+
               <CustomInput label="PRICE *" name="price" type="number" step="0.01" min="0" value={newComplement.price} onChange={(e) => setNewComplement({ ...newComplement, price: parseFloat(e.target.value) || 0 })} placeholder="0" preLabel="€" otherClasses="relative" inputClasses="pl-8" />
+                
               <CustomInput label="PRIORITY" name="priority" type="number" min="0" value={newComplement.priority} onChange={(e) => setNewComplement({ ...newComplement, priority: parseInt(e.target.value) || 0 })} placeholder="0" />
             </div>
 

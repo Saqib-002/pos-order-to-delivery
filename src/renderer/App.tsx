@@ -11,6 +11,7 @@ import { DeliveryManagement } from "./Views/DeliveryManagement";
 import { DeliveryView } from "./Views/DeliveryView";
 import { KitchenView } from "./Views/KitchenView";
 import { LoginView } from "./Views/LoginView";
+import { ManageOrdersView } from "./Views/ManageOrdersView";
 import { MenuView } from "./Views/MenuView";
 import { OrderView } from "./Views/OrderView";
 import { ReportView } from "./Views/ReportView";
@@ -100,7 +101,7 @@ const App: React.FC = () => {
       roles: ["admin"],
     },
     [VIEWS.MENU_STRUCTURE]: {
-      component: <MenuView token={auth.token!}/>,
+      component: <MenuView token={auth.token!} />,
       roles: ["admin"],
     },
     [VIEWS.USERS]: {
@@ -109,6 +110,16 @@ const App: React.FC = () => {
     },
     [VIEWS.DELIVERY_MANAGEMENT]: {
       component: <DeliveryManagement token={auth.token!} />,
+      roles: ["admin"],
+    },
+    [VIEWS.MANAGE_ORDERS]: {
+      component: (
+        <ManageOrdersView
+          orders={orders}
+          token={auth.token!}
+          refreshOrdersCallback={refreshOrdersCallback}
+        />
+      ),
       roles: ["admin"],
     },
   };
