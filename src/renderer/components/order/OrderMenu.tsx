@@ -5,26 +5,25 @@ import {
   fetchMenusBySubcategory,
 } from "@/renderer/utils/menu";
 import { Category, SubCategory } from "@/types/categories";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Product } from "@/types/Menu";
 import OrderTakingForm from "./OrderTakingForm";
 import CategorySelection from "./CategorySelection";
 import SubcategorySelection from "./SubcategorySelection";
 import ProductGrid from "./ProductGrid";
 import BreadcrumbNavigation from "./BreadcrumbNavigation";
-import { UnifiedCard } from "../ui/UnifiedCard";
+import { useAuth } from "@/renderer/contexts/AuthContext";
+import MenuOrderTakingForm from "./MenuOrderTakingForm";
 
-interface OrderMenuProps {
-  token: string | null;
-}
-
-const OrderMenu = ({ token }: OrderMenuProps) => {
+const OrderMenu = () => {
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [subCategories, setSubCategories] = useState<SubCategory[] | null>(
     null
   );
+  const { auth: { token } } = useAuth();
   const [products, setProducts] = useState<Product[] | null>(null);
   const [menus, setMenus] = useState<any[] | null>(null);
+  const [mode, setMode] = useState<"menu" | "product">("menu");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedMenu, setSelectedMenu] = useState<any | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
@@ -36,6 +35,7 @@ const OrderMenu = ({ token }: OrderMenuProps) => {
   const [isLoadingSubcategories, setIsLoadingSubcategories] = useState(false);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [isLoadingMenus, setIsLoadingMenus] = useState(false);
+  const [currentOrderItem, setCurrentOrderItem] = useState<any>(null);
 
   useEffect(() => {
     loadCategories();
@@ -88,29 +88,32 @@ const OrderMenu = ({ token }: OrderMenuProps) => {
   };
 
   const handleMenuSelect = (menu: any) => {
-    setSelectedProduct({
-      ...menu,
-      id: menu.id,
-      name: menu.name,
-      description: menu.description || "",
-      price: menu.price,
-      categoryId: selectedCategory?.id || "",
-      subcategoryId: selectedSubcategory?.id || "",
-      isAvailable: true,
-      type: "product",
-      isMenu: true,
-      menuId: menu.id,
-    } as any);
+    setSelectedMenu(menu);
   };
   return (
     <div className="h-full flex flex-col">
       {selectedProduct && (
         <OrderTakingForm
+          mode={mode}
           token={token}
           product={selectedProduct}
           setProduct={setSelectedProduct}
+          currentOrderItem={currentOrderItem}
         />
       )}
+      {
+        selectedMenu && (
+          <MenuOrderTakingForm
+            token={token}
+            product={selectedProduct}
+            setProduct={setSelectedProduct}
+            menu={selectedMenu}
+            setMode={setMode}
+            setMenu={setSelectedMenu}
+            setCurrentOrderItem={setCurrentOrderItem}
+          />
+        )
+      }
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-7xl mx-auto">
           <BreadcrumbNavigation
@@ -140,14 +143,17 @@ const OrderMenu = ({ token }: OrderMenuProps) => {
             <div className="space-y-6">
               {/* Items Section */}
               {(products && products.length > 0) ||
-              (menus && menus.length > 0) ? (
+                (menus && menus.length > 0) ? (
                 <div>
                   {/* Products */}
                   {products && products.length > 0 && (
                     <div className="mb-6">
                       <ProductGrid
                         products={products}
-                        onProductSelect={setSelectedProduct}
+                        onProductSelect={(product) => {
+                          setMode("product");
+                          setSelectedProduct(product);
+                        }}
                         isLoading={isLoadingProducts}
                       />
                     </div>
@@ -162,51 +168,51 @@ const OrderMenu = ({ token }: OrderMenuProps) => {
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {isLoadingMenus
                           ? [...Array(4)].map((_, index) => (
-                              <div
-                                key={index}
-                                className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse"
-                              >
-                                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                                <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                              </div>
-                            ))
+                            <div
+                              key={index}
+                              className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse"
+                            >
+                              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                              <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                            </div>
+                          ))
                           : menus.map((menu) => (
-                              <div
-                                key={menu.id}
-                                onClick={() => handleMenuSelect(menu)}
-                                className="bg-white border border-gray-200 rounded-lg p-6 cursor-pointer hover:shadow-md hover:border-indigo-300 transition-all group"
-                              >
-                                <div className="flex items-center justify-between mb-3">
-                                  <h4 className="text-lg font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">
-                                    {menu.name}
-                                  </h4>
-                                  <div className="text-sm font-medium text-indigo-600">
-                                    €{Number(menu.price || 0).toFixed(2)}
-                                  </div>
-                                </div>
-                                {menu.description && (
-                                  <p className="text-gray-600 text-sm line-clamp-2">
-                                    {menu.description}
-                                  </p>
-                                )}
-                                <div className="mt-3 flex items-center text-sm text-gray-500">
-                                  <svg
-                                    className="w-4 h-4 mr-1"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M9 5l7 7-7 7"
-                                    />
-                                  </svg>
-                                  Click to process menu
+                            <div
+                              key={menu.id}
+                              onClick={() => handleMenuSelect(menu)}
+                              className="bg-white border border-gray-200 rounded-lg p-6 cursor-pointer hover:shadow-md hover:border-indigo-300 transition-all group"
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="text-lg font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">
+                                  {menu.name}
+                                </h4>
+                                <div className="text-sm font-medium text-indigo-600">
+                                  €{Number(menu.price || 0).toFixed(2)}
                                 </div>
                               </div>
-                            ))}
+                              {menu.description && (
+                                <p className="text-gray-600 text-sm line-clamp-2">
+                                  {menu.description}
+                                </p>
+                              )}
+                              <div className="mt-3 flex items-center text-sm text-gray-500">
+                                <svg
+                                  className="w-4 h-4 mr-1"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 5l7 7-7 7"
+                                  />
+                                </svg>
+                                Click to process menu
+                              </div>
+                            </div>
+                          ))}
                       </div>
                     </div>
                   )}

@@ -8,11 +8,13 @@ import { HourlyDistribution } from "../components/report/HourlyDistribution";
 import { MetricCard } from "../components/report/MetricCard";
 import { StatusDistribution } from "../components/report/StatusDistribution";
 import { TopItems } from "../components/report/TopItems";
+import { useAuth } from "../contexts/AuthContext";
 
-export const ReportView: React.FC<ReportViewProps> = ({ orders, setOrders, filter, token, setFilter }) => {
+export const ReportView: React.FC<ReportViewProps> = ({ orders, setOrders, filter, setFilter }) => {
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
     const [dateRange, setDateRange] = useState<string>("today");
     const [analytics, setAnalytics] = useState<AnalyticsType | null>(null);
+    const { auth: { token } } = useAuth();
 
     useEffect(() => {
         const fetchAnalytics = async () => {

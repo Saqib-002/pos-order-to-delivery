@@ -1,37 +1,14 @@
+import { Order, OrderItem } from "@/types/order";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-interface OrderItem {
-  id: string;
-  productId: string;
-  productName: string;
-  productPrice: number;
-  productTax: number;
-  variantId: string;
-  variantName: string;
-  variantPrice: number;
-  complements: Array<{
-    groupId: string;
-    groupName: string;
-    itemId: string;
-    itemName: string;
-    price: number;
-  }>;
-  quantity: number;
-  totalPrice: number;
-  menuContext?: {
-    menuId: string;
-    menuName: string;
-    menuPageId: string;
-    menuPageName: string;
-    supplement: number;
-  };
-}
 
 interface OrderContextType {
   orderItems: OrderItem[];
-  addToOrder: (item: Omit<OrderItem, "id">) => void;
-  removeFromOrder: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
+  order: Order | null;
+  setOrder: React.Dispatch<React.SetStateAction<Order | null>>;
+  addToOrder: (item: OrderItem) => void;
+  removeFromOrder: (itemId: string | undefined) => void;
+  updateQuantity: (itemId: string | undefined, quantity: number) => void;
   clearOrder: () => void;
   getOrderTotal: () => number;
 }
@@ -52,40 +29,36 @@ interface OrderProviderProps {
 
 export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [order, setOrder] = useState<Order | null>(null)
 
-  const addToOrder = (newItem: Omit<OrderItem, "id">) => {
-    const orderItem: OrderItem = {
-      ...newItem,
-      id: `${newItem.productId}-${newItem.variantId}-${Date.now()}`,
-    };
-
-    setOrderItems((prev) => [...prev, orderItem]);
+  const addToOrder = async (newItem: OrderItem) => {
+    setOrderItems((prev) => [...prev, newItem]);
   };
 
-  const removeFromOrder = (itemId: string) => {
+  const removeFromOrder = (itemId: string | undefined) => {
     setOrderItems((prev) => prev.filter((item) => item.id !== itemId));
   };
 
-  const updateQuantity = (itemId: string, quantity: number) => {
+  const updateQuantity = (itemId: string | undefined, quantity: number) => {
     setOrderItems((prev) =>
       prev.map((item) =>
         item.id === itemId
           ? {
-              ...item,
-              quantity,
-              totalPrice:
-                Math.round(
-                  (item.productPrice +
-                    item.productTax +
-                    item.variantPrice +
-                    item.complements.reduce(
-                      (sum, comp) => sum + comp.price,
-                      0
-                    )) *
-                    quantity *
-                    100
-                ) / 100,
-            }
+            ...item,
+            quantity,
+            totalPrice:
+              Math.round(
+                (item.productPrice +
+                  item.productTax +
+                  item.variantPrice +
+                  item.complements.reduce(
+                    (sum, comp) => sum + comp.price,
+                    0
+                  )) *
+                quantity *
+                100
+              ) / 100,
+          }
           : item
       )
     );
@@ -101,6 +74,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 
   const value: OrderContextType = {
     orderItems,
+    order,
+    setOrder,
     addToOrder,
     removeFromOrder,
     updateQuantity,

@@ -12,7 +12,6 @@ export async function up(knex) {
     table.string('licenseNo').notNullable();
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
-    table.boolean('isDeleted').defaultTo(false);
 
     table.index(['vehicleType']);
     table.index(['name']);

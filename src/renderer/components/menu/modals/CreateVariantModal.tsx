@@ -22,7 +22,7 @@ interface CreateVariantModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  token: string;
+  token: string | null;
   editingVariant?: Variant | null;
 }
 

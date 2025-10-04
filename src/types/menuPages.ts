@@ -44,5 +44,4 @@ export interface Menu {
   outstanding: boolean;
   createdAt: string;
   updatedAt: string;
-  isDeleted: boolean;
 }

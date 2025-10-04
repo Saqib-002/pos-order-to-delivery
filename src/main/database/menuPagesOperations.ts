@@ -17,7 +17,6 @@ export class MenuPagesOperations {
                 ...menuPage,
                 createdAt: now,
                 updatedAt: now,
-                isDeleted: false,
             };
             await trx("menu_pages").insert(newMenuPage);
             const productsToAdd = [];
@@ -44,7 +43,6 @@ export class MenuPagesOperations {
     static async getMenuPages(): Promise<MenuPage[]> {
         try {
             const menuPages = await db("menu_pages")
-                .where("isDeleted", false)
                 .select("menu_pages.*", db.raw('(SELECT COUNT(*) FROM menu_page_products WHERE "menuPageId" = menu_pages.id) as "itemCount"'))
                 .orderBy("name", "asc");
             return menuPages;
@@ -117,11 +115,7 @@ export class MenuPagesOperations {
 
     static async deleteMenuPage(id: string): Promise<void> {
         try {
-            const now = new Date().toISOString();
-            await db("menu_pages").where("id", id).update({
-                isDeleted: true,
-                updatedAt: now,
-            });
+            await db("menu_pages").where("id", id).delete();
             Logger.info(`Menu page deleted: ${id}`);
         } catch (error) {
             throw error;

@@ -1,46 +1,73 @@
-export interface Item {
-  id: string;
-  name: string;
+export interface OrderItem {
+  id?: string;
+  productId: string;
+  productName: string;
+  productPrice: number;
+  productDescription: string;
+  productPriority: number;
+  productDiscount: number;
+  productTax: number;
+  variantId: string;
+  variantName: string;
+  variantPrice: number;
+  complements: Array<{
+    groupId: string;
+    groupName: string;
+    itemId: string;
+    itemName: string;
+    price: number;
+    priority: number;
+  }>;
   quantity: number;
-  ingredients?: string[];
-  customIngredients?: string[];
-  specialInstructions?: string;
-  price?: number;
-  category?: string;
+  totalPrice: number;
+  menuDescription?: string;
+  menuDiscount?: number;
+  menuTax?: number;
+  menuPrice?: number;
+  menuId?: string;
+  menuName?: string;
+  menuPageId?: string;
+  menuPageName?: string;
+  supplement?: number;
+}
+export interface Customer {
+  id?: string;
+  name: string;
+  phone: string;
+  address: string;
+  cif?: string;
+  email?: string;
+  comments?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+export interface DeliveryPerson{
+  id?: string;
+  name: string;
+  phone: string;
+  email: string;
+  vehicleType: string;
+  licenseNo: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 export interface Order {
   id: string;
-  customer: {
-    name: string;
-    phone: string;
-    address: string;
-    email: string;
-    cif?: string;
-    comments?: string;
-    createdAt?: string;
-    updatedAt?: string;
-  };
-  orderId?: number;
-  items: Item[];
+  orderId: string;
+  customer: Customer;
+  notes: string;
+  orderType: "pickup" | "delivery" | "dine-in";
+  paymentType: "cash" | "card" ;
+  isPaid: boolean;
   status: string;
-  orderType?: string;
-  paymentType?: string;
-  createdAt: string;
-  updatedAt?: string;
+  deliveryPerson?: DeliveryPerson;
+  assignedAt?: string;
   readyAt?: string;
-  cancelledAt?: string;
+  cancelAt?: string;
   deliveredAt?: string;
-  syncAt?: string;
-  isDeleted?: boolean;
-  deliveryPersonId?: string;
-  deliveryPerson?: {
-    id: string;
-    name: string;
-    phone: string;
-    vehicleType: string;
-    licenseNo?: string;
-  };
-  notes?: string;
+  updatedAt?: string; 
+  createdAt?: string;
+  items?: OrderItem[];
 }
 export interface FilterType {
   searchTerm: string;

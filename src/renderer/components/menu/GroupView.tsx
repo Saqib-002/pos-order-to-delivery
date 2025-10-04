@@ -4,6 +4,7 @@ import { CreateGroupModal } from "./modals/CreateGroupModal";
 import AddIcon from "../../assets/icons/add.svg?react";
 import { getGroups } from "@/renderer/utils/menu";
 import CustomButton from "../ui/CustomButton";
+import { useAuth } from "@/renderer/contexts/AuthContext";
 
 export interface Group {
   id: string;
@@ -18,10 +19,12 @@ interface Complement {
   priority: number;
 }
 
-export const GroupView: React.FC<{ token: string }> = ({ token }) => {
+export const GroupView = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
+  const { auth: { token } } = useAuth();
+
 
   useEffect(() => {
     getGroups(token, setGroups);
@@ -46,9 +49,9 @@ export const GroupView: React.FC<{ token: string }> = ({ token }) => {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4 items-center">
-        <CustomButton type="button" label="CREATE GROUP" variant="yellow" onClick={handleCreateGroup}/>
+        <CustomButton type="button" label="CREATE GROUP" variant="yellow" onClick={handleCreateGroup} />
       </div>
-      
+
       <div className="">
         <h2 className="text-xl font-semibold text-gray-900">Groups</h2>
       </div>

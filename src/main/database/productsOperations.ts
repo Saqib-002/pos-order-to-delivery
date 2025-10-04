@@ -175,4 +175,12 @@ export class ProductsDatabaseOperations {
       throw error;
     }
   }
+  static async getProductById(productId:string){
+    try {
+      const product = await db("products").where("id", productId).first();
+      return product;
+    } catch (error) {
+      throw error;
+    }
+  }
 }

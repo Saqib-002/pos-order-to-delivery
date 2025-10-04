@@ -42,7 +42,7 @@ interface MenuModalProps {
     onClose: () => void;
     onSuccess: () => void;
     editingMenu: Menu | null;
-    token: string;
+    token: string | null;
 }
 
 export const MenuModal: React.FC<MenuModalProps> = ({
@@ -350,7 +350,6 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     formData,
                     menuPageAssociations
                 );
-                console.log(res,menuPageAssociations);
                 if (!res.status) {
                     toast.error("Failed to update menu");
                     return;
@@ -361,7 +360,6 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     formData,
                     menuPageAssociations
                 );
-                console.log(res);
                 if (!res.status) {
                     toast.error("Failed to create menu");
                     return;

@@ -118,3 +118,44 @@ export const refreshOrders = async (
         showToast.error("Error fetching orders");
     }
 };
+
+export const ComplementsToString = (complements: any[]) => {
+    if (complements.length === 0) return "";
+    let result = complements
+        .map(
+            (c) =>
+                `${c.groupId}|${c.groupName}|${c.itemId}|${c.itemName}|${c.price}`
+        )
+        .join("=");
+    return result;
+};
+export const StringToComplements = (complementStr: string) => {
+    if (!complementStr) return [];
+    const complements = complementStr.split("=");
+    return complements.map((c) => {
+        const [groupId, groupName, itemId, itemName, price] = c.split("|");
+        return {
+            groupId,
+            groupName,
+            itemId,
+            itemName,
+            price: parseFloat(price),
+        };
+    });
+};
+export const updateOrder = async (
+    token: string | null,
+    orderId: string,
+    orderData: any
+) => {
+    try {
+        const res = await (window as any).electronAPI.updateOrder(
+            token,
+            orderId,
+            orderData
+        );
+        return res.status;
+    } catch (error) {
+        return false;
+    }
+};

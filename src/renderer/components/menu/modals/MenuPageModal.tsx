@@ -20,7 +20,7 @@ interface MenuPageModalProps {
   onClose: () => void;
   onSuccess: () => void;
   editingMenuPage: MenuPage | null;
-  token: string;
+  token: string|null;
 }
 
 export const MenuPageModal: React.FC<MenuPageModalProps> = ({

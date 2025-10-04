@@ -47,18 +47,18 @@ const MenuHeader: React.FC<{ currentView: ViewKey; onViewChange: (view: ViewKey)
     );
   }
 );
-export const MenuView: React.FC<{ token: string }> = memo(({ token }) => {
+export const MenuView= memo(() => {
   const [currentView, setCurrentView] = useState<ViewKey>("menu");
   const renderContent = () => {
     switch (currentView) {
       case "menu":
-        return <MenuComponent token={token} />;
+        return <MenuComponent />;
       case "menu-structure":
-        return <MenuStructureComponent token={token} />;
+        return <MenuStructureComponent />;
       case "group":
-        return <GroupView token={token} />;
+        return <GroupView  />;
       case "variant":
-        return <VariantView token={token} />;
+        return <VariantView />;
       default:
         return null;
     }

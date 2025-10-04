@@ -1,9 +1,8 @@
-import { FilterType, Order } from "@/types/order";
+import { DeliveryPerson, FilterType, Order } from "@/types/order";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "react-toastify";
 import { DeliveryPersonInput } from "../components/delivery/DeliveryPersonInput.view";
-import { Header } from "../components/delivery/Header.view";
-import { OrderTable } from "../components/delivery/OrderTable";
+import { OrderTable } from "../components/shared/OrderTable";
 import { StatsCard } from "../components/shared/StatsCard.order";
 
 // ICONS
@@ -11,27 +10,27 @@ import CircleCheckIcon from "../assets/icons/circle-check.svg?react";
 import ThunderIcon from "../assets/icons/thunder.svg?react";
 import MarkIcon from "../assets/icons/mark.svg?react";
 import GroupIcon from "../assets/icons/group.svg?react";
-import SearchIcon from "../assets/icons/search.svg?react";
+import DeliveredIcon from "../assets/icons/delivered.svg?react";
+import { useAuth } from "../contexts/AuthContext";
+import Header from "../components/shared/Header.order";
+import { FilterControls } from "../components/shared/FilterControl.order";
+import { updateOrder } from "../utils/order";
 
 
 interface DeliveryViewProps {
     orders: Order[];
-    token: string | null;
     refreshOrdersCallback: () => void;
     filter: FilterType;
     setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
 }
 export const DeliveryView: React.FC<DeliveryViewProps> = ({
     orders,
-    token,
     refreshOrdersCallback,
     filter,
     setFilter,
 }) => {
-    const [deliveryPerson, setDeliveryPerson] = useState<{
-        id: string;
-        name: string;
-    }>({ id: "", name: "" });
+    const {auth:{token}}=useAuth();
+    const [deliveryPerson, setDeliveryPerson] = useState<DeliveryPerson | null>(null);
     const [deliveryPersons, setDeliveryPersons] = useState<DeliveryPerson[]>(
         []
     );
@@ -75,24 +74,32 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
 
     const assignDelivery = useCallback(
         async (order: Order) => {
-            if (!deliveryPerson.name.trim()) {
+            if (!deliveryPerson?.name.trim()) {
                 toast.error("Please enter delivery person name");
                 return;
             }
             try {
-                const res = await (
-                    window as any
-                ).electronAPI.assignDeliveryPerson(
+                const res = await updateOrder(
                     token,
                     order.id,
-                    deliveryPerson.id
+                    {
+                        deliveryPersonId: deliveryPerson.id,
+                        deliveryPersonPhone: deliveryPerson.phone,
+                        deliveryPersonName: deliveryPerson.name,
+                        deliveryPersonEmail: deliveryPerson.email,
+                        deliveryPersonVehicleType: deliveryPerson.vehicleType,
+                        deliveryPersonLicenseNo: deliveryPerson.licenseNo,
+                        status: "out for delivery",
+                        assignedAt: new Date(Date.now()).toISOString(),
+
+                    }
                 );
-                if (!res.status) {
+                if (!res) {
                     toast.error("Failed to assign delivery person");
                     return;
                 }
                 refreshOrdersCallback();
-                setDeliveryPerson({ id: "", name: "" });
+                setDeliveryPerson(null);
             } catch (error) {
                 console.error("Failed to assign delivery:", error);
                 toast.error("Failed to assign delivery. Please try again.");
@@ -104,10 +111,8 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
     const markAsDelivered = useCallback(
         async (id: string) => {
             try {
-                const res = await (
-                    window as any
-                ).electronAPI.markDeliveredOrder(token, id);
-                if (!res.status) {
+                const res = await updateOrder(token, id, { status: "delivered" , deliveredAt: new Date(Date.now()).toISOString() });
+                if (!res) {
                     toast.error("Failed to mark as delivered");
                     return;
                 }
@@ -152,7 +157,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                 title: "Active Drivers",
                 value: new Set(
                     outForDeliveryOrders
-                        .map((o) => o.deliveryPersonId)
+                        .map((o) => o.deliveryPerson?.id)
                         .filter(Boolean)
                 ).size,
                 icon: <GroupIcon className="text-purple-600 size-6"/>,
@@ -162,7 +167,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
         [readyOrders, outForDeliveryOrders, orders]
     );
     const renderReadyOrderRow = (order: Order) => {
-        const readyTime = new Date(order.readyAt || order.createdAt);
+        const readyTime = new Date(order.readyAt || order.createdAt || "");
         const now = new Date();
         const diffMinutes = Math.floor(
             (now.getTime() - readyTime.getTime()) / (1000 * 60)
@@ -197,13 +202,13 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                 <td className="px-6 py-4 min-w-[250px]">
                     <div className="text-sm text-gray-900">
                         <div className="space-y-1">
-                            {order.items.map((item, index) => (
+                            {order.items &&order.items.map((item, index) => (
                                 <div
                                     key={index}
                                     className="flex justify-between"
                                 >
                                     <span className="text-gray-600">
-                                        {item.name}
+                                        {item.productName}
                                     </span>
                                     <span className="text-gray-900 font-medium">
                                         x{item.quantity}
@@ -224,7 +229,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2 min-w-[140px]">
                     <button
                         onClick={() => assignDelivery(order)}
-                        disabled={!deliveryPerson.name.trim()}
+                        disabled={!deliveryPerson?.name.trim()}
                         className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105"
                     >
                         <ThunderIcon className="size-4"/>
@@ -272,10 +277,10 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
             <td className="px-6 py-4">
                 <div className="text-sm text-gray-900">
                     <div className="space-y-1">
-                        {order.items.map((item, index) => (
+                        {order.items && order.items.map((item, index) => (
                             <div key={index} className="flex justify-between">
                                 <span className="text-gray-600">
-                                    {item.name}
+                                    {item.productName}
                                 </span>
                                 <span className="text-gray-900 font-medium">
                                     x{item.quantity}
@@ -300,7 +305,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
     return (
         <div className="mt-4 p-6 bg-gray-50 min-h-screen">
             <div className="max-w-[98%] mx-auto">
-                <Header />
+                <Header title="Delivery Management" subtitle="Assign and track order deliveries" icon={<DeliveredIcon className="size-8 text-blue-600"/>} iconbgClasses="bg-blue-100" />
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     {stats.map((stat) => (
                         <StatsCard
@@ -322,7 +327,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                         readyOrders[0] && assignDelivery(readyOrders[0])
                     }
                     disabled={
-                        !deliveryPerson.name.trim() || readyOrders.length === 0
+                        !deliveryPerson?.name.trim() || readyOrders.length === 0
                     }
                 />
                 <div className="px-6 py-4 border-b border-gray-200">
@@ -330,63 +335,15 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                         <h3 className="text-lg font-semibold text-gray-900">
                             Filters
                         </h3>
-                        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <SearchIcon className="size-5 text-gray-400"/>
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Search orders..."
-                                    value={filter.searchTerm}
-                                    onChange={(e) =>
-                                        setFilter({
-                                            ...filter,
-                                            searchTerm: e.target.value,
-                                        })
-                                    }
-                                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                />
-                            </div>
-                            <input
-                                type="date"
-                                value={
-                                    filter.selectedDate
-                                        ? filter.selectedDate
-                                              .toISOString()
-                                              .split("T")[0]
-                                        : ""
-                                }
-                                onChange={(e) =>
-                                    setFilter({
-                                        ...filter,
-                                        selectedDate: e.target.value
-                                            ? new Date(e.target.value)
-                                            : null,
-                                    })
-                                }
-                                className="block w-full px-3 py-3 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            />
-                            {(filter.searchTerm || filter.selectedDate) && (
-                                <button
-                                    onClick={() =>
-                                        setFilter({
-                                            ...filter,
-                                            searchTerm: "",
-                                            selectedDate: null,
-                                        })
-                                    }
-                                    className="px-3 py-3 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
-                                >
-                                    Clear Filters
-                                </button>
-                            )}
-                        </div>
+                        <FilterControls
+                            filter={filter}
+                            setFilter={setFilter}/>
                     </div>
                 </div>
                 <OrderTable
                     orders={readyOrders}
                     title="Ready for Delivery Orders"
+                    subtitle="All orders are either in kitchen or already assigned for delivery."
                     columns={[
                         "Order ID",
                         "Customer",
@@ -402,6 +359,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                     <OrderTable
                         orders={outForDeliveryOrders}
                         title="Out for Delivery"
+                        subtitle="Try adjusting your search criteria or date filter."
                         columns={[
                             "Order ID",
                             "Customer",

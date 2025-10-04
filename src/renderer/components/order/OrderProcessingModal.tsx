@@ -1,57 +1,22 @@
 import React, { useState, useEffect } from "react";
 import CustomerModal from "./modals/CustomerModal";
 import { toast } from "react-toastify";
+import { Order, OrderItem, Customer } from "@/types/order";
+import { useAuth } from "@/renderer/contexts/AuthContext";
 
-interface OrderItem {
-  id: string;
-  productId: string;
-  productName: string;
-  productPrice: number;
-  productTax: number;
-  variantId: string;
-  variantName: string;
-  variantPrice: number;
-  complements: Array<{
-    groupId: string;
-    groupName: string;
-    itemId: string;
-    itemName: string;
-    price: number;
-  }>;
-  quantity: number;
-  totalPrice: number;
-}
-
-interface Customer {
-  id: string;
-  name: string;
-  phone: string;
-  address: string;
-  cif?: string;
-  email?: string;
-  comments?: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 interface OrderProcessingModalProps {
-  isOpen: boolean;
   onClose: () => void;
+  order: Order | null;
   orderItems: OrderItem[];
   onProcessOrder: (orderData: any) => void;
-  token: string | null;
-  isEditing?: boolean;
-  editingOrderId?: string | null;
 }
 
 const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
-  isOpen,
   onClose,
   orderItems,
+  order,
   onProcessOrder,
-  token,
-  isEditing = false,
-  editingOrderId = null,
 }) => {
   const [customerSearch, setCustomerSearch] = useState("");
   const [orderType, setOrderType] = useState<"pickup" | "delivery" | "dine-in">(
@@ -66,28 +31,25 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const { auth: { token } } = useAuth();
 
   useEffect(() => {
-    if (isOpen) {
-      setCustomerSearch("");
-      setOrderType("pickup");
-      setPaymentType("cash");
-      setNotes("");
-      setSearchResults([]);
-      setSelectedCustomer(null);
-      setIsSearching(false);
-      setShowSearchResults(false);
-      setIsCustomerModalOpen(false);
-    }
-  }, [isOpen]);
+    setCustomerSearch(order?.customer.name || "");
+    setOrderType(order?.orderType || "pickup");
+    setPaymentType(order?.paymentType || "cash");
+    setNotes(order?.notes || "");
+    setSearchResults([]);
+    setSelectedCustomer(order?.customer.name ? order.customer : null);
+    setIsSearching(false);
+    setShowSearchResults(false);
+    setIsCustomerModalOpen(false);
+  }, []);
 
   const calculateTotal = () => {
     return orderItems.reduce((total, item) => total + item.totalPrice, 0);
   };
-
   const formatAddress = (address: string) => {
     if (!address) return "No address provided";
-
     if (address.includes("|")) {
       return address
         .split("|")
@@ -139,7 +101,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     setShowSearchResults(false);
     setIsCustomerModalOpen(false);
   };
-
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (customerSearch.trim() && customerSearch.length >= 3) {
@@ -184,39 +145,25 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     }
 
     const orderData = {
-      customer: {
-        id: selectedCustomer.id,
-        name: selectedCustomer.name,
-        phone: selectedCustomer.phone,
-        cif: selectedCustomer.cif || "",
-        email: selectedCustomer.email || "",
-        comments: selectedCustomer.comments || "",
-        address:
-          orderType === "delivery"
-            ? selectedCustomer.address
-            : orderType === "dine-in"
-              ? "Dine-in"
-              : "In-store",
-      },
+      customerName: selectedCustomer.name,
+      customerPhone: selectedCustomer.phone,
+      customerCIF: selectedCustomer.cif || "",
+      customerEmail: selectedCustomer.email || "",
+      customerComments: selectedCustomer.comments || "",
+      customerAddress:
+        orderType === "delivery"
+          ? selectedCustomer.address
+          : orderType === "dine-in"
+            ? "Dine-in"
+            : "In-store",
       orderType,
       paymentType: orderType === "delivery" ? "pending" : paymentType,
-      items: orderItems.map((item) => ({
-        id: item.productId,
-        name: item.productName,
-        quantity: item.quantity,
-        price: item.totalPrice / item.quantity,
-        category: "Food",
-        specialInstructions: `Variant: ${item.variantName}${item.complements.length > 0 ? `, Add-ons: ${item.complements.map((c) => c.itemName).join(", ")}` : ""}`,
-      })),
       status: "sent to kitchen",
       notes: notes || `Order total: €${calculateTotal().toFixed(2)}`,
     };
-    console.log("Processing order:", orderData);
     onProcessOrder(orderData);
     onClose();
   };
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -224,7 +171,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-xl font-semibold text-indigo-500">
-            {isEditing ? "Edit Order" : "Process Order"}
+            Process Order
           </h2>
           <button
             type="button"
@@ -363,11 +310,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               <button
                 type="button"
                 onClick={() => setOrderType("pickup")}
-                className={`p-3 border rounded-lg text-center transition-colors ${
-                  orderType === "pickup"
+                className={`p-3 border rounded-lg text-center transition-colors ${orderType === "pickup"
                     ? "border-indigo-500 bg-indigo-50 text-indigo-700"
                     : "border-gray-200 hover:border-gray-300"
-                }`}
+                  }`}
               >
                 <div className="text-xl mb-1">🏪</div>
                 <div className="font-medium text-sm">Pickup</div>
@@ -375,11 +321,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               <button
                 type="button"
                 onClick={() => setOrderType("delivery")}
-                className={`p-3 border rounded-lg text-center transition-colors ${
-                  orderType === "delivery"
+                className={`p-3 border rounded-lg text-center transition-colors ${orderType === "delivery"
                     ? "border-indigo-500 bg-indigo-50 text-indigo-700"
                     : "border-gray-200 hover:border-gray-300"
-                }`}
+                  }`}
               >
                 <div className="text-xl mb-1">🚚</div>
                 <div className="font-medium text-sm">Delivery</div>
@@ -387,11 +332,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               <button
                 type="button"
                 onClick={() => setOrderType("dine-in")}
-                className={`p-3 border rounded-lg text-center transition-colors ${
-                  orderType === "dine-in"
+                className={`p-3 border rounded-lg text-center transition-colors ${orderType === "dine-in"
                     ? "border-indigo-500 bg-indigo-50 text-indigo-700"
                     : "border-gray-200 hover:border-gray-300"
-                }`}
+                  }`}
               >
                 <div className="text-xl mb-1">🍽️</div>
                 <div className="font-medium text-sm">Dine In</div>
@@ -426,11 +370,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setPaymentType("cash")}
-                  className={`p-3 border rounded-lg text-center transition-colors ${
-                    paymentType === "cash"
+                  className={`p-3 border rounded-lg text-center transition-colors ${paymentType === "cash"
                       ? "border-indigo-500 bg-indigo-50 text-indigo-700"
                       : "border-gray-200 hover:border-gray-300"
-                  }`}
+                    }`}
                 >
                   <div className="text-xl mb-1">💵</div>
                   <div className="font-medium text-sm">Cash</div>
@@ -438,11 +381,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setPaymentType("card")}
-                  className={`p-3 border rounded-lg text-center transition-colors ${
-                    paymentType === "card"
+                  className={`p-3 border rounded-lg text-center transition-colors ${paymentType === "card"
                       ? "border-indigo-500 bg-indigo-50 text-indigo-700"
                       : "border-gray-200 hover:border-gray-300"
-                  }`}
+                    }`}
                 >
                   <div className="text-xl mb-1">💳</div>
                   <div className="font-medium text-sm">Card</div>
@@ -540,7 +482,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               onClick={handleProcessOrder}
               className="px-6 py-2 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 transition-colors"
             >
-              {isEditing ? "Update Order" : "Process Order"}
+              Process Order
             </button>
           </div>
         </div>
@@ -550,7 +492,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       {isCustomerModalOpen && (
         <CustomerModal
           setIsOpen={setIsCustomerModalOpen}
-          token={token}
           onCustomerCreated={handleNewCustomerCreated}
         />
       )}

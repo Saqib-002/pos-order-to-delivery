@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import AddIcon from "../../assets/icons/add.svg?react";
 import { getVariants } from "@/renderer/utils/menu";
 import CustomButton from "../ui/CustomButton";
+import { useAuth } from "@/renderer/contexts/AuthContext";
 
 export interface Variant {
   id: string;
@@ -14,10 +15,12 @@ export interface Variant {
   items: VariantItem[];
 }
 
-export const VariantView: React.FC<{ token: string }> = ({ token }) => {
+export const VariantView = () => {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [isCreateVariantOpen, setIsCreateVariantOpen] = useState(false);
   const [editingVariant, setEditingVariant] = useState<Variant | null>(null);
+    const {auth:{token}}=useAuth();
+  
 
   useEffect(() => {
     getVariants(token, setVariants);

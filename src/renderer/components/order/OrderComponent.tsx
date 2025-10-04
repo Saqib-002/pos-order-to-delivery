@@ -1,18 +1,18 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import OrderCart from "./OrderCart";
 import OrderProcessingModal from "./OrderProcessingModal";
 import { useOrder } from "../../contexts/OrderContext";
 import { toast } from "react-toastify";
 import { Order } from "@/types/order";
+import { StringToComplements, updateOrder } from "@/renderer/utils/order";
+import { useAuth } from "@/renderer/contexts/AuthContext";
 
 interface OrderComponentProps {
-  token: string | null;
   orders: Order[];
   refreshOrdersCallback: () => void;
 }
 
 const OrderComponent = ({
-  token,
   orders,
   refreshOrdersCallback,
 }: OrderComponentProps) => {
@@ -22,76 +22,44 @@ const OrderComponent = ({
     updateQuantity,
     clearOrder,
     addToOrder,
+    order,
+    setOrder,
   } = useOrder();
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
-  const [isEditingOrder, setIsEditingOrder] = useState(false);
-  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+  const { auth: { token } } = useAuth();
 
   const handleProcessOrder = () => {
     if (orderItems.length === 0) {
-      alert("No items in order");
+      toast.error("No items in the order");
       return;
     }
     setIsProcessingModalOpen(true);
   };
 
   const handleProcessOrderSubmit = async (orderData: any) => {
-    const result = await (window as any).electronAPI.saveOrder(
-      token,
-      orderData
-    );
-    if (!result.status) {
-      toast.error("Unable to save order");
+    const result = await updateOrder(token!, order!.id, orderData);
+    if (!result) {
+      toast.error("Failed to process order");
       return;
     }
-    toast.success("Order saved successfully");
+    toast.success("Order processed successfully");
     clearOrder();
     refreshOrdersCallback();
   };
-  const handleOrderClick = (order: Order) => {
-    // Clear current cart
-    clearOrder();
-
-    // Load order items back into cart
-    order.items.forEach((item) => {
-      // Parse special instructions to extract variant and add-ons info
-      const specialInstructions = item.specialInstructions || "";
-      const variantMatch = specialInstructions.match(/Variant: ([^,]+)/);
-      const addonsMatch = specialInstructions.match(/Add-ons: (.+)/);
-
-      // Convert order item back to cart item format
-      const cartItem = {
-        productId: item.id,
-        productName: item.name,
-        productPrice: item.price || 0,
-        productTax: 0, 
-        variantId: `variant_${item.id}`, 
-        variantName: variantMatch ? variantMatch[1] : "Default",
-        variantPrice: 0,
-        complements: addonsMatch
-          ? addonsMatch[1].split(", ").map((addon, index) => ({
-              groupId: `group_${index}`,
-              groupName: "Add-ons",
-              itemId: `addon_${index}`,
-              itemName: addon.trim(),
-              price: 0, 
-            }))
-          : [],
-        quantity: item.quantity,
-        totalPrice: (item.price || 0) * item.quantity,
-      };
-      addToOrder(cartItem);
-    });
-
-    // Set editing mode
-    setIsEditingOrder(true);
-    setEditingOrderId(order.id);
-
+  const handleOrderClick = async (order: Order) => {
+    setOrder(order);
+    if (order.items) {
+      order.items.forEach((item: any) => {
+        addToOrder({ ...item, complements: StringToComplements(item.complements) });
+      });
+    }
   };
   return (
     <>
       {orderItems.length > 0 ? (
         <OrderCart
+          token={token}
+          orderId={order!.id}
           orderItems={orderItems}
           onRemoveItem={removeFromOrder}
           onUpdateQuantity={updateQuantity}
@@ -110,9 +78,9 @@ const OrderComponent = ({
                 >
                   <div className="flex flex-col items-start gap-2">
                     <p>
-                      {order.orderType?.toUpperCase()}
-                      <span className="border-2 border-green-500 bg-green-300 rounded-full px-2 py-[2px] text-xs  ml-2">
-                        PAID
+                      {order.orderType ? order.orderType?.toUpperCase() : "Not Selected"}
+                      <span className={`border-2 ${order.isPaid ? "border-green-500 bg-green-300" : "border-red-500 bg-red-300"} rounded-full px-2 py-[2px] text-xs  ml-2`}>
+                        {order.isPaid ? "PAID" : "UNPAID"}
                       </span>
                     </p>
                     <p>Order No. K{order.orderId}</p>
@@ -120,13 +88,13 @@ const OrderComponent = ({
                   </div>
                   <p className="text-2xl">
                     €
-                    {order.items
+                    {order.items ? order.items
                       .reduce(
                         (total, item) =>
-                          total + (item?.price || 0) * item.quantity,
+                          total + (item.totalPrice || 0) * item.quantity,
                         0
                       )
-                      .toFixed(2)}
+                      .toFixed(2) : "0.00"}
                   </p>
                 </button>
               ))}
@@ -136,19 +104,16 @@ const OrderComponent = ({
           )}
         </>
       )}
-      <OrderProcessingModal
-        isOpen={isProcessingModalOpen}
-        onClose={() => {
-          setIsProcessingModalOpen(false);
-          setIsEditingOrder(false);
-          setEditingOrderId(null);
-        }}
-        orderItems={orderItems}
-        onProcessOrder={handleProcessOrderSubmit}
-        token={token}
-        isEditing={isEditingOrder}
-        editingOrderId={editingOrderId}
-      />
+      {
+        isProcessingModalOpen && (
+          <OrderProcessingModal
+            onClose={() => setIsProcessingModalOpen(false)}
+            orderItems={orderItems}
+            order={order}
+            onProcessOrder={handleProcessOrderSubmit}
+          />
+        )
+      }
     </>
   );
 };

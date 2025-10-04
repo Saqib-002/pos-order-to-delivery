@@ -1,14 +1,20 @@
 import { ipcMain } from "electron";
 import {
+  addItemToOrder,
+  deleteOrder,
+  getOrderItems,
   // cancelOrder,
   // deleteOrder,
   // getOrderAnalytics,
   // getOrders,
   getOrdersByFilter,
+  removeItemFromOrder,
   // markDeliveredOrder,
   // readyOrder,
   // updateOrder,
   saveOrder,
+  updateItemQuantity,
+  updateOrder,
 } from "./handlers/orders.js";
 import {
   deleteUser,
@@ -55,6 +61,7 @@ import {
   deleteProduct,
   getAddOnPagesByProductId,
   getAllProducts,
+  getProductById,
   getProductsByCatId,
   getVariantsByProductId,
   updateProduct,
@@ -95,6 +102,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-product", deleteProduct);
   ipcMain.handle("get-variants-by-product-id", getVariantsByProductId);
   ipcMain.handle("get-add-on-pages-by-product-id", getAddOnPagesByProductId);
+  ipcMain.handle("get-product-by-id",getProductById)
 
   // Customer handlers
   ipcMain.handle("create-customer", createCustomer);
@@ -126,6 +134,12 @@ export function registerIpcHandlers() {
 
   // Order handlers (with same authorization logic)
   ipcMain.handle("save-order", saveOrder);
+  ipcMain.handle("add-item-to-order", addItemToOrder);
+  ipcMain.handle("remove-item-from-order", removeItemFromOrder);
+  ipcMain.handle("delete-order", deleteOrder);
+  ipcMain.handle("update-item-quantity", updateItemQuantity);
+  ipcMain.handle("get-order-items", getOrderItems)
+  ipcMain.handle("update-order", updateOrder);
   // ipcMain.handle("delete-order", deleteOrder);
   // ipcMain.handle("cancel-order", cancelOrder);
   // ipcMain.handle("ready-order", readyOrder);
@@ -133,7 +147,6 @@ export function registerIpcHandlers() {
   // ipcMain.handle("get-orders", getOrders);
   // ipcMain.handle("get-order-analytics", getOrderAnalytics);
   ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
-  // ipcMain.handle("update-order", updateOrder);
 
   // delivery person handlers
   ipcMain.handle("create-delivery-person", createDeliveryPerson);

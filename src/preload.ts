@@ -25,31 +25,6 @@ interface MenuItem {
   isDeleted?: boolean;
 }
 
-interface OrderItem {
-  id: string;
-  orderId: string;
-  menuItemId: string;
-  quantity: number;
-  unitPrice: number;
-  specialInstructions?: string;
-  createdAt: string;
-  updatedAt: string;
-  syncedAt?: string;
-  isDeleted?: boolean;
-  menuItem?: MenuItem;
-}
-interface DeliveryPerson {
-  id: string;
-  name: string;
-  email?: string;
-  phone: string;
-  vehicleType: "bike" | "motorcycle" | "car" | "scooter";
-  licenseNo?: string;
-  createdAt: string;
-  updatedAt: string;
-  syncedAt?: string;
-  isDeleted?: boolean;
-}
 
 const syncStatusCallbacks = new Set<(status: any) => void>();
 const orderChangeCallbacks = new Set<(change: any, event: any) => void>();
@@ -128,6 +103,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("get-variants-by-product-id", token, productId),
   getAddOnPagesByProductId: (token: string, productId: string) =>
     ipcRenderer.invoke("get-add-on-pages-by-product-id", token, productId),
+  getProductById: (token: string, productId: string) =>
+    ipcRenderer.invoke("get-product-by-id", token, productId),
 
   // customer operations
   createCustomer: (token: string, customer: any) =>
@@ -139,23 +116,22 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
 
   // Order operations
-  saveOrder: (token: string, order: any) =>
-    ipcRenderer.invoke("save-order", token, order),
+  saveOrder: (token: string, item:any) =>
+    ipcRenderer.invoke("save-order", token, item),
+  addItemToOrder: (token: string, orderId: string, item: any) =>
+    ipcRenderer.invoke("add-item-to-order", token, orderId, item),
+  removeItemFromOrder: (token: string, orderId: string, itemId: string) =>
+    ipcRenderer.invoke("remove-item-from-order", token, orderId, itemId),
+  updateItemQuantity: (token: string, orderId: string, itemId: string, quantity: number) =>
+    ipcRenderer.invoke("update-item-quantity", token, orderId, itemId, quantity),
+  getOrderItems: (token: string, orderId: string) =>
+    ipcRenderer.invoke("get-order-items", token, orderId),
   deleteOrder: (token: string, id: string) =>
     ipcRenderer.invoke("delete-order", token, id),
-  cancelOrder: (token: string, id: string) =>
-    ipcRenderer.invoke("cancel-order", token, id),
-  readyOrder: (token: string, id: string) =>
-    ipcRenderer.invoke("ready-order", token, id),
-  markDeliveredOrder: (token: string, id: string) =>
-    ipcRenderer.invoke("mark-delivered-order", token, id),
-  getOrders: (token: string) => ipcRenderer.invoke("get-orders", token),
-  getOrderAnalytics: (token: string, filter: any) =>
-    ipcRenderer.invoke("get-order-analytics", token, filter),
+  updateOrder: (token: string, orderId: string, orderData: any) =>
+    ipcRenderer.invoke("update-order", token, orderId, orderData),
   getOrdersByFilter: (token: string, filter: any) =>
     ipcRenderer.invoke("get-orders-by-filter", token, filter),
-  updateOrder: (token: string, order: any) =>
-    ipcRenderer.invoke("update-order", token, order),
 
   // User operations
   registerUser: (
@@ -175,7 +151,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // delivery operations
   createDeliveryPerson: (
     token: string,
-    deliveryPersonData: Omit<DeliveryPerson, "id" | "createdAt" | "updatedAt">
+    deliveryPersonData: any
   ) => ipcRenderer.invoke("create-delivery-person", token, deliveryPersonData),
   getDeliveryPersons: (token: string) =>
     ipcRenderer.invoke("get-delivery-persons", token),
@@ -184,7 +160,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   updateDeliveryPerson: (
     token: string,
     id: string,
-    deliveryPersonData: Partial<DeliveryPerson>
+    deliveryPersonData: any
   ) =>
     ipcRenderer.invoke("update-delivery-person", token, id, deliveryPersonData),
   deleteDeliveryPerson: (token: string, id: string) =>

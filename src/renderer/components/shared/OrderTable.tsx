@@ -7,9 +7,10 @@ import DeliveredIcon from "../../assets/icons/delivered.svg?react";
 export const OrderTable: React.FC<{
     orders: Order[];
     title: string;
+    subtitle: string;
     columns: string[];
     renderRow: (order: Order) => JSX.Element;
-}> = ({ orders, title, columns, renderRow }) => (
+}> = ({ orders, title,subtitle, columns, renderRow }) => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
@@ -21,9 +22,7 @@ export const OrderTable: React.FC<{
                     No orders {title.toLowerCase()}
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                    {title === "Ready for Delivery Orders"
-                        ? "All orders are either in kitchen or already assigned for delivery."
-                        : "Try adjusting your search criteria or date filter."}
+                    {subtitle}
                 </p>
             </div>
         ) : (
