@@ -157,7 +157,16 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
-          <CustomInput label="Subcategory Name" name="name" type="text" placeholder="Enter subcategory name" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} otherClasses="mb-4"/>
+          <CustomInput
+            label="Subcategory Name"
+            name="name"
+            type="text"
+            placeholder="Enter subcategory name"
+            required
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            otherClasses="mb-4"
+          />
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -178,7 +187,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Color
             </label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-5 gap-y-8">
               {colorOptions.map((option) => (
                 <button
                   key={option.value}
@@ -186,22 +195,26 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                   onClick={() =>
                     setFormData({ ...formData, color: option.value })
                   }
-                  className={`p-3 rounded-lg border-2 transition-all duration-200 ${getColorClasses(
+                  className={`w-16 h-16 cursor-pointer flex items-center justify-center rounded-full border-2 transition-all duration-200 ${getColorClasses(
                     option.value,
                     formData.color === option.value
                   )}`}
                 >
                   <div
-                    className={`w-full h-12 rounded ${option.color} mb-2`}
+                    className={`w-12 h-12 rounded-full ${option.color}`}
                   ></div>
-                  <span className="text-xs text-gray-700">{option.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
           <div className="flex justify-end gap-3">
-            <CustomButton type="button" onClick={onClose} label="Cancel" variant="secondary"/>
+            <CustomButton
+              type="button"
+              onClick={onClose}
+              label="Cancel"
+              variant="secondary"
+            />
             <CustomButton
               type="submit"
               label={editingSubcategory ? "Update" : "Create"}

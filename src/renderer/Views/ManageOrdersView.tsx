@@ -7,6 +7,9 @@ import { CustomSelect } from "../components/ui/CustomSelect";
 // ICONS
 import SearchIcon from "../assets/icons/search.svg?react";
 import PersonIcon from "../assets/icons/person.svg?react";
+import EyeIcon from "../assets/icons/eye.svg?react";
+import DocumentIcon from "../assets/icons/document.svg?react";
+import ThunderIcon from "../assets/icons/thunder.svg?react";
 
 interface ManageOrdersViewProps {
   orders: Order[];
@@ -33,7 +36,6 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
     selectedStatus: [],
   });
 
-  const [showFilters, setShowFilters] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] =
     useState<Order | null>(null);
@@ -144,6 +146,16 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
     setIsPaymentModalOpen(true);
   };
 
+  const handleViewOrder = (order: Order) => {
+    // TODO: Implement view order functionality
+    console.log("View order:", order.id);
+  };
+
+  const handlePrintOrder = (order: Order) => {
+    // TODO: Implement print order functionality
+    console.log("Print order:", order.id);
+  };
+
   const handleApplyPayment = async () => {
     if (!selectedOrderForPayment) return;
 
@@ -185,9 +197,9 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
 
       {/* Search and Filter Bar */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col lg:flex-row gap-4 items-end">
           {/* Search Input */}
-          <div className="flex-1">
+          <div className="w-full lg:w-80">
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <CustomInput
@@ -201,116 +213,99 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
                     searchTerm: e.target.value,
                   }))
                 }
-                placeholder="Search by order number (e.g., K001, K002)..."
+                placeholder="Search by order number..."
                 otherClasses="w-full"
-                inputClasses="pl-10"
+                inputClasses="pl-10 py-2.5"
               />
             </div>
           </div>
 
-          {/* Filter Toggle Button */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <span>🔍</span>
-            <span>Filters</span>
-            {showFilters ? "▲" : "▼"}
-          </button>
-        </div>
-
-        {/* Advanced Filters */}
-        {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Date Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <span className="inline w-4 h-4 mr-1">📅</span>
-                  Filter by Date
-                </label>
-                <input
-                  type="date"
-                  value={
-                    filters.selectedDate
-                      ? filters.selectedDate.toISOString().split("T")[0]
-                      : ""
-                  }
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      selectedDate: e.target.value
-                        ? new Date(e.target.value)
-                        : null,
-                    }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-
-              {/* Delivery Person Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <PersonIcon className="inline w-4 h-4 mr-1" />
-                  Delivery Person
-                </label>
-                <CustomSelect
-                  options={[
-                    { value: "", label: "All Delivery Persons" },
-                    ...deliveryPersons.map((person) => ({
-                      value: person.id,
-                      label: person.name,
-                    })),
-                  ]}
-                  value={filters.selectedDeliveryPerson}
-                  onChange={(value) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      selectedDeliveryPerson: value,
-                    }))
-                  }
-                  placeholder="All Delivery Persons"
-                  className="w-full"
-                />
-              </div>
-
-              {/* Payment Status Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Payment Status
-                </label>
-                <CustomSelect
-                  options={[
-                    { value: "", label: "All Payment Statuses" },
-                    ...paymentStatuses.map((status) => ({
-                      value: status,
-                      label: status.charAt(0).toUpperCase() + status.slice(1),
-                    })),
-                  ]}
-                  value={filters.selectedStatus[0] || ""}
-                  onChange={(value) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      selectedStatus: value ? [value] : [],
-                    }))
-                  }
-                  placeholder="All Payment Statuses"
-                  className="w-full"
-                />
-              </div>
-            </div>
-
-            {/* Clear Filters Button */}
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={clearFilters}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Clear All Filters
-              </button>
-            </div>
+          {/* Date Filter */}
+          <div className="w-full lg:w-48">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <span className="inline w-4 h-4 mr-1">📅</span>
+              Filter by Date
+            </label>
+            <input
+              type="date"
+              value={
+                filters.selectedDate
+                  ? filters.selectedDate.toISOString().split("T")[0]
+                  : ""
+              }
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  selectedDate: e.target.value
+                    ? new Date(e.target.value)
+                    : null,
+                }))
+              }
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none"
+            />
           </div>
-        )}
+
+          {/* Delivery Person Filter */}
+          <div className="w-full lg:w-48">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <PersonIcon className="inline w-4 h-4 mr-1" />
+              Delivery Person
+            </label>
+            <CustomSelect
+              options={[
+                { value: "", label: "All Delivery Persons" },
+                ...deliveryPersons.map((person) => ({
+                  value: person.id,
+                  label: person.name,
+                })),
+              ]}
+              value={filters.selectedDeliveryPerson}
+              onChange={(value) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  selectedDeliveryPerson: value,
+                }))
+              }
+              placeholder="All Delivery Persons"
+              className="w-full"
+            />
+          </div>
+
+          {/* Payment Status Filter */}
+          <div className="w-full lg:w-48">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Payment Status
+            </label>
+            <CustomSelect
+              options={[
+                { value: "", label: "All Payment Statuses" },
+                ...paymentStatuses.map((status) => ({
+                  value: status,
+                  label: status.charAt(0).toUpperCase() + status.slice(1),
+                })),
+              ]}
+              value={filters.selectedStatus[0] || ""}
+              onChange={(value) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  selectedStatus: value ? [value] : [],
+                }))
+              }
+              placeholder="All Payment Statuses"
+              className="w-full"
+            />
+          </div>
+
+          {/* Clear Filters Button */}
+          <div className="w-full lg:w-auto">
+            <button
+              onClick={clearFilters}
+              className="w-full lg:w-auto px-4 py-3 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Clear All Filters
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Results Summary */}
@@ -455,13 +450,34 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => handlePaymentClick(order)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors duration-200"
-                        title="Process Payment"
-                      >
-                        Process Payment
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        {/* View Order Button */}
+                        <button
+                          onClick={() => handleViewOrder(order)}
+                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                          title="View Order"
+                        >
+                          <EyeIcon className="w-4 h-4" />
+                        </button>
+
+                        {/* Print Order Button */}
+                        <button
+                          onClick={() => handlePrintOrder(order)}
+                          className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200"
+                          title="Print Order"
+                        >
+                          <DocumentIcon className="w-4 h-4" />
+                        </button>
+
+                        {/* Process Payment Button */}
+                        <button
+                          onClick={() => handlePaymentClick(order)}
+                          className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors duration-200"
+                          title="Process Payment"
+                        >
+                          <ThunderIcon className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -473,53 +489,114 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
 
       {/* Payment Modal */}
       {isPaymentModalOpen && selectedOrderForPayment && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Process Payment
-              </h2>
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-xl">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <ThunderIcon className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    Process Payment
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    Complete the payment for this order
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={closePaymentModal}
-                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               >
-                &times;
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
               </button>
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-6">
               {/* Order Info */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-medium text-gray-900 mb-2">
-                  Order Details
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Order #{selectedOrderForPayment.orderId} -{" "}
-                  {selectedOrderForPayment.customer.name}
-                </p>
-                <p className="text-sm text-gray-600">
-                  Current Total: €
-                  {selectedOrderForPayment.items
-                    .reduce(
-                      (total, item) =>
-                        total + (item.price || 0) * item.quantity,
-                      0
-                    )
-                    .toFixed(2)}
-                </p>
+              <div className="bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-5">
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="p-1.5 bg-blue-100 rounded-lg">
+                    <svg
+                      className="w-4 h-4 text-blue-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 text-lg">
+                    Order Details
+                  </h3>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                    <span className="text-sm font-medium text-gray-600">
+                      Order ID
+                    </span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      #{selectedOrderForPayment.orderId}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                    <span className="text-sm font-medium text-gray-600">
+                      Customer
+                    </span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {selectedOrderForPayment.customer.name}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-sm font-medium text-gray-600">
+                      Total Amount
+                    </span>
+                    <span className="text-lg font-bold text-green-600">
+                      €
+                      {selectedOrderForPayment.items
+                        .reduce(
+                          (total, item) =>
+                            total + (item.price || 0) * item.quantity,
+                          0
+                        )
+                        .toFixed(2)}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Delivery Person Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <PersonIcon className="inline w-4 h-4 mr-1" />
+              <div className="space-y-2">
+                <label className="flex items-center text-sm font-semibold text-gray-700">
+                  <PersonIcon className="w-4 h-4 mr-2 text-blue-600" />
                   Select Delivery Person
                 </label>
                 <CustomSelect
                   options={[
-                    { value: "", label: "Select Delivery Person" },
+                    { value: "", label: "Choose a delivery person..." },
                     ...deliveryPersons.map((person) => ({
                       value: person.id,
                       label: person.name,
@@ -527,74 +604,162 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
                   ]}
                   value={selectedDeliveryPerson}
                   onChange={setSelectedDeliveryPerson}
-                  placeholder="Select Delivery Person"
+                  placeholder="Choose a delivery person..."
                   className="w-full"
                 />
               </div>
 
               {/* Payment Amount */}
               <CustomInput
-                label="Payment Amount (€)"
+                label="Payment Amount"
                 name="paymentAmount"
                 type="number"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
                 placeholder="0.00"
+                step="0.01"
+                min="0"
                 required
                 preLabel="€"
                 otherClasses="w-full"
-                inputClasses="pl-8"
+                inputClasses="pl-8 focus:ring-blue-500 focus:border-blue-500"
               />
 
               {/* Payment Method */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-3">
+                <label className="flex items-center text-sm font-semibold text-gray-700">
+                  <svg
+                    className="w-4 h-4 mr-2 text-purple-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                    />
+                  </svg>
                   Payment Method
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("cash")}
-                    className={`p-3 border rounded-lg text-center transition-colors ${
+                    className={`p-4 border-2 rounded-xl text-center transition-all duration-200 ${
                       paymentMethod === "cash"
-                        ? "border-green-500 bg-green-50 text-green-700"
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-green-500 bg-green-50 text-green-700 shadow-md"
+                        : "border-gray-200 hover:border-green-300 hover:bg-green-50/50"
                     }`}
                   >
-                    <div className="text-xl mb-1">💵</div>
-                    <div className="font-medium text-sm">Cash</div>
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <svg
+                          className="w-6 h-6 text-green-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                          />
+                        </svg>
+                      </div>
+                      <div className="font-semibold text-sm">Cash</div>
+                    </div>
                   </button>
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("card")}
-                    className={`p-3 border rounded-lg text-center transition-colors ${
+                    className={`p-4 border-2 rounded-xl text-center transition-all duration-200 ${
                       paymentMethod === "card"
-                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-blue-500 bg-blue-50 text-blue-700 shadow-md"
+                        : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
                     }`}
                   >
-                    <div className="text-xl mb-1">💳</div>
-                    <div className="font-medium text-sm">Card</div>
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <svg
+                          className="w-6 h-6 text-blue-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="font-semibold text-sm">Card</div>
+                    </div>
                   </button>
                 </div>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end space-x-3 p-6 border-t">
-              <button
-                onClick={closePaymentModal}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleApplyPayment}
-                disabled={!selectedDeliveryPerson || !paymentAmount}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                Apply Payment
-              </button>
+            <div className="flex justify-between items-center p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+              <div className="text-sm text-gray-500">
+                {!selectedDeliveryPerson || !paymentAmount ? (
+                  <span className="flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-1 text-amber-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                      />
+                    </svg>
+                    Please fill all required fields
+                  </span>
+                ) : (
+                  <span className="flex items-center text-green-600">
+                    <svg
+                      className="w-4 h-4 mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Ready to process payment
+                  </span>
+                )}
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={closePaymentModal}
+                  className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 font-medium transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleApplyPayment}
+                  disabled={!selectedDeliveryPerson || !paymentAmount}
+                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-medium transition-all duration-200 flex items-center space-x-2"
+                >
+                  <ThunderIcon className="w-4 h-4" />
+                  <span>Process Payment</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

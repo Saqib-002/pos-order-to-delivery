@@ -87,6 +87,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
       selectedGroup: "",
     },
   ]);
+  const [validationErrors, setValidationErrors] = useState<
+    Record<number, string>
+  >({});
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -205,6 +208,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
       ]);
       setSelectedVariant("");
       setVariantPrices({});
+      setValidationErrors({});
     }
   }, [product, isOpen]);
   // Get category options for CustomSelect
@@ -290,6 +294,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
       },
     ]);
     setSelectedAddonPage(newPageNo);
+    // Clear validation errors for the new page
+    setValidationErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[newPageNo];
+      return newErrors;
+    });
   };
 
   // Remove addon page
@@ -299,16 +309,47 @@ const ProductModal: React.FC<ProductModalProps> = ({
       if (selectedAddonPage === pageNo) {
         setSelectedAddonPage(addonPages[0].pageNo);
       }
+      // Clear validation errors for the removed page
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[pageNo];
+        return newErrors;
+      });
     }
   };
 
   // Handle plugin group selection for a specific page
   const handlePagePluginGroupChange = (pageNo: number, groupId: string) => {
-    setAddonPages((prev) =>
-      prev.map((page) =>
+    setAddonPages((prev) => {
+      const updatedPages = prev.map((page) =>
         page.pageNo === pageNo ? { ...page, selectedGroup: groupId } : page
-      )
-    );
+      );
+
+      // Validate the updated page
+      const updatedPage = updatedPages.find((page) => page.pageNo === pageNo);
+      if (updatedPage && groupId) {
+        const error = validateComplementLimits(
+          pageNo,
+          updatedPage.minComplements,
+          updatedPage.maxComplements,
+          groupId
+        );
+
+        setValidationErrors((prev) => ({
+          ...prev,
+          [pageNo]: error || "",
+        }));
+      } else {
+        // Clear validation error if no group is selected
+        setValidationErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[pageNo];
+          return newErrors;
+        });
+      }
+
+      return updatedPages;
+    });
   };
 
   // Get available groups for a page (exclude already selected groups from other pages)
@@ -327,11 +368,36 @@ const ProductModal: React.FC<ProductModalProps> = ({
     field: string,
     value: number
   ) => {
-    setAddonPages((prev) =>
-      prev.map((page) =>
+    setAddonPages((prev) => {
+      const updatedPages = prev.map((page) =>
         page.pageNo === pageNo ? { ...page, [field]: value } : page
-      )
-    );
+      );
+
+      // Validate the updated page
+      const updatedPage = updatedPages.find((page) => page.pageNo === pageNo);
+      if (updatedPage && updatedPage.selectedGroup) {
+        const error = validateComplementLimits(
+          pageNo,
+          updatedPage.minComplements,
+          updatedPage.maxComplements,
+          updatedPage.selectedGroup
+        );
+
+        setValidationErrors((prev) => ({
+          ...prev,
+          [pageNo]: error || "",
+        }));
+      } else {
+        // Clear validation error if no group is selected
+        setValidationErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[pageNo];
+          return newErrors;
+        });
+      }
+
+      return updatedPages;
+    });
   };
 
   // Get current page data
@@ -340,6 +406,36 @@ const ProductModal: React.FC<ProductModalProps> = ({
       addonPages.find((page) => page.pageNo === selectedAddonPage) ||
       addonPages[0]
     );
+  };
+
+  const getGroupItemCount = (groupId: string) => {
+    const group = groups.find((g) => g.id === groupId);
+    return group ? group.items.length : 0;
+  };
+
+  const validateComplementLimits = (
+    pageNo: number,
+    minComplements: number,
+    maxComplements: number,
+    groupId: string
+  ) => {
+    const groupItemCount = getGroupItemCount(groupId);
+    const group = groups.find((g) => g.id === groupId);
+    const groupName = group ? group.name : "selected group";
+
+    if (minComplements > groupItemCount) {
+      return `Minimum complements (${minComplements}) cannot exceed available items (${groupItemCount}) in "${groupName}".`;
+    }
+
+    if (maxComplements > groupItemCount) {
+      return `Maximum complements (${maxComplements}) cannot exceed available items (${groupItemCount}) in "${groupName}".`;
+    }
+
+    if (minComplements > maxComplements) {
+      return `Minimum complements (${minComplements}) cannot be greater than maximum complements (${maxComplements}).`;
+    }
+
+    return null; 
   };
 
   // Check if current page has required fields filled to enable adding new page
@@ -440,6 +536,21 @@ const ProductModal: React.FC<ProductModalProps> = ({
     if (validAddonPages.length === 0) {
       toast.error("Please add at least one addon page with a selected group.");
       return;
+    }
+
+    // Validate complement limits for all pages
+    for (const page of validAddonPages) {
+      const error = validateComplementLimits(
+        page.pageNo,
+        page.minComplements,
+        page.maxComplements,
+        page.selectedGroup
+      );
+      if (error) {
+        toast.error(`Page ${page.pageNo}: ${error}`);
+        setSelectedAddonPage(page.pageNo);
+        return;
+      }
     }
     setIsSubmitting(true);
     try {
@@ -588,7 +699,18 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   Basic Product Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <CustomInput label="NAME *" name="name" type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} inputClasses="focus:ring-orange-500 focus:border-orange-500" placeholder="Enter product name" required/>
+                  <CustomInput
+                    label="NAME *"
+                    name="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    inputClasses="focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Enter product name"
+                    required
+                  />
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       ASSOCIATED CATEGORY *
@@ -667,14 +789,83 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   Pricing and Financials
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <CustomInput label="PRICE *" name="price" type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})} inputClasses="focus:ring-orange-500 focus:border-orange-500 pl-8" placeholder="0" step="0.01" min="0" preLabel="€" required otherClasses="relative"/>
-                  <CustomInput label="PRIORITY" name="priority" type="number" value={formData.priority} onChange={(e) => setFormData({...formData, priority: parseInt(e.target.value) || 0})} inputClasses="focus:ring-orange-500 focus:border-orange-500" placeholder="0" min="0" required/>
-                  <CustomInput label="TAX (%)" name="tax" type="number" value={formData.tax} onChange={(e) => setFormData({...formData, tax: parseInt(e.target.value) || 0})} inputClasses="focus:ring-orange-500 focus:border-orange-500 pr-8" placeholder="10" min="0" max="100" required otherClasses="relative" postLabel="%"/>
-                  <CustomInput label="DISCOUNT" name="discount" type="number" value={formData.discount} onChange={(e) => setFormData({...formData, discount: parseFloat(e.target.value) || 0})} inputClasses="focus:ring-orange-500 focus:border-orange-500 pl-8" placeholder="0" step="0.01" min="0" required otherClasses="relative" preLabel="€"/>
+                  <CustomInput
+                    label="PRICE *"
+                    name="price"
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        price: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    inputClasses="focus:ring-orange-500 focus:border-orange-500 pl-8"
+                    placeholder="0"
+                    step="0.01"
+                    min="0"
+                    preLabel="€"
+                    required
+                    otherClasses="relative"
+                  />
+                  <CustomInput
+                    label="PRIORITY"
+                    name="priority"
+                    type="number"
+                    value={formData.priority}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        priority: parseInt(e.target.value) || 0,
+                      })
+                    }
+                    inputClasses="focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="0"
+                    min="0"
+                    required
+                  />
+                  <CustomInput
+                    label="TAX (%)"
+                    name="tax"
+                    type="number"
+                    value={formData.tax}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        tax: parseInt(e.target.value) || 0,
+                      })
+                    }
+                    inputClasses="focus:ring-orange-500 focus:border-orange-500 pr-8"
+                    placeholder="10"
+                    min="0"
+                    max="100"
+                    required
+                    otherClasses="relative"
+                    postLabel="%"
+                  />
+                  <CustomInput
+                    label="DISCOUNT"
+                    name="discount"
+                    type="number"
+                    value={formData.discount}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        discount: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    inputClasses="focus:ring-orange-500 focus:border-orange-500 pl-8"
+                    placeholder="0"
+                    step="0.01"
+                    min="0"
+                    required
+                    otherClasses="relative"
+                    preLabel="€"
+                  />
                 </div>
 
                 {/* Price Breakdown Display */}
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-300">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700">
@@ -703,7 +894,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         </span>
                       </div>
                     )}
-                    <div className="border-t pt-2">
+                    <div className="border-t border-gray-300 pt-2">
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-semibold text-gray-900">
                           Total:
@@ -825,7 +1016,24 @@ const ProductModal: React.FC<ProductModalProps> = ({
                                 key={item.id}
                                 className="flex items-center gap-2"
                               >
-                                <CustomInput type="number" value={variantPrices[item.id] || 0} onChange={(e) => handleVariantItemPriceChange(item.id, parseFloat(e.target.value) || 0)} inputClasses="pl-8" otherClasses="relative w-full" placeholder="0.00" min="0" step="0.01" preLabel="€" label={item.name} name="price"/>
+                                <CustomInput
+                                  type="number"
+                                  value={variantPrices[item.id] || 0}
+                                  onChange={(e) =>
+                                    handleVariantItemPriceChange(
+                                      item.id,
+                                      parseFloat(e.target.value) || 0
+                                    )
+                                  }
+                                  inputClasses="pl-8"
+                                  otherClasses="relative w-full"
+                                  placeholder="0.00"
+                                  min="0"
+                                  step="0.01"
+                                  preLabel="€"
+                                  label={item.name}
+                                  name="price"
+                                />
                               </div>
                             );
                           })}
@@ -880,14 +1088,27 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         </button>
                         {/* Show remove button only on added pages (not page 1) */}
                         {index > 0 && (
-                          <CustomButton variant="red" label="×" type="button" onClick={() => removeAddonPage(page.pageNo)} className="absolute -top-2 -right-2 size-5 !rounded-full !p-0 text-xs"/>
+                          <CustomButton
+                            variant="red"
+                            label="×"
+                            type="button"
+                            onClick={() => removeAddonPage(page.pageNo)}
+                            className="absolute -top-2 -right-2 size-5 !rounded-full !p-0 text-xs"
+                          />
                         )}
                       </div>
                     ))}
 
                     {/* Add New Page Button */}
                     {canAddNewPage() && (
-                      <CustomButton type="button" onClick={addAddonPage} variant="transparent" label="Add Page" Icon={<AddIcon/>} className="border-2 border-dashed border-gray-300 text-gray-600 hover:border-orange-500 hover:text-orange-600"/>
+                      <CustomButton
+                        type="button"
+                        onClick={addAddonPage}
+                        variant="transparent"
+                        label="Add Page"
+                        Icon={<AddIcon />}
+                        className="border-2 border-dashed border-gray-300 text-gray-600 hover:border-orange-500 hover:text-orange-600"
+                      />
                     )}
                   </div>
 
@@ -900,9 +1121,68 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <CustomInput type="number" label="Minimum number of complements" name="minComplements" value={getCurrentPageData().minComplements} onChange={(e) => handleAddonPageSetupChange(selectedAddonPage, "minComplements", parseInt(e.target.value) || 0)} inputClasses="focus:ring-orange-500 focus:border-orange-500" placeholder="0" min="0" otherClasses="w-full"/>
-                        <CustomInput type="number" label="Maximum number of complements" name="maxComplements" value={getCurrentPageData().maxComplements} onChange={(e) => handleAddonPageSetupChange(selectedAddonPage, "maxComplements", parseInt(e.target.value) || 0)} inputClasses="focus:ring-orange-500 focus:border-orange-500" placeholder="0" min="0" otherClasses="w-full"/>
-                        <CustomInput type="number" label="Number of free add-ons" name="freeAddons" value={getCurrentPageData().freeAddons} onChange={(e) => handleAddonPageSetupChange(selectedAddonPage, "freeAddons", parseInt(e.target.value) || 0)} inputClasses="focus:ring-orange-500 focus:border-orange-500" placeholder="0" min="0" otherClasses="w-full"/>
+                      <div>
+                        <CustomInput
+                          type="number"
+                          label="Minimum number of complements"
+                          name="minComplements"
+                          value={getCurrentPageData().minComplements}
+                          onChange={(e) =>
+                            handleAddonPageSetupChange(
+                              selectedAddonPage,
+                              "minComplements",
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          inputClasses={`focus:ring-orange-500 focus:border-orange-500 ${validationErrors[selectedAddonPage] ? "border-red-500 focus:ring-red-500 focus:border-red-500" : ""}`}
+                          placeholder="0"
+                          min="0"
+                          otherClasses="w-full"
+                        />
+                        {validationErrors[selectedAddonPage] && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {validationErrors[selectedAddonPage]}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <CustomInput
+                          type="number"
+                          label="Maximum number of complements"
+                          name="maxComplements"
+                          value={getCurrentPageData().maxComplements}
+                          onChange={(e) =>
+                            handleAddonPageSetupChange(
+                              selectedAddonPage,
+                              "maxComplements",
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          inputClasses={`focus:ring-orange-500 focus:border-orange-500 ${validationErrors[selectedAddonPage] ? "border-red-500 focus:ring-red-500 focus:border-red-500" : ""}`}
+                          placeholder="0"
+                          min="0"
+                          otherClasses="w-full"
+                        />
+                      </div>
+                      <div>
+                        <CustomInput
+                          type="number"
+                          label="Number of free add-ons"
+                          name="freeAddons"
+                          value={getCurrentPageData().freeAddons}
+                          onChange={(e) =>
+                            handleAddonPageSetupChange(
+                              selectedAddonPage,
+                              "freeAddons",
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          inputClasses="focus:ring-orange-500 focus:border-orange-500"
+                          placeholder="0"
+                          min="0"
+                          otherClasses="w-full"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -914,6 +1194,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   <label className="block text-sm font-medium text-gray-700">
                     ADD PLUGIN GROUP FOR PAGE {selectedAddonPage}
                   </label>
+                  {getCurrentPageData().selectedGroup && (
+                    <span className="text-sm text-gray-500">
+                      (Available items:{" "}
+                      {getGroupItemCount(getCurrentPageData().selectedGroup)})
+                    </span>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -935,7 +1221,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         <div
                           className={`absolute -top-3 -right-2 w-5 h-5 ${getPluginGroupCheckmarkClasses(group.color)} rounded-full flex items-center justify-center`}
                         >
-                          <CheckMark className="w-3 h-3 text-white"/>
+                          <CheckMark className="w-3 h-3 text-white" />
                         </div>
                       )}
                     </button>
@@ -955,8 +1241,19 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-4">
-            <CustomButton type="button" onClick={onClose} variant="secondary" label="Cancel"/>
-            <CustomButton type="submit" disabled={isSubmitting} variant="orange" label={product ? "Save Changes" : "Create Product"} isLoading={isSubmitting}/>
+            <CustomButton
+              type="button"
+              onClick={onClose}
+              variant="secondary"
+              label="Cancel"
+            />
+            <CustomButton
+              type="submit"
+              disabled={isSubmitting}
+              variant="orange"
+              label={product ? "Save Changes" : "Create Product"}
+              isLoading={isSubmitting}
+            />
           </div>
         </form>
       </div>

@@ -127,13 +127,21 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
-          <CustomInput label="Category Name" name="categoryName"type="text" onChange={(e) => setFormData({ ...formData, name: e.target.value })} required placeholder="Enter category name" otherClasses="mb-4" />
+          <CustomInput
+            label="Category Name"
+            name="categoryName"
+            type="text"
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            required
+            placeholder="Enter category name"
+            otherClasses="mb-4"
+          />
 
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Color
             </label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-5 gap-y-8">
               {colorOptions.map((option) => (
                 <button
                   key={option.value}
@@ -141,28 +149,33 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                   onClick={() =>
                     setFormData({ ...formData, color: option.value })
                   }
-                  className={`p-3 cursor-pointer rounded-lg border-2 transition-all duration-200 ${getColorClasses(
+                  className={`w-16 h-16 cursor-pointer flex items-center justify-center rounded-full border-2 transition-all duration-200 ${getColorClasses(
                     option.value,
                     formData.color === option.value
                   )}`}
                 >
                   <div
-                    className={`w-full h-12 rounded ${option.color} mb-2`}
+                    className={`w-12 h-12 rounded-full ${option.color}`}
                   ></div>
-                  <span className="text-xs text-gray-700">{option.label}</span>
+                  {/* <span className="text-xs text-gray-700">{option.label}</span> */}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="flex justify-end gap-3">
-            <CustomButton type="button" onClick={onClose} label="Cancel" variant="secondary"/>
+            <CustomButton
+              type="button"
+              onClick={onClose}
+              label="Cancel"
+              variant="secondary"
+            />
             <CustomButton
               type="submit"
               label={editingCategory ? "Update" : "Create"}
               isLoading={isSubmitting}
               disabled={isSubmitting}
-              />
+            />
           </div>
         </form>
       </div>
