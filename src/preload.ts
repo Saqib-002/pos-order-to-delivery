@@ -138,19 +138,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("get-order-items", token, orderId),
   deleteOrder: (token: string, id: string) =>
     ipcRenderer.invoke("delete-order", token, id),
-  cancelOrder: (token: string, id: string) =>
-    ipcRenderer.invoke("cancel-order", token, id),
-  readyOrder: (token: string, id: string) =>
-    ipcRenderer.invoke("ready-order", token, id),
-  markDeliveredOrder: (token: string, id: string) =>
-    ipcRenderer.invoke("mark-delivered-order", token, id),
-  getOrders: (token: string) => ipcRenderer.invoke("get-orders", token),
-  getOrderAnalytics: (token: string, filter: any) =>
-    ipcRenderer.invoke("get-order-analytics", token, filter),
+  updateOrder: (token: string, orderId: string, orderData: any) =>
+    ipcRenderer.invoke("update-order", token, orderId, orderData),
   getOrdersByFilter: (token: string, filter: any) =>
     ipcRenderer.invoke("get-orders-by-filter", token, filter),
-  updateOrder: (token: string, order: any) =>
-    ipcRenderer.invoke("update-order", token, order),
 
   // User operations
   registerUser: (

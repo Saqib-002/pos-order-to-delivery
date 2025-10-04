@@ -88,6 +88,20 @@ export const getOrderItems = async (event: IpcMainInvokeEvent,token:string, orde
         };
     }
 };
+export const updateOrder = async (event: IpcMainInvokeEvent,token:string, orderId:string,orderData: Partial<Order>) => {
+    try {
+        const result = await OrderDatabaseOperations.updateOrder(orderId,orderData);
+        return {
+            status:true,
+            data:result
+        };
+    } catch (error) {
+        return {
+            status:false,
+            error:(error as Error).message
+        }
+    }
+}
 // export const cancelOrder = async (event: IpcMainInvokeEvent,token:string, id: string) => {
 //     try {
 //         const result = await OrderDatabaseOperations.cancelOrder(id);

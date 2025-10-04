@@ -12,6 +12,7 @@ import TotalOrdersIcon from "../assets/icons/total-orders.svg?react";
 import HighPriorityIcon from "../assets/icons/high-priority.svg?react";
 import ThunderIcon from "../assets/icons/thunder.svg?react";
 import { useAuth } from "../contexts/AuthContext";
+import { updateOrder } from "../utils/order";
 
 interface KitchenViewProps {
     orders: Order[];
@@ -38,12 +39,9 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
     const markAsReady = useCallback(
         async (id: string) => {
             try {
-                const res = await (window as any).electronAPI.readyOrder(
-                    token,
-                    id
-                );
-                if (!res.status) {
-                    toast.error("Failed to ready the order");
+                const res=await updateOrder(token,id,{status:"ready for delivery"});
+                if(!res){
+                    toast.error("Failed to update order");
                     return;
                 }
                 refreshOrdersCallback();

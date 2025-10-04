@@ -24,9 +24,26 @@ export interface OrderItem {
     supplement: number;
   };
 }
+export interface Customer {
+  id?: string;
+  name: string;
+  phone: string;
+  address: string;
+  cif?: string;
+  email?: string;
+  comments?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Order {
   id: string;
   orderId: string;
+  customer: Customer;
+  notes: string;
+  orderType: "pickup" | "delivery" | "dine-in";
+  paymentType: "cash" | "card" ;
+  isPaid: boolean;
   status: string;
   updatedAt?: string;
   createdAt?: string;

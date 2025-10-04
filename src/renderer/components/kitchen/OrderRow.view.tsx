@@ -57,9 +57,9 @@ export const OrderRow: React.FC<OrderRowProps> = ({ order, markAsReady }) => {
       </td>
       <td className="px-6 py-4 min-w-[250px] text-sm text-gray-900">
         <div className="space-y-1">
-          {order.items.map((item, index) => (
+          {order.items && order.items.map((item, index) => (
             <div key={index} className="flex justify-between">
-              <span className="text-gray-600">{item.name}</span>
+              <span className="text-gray-600">{item.productName}</span>
               <span className="text-gray-900 font-medium">
                 x{item.quantity}
               </span>

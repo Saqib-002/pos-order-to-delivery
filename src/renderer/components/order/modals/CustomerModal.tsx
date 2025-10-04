@@ -6,8 +6,8 @@ import AddressModal from "./AddressModal";
 import { Tooltip } from "react-tooltip";
 import { toast } from "react-toastify";
 import { debounce } from "lodash";
-import { Customer } from "@/types/customers";
 import { useAuth } from "@/renderer/contexts/AuthContext";
+import { Customer } from "@/types/order";
 
 interface CustomerModalProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;

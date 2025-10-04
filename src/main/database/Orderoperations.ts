@@ -100,68 +100,18 @@ export class OrderDatabaseOperations {
             throw error;
         }
     }
-
-    // static async getOrders(): Promise<Order[]> {
-    //   try {
-    //     const rows = await db("orders").where("isDeleted", false);
-    //     const orders: Order[] = rows.map((row) => ({
-    //       id: row.id,
-    //       orderId: row.orderId,
-    //       customer: {
-    //         name: row.customerName,
-    //         phone: row.customerPhone,
-    //         address: row.customerAddress,
-    //       },
-    //       items: [],
-    //       status: row.status,
-    //       deliveryPersonId: row.deliveryPersonId,
-    //       createdAt: row.createdAt,
-    //       updatedAt: row.updatedAt,
-    //     }));
-
-    //     for (const order of orders) {
-    //       // Get order items
-    //       const items = await db("order_items")
-    //         .innerJoin("menu_items", "order_items.menuItemId", "menu_items.id")
-    //         .where("order_items.orderId", order.id)
-    //         .andWhere("order_items.isDeleted", false)
-    //         .andWhere("menu_items.isDeleted", false);
-    //       order.items = items.map((item) => ({
-    //         id: item.menuItemId,
-    //         name: item.name,
-    //         category: item.category,
-    //         ingredients:
-    //           item.customIngredients === ""
-    //             ? item.ingredients?.split(",")
-    //             : item.customIngredients?.split(","),
-    //         quantity: item.quantity,
-    //         price: item.price,
-    //         specialInstructions: item.specialInstructions || "",
-    //       }));
-
-    //       // Get delivery person data if assigned
-    //       if (order.deliveryPersonId) {
-    //         const deliveryPerson = await db("delivery_persons")
-    //           .where("id", order.deliveryPersonId)
-    //           .andWhere("isDeleted", false)
-    //           .first();
-
-    //         if (deliveryPerson) {
-    //           order.deliveryPerson = {
-    //             id: deliveryPerson.id,
-    //             name: deliveryPerson.name,
-    //             phone: deliveryPerson.phone,
-    //             vehicleType: deliveryPerson.vehicleType,
-    //             licenseNo: deliveryPerson.licenseNo,
-    //           };
-    //         }
-    //       }
-    //     }
-    //     return orders;
-    //   } catch (error) {
-    //     throw error;
-    //   }
-    // }
+    static async updateOrder(orderId:string, orderData:Partial<Order>): Promise<any> {
+        try {
+            const now = new Date().toISOString();
+            await db("orders").where("id", orderId).update({
+                ...orderData,
+                updatedAt: now,
+            });
+            return { orderId };
+        } catch (error) {
+            throw error;
+        }
+    }
 
     // static async getOrderAnalytics(filter: any): Promise<any[]> {
     //   const { dateRange, selectedDate } = filter;

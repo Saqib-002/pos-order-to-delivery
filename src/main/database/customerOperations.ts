@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { db } from "./index.js";
-import { Customer } from "../../types/customers.js";
+import { Customer } from "@/types/order.js";
 
 export class CustomerDatabaseOperations {
   static async createCustomer(

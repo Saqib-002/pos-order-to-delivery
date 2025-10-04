@@ -4,7 +4,7 @@ import OrderProcessingModal from "./OrderProcessingModal";
 import { useOrder } from "../../contexts/OrderContext";
 import { toast } from "react-toastify";
 import { Order } from "@/types/order";
-import { StringToComplements } from "@/renderer/utils/order";
+import { StringToComplements, updateOrder } from "@/renderer/utils/order";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 
 interface OrderComponentProps {
@@ -26,28 +26,23 @@ const OrderComponent = ({
     setOrder,
   } = useOrder();
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
-  const [isEditingOrder, setIsEditingOrder] = useState(false);
-  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
-  const {auth:{token}}=useAuth();
+  const { auth: { token } } = useAuth();
 
   const handleProcessOrder = () => {
     if (orderItems.length === 0) {
-      alert("No items in order");
+      toast.error("No items in the order");
       return;
     }
     setIsProcessingModalOpen(true);
   };
 
   const handleProcessOrderSubmit = async (orderData: any) => {
-    const result = await (window as any).electronAPI.saveOrder(
-      token,
-      orderData
-    );
-    if (!result.status) {
-      toast.error("Unable to save order");
+    const result = await updateOrder(token!, order!.id, orderData);
+    if (!result) {
+      toast.error("Failed to process order");
       return;
     }
-    toast.success("Order saved successfully");
+    toast.success("Order processed successfully");
     clearOrder();
     refreshOrdersCallback();
   };
@@ -84,9 +79,9 @@ const OrderComponent = ({
                 >
                   <div className="flex flex-col items-start gap-2">
                     <p>
-                      {/* {order.orderType?order.orderType?.toUpperCase():"Not Selected"} */}
-                      <span className="border-2 border-green-500 bg-green-300 rounded-full px-2 py-[2px] text-xs  ml-2">
-                        PAID
+                      {order.orderType ? order.orderType?.toUpperCase() : "Not Selected"}
+                      <span className={`border-2 ${order.isPaid ? "border-green-500 bg-green-300" : "border-red-500 bg-red-300"} rounded-full px-2 py-[2px] text-xs  ml-2`}>
+                        {order.isPaid ? "PAID" : "UNPAID"}
                       </span>
                     </p>
                     <p>Order No. K{order.orderId}</p>
@@ -94,13 +89,13 @@ const OrderComponent = ({
                   </div>
                   <p className="text-2xl">
                     €
-                    {order.items?order.items
+                    {order.items ? order.items
                       .reduce(
                         (total, item) =>
                           total + (item.totalPrice || 0) * item.quantity,
                         0
                       )
-                      .toFixed(2):"0.00"}
+                      .toFixed(2) : "0.00"}
                   </p>
                 </button>
               ))}
@@ -110,19 +105,16 @@ const OrderComponent = ({
           )}
         </>
       )}
-      <OrderProcessingModal
-        isOpen={isProcessingModalOpen}
-        onClose={() => {
-          setIsProcessingModalOpen(false);
-          setIsEditingOrder(false);
-          setEditingOrderId(null);
-        }}
-        orderItems={orderItems}
-        onProcessOrder={handleProcessOrderSubmit}
-        token={token}
-        isEditing={isEditingOrder}
-        editingOrderId={editingOrderId}
-      />
+      {
+        isProcessingModalOpen && (
+          <OrderProcessingModal
+            onClose={() => setIsProcessingModalOpen(false)}
+            orderItems={orderItems}
+            order={order}
+            onProcessOrder={handleProcessOrderSubmit}
+          />
+        )
+      }
     </>
   );
 };
