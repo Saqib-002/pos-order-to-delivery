@@ -25,18 +25,6 @@ interface MenuItem {
   isDeleted?: boolean;
 }
 
-interface DeliveryPerson {
-  id: string;
-  name: string;
-  email?: string;
-  phone: string;
-  vehicleType: "bike" | "motorcycle" | "car" | "scooter";
-  licenseNo?: string;
-  createdAt: string;
-  updatedAt: string;
-  syncedAt?: string;
-  isDeleted?: boolean;
-}
 
 const syncStatusCallbacks = new Set<(status: any) => void>();
 const orderChangeCallbacks = new Set<(change: any, event: any) => void>();
@@ -161,7 +149,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // delivery operations
   createDeliveryPerson: (
     token: string,
-    deliveryPersonData: Omit<DeliveryPerson, "id" | "createdAt" | "updatedAt">
+    deliveryPersonData: any
   ) => ipcRenderer.invoke("create-delivery-person", token, deliveryPersonData),
   getDeliveryPersons: (token: string) =>
     ipcRenderer.invoke("get-delivery-persons", token),
@@ -170,7 +158,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   updateDeliveryPerson: (
     token: string,
     id: string,
-    deliveryPersonData: Partial<DeliveryPerson>
+    deliveryPersonData: any
   ) =>
     ipcRenderer.invoke("update-delivery-person", token, id, deliveryPersonData),
   deleteDeliveryPerson: (token: string, id: string) =>

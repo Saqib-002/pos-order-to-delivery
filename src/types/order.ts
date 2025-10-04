@@ -35,7 +35,16 @@ export interface Customer {
   createdAt?: string;
   updatedAt?: string;
 }
-
+export interface DeliveryPerson{
+  id?: string;
+  name: string;
+  phone: string;
+  email: string;
+  vehicleType: string;
+  licenseNo: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 export interface Order {
   id: string;
   orderId: string;
@@ -45,7 +54,12 @@ export interface Order {
   paymentType: "cash" | "card" ;
   isPaid: boolean;
   status: string;
-  updatedAt?: string;
+  deliveryPerson?: DeliveryPerson;
+  assignedAt?: string;
+  readyAt?: string;
+  cancelAt?: string;
+  deliveredAt?: string;
+  updatedAt?: string; 
   createdAt?: string;
   items?: OrderItem[];
 }

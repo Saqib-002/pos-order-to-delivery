@@ -213,8 +213,15 @@ export const DeliveryManagement = () => {
       const res = await (window as any).electronAPI.updateDeliveryPerson(
         token,
         editingDeliveryPerson.id,
-        editingDeliveryPerson
+        {
+          name: editingDeliveryPerson.name,
+          email: editingDeliveryPerson.email,
+          phone: editingDeliveryPerson.phone,
+          vehicleType: editingDeliveryPerson.vehicleType,
+          licenseNo: editingDeliveryPerson.licenseNo,
+        }
       );
+      console.log(res);
       if (!res.status) {
         toast.error(
           res.error.includes("UNIQUE constraint failed: delivery_persons.email")
@@ -234,7 +241,6 @@ export const DeliveryManagement = () => {
   const handleDeleteDeliveryPerson = async (userId: string) => {
     if (!confirm("Are you sure you want to delete this delivery person?"))
       return;
-
     try {
       const statsRes = await (window as any).electronAPI.getDeliveryPersonStats(
         token,
@@ -272,14 +278,14 @@ export const DeliveryManagement = () => {
     { value: "scooter", label: "Scooter" },
   ];
 
-  const filteredDeliveryPersons = deliveryPersons.filter((person) => {
+  const filteredDeliveryPersons : DeliveryPerson[] = deliveryPersons.filter((person) => {
     const matchesVehicleType =
       selectedVehicleType === "all" ||
-      (person as any).vehicleType === selectedVehicleType;
+      person.vehicleType === selectedVehicleType;
     const matchesSearch =
       person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       person.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (person as any).phone?.toLowerCase().includes(searchTerm.toLowerCase());
+      person.phone?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesVehicleType && matchesSearch;
   });
 
@@ -309,7 +315,6 @@ export const DeliveryManagement = () => {
       </div>
     );
   }
-
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-[98%] mx-auto">
@@ -403,7 +408,7 @@ export const DeliveryManagement = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {
                     deliveryPersons.filter(
-                      (person) => (person as any).vehicleType === "bike"
+                      (person) => person.vehicleType === "bike"
                     ).length
                   }
                 </p>
@@ -432,7 +437,7 @@ export const DeliveryManagement = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {
                     deliveryPersons.filter(
-                      (person) => (person as any).vehicleType === "motorcycle"
+                      (person) => person.vehicleType === "motorcycle"
                     ).length
                   }
                 </p>
@@ -461,7 +466,7 @@ export const DeliveryManagement = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {
                     deliveryPersons.filter(
-                      (person) => (person as any).vehicleType === "car"
+                      (person) => person.vehicleType === "car"
                     ).length
                   }
                 </p>
@@ -503,8 +508,8 @@ export const DeliveryManagement = () => {
               <button
                 onClick={() => setSelectedVehicleType("all")}
                 className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${selectedVehicleType === "all"
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
               >
                 All Vehicles
@@ -514,8 +519,8 @@ export const DeliveryManagement = () => {
                   key={vehicleType}
                   onClick={() => setSelectedVehicleType(vehicleType)}
                   className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${selectedVehicleType === vehicleType
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                 >
                   {getVehicleTypeLabel(vehicleType)}
@@ -625,11 +630,11 @@ export const DeliveryManagement = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getVehicleTypeBadgeColor(
-                            (person as any).vehicleType || "bike"
+                            person.vehicleType || "bike"
                           )}`}
                         >
                           {getVehicleTypeLabel(
-                            (person as any).vehicleType || "bike"
+                            person.vehicleType || "bike"
                           )}
                         </span>
                       </td>
@@ -638,33 +643,33 @@ export const DeliveryManagement = () => {
                           {person.email || "No email"}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {(person as any).phone || "No phone"}
+                          {person.phone || "No phone"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {(person as any).licenseNo || "No license"}
+                          {person.licenseNo || "No license"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {(person as any).totalAssigned || 0}
+                          {person.totalAssigned || 0}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {(person as any).totalDelivered || 0}
+                          {person.totalDelivered || 0}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {(person as any).totalCancelled || 0}
+                          {person.totalCancelled || 0}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {(person as any).avgDeliveryTime
-                            ? `${((person as any).avgDeliveryTime).toFixed(2)}min`
+                          {person.avgDeliveryTime
+                            ? `${(person.avgDeliveryTime).toFixed(2)}min`
                             : "0min"}
                         </div>
                       </td>
@@ -791,8 +796,8 @@ export const DeliveryManagement = () => {
                       setEmailError(error);
                     }}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${emailError
-                        ? "border-red-300 focus:ring-red-600 focus:border-red-600"
-                        : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
+                      ? "border-red-300 focus:ring-red-600 focus:border-red-600"
+                      : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
                       }`}
                     placeholder="Enter email address"
                   />
@@ -813,8 +818,8 @@ export const DeliveryManagement = () => {
                       setPhoneError(error);
                     }}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${phoneError
-                        ? "border-red-300 focus:ring-red-600 focus:border-red-600"
-                        : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
+                      ? "border-red-300 focus:ring-red-600 focus:border-red-600"
+                      : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
                       }`}
                     placeholder="Enter phone number"
                   />
@@ -952,8 +957,8 @@ export const DeliveryManagement = () => {
                       setEditEmailError(error);
                     }}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${editEmailError
-                        ? "border-red-300 focus:ring-red-600 focus:border-red-600"
-                        : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
+                      ? "border-red-300 focus:ring-red-600 focus:border-red-600"
+                      : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
                       }`}
                     placeholder="Enter email address"
                   />
@@ -979,8 +984,8 @@ export const DeliveryManagement = () => {
                       }
                     }}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all duration-200 ${editPhoneError
-                        ? "border-red-300 focus:ring-red-600 focus:border-red-600"
-                        : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
+                      ? "border-red-300 focus:ring-red-600 focus:border-red-600"
+                      : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"
                       }`}
                     placeholder="Enter phone number"
                   />

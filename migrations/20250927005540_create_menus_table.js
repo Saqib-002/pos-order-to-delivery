@@ -15,13 +15,11 @@ export async function up(knex) {
     table.boolean('outstanding').defaultTo(false);
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
-    table.boolean('isDeleted').defaultTo(false);
     
     table.foreign('subcategoryId').references('id').inTable('sub_categories').onDelete('CASCADE');
     
     table.index(['name']);
     table.index(['subcategoryId']);
-    table.index(['isDeleted']);
   });
 };
 

@@ -4,7 +4,6 @@ import { randomUUID } from "crypto";
 import Logger from "electron-log";
 
 export class DeliveryDatabaseOperations {
-    // Create a new delivery person
     static async createDeliveryPerson(
         deliveryPersonData: Omit<
             DeliveryPerson,
@@ -21,21 +20,16 @@ export class DeliveryDatabaseOperations {
                 createdAt: now,
                 updatedAt: now,
             };
-            console.log(newDeliveryPerson);
-
             await db("delivery_persons").insert(newDeliveryPerson);
-            Logger.info(`Delivery person created: ${newDeliveryPerson.name}`);
             return newDeliveryPerson;
         } catch (error) {
             throw error;
         }
     }
 
-    // Get all delivery persons
     static async getDeliveryPersons(): Promise<DeliveryPerson[]> {
         try {
             let query = db("delivery_persons")
-                .where("isDeleted", false)
                 .orderBy("name", "asc");
             const deliveryPersons = await query;
             const deliveryPersonsWithStats = await Promise.all(
@@ -53,33 +47,32 @@ export class DeliveryDatabaseOperations {
         deliveryPersonId: string
     ): Promise<any> {
         try {
-            const stats = await await db("orders")
+            const stats = await db("orders")
                 .where("deliveryPersonId", deliveryPersonId)
-                .andWhere("isDeleted", false)
                 .select(
-                    db.raw("COUNT(*) as totalAssigned"),
+                    db.raw(`COUNT(*) as "totalAssigned"`),
                     db.raw(
-                        "COUNT(CASE WHEN LOWER(status) = LOWER('Delivered') THEN 1 END) as totalDelivered"
+                        `COUNT(CASE WHEN LOWER(status) = LOWER('Delivered') THEN 1 END) as "totalDelivered"`
                     ),
                     db.raw(
-                        "COUNT(CASE WHEN LOWER(status) = LOWER('Cancelled') THEN 1 END) as totalCancelled"
+                        `COUNT(CASE WHEN LOWER(status) = LOWER('Cancelled') THEN 1 END) as "totalCancelled"`
                     ),
                     db.raw(`
                           AVG(
                             CASE 
-                              WHEN LOWER(status) = LOWER('Delivered') AND assignedAt IS NOT NULL AND deliveredAt IS NOT NULL 
-                              THEN (JULIANDAY(deliveredAt) - JULIANDAY(assignedAt)) * 1440
+                              WHEN LOWER(status) = LOWER('Delivered') AND "assignedAt" IS NOT NULL AND "deliveredAt" IS NOT NULL 
+                              THEN EXTRACT(EPOCH FROM ("deliveredAt" - "assignedAt")) / 60
                             END
-                          ) as avgDeliveryTime
+                          ) as "avgDeliveryTime"
                         `)
                 )
                 .first();
 
             return {
-                totalAssigned: stats.totalAssigned || 0,
-                totalDelivered: stats.totalDelivered || 0,
-                totalCancelled: stats.totalCancelled || 0,
-                avgDeliveryTime: stats.avgDeliveryTime || 0,
+                totalAssigned: parseFloat(stats.totalAssigned) || 0,
+                totalDelivered: parseFloat(stats.totalDelivered) || 0,
+                totalCancelled: parseFloat(stats.totalCancelled) || 0,
+                avgDeliveryTime: parseFloat(stats.avgDeliveryTime) || 0,
             };
         } catch (error) {
             throw error;
@@ -119,14 +112,7 @@ export class DeliveryDatabaseOperations {
     // Delete delivery person (soft delete)
     static async deleteDeliveryPerson(id: string): Promise<void> {
         try {
-            const now = new Date().toISOString();
-
-            await db("delivery_persons").where("id", id).update({
-                isDeleted: true,
-                updatedAt: now,
-            });
-
-            Logger.info(`Delivery person deleted: ${id}`);
+            await db("delivery_persons").where("id", id).delete();
         } catch (error) {
             throw error;
         }

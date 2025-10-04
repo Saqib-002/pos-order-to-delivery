@@ -9,6 +9,10 @@ export interface DeliveryPerson {
   updatedAt: string;
   syncedAt?: string;
   isDeleted?: boolean;
+  totalAssigned?: number;
+  totalDelivered?: number;
+  totalCancelled?: number;
+  avgDeliveryTime?: number;
 }
 
 export interface DeliveryAssignment {

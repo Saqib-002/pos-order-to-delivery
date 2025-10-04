@@ -1,7 +1,6 @@
 import { db } from "./index.js";
 import { FilterType, Order } from "@/types/order.js";
 import { randomUUID } from "crypto";
-import Logger from "electron-log";
 
 export class OrderDatabaseOperations {
     static async saveOrder(item: any): Promise<any> {
@@ -256,7 +255,7 @@ export class OrderDatabaseOperations {
                     .andWhere("createdAt", ">=", startDate.toISOString())
                     .andWhere("createdAt", "<=", endDate.toISOString());
             }
-            if (filter.selectedStatus.length > 0) {
+            if (filter.selectedStatus.length > 0 && filter.selectedStatus[0] !== "all") {
                 query.whereIn("status", filter.selectedStatus);
             }
             const orders = await query;
@@ -284,6 +283,14 @@ export class OrderDatabaseOperations {
                     notes: order.notes,
                     isPaid: order.isPaid,
                     id: order.id,
+                    deliveryPerson: {
+                        id:order.deliveryPersonId,
+                        name:order.deliveryPersonName,
+                        phone:order.deliveryPersonPhone,
+                        email:order.deliveryPersonEmail,
+                        vehicleType:order.deliveryPersonVehicleType,
+                        licenseNo:order.deliveryPersonLicenseNo,
+                    },
                     items
                 };
                 newOrders.push(newOrder);

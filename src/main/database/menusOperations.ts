@@ -5,7 +5,7 @@ import Logger from "electron-log";
 
 export class MenusOperations {
   static async createMenu(
-    menu: Omit<Menu, "id" | "createdAt" | "updatedAt" | "isDeleted">,
+    menu: Omit<Menu, "id" | "createdAt" | "updatedAt">,
     MenuPageAssociations: Omit<MenuPageAssociation, "id" | "createdAt" | "updatedAt">[]
   ): Promise<Menu> {
     const trx=await db.transaction();
@@ -17,7 +17,6 @@ export class MenusOperations {
         ...menu,
         createdAt: now,
         updatedAt: now,
-        isDeleted: false,
       };
       await trx("menus").insert(newMenu);
       const newMenuPageAssociations = [];
@@ -43,7 +42,6 @@ export class MenusOperations {
   static async getMenus(): Promise<Menu[]> {
     try {
       const menus = await db("menus")
-        .where("isDeleted", false)
         .orderBy("name", "asc");
       return menus;
     } catch (error) {
@@ -55,7 +53,6 @@ export class MenusOperations {
     try {
       const menus = await db("menus")
         .where("subcategoryId", subcategoryId)
-        .andWhere("isDeleted", false)
         .orderBy("priority", "asc");
       return menus;
     } catch (error) {
@@ -123,11 +120,7 @@ export class MenusOperations {
 
   static async deleteMenu(id: string): Promise<void> {
     try {
-      const now = new Date().toISOString();
-      await db("menus").where("id", id).update({
-        isDeleted: true,
-        updatedAt: now,
-      });
+      await db("menus").where("id", id).delete();
       Logger.info(`Menu deleted: ${id}`);
     } catch (error) {
       throw error;
