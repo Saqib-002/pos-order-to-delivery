@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import OrderCart from "./OrderCart";
 import OrderProcessingModal from "./OrderProcessingModal";
 import { useOrder } from "../../contexts/OrderContext";
@@ -48,7 +48,6 @@ const OrderComponent = ({
   };
   const handleOrderClick = async (order: Order) => {
     setOrder(order);
-    console.log(order);
     if (order.items) {
       order.items.forEach((item: any) => {
         addToOrder({ ...item, complements: StringToComplements(item.complements) });

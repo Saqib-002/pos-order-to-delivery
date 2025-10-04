@@ -61,6 +61,7 @@ import {
   deleteProduct,
   getAddOnPagesByProductId,
   getAllProducts,
+  getProductById,
   getProductsByCatId,
   getVariantsByProductId,
   updateProduct,
@@ -101,6 +102,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-product", deleteProduct);
   ipcMain.handle("get-variants-by-product-id", getVariantsByProductId);
   ipcMain.handle("get-add-on-pages-by-product-id", getAddOnPagesByProductId);
+  ipcMain.handle("get-product-by-id",getProductById)
 
   // Customer handlers
   ipcMain.handle("create-customer", createCustomer);

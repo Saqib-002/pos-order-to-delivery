@@ -1,39 +1,14 @@
+import { OrderItem } from "@/types/order";
 import React from "react";
 import { toast } from "react-toastify";
 
-interface OrderItem {
-  id: string;
-  productId: string;
-  productName: string;
-  productPrice: number;
-  productTax: number;
-  variantId: string;
-  variantName: string;
-  variantPrice: number;
-  complements: Array<{
-    groupId: string;
-    groupName: string;
-    itemId: string;
-    itemName: string;
-    price: number;
-  }>;
-  quantity: number;
-  totalPrice: number;
-  menuContext?: {
-    menuId: string;
-    menuName: string;
-    menuPageId: string;
-    menuPageName: string;
-    supplement: number;
-  };
-}
 
 interface OrderCartProps {
   token: string | null;
   orderId: string;
   orderItems: OrderItem[];
-  onRemoveItem: (itemId: string) => void;
-  onUpdateQuantity: (itemId: string, quantity: number) => void;
+  onRemoveItem: (itemId: string|undefined) => void;
+  onUpdateQuantity: (itemId: string|undefined, quantity: number) => void;
   onClearOrder: () => void;
   onProcessOrder: () => void;
 }
@@ -63,7 +38,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       </div>
     );
   }
-  const handleRemoveItem = async (itemId: string) => {
+  const handleRemoveItem = async (itemId: string|undefined) => {
     const res=await (window as any).electronAPI.removeItemFromOrder(token,orderId,itemId);
     if (!res.status){
       toast.error(`Error removing item`);
@@ -79,7 +54,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     }
     onClearOrder();
   };
-  const handleUpdateQuantity =async (itemId: string, quantity: number) => {
+  const handleUpdateQuantity =async (itemId: string|undefined, quantity: number) => {
     const res=await (window as any).electronAPI.updateItemQuantity(token,itemId,quantity);
     if (!res.status){
       toast.error(`Error updating quantity`);
@@ -113,13 +88,13 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 <h3 className="font-medium text-gray-800">
                   {item.productName}
                 </h3>
-                {item.menuContext && (
+                {item.menuId && (
                   <div className="text-xs text-indigo-600 mb-1">
-                    From: {item.menuContext.menuName} -{" "}
-                    {item.menuContext.menuPageName}
-                    {item.menuContext.supplement > 0 && (
+                    From: {item.menuName} -{" "}
+                    {item.menuPageName}
+                    {item.supplement && item.supplement > 0 && (
                       <span className="ml-1">
-                        (+€{item.menuContext.supplement.toFixed(2)})
+                        (+€{item.supplement.toFixed(2)})
                       </span>
                     )}
                   </div>

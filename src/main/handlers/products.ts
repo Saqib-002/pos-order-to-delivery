@@ -139,3 +139,19 @@ export const getAddOnPagesByProductId=async (event: IpcMainInvokeEvent, token: s
         }
     }
 }
+export const getProductById=async (event: IpcMainInvokeEvent, token: string, productId: string) => {
+    try {
+        await verifyToken(event, token);
+        const result = await ProductsDatabaseOperations.getProductById(productId);
+        return {
+            status: true,
+            data: result,
+        }
+    } catch (error) {
+        Logger.error("Error getting product:", error);
+        return {
+            status: false,
+            error: (error as Error).message,
+        }
+    }
+}

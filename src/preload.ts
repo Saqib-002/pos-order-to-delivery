@@ -103,6 +103,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("get-variants-by-product-id", token, productId),
   getAddOnPagesByProductId: (token: string, productId: string) =>
     ipcRenderer.invoke("get-add-on-pages-by-product-id", token, productId),
+  getProductById: (token: string, productId: string) =>
+    ipcRenderer.invoke("get-product-by-id", token, productId),
 
   // customer operations
   createCustomer: (token: string, customer: any) =>

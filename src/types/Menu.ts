@@ -1,17 +1,3 @@
-export interface OrderItem {
-  id: string;
-  orderId: string;
-  menuItemId: string;
-  quantity: number;
-  customIngredients?: string[];
-  specialInstructions?: string;
-  createdAt: string;
-  updatedAt: string;
-  syncedAt?: string;
-  isDeleted?: boolean;
-  menuItem?: MenuItem;
-}
-
 export interface MenuCategory {
   name: string;
   label: string;

@@ -1,8 +1,11 @@
 export interface OrderItem {
-  id: string;
+  id?: string;
   productId: string;
   productName: string;
   productPrice: number;
+  productDescription: string;
+  productPriority: number;
+  productDiscount: number;
   productTax: number;
   variantId: string;
   variantName: string;
@@ -13,16 +16,19 @@ export interface OrderItem {
     itemId: string;
     itemName: string;
     price: number;
+    priority: number;
   }>;
   quantity: number;
   totalPrice: number;
-  menuContext?: {
-    menuId: string;
-    menuName: string;
-    menuPageId: string;
-    menuPageName: string;
-    supplement: number;
-  };
+  menuDescription?: string;
+  menuDiscount?: number;
+  menuTax?: number;
+  menuPrice?: number;
+  menuId?: string;
+  menuName?: string;
+  menuPageId?: string;
+  menuPageName?: string;
+  supplement?: number;
 }
 export interface Customer {
   id?: string;

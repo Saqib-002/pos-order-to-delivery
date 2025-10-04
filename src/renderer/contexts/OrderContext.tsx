@@ -6,9 +6,9 @@ interface OrderContextType {
   orderItems: OrderItem[];
   order: Order | null;
   setOrder: React.Dispatch<React.SetStateAction<Order | null>>;
-  addToOrder: ( item: OrderItem) => void;
-  removeFromOrder: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
+  addToOrder: (item: OrderItem) => void;
+  removeFromOrder: (itemId: string | undefined) => void;
+  updateQuantity: (itemId: string | undefined, quantity: number) => void;
   clearOrder: () => void;
   getOrderTotal: () => number;
 }
@@ -35,11 +35,11 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     setOrderItems((prev) => [...prev, newItem]);
   };
 
-  const removeFromOrder = (itemId: string) => {
+  const removeFromOrder = (itemId: string | undefined) => {
     setOrderItems((prev) => prev.filter((item) => item.id !== itemId));
   };
 
-  const updateQuantity = (itemId: string, quantity: number) => {
+  const updateQuantity = (itemId: string | undefined, quantity: number) => {
     setOrderItems((prev) =>
       prev.map((item) =>
         item.id === itemId
