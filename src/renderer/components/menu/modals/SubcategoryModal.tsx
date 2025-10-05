@@ -90,7 +90,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
       setFormData({
         name: "",
         color: "red",
-        categoryId: categories.length > 0 ? categories[0].id : "",
+        categoryId: "",
       });
     }
   }, [editingSubcategory, categories, isOpen]);

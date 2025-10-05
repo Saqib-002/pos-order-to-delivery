@@ -239,7 +239,7 @@ const CustomerModal = ({
                 name="comments"
                 placeholder="comments"
                 rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:outline-none focus:ring-indigo-500 focus:border-transparent resize-none"
               ></textarea>
             </div>
             <div className="mb-4">

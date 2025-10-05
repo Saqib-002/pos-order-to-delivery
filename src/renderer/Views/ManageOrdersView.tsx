@@ -3,6 +3,7 @@ import { Order, FilterType } from "@/types/order";
 import { formatAddress } from "../utils/utils";
 import CustomInput from "../components/shared/CustomInput";
 import { CustomSelect } from "../components/ui/CustomSelect";
+import { calculateOrderTotal } from "../utils/orderCalculations";
 
 // ICONS
 import SearchIcon from "../assets/icons/search.svg?react";
@@ -134,11 +135,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
 
   const handlePaymentClick = (order: Order) => {
     setSelectedOrderForPayment(order);
-    setPaymentAmount(
-      order.items
-        .reduce((total, item) => total + (item.price || 0) * item.quantity, 0)
-        .toFixed(2)
-    );
+    setPaymentAmount(calculateOrderTotal(order.items || []).toFixed(2));
     setSelectedDeliveryPerson(order.deliveryPerson?.id || "");
     setPaymentMethod("cash");
     setIsPaymentModalOpen(true);
@@ -574,13 +571,9 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
                     </span>
                     <span className="text-lg font-bold text-green-600">
                       €
-                      {selectedOrderForPayment.items
-                        .reduce(
-                          (total, item) =>
-                            total + (item.price || 0) * item.quantity,
-                          0
-                        )
-                        .toFixed(2)}
+                      {calculateOrderTotal(
+                        selectedOrderForPayment.items || []
+                      ).toFixed(2)}
                     </span>
                   </div>
                 </div>

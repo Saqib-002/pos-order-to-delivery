@@ -6,6 +6,8 @@ import { toast } from "react-toastify";
 import { Order } from "@/types/order";
 import { StringToComplements, updateOrder } from "@/renderer/utils/order";
 import { useAuth } from "@/renderer/contexts/AuthContext";
+import { calculateOrderTotal } from "@/renderer/utils/orderCalculations";
+import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
 
 interface OrderComponentProps {
   orders: Order[];
@@ -26,7 +28,9 @@ const OrderComponent = ({
     setOrder,
   } = useOrder();
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
-  const { auth: { token } } = useAuth();
+  const {
+    auth: { token },
+  } = useAuth();
   useEffect(() => {
     if (orderItems.length == 0) {
       refreshOrdersCallback();
@@ -53,7 +57,10 @@ const OrderComponent = ({
     setOrder(order);
     if (order.items) {
       order.items.forEach((item: any) => {
-        addToOrder({ ...item, complements: StringToComplements(item.complements) });
+        addToOrder({
+          ...item,
+          complements: StringToComplements(item.complements),
+        });
       });
     }
   };
@@ -73,50 +80,71 @@ const OrderComponent = ({
         <>
           {orders.length > 0 ? (
             <div className="py-2 text-center text-gray-700 h-[calc(100vh-9rem)] overflow-y-auto">
-              {orders.map((order) => (
-                <button
-                  key={order.id}
-                  className="flex justify-between items-center gap-2 border-b border-gray-300 mb-2 pb-2 hover:border-gray-500 hover:shadow-md w-full px-2 cursor-pointer"
-                  onClick={() => handleOrderClick(order)}
-                >
-                  <div className="flex flex-col items-start gap-2">
-                    <p>
-                      {order.orderType ? order.orderType?.toUpperCase() : "Not Selected"}
-                      <span className={`border-2 ${order.isPaid ? "border-green-500 bg-green-300" : "border-red-500 bg-red-300"} rounded-full px-2 py-[2px] text-xs  ml-2`}>
-                        {order.isPaid ? "PAID" : "UNPAID"}
-                      </span>
-                    </p>
-                    <p>Order No. K{order.orderId}</p>
-                    <p>{order.status}</p>
-                  </div>
-                  <p className="text-2xl">
-                    €
-                    {order.items ? order.items
-                      .reduce(
-                        (total, item) =>
-                          total + (item.totalPrice || 0) * item.quantity,
-                        0
-                      )
-                      .toFixed(2) : "0.00"}
-                  </p>
-                </button>
-              ))}
+              {orders.map((order) => {
+                const orderTotal = order.items
+                  ? calculateOrderTotal(order.items)
+                  : 0;
+                const paymentStatus = calculatePaymentStatus(
+                  order.paymentType || "",
+                  orderTotal
+                );
+
+                const getPaymentStatusStyle = (status: string) => {
+                  switch (status) {
+                    case "PAID":
+                      return "border-green-500 bg-green-300 text-green-800";
+                    case "PARTIAL":
+                      return "border-yellow-500 bg-yellow-300 text-yellow-800";
+                    case "UNPAID":
+                    default:
+                      return "border-red-500 bg-red-300 text-red-800";
+                  }
+                };
+
+                return (
+                  <button
+                    key={order.id}
+                    className="flex justify-between items-center gap-2 border-b border-gray-300 mb-2 pb-2 hover:border-gray-500 hover:shadow-md w-full px-2 cursor-pointer"
+                    onClick={() => handleOrderClick(order)}
+                  >
+                    <div className="flex flex-col items-start gap-2">
+                      <p>
+                        {order.orderType
+                          ? order.orderType?.toUpperCase()
+                          : "Not Selected"}
+                        <span
+                          className={`border-2 ${getPaymentStatusStyle(paymentStatus.status)} rounded-full px-2 py-[2px] text-xs ml-2`}
+                        >
+                          {paymentStatus.status}
+                        </span>
+                      </p>
+                      <p>Order No. K{order.orderId}</p>
+                      <p>{order.status}</p>
+                      {paymentStatus.status === "PARTIAL" && (
+                        <p className="text-xs text-yellow-700">
+                          Paid: €{paymentStatus.totalPaid.toFixed(2)} / €
+                          {orderTotal.toFixed(2)}
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-2xl">€{orderTotal.toFixed(2)}</p>
+                  </button>
+                );
+              })}
             </div>
           ) : (
             <div className="p-4">No items in the order</div>
           )}
         </>
       )}
-      {
-        isProcessingModalOpen && (
-          <OrderProcessingModal
-            onClose={() => setIsProcessingModalOpen(false)}
-            orderItems={orderItems}
-            order={order}
-            onProcessOrder={handleProcessOrderSubmit}
-          />
-        )
-      }
+      {isProcessingModalOpen && (
+        <OrderProcessingModal
+          onClose={() => setIsProcessingModalOpen(false)}
+          orderItems={orderItems}
+          order={order}
+          onProcessOrder={handleProcessOrderSubmit}
+        />
+      )}
     </>
   );
 };

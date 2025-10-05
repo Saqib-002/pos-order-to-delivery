@@ -49,7 +49,7 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     iconSize: "size-5",
     actionsLayout: "col",
     headerMb: "mb-2",
-    footerMb: "",
+    footerMb: "gap-2",
     hasDelete: false,
     getBody: () => null,
     getLeft: (data) => ({ text: `${data.itemCount || 0} Subcategories`, className: "text-sm text-white opacity-90" }),

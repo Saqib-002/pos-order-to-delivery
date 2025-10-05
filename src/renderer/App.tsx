@@ -30,7 +30,7 @@ const App: React.FC = () => {
     selectedDate: null,
     selectedStatus: ["all"],
   });
-  const {auth,logout}=useAuth();
+  const { auth, logout } = useAuth();
 
   const { orders, setOrders, refreshOrdersCallback } = useOrderManagement(
     auth,
@@ -101,7 +101,7 @@ const App: React.FC = () => {
       roles: ["admin"],
     },
     [VIEWS.DELIVERY_MANAGEMENT]: {
-      component: <DeliveryManagement  />,
+      component: <DeliveryManagement />,
       roles: ["admin"],
     },
     [VIEWS.MANAGE_ORDERS]: {
@@ -136,14 +136,14 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 p-2">
+    <div className="min-h-screen bg-slate-100">
       <Navigation
         currentView={view}
         setView={setView}
         userRole={auth.user?.role}
         onLogout={handleLogout}
       />
-      {renderView()}
+      <div className="ml-16 p-4">{renderView()}</div>
     </div>
   );
 };

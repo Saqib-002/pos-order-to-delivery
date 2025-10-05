@@ -1,6 +1,6 @@
 import { Order, OrderItem } from "@/types/order";
 import React, { createContext, useContext, useState, ReactNode } from "react";
-
+import { calculateOrderTotal } from "../utils/orderCalculations";
 
 interface OrderContextType {
   orderItems: OrderItem[];
@@ -11,12 +11,12 @@ interface OrderContextType {
   updateQuantity: (itemId: string | undefined, quantity: number) => void;
   clearOrder: () => void;
   isProductExists: (productId: string) => boolean;
-  removeMenuFromOrder: (menuId: string,menuSecondaryId:number) => void;
+  removeMenuFromOrder: (menuId: string, menuSecondaryId: number) => void;
   getOrderTotal: () => number;
   processedMenuOrderItems: OrderItem[];
   addToProcessedMenuOrderItems: (item: OrderItem) => void;
-  clearProcessedMenuOrderItems: () => void
-  getMaxSecondaryId: (menuId: string) => number
+  clearProcessedMenuOrderItems: () => void;
+  getMaxSecondaryId: (menuId: string) => number;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -34,9 +34,11 @@ interface OrderProviderProps {
 }
 
 export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
-  const [processedMenuOrderItems, setProcessedMenuOrderItems] = useState<OrderItem[]>([]);
+  const [processedMenuOrderItems, setProcessedMenuOrderItems] = useState<
+    OrderItem[]
+  >([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [order, setOrder] = useState<Order | null>(null)
+  const [order, setOrder] = useState<Order | null>(null);
 
   const addToOrder = async (newItem: OrderItem) => {
     setOrderItems((prev) => [...prev, newItem]);
@@ -51,21 +53,21 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
       prev.map((item) =>
         item.id === itemId
           ? {
-            ...item,
-            quantity,
-            totalPrice:
-              Math.round(
-                (item.productPrice +
-                  item.productTax +
-                  item.variantPrice +
-                  item.complements.reduce(
-                    (sum, comp) => sum + comp.price,
-                    0
-                  )) *
-                quantity *
-                100
-              ) / 100,
-          }
+              ...item,
+              quantity,
+              totalPrice:
+                Math.round(
+                  (item.productPrice +
+                    item.productTax +
+                    item.variantPrice +
+                    item.complements.reduce(
+                      (sum, comp) => sum + comp.price,
+                      0
+                    )) *
+                    quantity *
+                    100
+                ) / 100,
+            }
           : item
       )
     );
@@ -76,28 +78,42 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
   };
 
   const getOrderTotal = () => {
-    return orderItems.reduce((total, item) => total + item.totalPrice, 0);
+    return calculateOrderTotal(orderItems);
   };
-  const isProductExists = (productId: string):boolean => {
-    return !!orderItems.find((item) => !item.menuId && item.productId === productId);
-  }
-  const removeMenuFromOrder = async (menuId: string,menuSecondaryId:number) => {
-    const newOrderItems=orderItems.filter((item) => !item.menuId || !(item.menuId === menuId && item.menuSecondaryId === menuSecondaryId));
+  const isProductExists = (productId: string): boolean => {
+    return !!orderItems.find(
+      (item) => !item.menuId && item.productId === productId
+    );
+  };
+  const removeMenuFromOrder = async (
+    menuId: string,
+    menuSecondaryId: number
+  ) => {
+    const newOrderItems = orderItems.filter(
+      (item) =>
+        !item.menuId ||
+        !(item.menuId === menuId && item.menuSecondaryId === menuSecondaryId)
+    );
     setOrderItems(newOrderItems);
-  }
-  const addToProcessedMenuOrderItems =  (newItem: OrderItem) => {
+  };
+  const addToProcessedMenuOrderItems = (newItem: OrderItem) => {
     setProcessedMenuOrderItems((prev) => [...prev, newItem]);
-  }
+  };
   const clearProcessedMenuOrderItems = () => {
     setProcessedMenuOrderItems([]);
-  }
-  const getMaxSecondaryId=(menuId:string)=>{
-    const menuItems = orderItems.filter((item) => item.menuId && item.menuId === menuId && item.menuSecondaryId !== undefined);
-    if(menuItems.length===0){
+  };
+  const getMaxSecondaryId = (menuId: string) => {
+    const menuItems = orderItems.filter(
+      (item) =>
+        item.menuId &&
+        item.menuId === menuId &&
+        item.menuSecondaryId !== undefined
+    );
+    if (menuItems.length === 0) {
       return 0;
     }
     return Math.max(...menuItems.map((item) => item.menuSecondaryId!));
-  }
+  };
   const value: OrderContextType = {
     orderItems,
     order,
@@ -112,7 +128,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     processedMenuOrderItems,
     addToProcessedMenuOrderItems,
     clearProcessedMenuOrderItems,
-    getMaxSecondaryId
+    getMaxSecondaryId,
   };
 
   return (

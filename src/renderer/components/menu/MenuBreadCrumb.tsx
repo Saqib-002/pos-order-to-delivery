@@ -13,7 +13,7 @@ export const MenuBreadcrumb: React.FC<BreadcrumbProps> = ({
   }
 
   return (
-    <div className="mb-4 flex justify-end">
+    <div className="flex justify-end">
       <nav className="flex items-center gap-2 text-sm text-gray-600">
         <BreadcrumbLink
           label="Categories"

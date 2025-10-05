@@ -12,7 +12,7 @@ interface MenuPage {
   id: string;
   name: string;
   description: string;
-  products: Omit<MenuPageProduct, "menuPageId"|"createdAt"| "updatedAt">[];
+  products: Omit<MenuPageProduct, "menuPageId" | "createdAt" | "updatedAt">[];
 }
 
 interface MenuPageModalProps {
@@ -20,7 +20,7 @@ interface MenuPageModalProps {
   onClose: () => void;
   onSuccess: () => void;
   editingMenuPage: MenuPage | null;
-  token: string|null;
+  token: string | null;
 }
 
 export const MenuPageModal: React.FC<MenuPageModalProps> = ({
@@ -34,7 +34,9 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
     name: "",
     description: "",
   });
-  const [products, setProducts] = useState<Omit<MenuPageProduct, "menuPageId"|"createdAt"| "updatedAt">[]>([]);
+  const [products, setProducts] = useState<
+    Omit<MenuPageProduct, "menuPageId" | "createdAt" | "updatedAt">[]
+  >([]);
   const [newProduct, setNewProduct] = useState({
     name: "",
     supplement: 0,
@@ -58,9 +60,9 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
         return;
       }
 
-      const addedProductNames = products.map((p) => p.productName);
+      const addedProductIds = products.map((p) => p.productId);
       const availableProducts = res.data.filter(
-        (product: any) => !addedProductNames.includes(product.productName)
+        (product: any) => !addedProductIds.includes(product.id)
       );
 
       const productOptions = availableProducts.map((product: any) => ({
@@ -176,7 +178,10 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
       return;
     }
 
-    const product: Omit<MenuPageProduct, "menuPageId"|"createdAt"| "updatedAt"> = {
+    const product: Omit<
+      MenuPageProduct,
+      "menuPageId" | "createdAt" | "updatedAt"
+    > = {
       id: `temp_${Date.now()}`,
       productName: selectedOption.label,
       productId: selectedOption.productId || selectedOption.value,

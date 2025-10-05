@@ -125,7 +125,7 @@ const OrderMenu = () => {
           />
         )
       }
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[98%] mx-auto">
         <BreadcrumbNavigation
           selectedCategory={selectedCategory}
           selectedSubcategory={selectedSubcategory}
