@@ -9,11 +9,13 @@ import {
   // getOrders,
   getOrdersByFilter,
   removeItemFromOrder,
+  removeMenuFromOrder,
   // markDeliveredOrder,
   // readyOrder,
   // updateOrder,
   saveOrder,
   updateItemQuantity,
+  updateMenuQuantity,
   updateOrder,
 } from "./handlers/orders.js";
 import {
@@ -136,8 +138,10 @@ export function registerIpcHandlers() {
   ipcMain.handle("save-order", saveOrder);
   ipcMain.handle("add-item-to-order", addItemToOrder);
   ipcMain.handle("remove-item-from-order", removeItemFromOrder);
+  ipcMain.handle("remove-menu-from-order", removeMenuFromOrder);
   ipcMain.handle("delete-order", deleteOrder);
   ipcMain.handle("update-item-quantity", updateItemQuantity);
+  ipcMain.handle("update-menu-quantity", updateMenuQuantity);
   ipcMain.handle("get-order-items", getOrderItems)
   ipcMain.handle("update-order", updateOrder);
   // ipcMain.handle("delete-order", deleteOrder);

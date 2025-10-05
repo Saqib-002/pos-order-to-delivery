@@ -32,7 +32,7 @@ const OrderTakingForm = ({
   token,
   currentOrderItem
 }: OrderTakingFormProps) => {
-  const { orderItems, addToOrder, order, setOrder } = useOrder();
+  const { orderItems, addToOrder, order, setOrder,addToProcessedMenuOrderItems } = useOrder();
   const [variantItems, setVariantItems] = useState<any[] | null>(null);
   const [addOnPages, setAddonPages] = useState<AddonPage[] | null>(null);
   const [groups, setGroups] = useState<Group[] | null>(null);
@@ -227,6 +227,7 @@ const OrderTakingForm = ({
         menuDiscount:currentOrderItem.menuDiscount,
         menuTax:currentOrderItem.menuTax,
         supplement:currentOrderItem.supplement,
+        menuSecondaryId:currentOrderItem.menuSecondaryId,
       }
     }
     const newComplement = ComplementsToString(orderItem.complements);
@@ -236,6 +237,9 @@ const OrderTakingForm = ({
         toast.error("Unable to save order");
         return;
       }
+      if(mode==="menu"){
+        addToProcessedMenuOrderItems({...orderItem,id:res.data.itemId});
+      }
       addToOrder({ ...orderItem, id: res.data.itemId });
       setOrder(res.data.order);
     } else {
@@ -243,6 +247,9 @@ const OrderTakingForm = ({
       if (!res.status) {
         toast.error("Unable to update order");
         return;
+      }
+      if(mode==="menu"){
+        addToProcessedMenuOrderItems({...orderItem,id:res.data.itemId});
       }
       addToOrder({ ...orderItem, id: res.data.itemId });
     }

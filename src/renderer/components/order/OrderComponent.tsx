@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import OrderCart from "./OrderCart";
 import OrderProcessingModal from "./OrderProcessingModal";
 import { useOrder } from "../../contexts/OrderContext";
@@ -27,7 +27,11 @@ const OrderComponent = ({
   } = useOrder();
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
   const { auth: { token } } = useAuth();
-
+  useEffect(() => {
+    if (orderItems.length == 0) {
+      refreshOrdersCallback();
+    }
+  }, [orderItems]);
   const handleProcessOrder = () => {
     if (orderItems.length === 0) {
       toast.error("No items in the order");
@@ -44,7 +48,6 @@ const OrderComponent = ({
     }
     toast.success("Order processed successfully");
     clearOrder();
-    refreshOrdersCallback();
   };
   const handleOrderClick = async (order: Order) => {
     setOrder(order);
@@ -69,7 +72,7 @@ const OrderComponent = ({
       ) : (
         <>
           {orders.length > 0 ? (
-            <div className="py-2 text-center text-gray-700">
+            <div className="py-2 text-center text-gray-700 h-[calc(100vh-9rem)] overflow-y-auto">
               {orders.map((order) => (
                 <button
                   key={order.id}

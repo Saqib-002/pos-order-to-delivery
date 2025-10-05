@@ -24,6 +24,7 @@ export async function up(knex) {
     table.float('menuTax');
     table.float('menuPrice');
     table.string('menuId');
+    table.integer('menuSecondaryId');
     table.string('menuName');
     table.string('menuPageId');
     table.string('menuPageName');

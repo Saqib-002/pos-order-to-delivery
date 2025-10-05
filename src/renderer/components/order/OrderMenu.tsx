@@ -5,7 +5,7 @@ import {
   fetchMenusBySubcategory,
 } from "@/renderer/utils/menu";
 import { Category, SubCategory } from "@/types/categories";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Product } from "@/types/Menu";
 import OrderTakingForm from "./OrderTakingForm";
 import CategorySelection from "./CategorySelection";
@@ -14,12 +14,15 @@ import ProductGrid from "./ProductGrid";
 import BreadcrumbNavigation from "./BreadcrumbNavigation";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import MenuOrderTakingForm from "./MenuOrderTakingForm";
+import { useOrder } from "@/renderer/contexts/OrderContext";
+import { toast } from "react-toastify";
 
 const OrderMenu = () => {
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [subCategories, setSubCategories] = useState<SubCategory[] | null>(
     null
   );
+  const { isProductExists, isMenuExists,clearProcessedMenuOrderItems } = useOrder();
   const { auth: { token } } = useAuth();
   const [products, setProducts] = useState<Product[] | null>(null);
   const [menus, setMenus] = useState<any[] | null>(null);
@@ -86,12 +89,24 @@ const OrderMenu = () => {
     setProducts(null);
     setMenus(null);
   };
-
+  const handleSelectProduct = (product: Product) => {
+    // if (isProductExists(product.id)) {
+    //   toast.warn("Product already exists in the order.");
+    //   return
+    // }
+    setMode("product");
+    setSelectedProduct(product);
+  }
   const handleMenuSelect = (menu: any) => {
+    // if (isMenuExists(menu.id)) {
+    //   toast.warn("Menu already exists in the order.");
+    //   return
+    // }
+    clearProcessedMenuOrderItems();
     setSelectedMenu(menu);
   };
   return (
-    <div className="h-full flex flex-col">
+    <>
       {selectedProduct && (
         <OrderTakingForm
           mode={mode}
@@ -114,140 +129,135 @@ const OrderMenu = () => {
           />
         )
       }
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-7xl mx-auto">
-          <BreadcrumbNavigation
-            selectedCategory={selectedCategory}
+      <div className="max-w-7xl mx-auto">
+        <BreadcrumbNavigation
+          selectedCategory={selectedCategory}
+          selectedSubcategory={selectedSubcategory}
+          onBackToCategories={handleBackToCategories}
+          onBackToSubcategories={handleBackToSubcategories}
+        />
+
+        <CategorySelection
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategorySelect={handleSelectCategory}
+          isLoading={isLoadingCategories}
+        />
+
+        {selectedCategory && (
+          <SubcategorySelection
+            subcategories={subCategories}
             selectedSubcategory={selectedSubcategory}
-            onBackToCategories={handleBackToCategories}
-            onBackToSubcategories={handleBackToSubcategories}
+            onSubcategorySelect={handleSelectSubCategory}
+            isLoading={isLoadingSubcategories}
           />
+        )}
 
-          <CategorySelection
-            categories={categories}
-            selectedCategory={selectedCategory}
-            onCategorySelect={handleSelectCategory}
-            isLoading={isLoadingCategories}
-          />
-
-          {selectedCategory && (
-            <SubcategorySelection
-              subcategories={subCategories}
-              selectedSubcategory={selectedSubcategory}
-              onSubcategorySelect={handleSelectSubCategory}
-              isLoading={isLoadingSubcategories}
-            />
-          )}
-
-          {selectedSubcategory && (
-            <div className="space-y-6">
-              {/* Items Section */}
-              {(products && products.length > 0) ||
-                (menus && menus.length > 0) ? (
-                <div>
-                  {/* Products */}
-                  {products && products.length > 0 && (
-                    <div className="mb-6">
-                      <ProductGrid
-                        products={products}
-                        onProductSelect={(product) => {
-                          setMode("product");
-                          setSelectedProduct(product);
-                        }}
-                        isLoading={isLoadingProducts}
-                      />
-                    </div>
-                  )}
-
-                  {/* Menus */}
-                  {menus && menus.length > 0 && (
-                    <div>
-                      <h4 className="text-md font-medium text-gray-700 mb-3">
-                        Menus
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {isLoadingMenus
-                          ? [...Array(4)].map((_, index) => (
-                            <div
-                              key={index}
-                              className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse"
-                            >
-                              <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                              <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                            </div>
-                          ))
-                          : menus.map((menu) => (
-                            <div
-                              key={menu.id}
-                              onClick={() => handleMenuSelect(menu)}
-                              className="bg-white border border-gray-200 rounded-lg p-6 cursor-pointer hover:shadow-md hover:border-indigo-300 transition-all group"
-                            >
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="text-lg font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">
-                                  {menu.name}
-                                </h4>
-                                <div className="text-sm font-medium text-indigo-600">
-                                  €{Number(menu.price || 0).toFixed(2)}
-                                </div>
-                              </div>
-                              {menu.description && (
-                                <p className="text-gray-600 text-sm line-clamp-2">
-                                  {menu.description}
-                                </p>
-                              )}
-                              <div className="mt-3 flex items-center text-sm text-gray-500">
-                                <svg
-                                  className="w-4 h-4 mr-1"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 5l7 7-7 7"
-                                  />
-                                </svg>
-                                Click to process menu
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                /* Empty State */
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg
-                      className="w-8 h-8 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
+        {selectedSubcategory && (
+          <div className="space-y-6">
+            {/* Items Section */}
+            {(products && products.length > 0) ||
+              (menus && menus.length > 0) ? (
+              <div>
+                {/* Products */}
+                {products && products.length > 0 && (
+                  <div className="mb-6">
+                    <ProductGrid
+                      products={products}
+                      onProductSelect={(p) => handleSelectProduct(p)}
+                      isLoading={isLoadingProducts}
+                    />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No Items Available
-                  </h3>
-                  <p className="text-gray-500">
-                    No products or menus available in this subcategory.
-                  </p>
+                )}
+
+                {/* Menus */}
+                {menus && menus.length > 0 && (
+                  <div>
+                    <h4 className="text-md font-medium text-gray-700 mb-3">
+                      Menus
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {isLoadingMenus
+                        ? [...Array(4)].map((_, index) => (
+                          <div
+                            key={index}
+                            className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse"
+                          >
+                            <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                          </div>
+                        ))
+                        : menus.map((menu) => (
+                          <div
+                            key={menu.id}
+                            onClick={() => handleMenuSelect(menu)}
+                            className="bg-white border border-gray-200 rounded-lg p-6 cursor-pointer hover:shadow-md hover:border-indigo-300 transition-all group"
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-lg font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">
+                                {menu.name}
+                              </h4>
+                              <div className="text-sm font-medium text-indigo-600">
+                                €{Number(menu.price || 0).toFixed(2)}
+                              </div>
+                            </div>
+                            {menu.description && (
+                              <p className="text-gray-600 text-sm line-clamp-2">
+                                {menu.description}
+                              </p>
+                            )}
+                            <div className="mt-3 flex items-center text-sm text-gray-500">
+                              <svg
+                                className="w-4 h-4 mr-1"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 5l7 7-7 7"
+                                />
+                              </svg>
+                              Click to process menu
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Empty State */
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg
+                    className="w-8 h-8 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No Items Available
+                </h3>
+                <p className="text-gray-500">
+                  No products or menus available in this subcategory.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 };
 

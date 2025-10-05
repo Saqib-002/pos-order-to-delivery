@@ -35,16 +35,16 @@ export const OrderView: React.FC<OrderViewProps> = ({
   }, []);
   return (
     <OrderProvider>
-      <div className="grid grid-cols-12 h-[calc(100vh-6rem)]">
-        <div className="col-span-3 border-r border-gray-300 h-full flex flex-col">
-          <OrderComponentHeader />
+      <div className="grid grid-cols-12 h-[calc(100vh-6rem-1px)]">
+        <div className="col-span-3 border-r border-gray-300 flex flex-col">
+          <OrderComponentHeader refreshOrdersCallback={refreshOrdersCallback} />
           <div className="h-[1px] bg-gray-400"></div>
           <OrderComponent
             orders={orders}
             refreshOrdersCallback={refreshOrdersCallback}
           />
         </div>
-        <div className="col-span-9 h-full flex flex-col">
+        <div className="col-span-9 flex flex-col overflow-y-auto">
           <OrderMenu />
         </div>
       </div>

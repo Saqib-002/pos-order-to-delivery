@@ -3,14 +3,14 @@ import AddIcon from "../../assets/icons/add.svg?react";
 import CustomerModal from "./modals/CustomerModal";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 
-const OrderComponentHeader = () => {
+const OrderComponentHeader = ({ refreshOrdersCallback }: { refreshOrdersCallback: () => void }) => {
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const { clearOrder, orderItems } = useOrder();
   return (
     <>
       <div className="flex justify-between items-center px-4 py-2">
         <div className="flex items-center gap-2">
-          {orderItems.length > 0 && <button type="button" onClick={clearOrder} className="text-gray-700 cursor-pointer text-lg rotate-180 hover:text-indigo-500 transition-colors duration-300">&#10148;</button>}
+          {orderItems.length > 0 && <button type="button" onClick={() => { refreshOrdersCallback(); clearOrder() }} className="text-gray-700 cursor-pointer text-lg rotate-180 hover:text-indigo-500 transition-colors duration-300">&#10148;</button>}
           <h1>Order</h1>
         </div>
         <div>

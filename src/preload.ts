@@ -122,8 +122,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("add-item-to-order", token, orderId, item),
   removeItemFromOrder: (token: string, orderId: string, itemId: string) =>
     ipcRenderer.invoke("remove-item-from-order", token, orderId, itemId),
+  removeMenuFromOrder: (token: string, orderId: string, menuId: string,menuSecondaryId:string) =>
+    ipcRenderer.invoke("remove-menu-from-order", token, orderId, menuId,menuSecondaryId),
   updateItemQuantity: (token: string, orderId: string, itemId: string, quantity: number) =>
     ipcRenderer.invoke("update-item-quantity", token, orderId, itemId, quantity),
+  updateMenuQuantity: (token: string, orderId: string, menuId: string,menuSecondaryId:string, quantity: number) =>
+    ipcRenderer.invoke("update-menu-quantity", token, orderId, menuId,menuSecondaryId, quantity),
   getOrderItems: (token: string, orderId: string) =>
     ipcRenderer.invoke("get-order-items", token, orderId),
   deleteOrder: (token: string, id: string) =>

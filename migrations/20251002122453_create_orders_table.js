@@ -5,7 +5,7 @@
 export async function up(knex) {
   return knex.schema.createTable('orders', function(table) {
     table.string('id').primary();
-    table.string('orderId');
+    table.increments('orderId');
     table.string('customerName');
     table.string('customerPhone');
     table.string('customerCIF');

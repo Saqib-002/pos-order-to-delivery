@@ -7,11 +7,8 @@ export class OrderDatabaseOperations {
         const trx = await db.transaction();
         try {
             const now = new Date().toISOString();
-            const dailyOrders = await trx("orders").count("* as count");
-            const orderId = (Number(dailyOrders[0]?.count) || 0) + 1;
             const newOrder = {
                 id: randomUUID(),
-                orderId,
                 status: "sent to kitchen",
                 createdAt: now,
                 updatedAt: now,
@@ -46,7 +43,7 @@ export class OrderDatabaseOperations {
                 updatedAt: now,
             };
             await db("order_items").insert(orderItem);
-            return {itemId:orderItem.id};
+            return { itemId: orderItem.id };
         } catch (error) {
             throw error;
         }
@@ -64,6 +61,39 @@ export class OrderDatabaseOperations {
                 await db("orders").where("id", orderId).delete();
             }
             return { itemId };
+        } catch (error) {
+            throw error;
+        }
+    }
+    static async removeMenuFromOrder(
+        orderId: string,
+        menuId: string,
+        menuSecondaryId:string,
+    ): Promise<any> {
+        try {
+            await db("order_items")
+                .where("orderId", orderId)
+                .andWhere("menuId", menuId)
+                .andWhere("menuSecondaryId", menuSecondaryId)
+                .delete();
+            const totalOrderItems = await db("order_items")
+                .where("orderId", orderId)
+                .count("* as count");
+            if (Number(totalOrderItems[0]?.count) === 0) {
+                await db("orders").where("id", orderId).delete();
+            }
+            return { menuId };
+        } catch (error) {
+            throw error;
+        }
+    }
+    static updateMenuQuantity(orderId:string,menuId: string,menuSecondaryId:string, quantity: number): Promise<any> {
+        try {
+            return db("order_items")
+                .where("orderId", orderId)
+                .andWhere("menuId", menuId)
+                .andWhere("menuSecondaryId", menuSecondaryId)
+                .update({ quantity });
         } catch (error) {
             throw error;
         }
@@ -99,13 +129,18 @@ export class OrderDatabaseOperations {
             throw error;
         }
     }
-    static async updateOrder(orderId:string, orderData:Partial<Order>): Promise<any> {
+    static async updateOrder(
+        orderId: string,
+        orderData: Partial<Order>
+    ): Promise<any> {
         try {
             const now = new Date().toISOString();
-            await db("orders").where("id", orderId).update({
-                ...orderData,
-                updatedAt: now,
-            });
+            await db("orders")
+                .where("id", orderId)
+                .update({
+                    ...orderData,
+                    updatedAt: now,
+                });
             return { orderId };
         } catch (error) {
             throw error;
@@ -255,7 +290,10 @@ export class OrderDatabaseOperations {
                     .andWhere("createdAt", ">=", startDate.toISOString())
                     .andWhere("createdAt", "<=", endDate.toISOString());
             }
-            if (filter.selectedStatus.length > 0 && filter.selectedStatus[0] !== "all") {
+            if (
+                filter.selectedStatus.length > 0 &&
+                filter.selectedStatus[0] !== "all"
+            ) {
                 query.whereIn("status", filter.selectedStatus);
             }
             const orders = await query;
@@ -284,14 +322,14 @@ export class OrderDatabaseOperations {
                     isPaid: order.isPaid,
                     id: order.id,
                     deliveryPerson: {
-                        id:order.deliveryPersonId,
-                        name:order.deliveryPersonName,
-                        phone:order.deliveryPersonPhone,
-                        email:order.deliveryPersonEmail,
-                        vehicleType:order.deliveryPersonVehicleType,
-                        licenseNo:order.deliveryPersonLicenseNo,
+                        id: order.deliveryPersonId,
+                        name: order.deliveryPersonName,
+                        phone: order.deliveryPersonPhone,
+                        email: order.deliveryPersonEmail,
+                        vehicleType: order.deliveryPersonVehicleType,
+                        licenseNo: order.deliveryPersonLicenseNo,
                     },
-                    items
+                    items,
                 };
                 newOrders.push(newOrder);
             }

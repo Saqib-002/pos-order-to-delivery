@@ -4,15 +4,6 @@ import { Product } from "@/types/Menu";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-interface OrderTakingFormProps {
-    product: Product | null;
-    setProduct: React.Dispatch<React.SetStateAction<Product | null>>;
-    setCurrentOrderItem: React.Dispatch<React.SetStateAction<any>>;
-    setMode: React.Dispatch<React.SetStateAction<"menu" | "product">>;
-    menu: any;
-    setMenu: any;
-    token: string | null;
-}
 interface MenuPageProduct {
     id: string;
     productId: string;
@@ -24,6 +15,7 @@ interface MenuPageProduct {
     tax?: number;
     discount?: number;
     productPriority?: number;
+    menuPageId?: string;
     totalPrice?: number;
 }
 
@@ -35,6 +27,15 @@ interface MenuPage {
     minComplements: number;
     maxComplements: number;
 }
+interface MenuOrderTakingFormProps {
+    product: Product | null;
+    setProduct: React.Dispatch<React.SetStateAction<Product | null>>;
+    setCurrentOrderItem: React.Dispatch<React.SetStateAction<any>>;
+    setMode: React.Dispatch<React.SetStateAction<"menu" | "product">>;
+    menu: any;
+    setMenu: any;
+    token: string | null;
+}
 
 const MenuOrderTakingForm = ({
     product,
@@ -44,16 +45,16 @@ const MenuOrderTakingForm = ({
     setCurrentOrderItem,
     setMode,
     token,
-}: OrderTakingFormProps) => {
+}: MenuOrderTakingFormProps) => {
     const [menuPages, setMenuPages] = useState<MenuPage[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [menuMinRequired, setMenuMinRequired] = useState(0);
-    const [menuMaxAllowed, setMenuMaxAllowed] = useState(0);
     const [currentMenuPageIndex, setCurrentMenuPageIndex] = useState(0);
     const [processedMenuProducts, setProcessedMenuProducts] = useState<
         Set<string>
     >(new Set());
-    const { orderItems } = useOrder();
+    const [processedCounts, setProcessedCounts] = useState<Record<string, number>>({});
+    const { order, removeMenuFromOrder,processedMenuOrderItems,getMaxSecondaryId } = useOrder();
+    const [maxSecondaryId,setMaxSecondaryId]=useState(0);
 
     const fetchMenuPages = async () => {
         if (!token || !menu) {
@@ -117,7 +118,6 @@ const MenuOrderTakingForm = ({
                                     }
                                     return menuProduct;
                                 } catch (error) {
-                                    console.error("Error fetching product details:", error);
                                     return menuProduct;
                                 }
                             })
@@ -132,16 +132,9 @@ const MenuOrderTakingForm = ({
                     };
                 })
             );
-
-            console.log("Final pages with products:", pagesWithProducts);
             setMenuPages(pagesWithProducts);
             setCurrentMenuPageIndex(0);
-            if (pagesWithProducts.length > 0) {
-                setMenuMinRequired(pagesWithProducts[0].minComplements || 0);
-                setMenuMaxAllowed(pagesWithProducts[0].maxComplements || 0);
-            }
         } catch (error) {
-            console.error("Error fetching menu pages:", error);
             toast.error("Failed to fetch menu pages");
         } finally {
             setIsLoading(false);
@@ -149,21 +142,45 @@ const MenuOrderTakingForm = ({
     };
     const currentMenuPage = menuPages[currentMenuPageIndex];
     const isLastPage = currentMenuPageIndex === menuPages.length - 1;
+    const currentMin = currentMenuPage?.minComplements || 0;
+    const currentMax = currentMenuPage?.maxComplements || 0;
+    const processedCountsForCurrent = processedCounts[currentMenuPage?.id || ''] || 0;
+    const allPagesComplete = menuPages.every((page: MenuPage) => (processedCounts[page.id] || 0) >= page.minComplements);
+    const totalProcessed = Object.values(processedCounts).reduce((a, b) => a + b, 0);
     useEffect(() => {
         fetchMenuPages();
+        setMaxSecondaryId(getMaxSecondaryId(menu.id));
     }, [])
     useEffect(() => {
-        if (currentMenuPage && orderItems) {
-            const orderProductIds = orderItems.map(item => item.menuId && item.productId);
-            console.log(orderProductIds);
-            const processedProducts=currentMenuPage.products.filter(product =>
-                orderProductIds.includes(product.productId)
+        if (currentMenuPage && processedMenuOrderItems) {
+            const orderPairs = new Set(
+                processedMenuOrderItems.map(item => `${item.productId}-${item.menuPageId}`)
+            );
+            const processedProducts = currentMenuPage.products.filter(product => {
+                const pairKey = `${product.productId}-${product.menuPageId}`;
+                return orderPairs.has(pairKey);
+            }
             );
             setProcessedMenuProducts(new Set(processedProducts.map(product => product.productId)));
-            console.log(currentMenuPage);
-            console.log(orderItems);
         }
-    }, [orderItems])
+    }, [processedMenuOrderItems, currentMenuPage])
+    useEffect(() => {
+        if (menuPages.length > 0 && processedMenuOrderItems) {
+            const orderPairs = new Set(
+                processedMenuOrderItems.map(item => `${item.productId}-${item.menuPageId}`)
+            );
+            const counts: Record<string, number> = {};
+            menuPages.forEach((page: MenuPage) => {
+                const pageCount = page.products.filter((product: MenuPageProduct) =>
+                    orderPairs.has(`${product.productId}-${page.id}`)
+                ).length;
+                counts[page.id] = pageCount;
+            });
+            setProcessedCounts(counts);
+        } else {
+            setProcessedCounts({});
+        }
+    }, [processedMenuOrderItems, menuPages]);
     if (isLoading) {
         return (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -177,6 +194,10 @@ const MenuOrderTakingForm = ({
         );
     }
     const handleMenuProductSelect = async (product: MenuPageProduct) => {
+        if (currentMax <= processedCountsForCurrent) {
+            toast.warn("You have reached the maximum number of complements for this menu page")
+            return
+        }
         const res = await (window as any).electronAPI.getProductById(token, product.productId);
         if (!res.status) {
             toast.error("Unable to fetch product")
@@ -193,19 +214,28 @@ const MenuOrderTakingForm = ({
             menuPageId: currentMenuPage.id,
             menuPageName: currentMenuPage.name,
             supplement: product.supplement,
+            menuSecondaryId:maxSecondaryId + 1,
         })
         setMode("menu")
     }
-    const onClose = () => {
-        setProduct(null);
-        setMenu(null);
-    }
     const resetMenuProcessing = () => {
         setProcessedMenuProducts(new Set());
-        setMenuMinRequired(0);
-        setMenuMaxAllowed(0);
         setCurrentMenuPageIndex(0);
+        setProcessedCounts({});
+        setMenu(null);
+        setProduct(null);
     };
+    const handleCancel = async () => {
+        if (totalProcessed !== 0) {
+            const res = await (window as any).electronAPI.removeMenuFromOrder(token, order?.id, menu.id,maxSecondaryId+1);
+            if (!res.status) {
+                toast.error("Error removing menu from order");
+                return;
+            }
+            removeMenuFromOrder(menu.id,maxSecondaryId+1);
+        }
+        resetMenuProcessing();
+    }
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40">
             <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -222,7 +252,7 @@ const MenuOrderTakingForm = ({
                     </div>
                     <button
                         type="button"
-                        onClick={() => onClose()}
+                        onClick={() => handleCancel()}
                         className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
                     >
                         &times;
@@ -267,14 +297,13 @@ const MenuOrderTakingForm = ({
                                 <div className="mt-2 text-sm text-gray-500">
                                     {processedMenuProducts.size > 0 ? (
                                         <span>
-                                            Processed {processedMenuProducts.size}/{menuMinRequired}{" "}
-                                            products.
-                                            {processedMenuProducts.size < menuMinRequired
+                                            Processed {processedMenuProducts.size}/{currentMin} products.
+                                            {processedMenuProducts.size < currentMin
                                                 ? " Select another product."
                                                 : " Complete!"}
                                         </span>
                                     ) : (
-                                        `Select ${menuMinRequired > 0 ? `at least ${menuMinRequired}` : "any"} product${menuMinRequired !== 1 ? "s" : ""}`
+                                        `Select ${currentMin > 0 ? `at least ${currentMin}` : "any"} product${currentMin !== 1 ? "s" : ""}`
                                     )}
                                 </div>
                             </div>
@@ -332,6 +361,21 @@ const MenuOrderTakingForm = ({
                                     Click on any product to process it
                                 </div>
                                 <div className="flex gap-3">
+                                    {allPagesComplete ? (
+                                        <button
+                                            onClick={() => { resetMenuProcessing(); setProcessedMenuProducts(new Set()); }}
+                                            className="px-6 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600"
+                                        >
+                                            Complete Menu ({totalProcessed} products)
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleCancel()}
+                                            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                                        >
+                                            Cancel
+                                        </button>
+                                    )}
                                     {currentMenuPageIndex > 0 && (
                                         <button
                                             onClick={() => {
@@ -350,28 +394,6 @@ const MenuOrderTakingForm = ({
                                             className="px-6 py-2 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600"
                                         >
                                             Next Page
-                                        </button>
-                                    )}
-                                    {processedMenuProducts.size >= menuMinRequired ? (
-                                        <button
-                                            onClick={() => {
-                                                resetMenuProcessing();
-                                                setProduct(null);
-                                            }}
-                                            className="px-6 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600"
-                                        >
-                                            Complete Menu ({processedMenuProducts.size} products)
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => {
-                                                resetMenuProcessing();
-                                                setMenu(null);
-                                                setProduct(null);
-                                            }}
-                                            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                                        >
-                                            Cancel
                                         </button>
                                     )}
                                 </div>

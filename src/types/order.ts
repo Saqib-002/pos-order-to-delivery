@@ -25,6 +25,7 @@ export interface OrderItem {
   menuTax?: number;
   menuPrice?: number;
   menuId?: string;
+  menuSecondaryId?: number;
   menuName?: string;
   menuPageId?: string;
   menuPageName?: string;
