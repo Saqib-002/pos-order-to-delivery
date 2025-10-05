@@ -22,7 +22,7 @@ const OrderMenu = () => {
   const [subCategories, setSubCategories] = useState<SubCategory[] | null>(
     null
   );
-  const { isProductExists, isMenuExists,clearProcessedMenuOrderItems } = useOrder();
+  const { isProductExists,clearProcessedMenuOrderItems } = useOrder();
   const { auth: { token } } = useAuth();
   const [products, setProducts] = useState<Product[] | null>(null);
   const [menus, setMenus] = useState<any[] | null>(null);
@@ -90,18 +90,14 @@ const OrderMenu = () => {
     setMenus(null);
   };
   const handleSelectProduct = (product: Product) => {
-    // if (isProductExists(product.id)) {
-    //   toast.warn("Product already exists in the order.");
-    //   return
-    // }
+    if (isProductExists(product.id)) {
+      toast.warn("Product already exists in the order.");
+      return
+    }
     setMode("product");
     setSelectedProduct(product);
   }
   const handleMenuSelect = (menu: any) => {
-    // if (isMenuExists(menu.id)) {
-    //   toast.warn("Menu already exists in the order.");
-    //   return
-    // }
     clearProcessedMenuOrderItems();
     setSelectedMenu(menu);
   };

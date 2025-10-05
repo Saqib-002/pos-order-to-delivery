@@ -32,7 +32,7 @@ const OrderTakingForm = ({
   token,
   currentOrderItem
 }: OrderTakingFormProps) => {
-  const { orderItems, addToOrder, order, setOrder,addToProcessedMenuOrderItems } = useOrder();
+  const { orderItems, addToOrder, order, setOrder, addToProcessedMenuOrderItems } = useOrder();
   const [variantItems, setVariantItems] = useState<any[] | null>(null);
   const [addOnPages, setAddonPages] = useState<AddonPage[] | null>(null);
   const [groups, setGroups] = useState<Group[] | null>(null);
@@ -215,19 +215,19 @@ const OrderTakingForm = ({
       quantity,
       totalPrice: calculateTotalPrice(),
     };
-    if(mode==="menu"){
-      orderItem={
+    if (mode === "menu") {
+      orderItem = {
         ...orderItem,
-        menuId:currentOrderItem.menuId,
-        menuDescription:currentOrderItem.menuDescription,
-        menuName:currentOrderItem.menuName,
-        menuPageId:currentOrderItem.menuPageId,
-        menuPageName:currentOrderItem.menuPageName,
-        menuPrice:currentOrderItem.menuPrice,
-        menuDiscount:currentOrderItem.menuDiscount,
-        menuTax:currentOrderItem.menuTax,
-        supplement:currentOrderItem.supplement,
-        menuSecondaryId:currentOrderItem.menuSecondaryId,
+        menuId: currentOrderItem.menuId,
+        menuDescription: currentOrderItem.menuDescription,
+        menuName: currentOrderItem.menuName,
+        menuPageId: currentOrderItem.menuPageId,
+        menuPageName: currentOrderItem.menuPageName,
+        menuPrice: calculateBaseProductPrice({price:currentOrderItem.menuPrice, tax:currentOrderItem.menuTax}),
+        menuDiscount: currentOrderItem.menuDiscount,
+        menuTax: calculateProductTaxAmount({price:currentOrderItem.menuPrice, tax:currentOrderItem.menuTax}),
+        supplement: currentOrderItem.supplement,
+        menuSecondaryId: currentOrderItem.menuSecondaryId,
       }
     }
     const newComplement = ComplementsToString(orderItem.complements);
@@ -237,8 +237,8 @@ const OrderTakingForm = ({
         toast.error("Unable to save order");
         return;
       }
-      if(mode==="menu"){
-        addToProcessedMenuOrderItems({...orderItem,id:res.data.itemId});
+      if (mode === "menu") {
+        addToProcessedMenuOrderItems({ ...orderItem, id: res.data.itemId });
       }
       addToOrder({ ...orderItem, id: res.data.itemId });
       setOrder(res.data.order);
@@ -248,8 +248,8 @@ const OrderTakingForm = ({
         toast.error("Unable to update order");
         return;
       }
-      if(mode==="menu"){
-        addToProcessedMenuOrderItems({...orderItem,id:res.data.itemId});
+      if (mode === "menu") {
+        addToProcessedMenuOrderItems({ ...orderItem, id: res.data.itemId });
       }
       addToOrder({ ...orderItem, id: res.data.itemId });
     }

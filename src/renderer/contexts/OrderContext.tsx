@@ -11,7 +11,6 @@ interface OrderContextType {
   updateQuantity: (itemId: string | undefined, quantity: number) => void;
   clearOrder: () => void;
   isProductExists: (productId: string) => boolean;
-  isMenuExists: (productId: string) => boolean;
   removeMenuFromOrder: (menuId: string,menuSecondaryId:number) => void;
   getOrderTotal: () => number;
   processedMenuOrderItems: OrderItem[];
@@ -82,9 +81,6 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
   const isProductExists = (productId: string):boolean => {
     return !!orderItems.find((item) => !item.menuId && item.productId === productId);
   }
-  const isMenuExists = (menuId: string):boolean => {
-    return !!orderItems.find((item) => item.menuId && item.menuId === menuId);
-  }
   const removeMenuFromOrder = async (menuId: string,menuSecondaryId:number) => {
     const newOrderItems=orderItems.filter((item) => !item.menuId || !(item.menuId === menuId && item.menuSecondaryId === menuSecondaryId));
     setOrderItems(newOrderItems);
@@ -110,7 +106,6 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     removeFromOrder,
     updateQuantity,
     isProductExists,
-    isMenuExists,
     removeMenuFromOrder,
     clearOrder,
     getOrderTotal,
