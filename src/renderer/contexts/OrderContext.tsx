@@ -11,6 +11,18 @@ interface OrderContextType {
   updateQuantity: (itemId: string | undefined, quantity: number) => void;
   clearOrder: () => void;
   isProductExists: (productId: string) => boolean;
+  findExactProductMatch: (
+    productId: string,
+    variantId: string,
+    complements: Array<{
+      groupId: string;
+      groupName: string;
+      itemId: string;
+      itemName: string;
+      price: number;
+      priority: number;
+    }>
+  ) => OrderItem | null;
   removeMenuFromOrder: (menuId: string, menuSecondaryId: number) => void;
   getOrderTotal: () => number;
   processedMenuOrderItems: OrderItem[];
@@ -85,6 +97,48 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
       (item) => !item.menuId && item.productId === productId
     );
   };
+
+  const findExactProductMatch = (
+    productId: string,
+    variantId: string,
+    complements: Array<{
+      groupId: string;
+      groupName: string;
+      itemId: string;
+      itemName: string;
+      price: number;
+      priority: number;
+    }>
+  ): OrderItem | null => {
+    return (
+      orderItems.find((item) => {
+        if (item.menuId || item.productId !== productId) return false;
+
+        if (item.variantId !== variantId) return false;
+
+        if (item.complements.length !== complements.length) return false;
+        const itemComplements = item.complements.sort(
+          (a, b) =>
+            a.groupId.localeCompare(b.groupId) ||
+            a.itemId.localeCompare(b.itemId)
+        );
+
+        const newComplements = complements.sort(
+          (a, b) =>
+            a.groupId.localeCompare(b.groupId) ||
+            a.itemId.localeCompare(b.itemId)
+        );
+
+        return itemComplements.every((itemComp, index) => {
+          const newComp = newComplements[index];
+          return (
+            itemComp.groupId === newComp.groupId &&
+            itemComp.itemId === newComp.itemId
+          );
+        });
+      }) || null
+    );
+  };
   const removeMenuFromOrder = async (
     menuId: string,
     menuSecondaryId: number
@@ -122,6 +176,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     removeFromOrder,
     updateQuantity,
     isProductExists,
+    findExactProductMatch,
     removeMenuFromOrder,
     clearOrder,
     getOrderTotal,

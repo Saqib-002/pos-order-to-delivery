@@ -16,14 +16,17 @@ import { useAuth } from "@/renderer/contexts/AuthContext";
 import MenuOrderTakingForm from "./MenuOrderTakingForm";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import { toast } from "react-toastify";
+import { UnifiedCard } from "@/renderer/components/ui/UnifiedCard";
 
 const OrderMenu = () => {
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [subCategories, setSubCategories] = useState<SubCategory[] | null>(
     null
   );
-  const { isProductExists,clearProcessedMenuOrderItems } = useOrder();
-  const { auth: { token } } = useAuth();
+  const { isProductExists, clearProcessedMenuOrderItems } = useOrder();
+  const {
+    auth: { token },
+  } = useAuth();
   const [products, setProducts] = useState<Product[] | null>(null);
   const [menus, setMenus] = useState<any[] | null>(null);
   const [mode, setMode] = useState<"menu" | "product">("menu");
@@ -90,13 +93,9 @@ const OrderMenu = () => {
     setMenus(null);
   };
   const handleSelectProduct = (product: Product) => {
-    if (isProductExists(product.id)) {
-      toast.warn("Product already exists in the order.");
-      return
-    }
     setMode("product");
     setSelectedProduct(product);
-  }
+  };
   const handleMenuSelect = (menu: any) => {
     clearProcessedMenuOrderItems();
     setSelectedMenu(menu);
@@ -112,19 +111,17 @@ const OrderMenu = () => {
           currentOrderItem={currentOrderItem}
         />
       )}
-      {
-        selectedMenu && (
-          <MenuOrderTakingForm
-            token={token}
-            product={selectedProduct}
-            setProduct={setSelectedProduct}
-            menu={selectedMenu}
-            setMode={setMode}
-            setMenu={setSelectedMenu}
-            setCurrentOrderItem={setCurrentOrderItem}
-          />
-        )
-      }
+      {selectedMenu && (
+        <MenuOrderTakingForm
+          token={token}
+          product={selectedProduct}
+          setProduct={setSelectedProduct}
+          menu={selectedMenu}
+          setMode={setMode}
+          setMenu={setSelectedMenu}
+          setCurrentOrderItem={setCurrentOrderItem}
+        />
+      )}
       <div className="max-w-[98%] mx-auto">
         <BreadcrumbNavigation
           selectedCategory={selectedCategory}
@@ -153,7 +150,7 @@ const OrderMenu = () => {
           <div className="space-y-6">
             {/* Items Section */}
             {(products && products.length > 0) ||
-              (menus && menus.length > 0) ? (
+            (menus && menus.length > 0) ? (
               <div>
                 {/* Products */}
                 {products && products.length > 0 && (
@@ -168,58 +165,51 @@ const OrderMenu = () => {
 
                 {/* Menus */}
                 {menus && menus.length > 0 && (
-                  <div>
-                    <h4 className="text-md font-medium text-gray-700 mb-3">
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
                       Menus
-                    </h4>
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                       {isLoadingMenus
                         ? [...Array(4)].map((_, index) => (
-                          <div
-                            key={index}
-                            className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse"
-                          >
-                            <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                            <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                          </div>
-                        ))
-                        : menus.map((menu) => (
-                          <div
-                            key={menu.id}
-                            onClick={() => handleMenuSelect(menu)}
-                            className="bg-white border border-gray-200 rounded-lg p-6 cursor-pointer hover:shadow-md hover:border-indigo-300 transition-all group"
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <h4 className="text-lg font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">
-                                {menu.name}
-                              </h4>
-                              <div className="text-sm font-medium text-indigo-600">
-                                €{Number(menu.price || 0).toFixed(2)}
+                            <div
+                              key={index}
+                              className="transform transition-all duration-200"
+                            >
+                              <div className="bg-gray-500 text-white border-gray-500 rounded-lg p-3 border-2 animate-pulse">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="h-5 bg-gray-300 rounded w-3/4"></div>
+                                  <div className="h-4 bg-gray-300 rounded w-8"></div>
+                                </div>
+                                <div className="h-3 bg-gray-300 rounded w-full mb-2"></div>
+                                <div className="flex items-center justify-between">
+                                  <div className="h-4 bg-gray-300 rounded w-16"></div>
+                                  <div className="h-5 bg-gray-300 rounded w-12"></div>
+                                </div>
                               </div>
                             </div>
-                            {menu.description && (
-                              <p className="text-gray-600 text-sm line-clamp-2">
-                                {menu.description}
-                              </p>
-                            )}
-                            <div className="mt-3 flex items-center text-sm text-gray-500">
-                              <svg
-                                className="w-4 h-4 mr-1"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 5l7 7-7 7"
-                                />
-                              </svg>
-                              Click to process menu
+                          ))
+                        : menus.map((menu) => (
+                            <div
+                              key={menu.id}
+                              className="transform transition-all duration-200"
+                            >
+                              <UnifiedCard
+                                data={{
+                                  id: menu.id,
+                                  name: menu.name,
+                                  description: menu.description,
+                                  price: menu.price,
+                                  color: menu.color || "indigo",
+                                  isAvailable: true,
+                                }}
+                                type="menu"
+                                onClick={() => handleMenuSelect(menu)}
+                                onEdit={() => {}}
+                                showActions={false}
+                              />
                             </div>
-                          </div>
-                        ))}
+                          ))}
                     </div>
                   </div>
                 )}

@@ -1,221 +1,361 @@
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { FilterControls } from "../components/shared/FilterControl.order";
 import { Order, FilterType } from "@/types/order";
 import { StatsCard } from "../components/shared/StatsCard.order";
-import SentToKitchenIcon from "../assets/icons/sent-to-kitchen.svg?react"
-
+import SentToKitchenIcon from "../assets/icons/sent-to-kitchen.svg?react";
 
 // ICONS
 import TotalOrdersIcon from "../assets/icons/total-orders.svg?react";
 import HighPriorityIcon from "../assets/icons/high-priority.svg?react";
 import ThunderIcon from "../assets/icons/thunder.svg?react";
 import MarkIcon from "../assets/icons/mark.svg?react";
+import EyeIcon from "../assets/icons/eye.svg?react";
+import PrinterIcon from "../assets/icons/printer.svg?react";
 
 import { useAuth } from "../contexts/AuthContext";
-import { updateOrder } from "../utils/order";
+import { updateOrder, StringToComplements } from "../utils/order";
 import Header from "../components/shared/Header.order";
-import { formatAddress } from "../utils/utils";
 import { OrderTable } from "../components/shared/OrderTable";
+import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
 
 interface KitchenViewProps {
-    orders: Order[];
-    filter: FilterType;
-    setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
-    refreshOrdersCallback: () => void;
+  orders: Order[];
+  filter: FilterType;
+  setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
+  refreshOrdersCallback: () => void;
 }
 
 export const KitchenView: React.FC<KitchenViewProps> = ({
-    orders,
-    filter,
-    setFilter,
-    refreshOrdersCallback,
+  orders,
+  filter,
+  setFilter,
+  refreshOrdersCallback,
 }) => {
-    const { auth: { token } } = useAuth();
-    useEffect(() => {
-        setFilter({
-            selectedDate: null,
-            searchTerm: "",
-            selectedStatus: ["sent to kitchen"],
+  const {
+    auth: { token },
+  } = useAuth();
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
+  useEffect(() => {
+    setFilter({
+      selectedDate: null,
+      searchTerm: "",
+      selectedStatus: ["sent to kitchen"],
+    });
+  }, [token, setFilter]);
+
+  const markAsReady = useCallback(
+    async (id: string) => {
+      try {
+        const res = await updateOrder(token, id, {
+          status: "ready for delivery",
+          readyAt: new Date(Date.now()).toISOString(),
         });
-    }, [token, setFilter]);
+        if (!res) {
+          toast.error("Failed to update order");
+          return;
+        }
+        refreshOrdersCallback();
+        toast.success("Order marked as ready");
+      } catch (error) {
+        console.error("Failed to update order:", error);
+      }
+    },
+    [token, refreshOrdersCallback]
+  );
 
-    const markAsReady = useCallback(
-        async (id: string) => {
-            try {
-                const res = await updateOrder(token, id, { status: "ready for delivery", readyAt: new Date(Date.now()).toISOString() });
-                if (!res) {
-                    toast.error("Failed to update order");
-                    return;
-                }
-                refreshOrdersCallback();
-                toast.success("Order marked as ready");
-            } catch (error) {
-                console.error("Failed to update order:", error);
-            }
-        },
-        [token, refreshOrdersCallback]
-    );
+  const handleViewDetails = useCallback((order: Order) => {
+    setSelectedOrder(order);
+    setIsOrderDetailsOpen(true);
+  }, []);
 
-    const stats = useMemo(() => {
-        const highPriorityCount = orders.filter((order) => {
-            const orderTime = new Date(order.createdAt || order.id);
-            const now = new Date();
-            const diffHours =
-                (now.getTime() - orderTime.getTime()) / (1000 * 60 * 60);
-            return diffHours > 1;
-        }).length;
+  const parseComplements = (complements: any) => {
+    if (Array.isArray(complements)) return complements;
+    if (typeof complements === "string") {
+      return StringToComplements(complements);
+    }
 
-        return [
-            {
-                title: "Orders in Kitchen",
-                value: orders.length,
-                icon: <TotalOrdersIcon className="size-6 text-blue-600" />,
-                bgColor: "bg-blue-100",
-                textColor: "text-blue-600",
-            },
-            {
-                title: "High Priority",
-                value: highPriorityCount,
-                icon: <HighPriorityIcon className="w-6 h-6 text-red-600" />,
-                bgColor: "bg-red-100",
-                textColor: "text-red-600",
-            },
-            {
-                title: "Avg Prep Time",
-                value: "~25 min",
-                icon: <ThunderIcon className="w-6 h-6 text-green-600" />,
-                bgColor: "bg-green-100",
-                textColor: "text-green-600",
-            },
-        ];
-    }, [orders]);
+    return [];
+  };
 
-    const hasKitchenOrders = orders.some(
-        (o) => o.status.toLowerCase() === "sent to kitchen"
-    );
-    const getPriorityLabel = (diffMinutes: number) => {
-        if (diffMinutes > 120)
-            return { label: "High", color: "bg-red-100 text-red-800" };
-        if (diffMinutes > 60)
-            return { label: "Medium", color: "bg-orange-100 text-orange-800" };
-        return { label: "Low", color: "bg-blue-100 text-blue-800" };
-    };
-    const getPriorityColor = (order: Order) => {
-        const orderTime = new Date(order.createdAt || order.id);
-        const now = new Date();
-        const diffHours = (now.getTime() - orderTime.getTime()) / (1000 * 60 * 60);
+  const handlePrintOrder = useCallback((order: Order) => {
+    // Create a new window for printing
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
 
-        if (diffHours > 2) return "border-red-500 bg-red-50";
-        if (diffHours > 1) return "border-orange-500 bg-orange-50";
-        return "border-blue-500 bg-blue-50";
-    };
-    const OrderRowRenderer = (order: Order) => {
-        const orderTime = new Date(order.createdAt || "");
-        const now = new Date();
-        const diffMinutes = Math.floor(
-            (now.getTime() - orderTime.getTime()) / (1000 * 60)
-        );
-        const timeInKitchen = `${Math.floor(diffMinutes / 60)}h ${diffMinutes % 60}m`;
-        const { label, color } = getPriorityLabel(diffMinutes);
-        return (
-            <tr
-                className={`hover:bg-gray-50 transition-colors duration-150 ${getPriorityColor(order)}`}
-                key={order.id}
-            >
-                <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}
-                    >
-                        {label}
-                    </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    #{order.orderId}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {order.customer.name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {order.customer.phone}
-                </td>
-                <td className="px-6 py-4 min-w-[250px] text-sm text-gray-900 max-w-xs">
-                    {formatAddress(order.customer.address)}
-                </td>
-                <td className="px-6 py-4 min-w-[250px] text-sm text-gray-900">
-                    <div className="space-y-1">
-                        {order.items && order.items.map((item, index) => (
-                            <div key={index} className="flex justify-between">
-                                <span className="text-gray-600">{item.productName}</span>
-                                <span className="text-gray-900 font-medium">
-                                    x{item.quantity}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 font-medium">{timeInKitchen}</div>
-                    <div className="text-xs text-gray-500">
-                        {orderTime.toLocaleTimeString()}
-                    </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end min-w-[120px]">
-                    <button
-                        onClick={() => markAsReady(order.id)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105"
-                    >
-                        <MarkIcon className="size-4" />
-                        Mark Ready
-                    </button>
-                </td>
-            </tr>
-        );
-    };
-    return (
-        <div className="mt-4 p-6 bg-gray-50 min-h-screen">
-            <div className="max-w-[98%] mx-auto">
-                <Header title="Kitchen Management" subtitle="Monitor and manage orders in preparation" icon={<SentToKitchenIcon className="text-orange-600 size-8" />} iconbgClasses="bg-orange-100" />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    {stats.map((stat, index) => (
-                        <StatsCard key={index} {...stat} />
-                    ))}
-                </div>
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-200">
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                                Kitchen Orders
-                            </h3>
-                            <FilterControls
-                                filter={filter}
-                                setFilter={setFilter}
-                            />
-                        </div>
-                    </div>
-                    <OrderTable
-                        orders={orders}
-                        title={hasKitchenOrders
-                            ? "No orders match your search"
-                            : "No orders in kitchen"}
-                        subtitle={hasKitchenOrders
-                            ? "Try adjusting your search criteria or date filter."
-                            : "All orders are ready or completed."}
-                        columns={[
-                            "Priority",
-                            "Order ID",
-                            "Customer",
-                            "Contact",
-                            "Address",
-                            "Items",
-                            "Time in Kitchen",
-                            "Actions",
-                        ]}
-                        renderRow={OrderRowRenderer}
-                    />
-                </div>
+    const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Kitchen Order - ${order.orderId}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+                .order-info { margin-bottom: 20px; }
+                .items { margin-bottom: 20px; }
+                .item { margin-bottom: 10px; padding: 5px; border-bottom: 1px solid #eee; }
+                .complements { margin-left: 20px; font-size: 0.9em; color: #666; }
+                .footer { margin-top: 30px; text-align: center; font-size: 0.8em; color: #666; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>KITCHEN ORDER</h1>
+                <h2>Order #${order.orderId}</h2>
             </div>
-        </div>
-    );
-};
+            
+            <div class="order-info">
+                <p><strong>Customer:</strong> ${order.customer.name}</p>
+                <p><strong>Phone:</strong> ${order.customer.phone}</p>
+                <p><strong>Type:</strong> ${order.orderType?.toUpperCase() || "N/A"}</p>
+                <p><strong>Time:</strong> ${new Date(order.createdAt || "").toLocaleString()}</p>
+            </div>
 
+            <div class="items">
+                <h3>ITEMS TO PREPARE:</h3>
+                ${
+                  order.items
+                    ?.map((item) => {
+                      const parsedComplements = parseComplements(
+                        item.complements
+                      );
+                      return `
+                    <div class="item">
+                        <strong>${item.quantity}x ${item.productName}${item.variantName ? ` (${item.variantName})` : ""}</strong>
+                        ${
+                          parsedComplements.length > 0
+                            ? `
+                            <div class="complements">
+                                Add-ons: ${parsedComplements.map((c) => c.itemName).join(", ")}
+                            </div>
+                        `
+                            : ""
+                        }
+                    </div>
+                `;
+                    })
+                    .join("") || "<p>No items found</p>"
+                }
+            </div>
+
+            <div class="footer">
+                <p>Generated on ${new Date().toLocaleString()}</p>
+            </div>
+        </body>
+        </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.print();
+  }, []);
+
+  const stats = useMemo(() => {
+    const highPriorityCount = orders.filter((order) => {
+      const orderTime = new Date(order.createdAt || order.id);
+      const now = new Date();
+      const diffHours =
+        (now.getTime() - orderTime.getTime()) / (1000 * 60 * 60);
+      return diffHours > 1;
+    }).length;
+
+    return [
+      {
+        title: "Orders in Kitchen",
+        value: orders.length,
+        icon: <TotalOrdersIcon className="size-6 text-blue-600" />,
+        bgColor: "bg-blue-100",
+        textColor: "text-blue-600",
+      },
+      {
+        title: "High Priority",
+        value: highPriorityCount,
+        icon: <HighPriorityIcon className="w-6 h-6 text-red-600" />,
+        bgColor: "bg-red-100",
+        textColor: "text-red-600",
+      },
+      {
+        title: "Avg Prep Time",
+        value: "~25 min",
+        icon: <ThunderIcon className="w-6 h-6 text-green-600" />,
+        bgColor: "bg-green-100",
+        textColor: "text-green-600",
+      },
+    ];
+  }, [orders]);
+
+  const hasKitchenOrders = orders.some(
+    (o) => o.status.toLowerCase() === "sent to kitchen"
+  );
+  const getPriorityLabel = (diffMinutes: number) => {
+    if (diffMinutes > 120)
+      return { label: "High", color: "bg-red-100 text-red-800" };
+    if (diffMinutes > 60)
+      return { label: "Medium", color: "bg-orange-100 text-orange-800" };
+    return { label: "Low", color: "bg-blue-100 text-blue-800" };
+  };
+  const getPriorityColor = (order: Order) => {
+    const orderTime = new Date(order.createdAt || order.id);
+    const now = new Date();
+    const diffHours = (now.getTime() - orderTime.getTime()) / (1000 * 60 * 60);
+
+    if (diffHours > 2) return "border-red-500 bg-red-50";
+    if (diffHours > 1) return "border-orange-500 bg-orange-50";
+    return "border-blue-500 bg-blue-50";
+  };
+  const OrderRowRenderer = (order: Order) => {
+    const orderTime = new Date(order.createdAt || "");
+    const now = new Date();
+    const diffMinutes = Math.floor(
+      (now.getTime() - orderTime.getTime()) / (1000 * 60)
+    );
+    const timeInKitchen = `${Math.floor(diffMinutes / 60)}h ${diffMinutes % 60}m`;
+    const { label, color } = getPriorityLabel(diffMinutes);
+    return (
+      <tr
+        className={`hover:bg-gray-50 transition-colors duration-150 ${getPriorityColor(order)}`}
+        key={order.id}
+      >
+        <td className="px-6 py-4 whitespace-nowrap">
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}
+          >
+            {label}
+          </span>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+          K{order.orderId}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+          {order.customer.name}
+        </td>
+        <td className="px-6 py-4 min-w-[300px] text-sm text-gray-900">
+          <div className="space-y-2">
+            {order.items &&
+              order.items.map((item, index) => {
+                const parsedComplements = parseComplements(item.complements);
+                return (
+                  <div
+                    key={index}
+                    className="border-b border-gray-100 pb-0 last:border-b-0"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">
+                          {item.quantity}x {item.productName}
+                          {item.variantName && (
+                            <span className="text-gray-600">
+                              {" "}
+                              ({item.variantName})
+                            </span>
+                          )}
+                        </div>
+                        {parsedComplements.length > 0 && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            <span className="font-medium">Add-ons:</span>{" "}
+                            {parsedComplements
+                              .map((c) => c.itemName)
+                              .join(", ")}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="text-sm text-gray-900 font-medium">
+            {timeInKitchen}
+          </div>
+          <div className="text-xs text-gray-500">
+            {orderTime.toLocaleTimeString()}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+          <div className="flex items-center gap-2 justify-end min-w-[120px]">
+            <button
+              onClick={() => handleViewDetails(order)}
+              className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+              title="View Order Details"
+            >
+              <EyeIcon className="size-4" />
+            </button>
+            <button
+              onClick={() => handlePrintOrder(order)}
+              className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+              title="Print Order"
+            >
+              <PrinterIcon className="size-4" />
+            </button>
+            <button
+              onClick={() => markAsReady(order.id)}
+              className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+              title="Mark as Ready"
+            >
+              <MarkIcon className="size-4" />
+            </button>
+          </div>
+        </td>
+      </tr>
+    );
+  };
+  return (
+    <div className="h-screen flex flex-col">
+      <Header
+        title="Kitchen Management"
+        subtitle="Monitor and manage orders in preparation"
+        icon={<SentToKitchenIcon className="text-orange-600 size-8" />}
+        iconbgClasses="bg-orange-100"
+      />
+      <div className="flex-1">
+        <div className="pb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {stats.map((stat, index) => (
+              <StatsCard key={index} {...stat} />
+            ))}
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {orders.length > 0
+                      ? "Kitchen Orders"
+                      : "No orders match your search"}
+                  </h3>
+                </div>
+                <FilterControls filter={filter} setFilter={setFilter} />
+              </div>
+            </div>
+            <OrderTable
+              data={orders}
+              columns={[
+                "Priority",
+                "Order ID",
+                "Customer",
+                "Items",
+                "Time in Kitchen",
+                "Actions",
+              ]}
+              renderRow={OrderRowRenderer}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Order Details Modal */}
+      {isOrderDetailsOpen && selectedOrder && (
+        <OrderDetailsModal
+          order={selectedOrder}
+          onClose={() => {
+            setIsOrderDetailsOpen(false);
+            setSelectedOrder(null);
+          }}
+        />
+      )}
+    </div>
+  );
+};

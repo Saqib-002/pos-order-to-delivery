@@ -40,6 +40,8 @@ const OrderTakingForm = ({
     order,
     setOrder,
     addToProcessedMenuOrderItems,
+    findExactProductMatch,
+    updateQuantity,
   } = useOrder();
   const [variantItems, setVariantItems] = useState<any[] | null>(null);
   const [addOnPages, setAddonPages] = useState<AddonPage[] | null>(null);
@@ -185,41 +187,42 @@ const OrderTakingForm = ({
       return;
     }
 
-    let orderItem: OrderItem = {
-      productId: product!.id,
-      productName: product?.name || "",
-      productDescription: product?.description || "",
-      productPriority: product?.priority || 0,
-      productDiscount: product?.discount || 0,
-      productPrice: calculateBaseProductPrice(product),
-      productTax: calculateProductTaxAmount(product),
-      variantId: selectedVariant.id,
-      variantName: selectedVariant.name || `Variant ${selectedVariant.id}`,
-      variantPrice: selectedVariant.price || 0,
-      complements: Object.entries(selectedComplements).flatMap(
-        ([groupId, itemIds]) => {
-          const group = groups?.find((g) => g.id === groupId);
-          if (!group) return [];
+    const complements = Object.entries(selectedComplements).flatMap(
+      ([groupId, itemIds]) => {
+        const group = groups?.find((g) => g.id === groupId);
+        if (!group) return [];
 
-          return itemIds.map((itemId) => {
-            const item = group.items?.find((i) => i.id === itemId);
-            return {
-              groupId,
-              groupName: group.name,
-              itemId,
-              itemName: item?.name || "",
-              price: item?.price || 0,
-              priority: item?.priority || 0,
-            };
-          });
-        }
-      ),
-      quantity,
-      totalPrice: calculateTotalPrice(),
-    };
+        return itemIds.map((itemId) => {
+          const item = group.items?.find((i) => i.id === itemId);
+          return {
+            groupId,
+            groupName: group.name,
+            itemId,
+            itemName: item?.name || "",
+            price: item?.price || 0,
+            priority: item?.priority || 0,
+          };
+        });
+      }
+    );
+
+    // Check if this is a menu item or regular product
     if (mode === "menu") {
-      orderItem = {
-        ...orderItem,
+      // For menu items, always add as new item (no duplicate checking)
+      let orderItem: OrderItem = {
+        productId: product!.id,
+        productName: product?.name || "",
+        productDescription: product?.description || "",
+        productPriority: product?.priority || 0,
+        productDiscount: product?.discount || 0,
+        productPrice: calculateBaseProductPrice(product),
+        productTax: calculateProductTaxAmount(product),
+        variantId: selectedVariant.id,
+        variantName: selectedVariant.name || `Variant ${selectedVariant.id}`,
+        variantPrice: selectedVariant.price || 0,
+        complements,
+        quantity,
+        totalPrice: calculateTotalPrice(),
         menuId: currentOrderItem.menuId,
         menuDescription: currentOrderItem.menuDescription,
         menuName: currentOrderItem.menuName,
@@ -237,7 +240,85 @@ const OrderTakingForm = ({
         supplement: currentOrderItem.supplement,
         menuSecondaryId: currentOrderItem.menuSecondaryId,
       };
+
+      const newComplement = ComplementsToString(orderItem.complements);
+      if (orderItems.length === 0) {
+        const res = await (window as any).electronAPI.saveOrder(token, {
+          ...orderItem,
+          complements: newComplement,
+        });
+        if (!res.status) {
+          toast.error("Unable to save order");
+          return;
+        }
+        addToProcessedMenuOrderItems({ ...orderItem, id: res.data.itemId });
+        addToOrder({ ...orderItem, id: res.data.itemId });
+        setOrder(res.data.order);
+      } else {
+        const res = await (window as any).electronAPI.addItemToOrder(
+          token,
+          order!.id,
+          { ...orderItem, complements: newComplement }
+        );
+        if (!res.status) {
+          toast.error("Unable to update order");
+          return;
+        }
+        addToProcessedMenuOrderItems({ ...orderItem, id: res.data.itemId });
+        addToOrder({ ...orderItem, id: res.data.itemId });
+      }
+      toast.success("Item added to order!");
+      setProduct(null);
+      return;
     }
+
+    // regular product
+    const existingItem = findExactProductMatch(
+      product!.id,
+      selectedVariant.id,
+      complements
+    );
+
+    if (existingItem) {
+      // update quantity of existing item
+      const newQuantity = existingItem.quantity + quantity;
+
+      // Update in database
+      const res = await (window as any).electronAPI.updateItemQuantity(
+        token,
+        existingItem.id,
+        newQuantity
+      );
+
+      if (!res.status) {
+        toast.error("Unable to update quantity");
+        return;
+      }
+
+      // Update local state
+      updateQuantity(existingItem.id, newQuantity);
+      toast.success(`Quantity updated! Total: ${newQuantity}`);
+      setProduct(null);
+      return;
+    }
+
+    // Add new item
+    let orderItem: OrderItem = {
+      productId: product!.id,
+      productName: product?.name || "",
+      productDescription: product?.description || "",
+      productPriority: product?.priority || 0,
+      productDiscount: product?.discount || 0,
+      productPrice: calculateBaseProductPrice(product),
+      productTax: calculateProductTaxAmount(product),
+      variantId: selectedVariant.id,
+      variantName: selectedVariant.name || `Variant ${selectedVariant.id}`,
+      variantPrice: selectedVariant.price || 0,
+      complements,
+      quantity,
+      totalPrice: calculateTotalPrice(),
+    };
+
     const newComplement = ComplementsToString(orderItem.complements);
     if (orderItems.length === 0) {
       const res = await (window as any).electronAPI.saveOrder(token, {
@@ -247,9 +328,6 @@ const OrderTakingForm = ({
       if (!res.status) {
         toast.error("Unable to save order");
         return;
-      }
-      if (mode === "menu") {
-        addToProcessedMenuOrderItems({ ...orderItem, id: res.data.itemId });
       }
       addToOrder({ ...orderItem, id: res.data.itemId });
       setOrder(res.data.order);
@@ -262,9 +340,6 @@ const OrderTakingForm = ({
       if (!res.status) {
         toast.error("Unable to update order");
         return;
-      }
-      if (mode === "menu") {
-        addToProcessedMenuOrderItems({ ...orderItem, id: res.data.itemId });
       }
       addToOrder({ ...orderItem, id: res.data.itemId });
     }

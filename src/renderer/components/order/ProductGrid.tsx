@@ -50,7 +50,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         {products.map((product) => (
           <div
             key={product.id}
-            className="transform transition-all duration-200 hover:scale-105"
+            className="transform transition-all duration-200"
           >
             <UnifiedCard
               data={{

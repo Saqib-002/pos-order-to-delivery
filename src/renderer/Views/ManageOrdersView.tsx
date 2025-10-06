@@ -1,9 +1,15 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Order, FilterType } from "@/types/order";
-import { formatAddress } from "../utils/utils";
 import CustomInput from "../components/shared/CustomInput";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import { calculateOrderTotal } from "../utils/orderCalculations";
+import {
+  calculatePaymentStatus,
+  getPaymentStatusStyle,
+} from "../utils/paymentStatus";
+import Header from "../components/shared/Header.order";
+import { OrderTable } from "../components/shared/OrderTable";
+import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
 
 // ICONS
 import SearchIcon from "../assets/icons/search.svg?react";
@@ -11,29 +17,29 @@ import PersonIcon from "../assets/icons/person.svg?react";
 import EyeIcon from "../assets/icons/eye.svg?react";
 import DocumentIcon from "../assets/icons/document.svg?react";
 import ThunderIcon from "../assets/icons/thunder.svg?react";
+import DeliveredIcon from "../assets/icons/delivered.svg?react";
 
 interface ManageOrdersViewProps {
   orders: Order[];
   refreshOrdersCallback: () => void;
-}
-
-interface FilterState {
-  searchTerm: string;
-  selectedDate: Date | null;
-  selectedDeliveryPerson: string;
-  selectedStatus: string[];
+  filter: FilterType;
+  setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
 }
 
 export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
   orders,
   refreshOrdersCallback,
+  filter,
+  setFilter,
 }) => {
-  const [filters, setFilters] = useState<FilterState>({
-    searchTerm: "",
-    selectedDate: null,
-    selectedDeliveryPerson: "",
-    selectedStatus: [],
-  });
+  useEffect(() => {
+    if (!filter.selectedDate) {
+      setFilter((prev) => ({
+        ...prev,
+        selectedDate: new Date(),
+      }));
+    }
+  }, [filter.selectedDate, setFilter]);
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] =
@@ -41,14 +47,16 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
   const [selectedDeliveryPerson, setSelectedDeliveryPerson] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
 
   // Get unique delivery persons from orders
   const deliveryPersons = useMemo(() => {
     const persons = orders
       .filter((order) => order.deliveryPerson)
       .map((order) => ({
-        id: order.deliveryPerson!.id,
-        name: order.deliveryPerson!.name,
+        id: order.deliveryPerson!.id || "",
+        name: order.deliveryPerson!.name || "",
       }))
       .filter(
         (person, index, self) =>
@@ -59,75 +67,59 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
 
   // Get unique payment statuses from orders
   const paymentStatuses = useMemo(() => {
-    const statuses = orders.map((order) => order.paymentType || "pending");
+    const statuses = orders.map((order) => {
+      const orderTotal = calculateOrderTotal(order.items || []);
+      const paymentStatus = calculatePaymentStatus(
+        order.paymentType || "",
+        orderTotal
+      );
+      return paymentStatus.status;
+    });
     return [...new Set(statuses)];
   }, [orders]);
 
-  // Filter orders based on current filters
+  // Additional local filters for UI-only filtering (delivery person, payment status)
+  const [localFilters, setLocalFilters] = useState({
+    selectedDeliveryPerson: "",
+    selectedStatus: [] as string[],
+  });
+
   const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
-      // Search by order number
-      if (filters.searchTerm) {
-        const orderNumber = `K${order.orderId}`;
-        if (
-          !orderNumber.toLowerCase().includes(filters.searchTerm.toLowerCase())
-        ) {
-          return false;
-        }
-      }
-
-      // Filter by date
-      if (filters.selectedDate) {
-        const orderDate = new Date(order.createdAt);
-        const filterDate = new Date(filters.selectedDate);
-        if (
-          orderDate.getDate() !== filterDate.getDate() ||
-          orderDate.getMonth() !== filterDate.getMonth() ||
-          orderDate.getFullYear() !== filterDate.getFullYear()
-        ) {
-          return false;
-        }
-      }
-
-      // Filter by delivery person
-      if (filters.selectedDeliveryPerson) {
+    const filtered = orders.filter((order) => {
+      // Filter by delivery person (local filter)
+      if (localFilters.selectedDeliveryPerson) {
         if (
           !order.deliveryPerson ||
-          order.deliveryPerson.id !== filters.selectedDeliveryPerson
+          order.deliveryPerson.id !== localFilters.selectedDeliveryPerson
         ) {
           return false;
         }
       }
 
-      // Filter by payment status
-      if (filters.selectedStatus.length > 0) {
-        const paymentStatus = order.paymentType || "pending";
-        if (!filters.selectedStatus.includes(paymentStatus)) {
+      // Filter by payment status (local filter)
+      if (localFilters.selectedStatus.length > 0) {
+        const orderTotal = calculateOrderTotal(order.items || []);
+        const paymentStatus = calculatePaymentStatus(
+          order.paymentType || "",
+          orderTotal
+        );
+        if (!localFilters.selectedStatus.includes(paymentStatus.status)) {
           return false;
         }
       }
 
       return true;
     });
-  }, [orders, filters]);
-
-  const getPaymentStatusColor = (paymentType: string) => {
-    switch (paymentType?.toLowerCase()) {
-      case "cash":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "card":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
+    return filtered;
+  }, [orders, localFilters]);
 
   const clearFilters = () => {
-    setFilters({
+    setFilter({
       searchTerm: "",
-      selectedDate: null,
+      selectedDate: new Date(),
+      selectedStatus: ["all"],
+    });
+    setLocalFilters({
       selectedDeliveryPerson: "",
       selectedStatus: [],
     });
@@ -142,8 +134,8 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
   };
 
   const handleViewOrder = (order: Order) => {
-    // TODO: Implement view order functionality
-    console.log("View order:", order.id);
+    setSelectedOrder(order);
+    setIsOrderDetailsOpen(true);
   };
 
   const handlePrintOrder = (order: Order) => {
@@ -155,7 +147,6 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
     if (!selectedOrderForPayment) return;
 
     try {
-      // API to apply the payment
       console.log("Applying payment:", {
         orderId: selectedOrderForPayment.id,
         deliveryPersonId: selectedDeliveryPerson,
@@ -163,7 +154,6 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
         method: paymentMethod,
       });
 
-      // Close modal and refresh orders
       setIsPaymentModalOpen(false);
       setSelectedOrderForPayment(null);
       refreshOrdersCallback();
@@ -180,305 +170,266 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
     setPaymentMethod("cash");
   };
 
-  return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Orders</h1>
-        <p className="text-gray-600">
-          View and manage all orders with advanced filtering options
-        </p>
-      </div>
+  // Table columns
+  const columns = [
+    "Order #",
+    "Customer",
+    "Order Type",
+    "Payment Status",
+    "Delivery Person",
+    "Total",
+    "Created",
+    "Actions",
+  ];
 
-      {/* Search and Filter Bar */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="flex flex-col lg:flex-row gap-4 items-end">
-          {/* Search Input */}
-          <div className="w-full lg:w-80">
-            <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <CustomInput
-                label=""
-                name="searchTerm"
-                type="text"
-                value={filters.searchTerm}
-                onChange={(e) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    searchTerm: e.target.value,
-                  }))
-                }
-                placeholder="Search by order number..."
-                otherClasses="w-full"
-                inputClasses="pl-10 py-2.5"
-              />
-            </div>
+  // Render order row
+  const renderOrderRow = (order: Order) => {
+    const orderTotal = calculateOrderTotal(order.items || []);
+    const paymentStatus = calculatePaymentStatus(
+      order.paymentType || "",
+      orderTotal
+    );
+
+    return (
+      <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+          K{order.orderId}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="text-sm font-medium text-gray-900">
+            {order.customer.name}
           </div>
-
-          {/* Date Filter */}
-          <div className="w-full lg:w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <span className="inline w-4 h-4 mr-1">📅</span>
-              Filter by Date
-            </label>
-            <input
-              type="date"
-              value={
-                filters.selectedDate
-                  ? filters.selectedDate.toISOString().split("T")[0]
-                  : ""
-              }
-              onChange={(e) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  selectedDate: e.target.value
-                    ? new Date(e.target.value)
-                    : null,
-                }))
-              }
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none"
-            />
-          </div>
-
-          {/* Delivery Person Filter */}
-          <div className="w-full lg:w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <PersonIcon className="inline w-4 h-4 mr-1" />
-              Delivery Person
-            </label>
-            <CustomSelect
-              options={[
-                { value: "", label: "All Delivery Persons" },
-                ...deliveryPersons.map((person) => ({
-                  value: person.id,
-                  label: person.name,
-                })),
-              ]}
-              value={filters.selectedDeliveryPerson}
-              onChange={(value) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  selectedDeliveryPerson: value,
-                }))
-              }
-              placeholder="All Delivery Persons"
-              className="w-full"
-            />
-          </div>
-
-          {/* Payment Status Filter */}
-          <div className="w-full lg:w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Payment Status
-            </label>
-            <CustomSelect
-              options={[
-                { value: "", label: "All Payment Statuses" },
-                ...paymentStatuses.map((status) => ({
-                  value: status,
-                  label: status.charAt(0).toUpperCase() + status.slice(1),
-                })),
-              ]}
-              value={filters.selectedStatus[0] || ""}
-              onChange={(value) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  selectedStatus: value ? [value] : [],
-                }))
-              }
-              placeholder="All Payment Statuses"
-              className="w-full"
-            />
-          </div>
-
-          {/* Clear Filters Button */}
-          <div className="w-full lg:w-auto">
-            <button
-              onClick={clearFilters}
-              className="w-full lg:w-auto px-4 py-3 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            {order.orderType?.toUpperCase() || "N/A"}
+          </span>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="flex flex-col gap-1">
+            <span
+              className={`inline-flex w-fit px-2 py-1 text-xs font-semibold rounded-full border ${getPaymentStatusStyle(paymentStatus.status)}`}
             >
-              Clear All Filters
+              {paymentStatus.status}
+            </span>
+            {paymentStatus.status === "PARTIAL" && (
+              <span className="text-xs text-yellow-700">
+                €{paymentStatus.totalPaid.toFixed(2)} / €{orderTotal.toFixed(2)}
+              </span>
+            )}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          {order.deliveryPerson ? (
+            <div>
+              <div className="font-medium">{order.deliveryPerson.name}</div>
+              <div className="text-gray-500 text-xs">
+                {order.deliveryPerson.phone}
+              </div>
+            </div>
+          ) : (
+            <span className="text-gray-400">Not assigned</span>
+          )}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+          €{calculateOrderTotal(order.items || []).toFixed(2)}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          {new Date(order.createdAt || "").toLocaleDateString()}
+          <div className="text-xs text-gray-400">
+            {new Date(order.createdAt || "").toLocaleTimeString()}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+          <div className="flex items-center justify-end space-x-2">
+            {/* View Order Button */}
+            <button
+              onClick={() => handleViewOrder(order)}
+              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+              title="View Order"
+            >
+              <EyeIcon className="w-4 h-4" />
+            </button>
+
+            {/* Print Order Button */}
+            <button
+              onClick={() => handlePrintOrder(order)}
+              className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200"
+              title="Print Order"
+            >
+              <DocumentIcon className="w-4 h-4" />
+            </button>
+
+            {/* Process Payment Button */}
+            <button
+              onClick={() => handlePaymentClick(order)}
+              className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors duration-200"
+              title="Process Payment"
+            >
+              <ThunderIcon className="w-4 h-4" />
             </button>
           </div>
+        </td>
+      </tr>
+    );
+  };
+
+  return (
+    <div className="h-screen flex flex-col">
+      {/* Header */}
+      <Header
+        title="Manage Orders"
+        subtitle="View and manage all orders with advanced filtering options"
+        icon={<DocumentIcon className="w-8 h-8" />}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto pb-6">
+        {/* Search and Filter Bar */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4 items-end">
+            {/* Search Input */}
+            <div className="w-full lg:w-80">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <span className="inline w-4 h-4 mr-1">🔍</span>
+                Search Orders
+              </label>
+              <div className="relative">
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <CustomInput
+                  label=""
+                  name="searchTerm"
+                  type="text"
+                  value={filter.searchTerm || ""}
+                  onChange={(e) =>
+                    setFilter((prev) => ({
+                      ...prev,
+                      searchTerm: e.target.value,
+                    }))
+                  }
+                  placeholder="Search by order number..."
+                  otherClasses="w-full"
+                  inputClasses="pl-10 py-2.5"
+                />
+              </div>
+            </div>
+
+            {/* Date Filter */}
+            <div className="w-full lg:w-48">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <span className="inline w-4 h-4 mr-1">📅</span>
+                Filter by Date
+              </label>
+              <input
+                type="date"
+                value={
+                  filter.selectedDate
+                    ? filter.selectedDate.toISOString().split("T")[0]
+                    : ""
+                }
+                onChange={(e) =>
+                  setFilter((prev) => ({
+                    ...prev,
+                    selectedDate: e.target.value
+                      ? new Date(e.target.value)
+                      : null,
+                  }))
+                }
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none"
+              />
+            </div>
+
+            {/* Delivery Person Filter */}
+            <div className="w-full lg:w-48">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <PersonIcon className="inline w-4 h-4 mr-1" />
+                Delivery Person
+              </label>
+              <CustomSelect
+                options={[
+                  { value: "", label: "All Delivery Persons" },
+                  ...deliveryPersons.map((person) => ({
+                    value: person.id,
+                    label: person.name,
+                  })),
+                ]}
+                value={localFilters.selectedDeliveryPerson}
+                onChange={(value) =>
+                  setLocalFilters((prev) => ({
+                    ...prev,
+                    selectedDeliveryPerson: value,
+                  }))
+                }
+                placeholder="All Delivery Persons"
+                className="w-full"
+              />
+            </div>
+
+            {/* Payment Status Filter */}
+            <div className="w-full lg:w-48">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Payment Status
+              </label>
+              <CustomSelect
+                options={[
+                  { value: "", label: "All Payment Statuses" },
+                  ...paymentStatuses.map((status) => ({
+                    value: status,
+                    label: status.charAt(0).toUpperCase() + status.slice(1),
+                  })),
+                ]}
+                value={localFilters.selectedStatus[0] || ""}
+                onChange={(value) =>
+                  setLocalFilters((prev) => ({
+                    ...prev,
+                    selectedStatus: value ? [value] : [],
+                  }))
+                }
+                placeholder="All Payment Statuses"
+                className="w-full"
+              />
+            </div>
+
+            {/* Clear Filters Button */}
+            <div className="w-full lg:w-auto">
+              <button
+                onClick={clearFilters}
+                className="w-full lg:w-auto px-4 py-3 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Results Summary */}
-      <div className="mb-4 flex justify-between items-center">
-        <p className="text-sm text-gray-600">
-          Showing {filteredOrders.length} of {orders.length} orders
-        </p>
-        <div className="text-sm text-gray-500">
-          Last updated: {new Date().toLocaleString()}
+        {/* Results Summary */}
+        <div className="mb-4 flex justify-between items-center">
+          <p className="text-sm text-gray-600">
+            Showing {filteredOrders.length} of {orders.length} orders
+          </p>
+          <div className="text-sm text-gray-500">
+            Last updated: {new Date().toLocaleString()}
+          </div>
         </div>
-      </div>
 
-      {/* Orders Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Order #
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Customer
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Address
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Order Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Payment Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Delivery Person
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredOrders.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={10}
-                    className="px-6 py-12 text-center text-gray-500"
-                  >
-                    <div className="flex flex-col items-center">
-                      <div className="text-4xl mb-4">📋</div>
-                      <p className="text-lg font-medium mb-2">
-                        No orders found
-                      </p>
-                      <p className="text-sm">
-                        {filters.searchTerm ||
-                        filters.selectedDate ||
-                        filters.selectedDeliveryPerson ||
-                        filters.selectedStatus.length > 0
-                          ? "Try adjusting your filters to see more results"
-                          : "No orders have been created yet"}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                filteredOrders.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      K{order.orderId}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {order.customer.name}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.customer.phone}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
-                      <div
-                        className="truncate"
-                        title={formatAddress(order.customer.address)}
-                      >
-                        {formatAddress(order.customer.address)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {order.orderType?.toUpperCase() || "N/A"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getPaymentStatusColor(order.paymentType || "pending")}`}
-                      >
-                        {(order.paymentType || "pending")
-                          .charAt(0)
-                          .toUpperCase() +
-                          (order.paymentType || "pending").slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.deliveryPerson ? (
-                        <div>
-                          <div className="font-medium">
-                            {order.deliveryPerson.name}
-                          </div>
-                          <div className="text-gray-500 text-xs">
-                            {order.deliveryPerson.phone}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">Not assigned</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      €
-                      {order.items
-                        .reduce(
-                          (total, item) =>
-                            total + (item.price || 0) * item.quantity,
-                          0
-                        )
-                        .toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                      <div className="text-xs text-gray-400">
-                        {new Date(order.createdAt).toLocaleTimeString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-2">
-                        {/* View Order Button */}
-                        <button
-                          onClick={() => handleViewOrder(order)}
-                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-                          title="View Order"
-                        >
-                          <EyeIcon className="w-4 h-4" />
-                        </button>
-
-                        {/* Print Order Button */}
-                        <button
-                          onClick={() => handlePrintOrder(order)}
-                          className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200"
-                          title="Print Order"
-                        >
-                          <DocumentIcon className="w-4 h-4" />
-                        </button>
-
-                        {/* Process Payment Button */}
-                        <button
-                          onClick={() => handlePaymentClick(order)}
-                          className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors duration-200"
-                          title="Process Payment"
-                        >
-                          <ThunderIcon className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        {/* Orders Table */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <OrderTable
+            data={filteredOrders}
+            columns={columns}
+            renderRow={renderOrderRow}
+            emptyStateIcon={
+              <DeliveredIcon className="mx-auto size-12 text-gray-400" />
+            }
+            emptyStateTitle={
+              filter.searchTerm ||
+              filter.selectedDate ||
+              localFilters.selectedDeliveryPerson ||
+              localFilters.selectedStatus.length > 0
+                ? "No orders match your filters"
+                : "No orders found"
+            }
+          />
         </div>
       </div>
 
@@ -754,6 +705,18 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Order Details Modal */}
+      {isOrderDetailsOpen && selectedOrder && (
+        <OrderDetailsModal
+          order={selectedOrder}
+          onClose={() => {
+            setIsOrderDetailsOpen(false);
+            setSelectedOrder(null);
+          }}
+          view="manage"
+        />
       )}
     </div>
   );

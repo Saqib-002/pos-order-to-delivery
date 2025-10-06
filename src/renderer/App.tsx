@@ -109,6 +109,8 @@ const App: React.FC = () => {
         <ManageOrdersView
           orders={orders}
           refreshOrdersCallback={refreshOrdersCallback}
+          filter={filter}
+          setFilter={setFilter}
         />
       ),
       roles: ["admin"],

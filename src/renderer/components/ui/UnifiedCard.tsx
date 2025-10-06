@@ -52,7 +52,7 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     footerMb: "gap-2",
     hasDelete: false,
     getBody: () => null,
-    getLeft: (data) => ({ text: `${data.itemCount || 0} Subcategories`, className: "text-sm text-white opacity-90" }),
+    getLeft: (data) => ({ text: `${data.itemCount || 0} Subcategories`, className: "text-xs text-white opacity-90" }),
     getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Category</span>],
   },
   subcategory: {
@@ -219,7 +219,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
   return (
     <div onClick={onClick}>
       <div
-        className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 hover:scale-105 group ${
+        className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${
           isClickable ? "cursor-pointer" : ""
         }`}
       >

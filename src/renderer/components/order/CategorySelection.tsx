@@ -48,7 +48,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({
         {categories.map((category) => (
           <div
             key={category.id}
-            className={`transform transition-all duration-200 hover:scale-105 ${
+            className={`transform transition-all duration-200 ${
               selectedCategory?.id === category.id ? "scale-105" : ""
             }`}
           >
