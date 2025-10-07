@@ -2,17 +2,11 @@ import { ipcMain } from "electron";
 import {
   addItemToOrder,
   deleteOrder,
+  getOrderAnalytics,
   getOrderItems,
-  // cancelOrder,
-  // deleteOrder,
-  // getOrderAnalytics,
-  // getOrders,
   getOrdersByFilter,
   removeItemFromOrder,
   removeMenuFromOrder,
-  // markDeliveredOrder,
-  // readyOrder,
-  // updateOrder,
   saveOrder,
   updateItemQuantity,
   updateMenuQuantity,
@@ -144,12 +138,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("update-menu-quantity", updateMenuQuantity);
   ipcMain.handle("get-order-items", getOrderItems)
   ipcMain.handle("update-order", updateOrder);
-  // ipcMain.handle("delete-order", deleteOrder);
-  // ipcMain.handle("cancel-order", cancelOrder);
-  // ipcMain.handle("ready-order", readyOrder);
-  // ipcMain.handle("mark-delivered-order", markDeliveredOrder);
-  // ipcMain.handle("get-orders", getOrders);
-  // ipcMain.handle("get-order-analytics", getOrderAnalytics);
+  ipcMain.handle("get-order-analytics", getOrderAnalytics);
   ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
 
   // delivery person handlers

@@ -1045,7 +1045,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
               </div>
 
               {/* Show add-ons when adding a product */}
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -1061,7 +1061,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     Show add-ons when adding a product
                   </label>
                 </div>
-              </div>
+              </div> */}
 
               {/* Select Add-ons Page */}
               {showAddons && (
@@ -1120,7 +1120,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       </label>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <CustomInput
                           type="number"
@@ -1164,7 +1164,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           otherClasses="w-full"
                         />
                       </div>
-                      <div>
+                      {/* <div>
                         <CustomInput
                           type="number"
                           label="Number of free add-ons"
@@ -1182,7 +1182,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           min="0"
                           otherClasses="w-full"
                         />
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </div>

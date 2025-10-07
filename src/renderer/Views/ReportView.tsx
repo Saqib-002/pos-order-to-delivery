@@ -1,21 +1,17 @@
-import { METRICS } from "@/constants/report";
-import { ReportViewProps, AnalyticsType } from "@/types/report";
+import { AnalyticsType } from "@/types/report";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { OrderTable } from "../components/report/OrderTable";
 import { DateRangeSelector } from "../components/report/DateRangeSelector";
 import { HourlyDistribution } from "../components/report/HourlyDistribution";
-import { MetricCard } from "../components/report/MetricCard";
 import { StatusDistribution } from "../components/report/StatusDistribution";
 import { TopItems } from "../components/report/TopItems";
 import { useAuth } from "../contexts/AuthContext";
+import Header from "../components/shared/Header.order";
+import { AnalyticsIcon, CheckIcon, ClipboardIcon, ClockIcon, LightningBoltIcon } from "../assets/Svg";
+import { StatsCard } from "../components/shared/StatsCard.order";
+import { OrderTable } from "../components/shared/OrderTable";
 
-export const ReportView: React.FC<ReportViewProps> = ({
-  orders,
-  setOrders,
-  filter,
-  setFilter,
-}) => {
+export const ReportView = () => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -55,68 +51,89 @@ export const ReportView: React.FC<ReportViewProps> = ({
       });
     };
     fetchAnalytics();
-    setFilter({ selectedDate: null, selectedStatus: ["all"], searchTerm: "" });
-  }, [dateRange, selectedDate, setFilter]);
+  }, [dateRange, selectedDate]);
 
-  return (
-    <div className="mt-4 p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-[98%] mx-auto">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Analytics & Reports
-              </h2>
-              <p className="text-gray-600 mt-1">
-                Comprehensive insights into order performance and trends
-              </p>
+  const getStatusStyles = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "delivered": return "bg-green-100 text-green-800";
+      case "sent to kitchen": return "bg-orange-100 text-orange-800";
+      case "out for delivery": return "bg-blue-100 text-blue-800";
+      case "cancelled": return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const renderOrderRow = (order: any) => (
+    <tr key={order.orderId} className="hover:bg-gray-50 transition-colors duration-150">
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm font-medium text-gray-900">#{order.orderId}</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-900">{order.customer.name}</div>
+        <div className="text-sm text-gray-500">{order.customer.phone}</div>
+      </td>
+      <td className="px-6 py-4">
+        <div className="text-sm text-gray-900">
+          {order.items.map((item: any, index: number) => (
+            <div key={index} className="flex justify-between">
+              <span className="text-gray-600">{item.name}</span>
+              <span className="text-gray-900 font-medium">x{item.quantity}</span>
             </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <svg
-                className="w-8 h-8 text-purple-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
-        <DateRangeSelector
-          dateRange={dateRange}
-          setDateRange={setDateRange}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-        />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          {METRICS.map((metric) => (
-            <MetricCard
-              key={metric.title}
-              title={metric.title}
-              value={
-                analytics
-                  ? (analytics[metric.key as keyof AnalyticsType] as number)
-                  : 0
-              }
-              icon={metric.icon}
-              color={metric.color}
-              subtext={metric.subtext?.(analytics || ({} as AnalyticsType))}
-              format={metric.format}
-            />
           ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <StatusDistribution analytics={analytics} />
-          <HourlyDistribution analytics={analytics} />
-        </div>
-        <TopItems analytics={analytics} />
-        <OrderTable analytics={analytics} />
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusStyles(order.status)}`}>
+          {order.status}
+        </span>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-900">{new Date(order.createdAt).toLocaleTimeString()}</div>
+        <div className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</div>
+      </td>
+    </tr>
+  );
+
+  const ordersData = analytics?.orders.slice(0, 20) || [];
+
+  return (
+    <div className="max-w-[98%] mx-auto mt-4 p-6 bg-gray-50 flex flex-col gap-6">
+      <Header title="Analytics & Reports" subtitle="Comprehensive insights into order performance and trends" icon={<AnalyticsIcon className="size-8 text-purple-600" />}  iconbgClasses="bg-purple-100" />
+      <DateRangeSelector
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+      />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatsCard title="Total Orders" value={analytics?.totalOrders || 0} icon={<ClipboardIcon className="size-8 text-blue-600" />} bgColor="bg-blue-100" />
+        <StatsCard title="Delivered" value={analytics?.totalDelivered || 0} icon={<CheckIcon className="size-8 text-green-600" />} subtext={`${analytics?.successRate || 0}% Success Rate`} bgColor="bg-green-100" />
+        <StatsCard title="Avg Delivery Time" value={analytics?.avgDeliveryTime || 0} icon={<ClockIcon className="size-8 text-orange-600" />} bgColor="bg-orange-100" subtext="minutes" format={(value: number) => value?.toFixed(2)}/>
+        <StatsCard title="In Progress" value={analytics?.inProgress || 0} icon={<LightningBoltIcon className="size-8 text-purple-600" />} bgColor="bg-purple-100" />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <StatusDistribution analytics={analytics} />
+        <HourlyDistribution analytics={analytics} />
+      </div>
+      {analytics?.topItems && analytics.topItems.length > 0 && (
+        <TopItems topItems={analytics?.topItems} title="Top Ordered Items" />)}
+      {analytics?.topMenus && analytics.topMenus.length > 0 && (
+        <TopItems topItems={analytics?.topMenus} title="Top Ordered Menus" />)}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <OrderTable
+          data={ordersData}
+          title="Order Details"
+          columns={["Order ID", "Customer", "Items", "Status", "Time"]}
+          renderRow={renderOrderRow}
+          emptyStateIcon={<ClipboardIcon className="mx-auto h-12 w-12 text-gray-400" />}
+          emptyStateTitle="No orders found"
+          subtitle="Try adjusting your date range or period selection."
+        />
+        {analytics?.orders && analytics.orders.length > 20 && (
+          <div className="px-6 py-4 border-t border-gray-200 text-center text-sm text-gray-500">
+            Showing first 20 orders of {analytics.orders.length} total orders
+          </div>
+        )}
       </div>
     </div>
   );

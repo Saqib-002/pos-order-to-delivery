@@ -40,6 +40,13 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
       }));
     }
   }, [filter.selectedDate, setFilter]);
+  useEffect(() => {
+    setFilter({
+      searchTerm: "",
+      selectedDate: null,
+      selectedStatus: [],
+    });
+  }, []);
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] =
@@ -423,9 +430,9 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
             }
             emptyStateTitle={
               filter.searchTerm ||
-              filter.selectedDate ||
-              localFilters.selectedDeliveryPerson ||
-              localFilters.selectedStatus.length > 0
+                filter.selectedDate ||
+                localFilters.selectedDeliveryPerson ||
+                localFilters.selectedStatus.length > 0
                 ? "No orders match your filters"
                 : "No orders found"
             }
@@ -589,11 +596,10 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("cash")}
-                    className={`p-4 border-2 rounded-xl text-center transition-all duration-200 ${
-                      paymentMethod === "cash"
+                    className={`p-4 border-2 rounded-xl text-center transition-all duration-200 ${paymentMethod === "cash"
                         ? "border-green-500 bg-green-50 text-green-700 shadow-md"
                         : "border-gray-200 hover:border-green-300 hover:bg-green-50/50"
-                    }`}
+                      }`}
                   >
                     <div className="flex flex-col items-center space-y-2">
                       <div className="p-2 bg-green-100 rounded-lg">
@@ -617,11 +623,10 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("card")}
-                    className={`p-4 border-2 rounded-xl text-center transition-all duration-200 ${
-                      paymentMethod === "card"
+                    className={`p-4 border-2 rounded-xl text-center transition-all duration-200 ${paymentMethod === "card"
                         ? "border-blue-500 bg-blue-50 text-blue-700 shadow-md"
                         : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
-                    }`}
+                      }`}
                   >
                     <div className="flex flex-col items-center space-y-2">
                       <div className="p-2 bg-blue-100 rounded-lg">

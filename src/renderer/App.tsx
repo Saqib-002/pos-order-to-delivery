@@ -83,12 +83,7 @@ const App: React.FC = () => {
     },
     [VIEWS.REPORTS]: {
       component: (
-        <ReportView
-          orders={orders}
-          setOrders={setOrders}
-          filter={filter}
-          setFilter={setFilter}
-        />
+        <ReportView />
       ),
       roles: ["admin"],
     },

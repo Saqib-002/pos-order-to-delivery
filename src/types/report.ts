@@ -1,4 +1,4 @@
-import { Order, FilterType } from "./order";
+import { Order } from "./order";
 
 export interface AnalyticsType {
     totalOrders: number;
@@ -12,12 +12,6 @@ export interface AnalyticsType {
     avgDeliveryTime: number;
     hourlyData: number[];
     topItems: { name: string; count: number }[];
+    topMenus: { name: string; count: number }[];
     orders: Order[];
-}
-
-export interface ReportViewProps {
-    orders: Order[];
-    setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
-    filter: FilterType;
-    setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
 }
