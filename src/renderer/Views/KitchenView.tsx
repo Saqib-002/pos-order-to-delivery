@@ -303,7 +303,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
     );
   };
   return (
-    <div className="h-screen flex flex-col">
+    <div className="flex flex-col">
       <Header
         title="Kitchen Management"
         subtitle="Monitor and manage orders in preparation"

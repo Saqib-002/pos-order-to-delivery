@@ -243,7 +243,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     );
   }
   return (
-    <div className="h-[calc(100vh-9rem)] flex flex-col overflow-y-auto">
+    <div className="h-[calc(100vh-5.2rem)] flex flex-col overflow-y-auto">
       {/* Header */}
       <div className="flex justify-between items-center p-4 pb-2">
         <h2 className="text-lg font-semibold text-gray-800">Your Order</h2>

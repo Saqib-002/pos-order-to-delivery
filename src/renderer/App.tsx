@@ -145,7 +145,7 @@ const App: React.FC = () => {
         userRole={auth.user?.role}
         onLogout={handleLogout}
       />
-      <div className="ml-16 p-4">{renderView()}</div>
+      <div className="ml-16 p-4 h-screen overflow-y-auto">{renderView()}</div>
     </div>
   );
 };

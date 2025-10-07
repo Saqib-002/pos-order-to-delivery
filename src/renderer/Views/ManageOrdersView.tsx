@@ -275,7 +275,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
   };
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="flex flex-col">
       {/* Header */}
       <Header
         title="Manage Orders"

@@ -42,11 +42,11 @@ const CustomButton = ({
         <button
             type={type}
             onClick={onClick}
-            className={`flex justify-center items-center gap-2 px-4 py-2 cursor-pointer font-medium border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-colors duration-300 ${getVariant()} ${className}`}
+            className={`flex justify-center items-center gap-2 px-4 py-2 cursor-pointer font-medium border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-all duration-300 ${getVariant()} ${className}`}
             {...rest}
         >
             {isLoading ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             ) : (<>
                 {Icon && Icon}
             </>)

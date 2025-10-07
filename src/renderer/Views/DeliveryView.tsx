@@ -298,7 +298,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
   );
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="flex flex-col">
       <Header
         title="Delivery Management"
         subtitle="Assign and track order deliveries"

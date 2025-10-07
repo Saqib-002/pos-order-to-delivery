@@ -40,11 +40,11 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   } = useAuth();
 
   useEffect(() => {
-    setCustomerSearch(order?.customer.name || "");
+    setCustomerSearch(order?.customer?.name || "");
     setOrderType(order?.orderType || "pickup");
     setNotes(order?.notes || "");
     setSearchResults([]);
-    setSelectedCustomer(order?.customer.name ? order.customer : null);
+    setSelectedCustomer(order?.customer?.name ? order.customer : null);
     setIsSearching(false);
     setShowSearchResults(false);
     setIsCustomerModalOpen(false);

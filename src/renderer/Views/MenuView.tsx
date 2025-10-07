@@ -64,11 +64,9 @@ export const MenuView= memo(() => {
     }
   };
   return (
-    <div className="min-h-screen">
       <div className="max-w-[98%] mx-auto">
         <MenuHeader currentView={currentView} onViewChange={setCurrentView} />
         {renderContent()}
       </div>
-    </div>
   );
 });
