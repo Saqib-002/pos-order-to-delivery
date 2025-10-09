@@ -53,7 +53,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     setIsCustomerModalOpen(false);
   }, []);
 
-  const { orderTotal } = calculateOrderTotal(orderItems);
+  const { orderTotal,nonMenuItems, groups } = calculateOrderTotal(orderItems);
 
 
   const searchCustomers = async (searchTerm: string) => {
@@ -175,7 +175,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     setIsPaymentModalOpen(false);
     onClose();
   };
-
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col">
@@ -406,8 +405,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             </div>
             <div className="space-y-4">
               {/* Non-Menu Items */}
-              {orderItems
-                .filter((item) => !item.menuId)
+              {nonMenuItems
                 .map((item) => (
                   <div
                     key={item.id}
@@ -443,51 +441,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 ))}
 
               {/* Menu Groups */}
-              {Object.values(
-                orderItems
-                  .filter((item) => item.menuId)
-                  .reduce(
-                    (
-                      acc: Record<
-                        string,
-                        {
-                          key: string;
-                          menuId: string;
-                          menuName: string;
-                          secondaryId: number;
-                          basePrice: number;
-                          taxPerUnit: number;
-                          supplementTotal: number;
-                          items: OrderItem[];
-                        }
-                      >,
-                      item
-                    ) => {
-                      const key = `${item.menuId}-${item.menuSecondaryId}`;
-                      const menuPrice = item.menuPrice ?? 0;
-                      const menuTax = item.menuTax ?? 0;
-                      const supplement = item.supplement ?? 0;
-
-                      if (!acc[key]) {
-                        acc[key] = {
-                          key,
-                          menuId: item.menuId!,
-                          menuName: item.menuName!,
-                          secondaryId: item.menuSecondaryId! as number,
-                          basePrice: menuPrice,
-                          taxPerUnit: menuTax,
-                          supplementTotal: supplement,
-                          items: [],
-                        };
-                      } else {
-                        acc[key].supplementTotal += supplement;
-                      }
-                      acc[key].items.push(item);
-                      return acc;
-                    },
-                    {}
-                  )
-              ).map((group) => {
+              {groups.map((group) => {
                 const sectionQuantity = group.items[0]?.quantity || 1;
                 const sectionSubtotal = group.basePrice * sectionQuantity;
                 const sectionTaxTotal = group.taxPerUnit * sectionQuantity;
@@ -604,30 +558,17 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         </div>
 
         {/* Modern Action Buttons */}
-        <div className="p-6 bg-gray-50 border-t border-gray-200">
-          <div className="flex space-x-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-6 py-4 border-2 border-gray-300 rounded-xl text-gray-700 font-semibold hover:bg-gray-100 hover:border-gray-400 transition-all duration-200 touch-manipulation min-h-[56px] text-lg"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleProcessOrder}
-              className="flex-1 px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center space-x-2 touch-manipulation min-h-[56px] text-lg"
-            >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span>Process Order</span>
-            </button>
-          </div>
+        <div className="p-6 bg-gray-50 border-t border-gray-200 flex space-x-4">
+          <CustomButton
+            type="button"
+            onClick={onClose}
+            variant="secondary" label="Cancel" className="flex-1 text-lg"/>
+            <CustomButton
+            type="button"
+            onClick={handleProcessOrder}
+            className="flex-1 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold hover:from-indigo-700 hover:to-purple-700"
+            Icon={<span className="bg-white rounded-full size-5 flex justify-center items-center"><CheckIcon className="size-3 text-indigo-600"/></span>}
+            label="Proceed Order"/>
         </div>
       </div>
 

@@ -9,7 +9,6 @@ interface OrderContextType {
   removeFromOrder: (itemId: string | undefined) => void;
   updateQuantity: (itemId: string | undefined, quantity: number) => void;
   clearOrder: () => void;
-  isProductExists: (productId: string) => boolean;
   findExactProductMatch: (
     productId: string,
     variantId: string,
@@ -73,11 +72,6 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 
   const clearOrder = () => {
     setOrderItems([]);
-  };
-  const isProductExists = (productId: string): boolean => {
-    return !!orderItems.find(
-      (item) => !item.menuId && item.productId === productId
-    );
   };
 
   const findExactProductMatch = (
@@ -157,7 +151,6 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     addToOrder,
     removeFromOrder,
     updateQuantity,
-    isProductExists,
     findExactProductMatch,
     removeMenuFromOrder,
     clearOrder,
