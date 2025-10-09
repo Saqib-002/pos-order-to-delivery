@@ -13,20 +13,21 @@ export const showToast = {
     ),
 };
 export const formatAddress = (address: string) => {
-    if (!address) return "No address provided";
-
-    if (address.includes("|")) {
-        return address
-            .split("|")
-            .map((part) => {
-                const [key, value] = part.split("=");
-                return value || part;
-            })
-            .join(", ");
-    }
-
-    return address;
-};
+    if (!address) return "";
+    const parts = address.split("|");
+    return (
+      parts
+        .map((item, index) => {
+          if (index === 1) return null;
+          const value = item.split("=")[1];
+          return value || "";
+        })
+        .filter(Boolean)
+        .join(", ") +
+      ", " +
+      (parts[1]?.split("=")[1] || "")
+    );
+  };
 
 export const colorOptions = [
     { value: "red", label: "Red", color: "bg-red-500" },

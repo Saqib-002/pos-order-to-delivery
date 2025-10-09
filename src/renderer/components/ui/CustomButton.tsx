@@ -1,8 +1,7 @@
 interface CustomButtonProps {
     type: "submit" | "button";
-    onClick?: () => void;
     className?: string;
-    label?: string;
+    label?: string | React.ReactElement;
     postLabel?: string;
     isLoading?: boolean;
     Icon?: React.ReactElement;
@@ -11,7 +10,6 @@ interface CustomButtonProps {
 }
 const CustomButton = ({
     type,
-    onClick,
     className,
     label,
     postLabel,
@@ -43,7 +41,6 @@ const CustomButton = ({
     return (
         <button
             type={type}
-            onClick={onClick}
             className={`flex justify-center items-center gap-2 px-4 py-2 cursor-pointer font-medium border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-all duration-300 disabled:opacity-50 ${getVariant()} ${className}`}
             {...rest}
         >

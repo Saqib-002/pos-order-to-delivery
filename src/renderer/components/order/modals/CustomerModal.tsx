@@ -8,6 +8,7 @@ import { debounce } from "lodash";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { Customer } from "@/types/order";
 import { AddIcon } from "@/renderer/assets/Svg";
+import { formatAddress } from "@/renderer/utils/utils";
 
 interface CustomerModalProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -130,22 +131,6 @@ const CustomerModal = ({
     } else {
       setIsOpen(false);
     }
-  };
-  const formatAddress = (address: string) => {
-    if (!address) return "";
-    const parts = address.split("|");
-    return (
-      parts
-        .map((item, index) => {
-          if (index === 1) return null;
-          const value = item.split("=")[1];
-          return value || "";
-        })
-        .filter(Boolean)
-        .join(", ") +
-      ", " +
-      (parts[1]?.split("=")[1] || "")
-    );
   };
   return (
     <>

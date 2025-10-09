@@ -7,6 +7,10 @@ import { useAuth } from "@/renderer/contexts/AuthContext";
 import {
   calculateOrderTotal,
 } from "@/renderer/utils/orderCalculations";
+import { formatAddress } from "@/renderer/utils/utils";
+import { AddIcon, CashIcon, CheckIcon, CrossIcon, DocumentIcon, LocationFilledIcon, LocationIcon, SearchIcon } from "@/renderer/assets/Svg";
+import CustomInput from "../shared/CustomInput";
+import CustomButton from "../ui/CustomButton";
 
 interface OrderProcessingModalProps {
   onClose: () => void;
@@ -49,22 +53,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     setIsCustomerModalOpen(false);
   }, []);
 
-  const {orderTotal} = calculateOrderTotal(orderItems);
+  const { orderTotal } = calculateOrderTotal(orderItems);
 
-  const formatAddress = (address: string) => {
-    if (!address) return "No address provided";
-    if (address.includes("|")) {
-      return address
-        .split("|")
-        .map((part) => {
-          const [key, value] = part.split("=");
-          return value || part;
-        })
-        .join(", ");
-    }
-
-    return address;
-  };
 
   const searchCustomers = async (searchTerm: string) => {
     if (!searchTerm.trim() || !token) return;
@@ -189,65 +179,38 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col">
-        {/* Modern Header */}
-        <div className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">Process Order</h2>
-                <p className="text-indigo-100 text-sm">
-                  Complete order details
-                </p>
+        <div className="flex items-center justify-between relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+              <div className="bg-white size-5 p-1 rounded-full">
+                <CheckIcon className="size-3 text-indigo-600" />
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 touch-manipulation"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+            <div>
+              <h2 className="text-2xl font-bold">Process Order</h2>
+              <p className="text-indigo-100 text-sm">
+                Complete order details
+              </p>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 touch-manipulation cursor-pointer"
+          >
+            <CrossIcon className="size-6" />
+          </button>
         </div>
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-8 touch-pan-y">
           {/* Customer Search */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-blue-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <div className="bg-blue-500 size-5 p-1 rounded-full">
+                  <CheckIcon className="size-3 text-white" />
+                </div>
               </div>
               <h3 className="text-xl font-bold text-gray-900">
                 Customer Search
@@ -255,82 +218,30 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             </div>
 
             {/* Search Input */}
-            <div className="relative customer-search-container">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Search Customer *
-              </label>
-              <div className="flex gap-3">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={customerSearch}
-                    onChange={(e) => setCustomerSearch(e.target.value)}
-                    className="w-full px-4 py-3 pr-12 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-lg touch-manipulation focus:outline-none"
-                    placeholder="Type customer name or phone to search..."
-                  />
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                    {isSearching ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500"></div>
-                    ) : (
-                      <svg
-                        className="w-5 h-5 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsCustomerModalOpen(true)}
-                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center gap-2 font-semibold touch-manipulation min-h-[56px]"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                  <span>Add New</span>
-                </button>
-              </div>
-
-              {/* Search Results Dropdown */}
+            <div className="flex gap-6 relative">
+              <CustomInput label="Search Customer *" placeholder="Type customer name or phone to search..." value={customerSearch} onChange={(e) => setCustomerSearch(e.target.value)} required name="search-customer" type="text" inputClasses="py-3 px-4 text-lg pr-12" postLabel={isSearching ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500 touch-manipulation"></div> : <SearchIcon className="size-5 text-gray-400" />} secLabelClasses="absolute right-4 top-4 w-max" otherClasses="flex-1" />
+              <CustomButton label="Add New" type="button" variant="green" onClick={() => setIsCustomerModalOpen(true)} Icon={<AddIcon className="size-5" />} className="h-max py-3 self-end text-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 touch-manipulation" />
               {showSearchResults && searchResults.length > 0 && (
-                <div className="absolute z-50 w-full bg-white border-2 border-gray-200 rounded-xl shadow-xl max-h-48 overflow-y-auto mt-2">
+                <div className="absolute z-50 top-20 w-full bg-white border-2 border-gray-200 rounded-xl shadow-xl max-h-48 overflow-y-auto mt-2 customer-search-container">
                   {searchResults.map((customer) => (
-                    <button
-                      key={customer.id}
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        selectCustomer(customer);
-                      }}
-                      className="w-full text-left px-4 py-3 hover:bg-indigo-50 border-b border-gray-100 last:border-b-0 focus:outline-none focus:bg-indigo-50 transition-colors duration-200 touch-manipulation"
-                    >
-                      <div className="text-base font-semibold text-gray-900">
-                        {customer.name}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {customer.phone}
-                      </div>
-                    </button>
+                    <CustomButton key={customer.id} type="button" onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      selectCustomer(customer);
+                    }}
+                      variant="transparent"
+                      label={
+                        <>
+                          <div className="text-base font-semibold text-gray-900">
+                            {customer.name}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {customer.phone}
+                          </div>
+                        </>
+                      }
+                      className="hover:bg-indigo-50 border-b border-gray-100 last:border-b-0 w-full touch-manipulation !block text-start rounded-none"
+                    />
                   ))}
                 </div>
               )}
@@ -346,13 +257,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     </div>
                     <span>Selected Customer</span>
                   </h4>
-                  <button
-                    type="button"
-                    onClick={clearCustomerSelection}
-                    className="px-3 py-1 text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 rounded-lg transition-colors duration-200 touch-manipulation"
-                  >
-                    Change
-                  </button>
+                  <CustomButton type="button" onClick={clearCustomerSelection} label="Change" variant="transparent" className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 touch-manipulation !py-1 !px-3" />
                 </div>
                 <div className="space-y-4">
                   {/* Name, Phone, Email in one row */}
@@ -386,17 +291,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   {/* Address formatted properly */}
                   <div className="">
                     <div className="text-sm font-semibold text-gray-700 mb-2 flex items-center space-x-2">
-                      <svg
-                        className="w-4 h-4 text-indigo-600"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      <LocationFilledIcon className="text-indigo-600 size-4" />
                       <span>Address</span>
                     </div>
                     <div className="text-gray-800 text-sm leading-relaxed">
@@ -412,89 +307,56 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-orange-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <div className="w-3 h-2 bg-orange-600"></div>
               </div>
               <h3 className="text-xl font-bold text-gray-900">Order Type</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button
-                type="button"
-                onClick={() => setOrderType("pickup")}
-                className={`p-6 border-2 rounded-xl text-center transition-all duration-200 hover:shadow-md touch-manipulation min-h-[100px] ${
-                  orderType === "pickup"
-                    ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
-                    : "border-gray-200 hover:border-indigo-300 bg-white"
-                }`}
-              >
-                <div className="text-3xl mb-3">🏪</div>
-                <div className="font-semibold text-base">Pickup</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Customer pickup
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setOrderType("delivery")}
-                className={`p-6 border-2 rounded-xl text-center transition-all duration-200 hover:shadow-md touch-manipulation min-h-[100px] ${
-                  orderType === "delivery"
-                    ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
-                    : "border-gray-200 hover:border-indigo-300 bg-white"
-                }`}
-              >
-                <div className="text-3xl mb-3">🚚</div>
-                <div className="font-semibold text-base">Delivery</div>
-                <div className="text-xs text-gray-500 mt-1">Home delivery</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setOrderType("dine-in")}
-                className={`p-6 border-2 rounded-xl text-center transition-all duration-200 hover:shadow-md touch-manipulation min-h-[100px] ${
-                  orderType === "dine-in"
-                    ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
-                    : "border-gray-200 hover:border-indigo-300 bg-white"
-                }`}
-              >
-                <div className="text-3xl mb-3">🍽️</div>
-                <div className="font-semibold text-base">Dine In</div>
-                <div className="text-xs text-gray-500 mt-1">In restaurant</div>
-              </button>
+              <CustomButton type="button" onClick={() => setOrderType("pickup")} variant="transparent" className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${orderType === "pickup"
+                ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
+                : "border-gray-200 hover:border-indigo-300 bg-white"
+                }`} label={
+                  <>
+                    <div className="text-3xl mb-3">🏪</div>
+                    <div className="font-semibold text-base">Pickup</div>
+                    <div className="text-xs text-gray-500 mt-1">Customer pickup</div>
+                  </>
+                } />
+              <CustomButton type="button" onClick={() => setOrderType("delivery")} variant="transparent" className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${orderType === "delivery"
+                ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
+                : "border-gray-200 hover:border-indigo-300 bg-white"
+                }`} label={
+                  <>
+                    <div className="text-3xl mb-3">🚚</div>
+                    <div className="font-semibold text-base">Delivery</div>
+                    <div className="text-xs text-gray-500 mt-1">Home delivery</div>
+                  </>
+                } />
+              <CustomButton type="button" onClick={() => setOrderType("dine-in")} variant="transparent" className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${orderType === "dine-in"
+                ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
+                : "border-gray-200 hover:border-indigo-300 bg-white"
+                }`} label={
+                  <>
+                    <div className="text-3xl mb-3">🍽️</div>
+                    <div className="font-semibold text-base">Dine In</div>
+                    <div className="text-xs text-gray-500 mt-1">In restaurant</div>
+                  </>
+                } />
             </div>
           </div>
 
           {/* Delivery Address Info (only for delivery) */}
           {orderType === "delivery" && selectedCustomer && (
-            <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-blue-600"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+            <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl flex items-start gap-4">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <LocationFilledIcon className="size-5 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-base font-bold text-blue-800 mb-3">
+                  Delivery Address
                 </div>
-                <div className="flex-1">
-                  <div className="text-base font-bold text-blue-800 mb-3">
-                    Delivery Address
-                  </div>
-                  <div className="text-blue-700 text-sm leading-relaxed">
-                    {formatAddress(selectedCustomer.address)}
-                  </div>
+                <div className="text-blue-700 text-sm leading-relaxed">
+                  {formatAddress(selectedCustomer.address)}
                 </div>
               </div>
             </div>
@@ -502,29 +364,16 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
 
           {/* Payment Status Info (only for delivery) */}
           {orderType === "delivery" && (
-            <div className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-xl">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-yellow-600"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+            <div className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-xl flex items-start gap-4">
+              <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                <CashIcon className="size-5 text-yellow-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-base font-bold text-yellow-800 mb-3">
+                  Payment Status
                 </div>
-                <div className="flex-1">
-                  <div className="text-base font-bold text-yellow-800 mb-3">
-                    Payment Status
-                  </div>
-                  <div className="text-yellow-700 text-sm leading-relaxed">
-                    Payment will be collected upon delivery (Cash on Delivery)
-                  </div>
+                <div className="text-yellow-700 text-sm leading-relaxed">
+                  Payment will be collected upon delivery (Cash on Delivery)
                 </div>
               </div>
             </div>
@@ -534,17 +383,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-purple-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <DocumentIcon className="text-purple-600 size-5" />
               </div>
               <h3 className="text-xl font-bold text-gray-900">Order Notes</h3>
             </div>
@@ -561,17 +400,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
             <div className="flex items-center space-x-2 mb-6">
               <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-indigo-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <div className="w-3 h-2 bg-indigo-600"></div>
               </div>
               <h3 className="text-xl font-bold text-gray-900">Order Summary</h3>
             </div>
