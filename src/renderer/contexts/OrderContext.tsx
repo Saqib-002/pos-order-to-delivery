@@ -22,6 +22,7 @@ interface OrderContextType {
     }>
   ) => OrderItem | null;
   removeMenuFromOrder: (menuId: string, menuSecondaryId: number) => void;
+  removeMenuItemFromOrder: (menuId: string, menuSecondaryId: number, productId: string, menuPageId: string,) => void;
   processedMenuOrderItems: OrderItem[];
   addToProcessedMenuOrderItems: (item: OrderItem) => void;
   clearProcessedMenuOrderItems: () => void;
@@ -126,6 +127,25 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     );
     setOrderItems(newOrderItems);
   };
+  const removeMenuItemFromOrder = async (
+    menuId: string,
+    menuSecondaryId: number,
+    productId: string,
+    menuPageId: string,
+  ) => {
+    const newOrderItems = orderItems.filter(
+      (item) =>
+        !item.menuId ||
+        !(item.menuId === menuId && item.menuSecondaryId === menuSecondaryId &&item.menuPageId === menuPageId && item.productId === productId)
+    );
+    setOrderItems(newOrderItems);
+    const newProcessedItems = processedMenuOrderItems.filter(
+      (item) =>
+        !item.menuId ||
+        !(item.menuId === menuId && item.menuSecondaryId === menuSecondaryId &&item.menuPageId === menuPageId && item.productId === productId)
+    );
+    setProcessedMenuOrderItems(newProcessedItems);
+  };
   const addToProcessedMenuOrderItems = (newItem: OrderItem) => {
     setProcessedMenuOrderItems((prev) => [...prev, newItem]);
   };
@@ -153,6 +173,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     updateQuantity,
     findExactProductMatch,
     removeMenuFromOrder,
+    removeMenuItemFromOrder,
     clearOrder,
     processedMenuOrderItems,
     addToProcessedMenuOrderItems,

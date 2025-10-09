@@ -46,6 +46,21 @@ export const removeItemFromOrder = async (event: IpcMainInvokeEvent,token:string
         }
     }
 }
+export const removeMenuItemFromOrder = async (event: IpcMainInvokeEvent,token:string, orderId: string,menuId:string,menuSecondaryId:string,productId:string,menuPageId:string) => {
+    try {
+        const result = await OrderDatabaseOperations.removeMenuItemFromOrder(orderId,menuId,menuSecondaryId,productId,menuPageId);
+        return {
+            status:true,
+            data:result
+        }
+    }
+    catch (error) {
+        return {
+            status:false,
+            error:(error as Error).message
+        }
+    }
+}
 export const deleteOrder = async (event: IpcMainInvokeEvent,token:string, id: string) => {
     try {
         const result = await OrderDatabaseOperations.deleteOrder(id);

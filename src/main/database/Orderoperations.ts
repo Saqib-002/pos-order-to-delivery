@@ -87,6 +87,27 @@ export class OrderDatabaseOperations {
             throw error;
         }
     }
+    static async removeMenuItemFromOrder(orderId: string, menuId: string, menuSecondaryId: string, productId: string, menuPageId: string): Promise<any> {
+        try {
+            await db("order_items")
+                .where("orderId", orderId)
+                .andWhere("menuId", menuId)
+                .andWhere("menuSecondaryId", menuSecondaryId)
+                .andWhere("productId", productId)
+                .andWhere("menuPageId", menuPageId)
+                .delete();
+            const totalOrderItems = await db("order_items")
+                .where("orderId", orderId)
+                .count("* as count");
+                console.log(totalOrderItems);
+            if (Number(totalOrderItems[0]?.count) === 0) {
+                await db("orders").where("id", orderId).delete();
+            }
+            return { menuId };
+        } catch (error) {
+            throw error;
+        }
+    }
     static updateMenuQuantity(
         orderId: string,
         menuId: string,

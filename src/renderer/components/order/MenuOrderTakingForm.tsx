@@ -1,4 +1,4 @@
-import { DocumentIcon } from "@/renderer/assets/Svg";
+import { CrossIcon, DocumentIcon } from "@/renderer/assets/Svg";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import { calculateBaseProductPrice, calculateProductTaxAmount } from "@/renderer/utils/utils";
 import { Product } from "@/types/Menu";
@@ -55,7 +55,7 @@ const MenuOrderTakingForm = ({
         Set<string>
     >(new Set());
     const [processedCounts, setProcessedCounts] = useState<Record<string, number>>({});
-    const { order, removeMenuFromOrder, processedMenuOrderItems, getMaxSecondaryId } = useOrder();
+    const { order, removeMenuFromOrder, removeMenuItemFromOrder, processedMenuOrderItems, getMaxSecondaryId } = useOrder();
     const [maxSecondaryId, setMaxSecondaryId] = useState(0);
 
     const fetchMenuPages = async () => {
@@ -238,6 +238,16 @@ const MenuOrderTakingForm = ({
         }
         resetMenuProcessing();
     }
+    const handleRemoveMenuItem = async (menuProduct: MenuPageProduct) => {
+        if (menuProduct.menuPageId !== undefined) {
+            const res = await (window as any).electronAPI.removeMenuItemFromOrder(token, order?.id, menu.id, maxSecondaryId + 1, menuProduct.productId, menuProduct.menuPageId);
+            if (!res.status) {
+                toast.error("Error removing menu item from order");
+                return;
+            }
+            removeMenuItemFromOrder(menu.id, maxSecondaryId + 1, menuProduct.productId, menuProduct.menuPageId);
+        }
+    }
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40">
             <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -312,8 +322,8 @@ const MenuOrderTakingForm = ({
                                                     handleMenuProductSelect(menuProduct);
                                                 }
                                             }}
-                                            className={`border rounded-lg p-4 transition-all ${processedMenuProducts.has(menuProduct.productId)
-                                                ? "border-green-300 bg-green-50 cursor-not-allowed opacity-60"
+                                            className={`touch-manipulation border rounded-lg p-4 transition-all ${processedMenuProducts.has(menuProduct.productId)
+                                                ? "border-green-300 bg-green-50 opacity-60"
                                                 : "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer"
                                                 }`}
                                         >
@@ -332,9 +342,12 @@ const MenuOrderTakingForm = ({
                                                     ? "Additional charge"
                                                     : "Included"}
                                             </div>
-                                            <div className="mt-2 text-sm font-medium">
+                                            <div className="mt-2 text-sm font-medium flex justify-between gap-2">
                                                 {processedMenuProducts.has(menuProduct.productId) ? (
-                                                    <span className="text-green-600">✓ Processed</span>
+                                                    <>
+                                                        <span className="text-green-600">✓ Processed</span>
+                                                        <CrossIcon className="size-6 text-red-500 hover:text-red-600 touch-manipulation cursor-pointer" onClick={() => handleRemoveMenuItem(menuProduct)} />
+                                                    </>
                                                 ) : (
                                                     <span className="text-indigo-600">
                                                         Click to process
