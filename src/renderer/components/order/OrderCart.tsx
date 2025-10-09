@@ -1,10 +1,10 @@
 import { OrderItem } from "@/types/order";
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
-import PrinterIcon from "../../assets/icons/printer.svg?react";
-import TrashIcon from "../../assets/icons/trash.svg?react";
 import { calculateOrderTotal, calculateTaxPercentage } from "@/renderer/utils/orderCalculations";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
+import CustomButton from "../ui/CustomButton";
+import { CrossIcon, DeleteIcon, PrinterIcon } from "@/renderer/assets/Svg";
 
 interface OrderCartProps {
   token: string | null;
@@ -27,8 +27,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
 }) => {
   const [isPrinterDropdownOpen, setIsPrinterDropdownOpen] = useState(false);
   const printerDropdownRef = useRef<HTMLDivElement>(null);
-  const {orderTotal, nonMenuItems, groups}=calculateOrderTotal(orderItems);
-  const confirm=useConfirm();
+  const { orderTotal, nonMenuItems, groups } = calculateOrderTotal(orderItems);
+  const confirm = useConfirm();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -66,7 +66,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     setIsPrinterDropdownOpen(false);
   };
 
-  const handleRemoveItem = async (itemId: string,itemName:string) => {
+  const handleRemoveItem = async (itemId: string, itemName: string) => {
     const ok = await confirm({
       title: "Remove Item",
       message: "Are you sure you want to remove this item from your order?",
@@ -75,7 +75,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       cancelText: "Cancel",
       itemName: itemName,
     });
-    if(!ok){
+    if (!ok) {
       return;
     }
     const res = await (window as any).electronAPI.removeItemFromOrder(
@@ -99,7 +99,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       cancelText: "Cancel",
       itemName: group.menuName,
     });
-    if(!ok){
+    if (!ok) {
       return;
     }
     const res = await (window as any).electronAPI.removeMenuFromOrder(
@@ -138,7 +138,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       confirmText: "Clear Order",
       cancelText: "Cancel",
     });
-    if(!ok){
+    if (!ok) {
       return;
     }
     const res = await (window as any).electronAPI.deleteOrder(token, orderId);
@@ -167,14 +167,12 @@ const OrderCart: React.FC<OrderCartProps> = ({
 
   if (orderItems.length === 0) {
     return (
-      <div className="p-4 h-[calc(100vh-9rem)]">
-        <div className="text-center text-gray-500 py-8">
-          <div className="text-4xl mb-2">🛒</div>
-          <p className="text-lg font-medium">Your Order</p>
-          <p className="text-sm">
-            Select items from the menu to add to your order
-          </p>
-        </div>
+      <div className="text-center text-gray-500 py-8 p-4 h-[calc(100vh-9rem)]">
+        <div className="text-4xl mb-2">🛒</div>
+        <p className="text-lg font-medium">Your Order</p>
+        <p className="text-sm">
+          Select items from the menu to add to your order
+        </p>
       </div>
     );
   }
@@ -186,41 +184,17 @@ const OrderCart: React.FC<OrderCartProps> = ({
         <div className="flex items-center gap-1">
           {/* Printer Dropdown */}
           <div className="relative" ref={printerDropdownRef}>
-            <button
-              onClick={handlePrinterClick}
-              className="p-2 text-gray-600 rounded-lg transition-colors touch-manipulation cursor-pointer"
-              title="Print Options"
-            >
-              <PrinterIcon className="w-5 h-5" />
-            </button>
+            <CustomButton type="button" onClick={handlePrinterClick} title="Print Options" Icon={<PrinterIcon className="size-5" />} className="!px-2" variant="transparent" />
 
             {/* Dropdown Menu */}
             {isPrinterDropdownOpen && (
               <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                <button
-                  onClick={handlePrintCustomer}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg touch-manipulation cursor-pointer"
-                >
-                  Customer
-                </button>
-                <button
-                  onClick={handlePrintKitchen}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 last:rounded-b-lg touch-manipulation cursor-pointer"
-                >
-                  Kitchen
-                </button>
+                <CustomButton type="button" onClick={handlePrintCustomer} label="Customer" className="w-full hover:bg-gray-100 rounded-none" variant="transparent" />
+                <CustomButton type="button" onClick={handlePrintKitchen} label="Kitchen" className="w-full hover:bg-gray-100 rounded-none" variant="transparent" />
               </div>
             )}
           </div>
-
-          {/* Clear Button */}
-          <button
-            onClick={handleClearOrder}
-            className="p-2 text-red-600 rounded-lg transition-colors touch-manipulation cursor-pointer"
-            title="Clear Order"
-          >
-            <TrashIcon className="w-5 h-5" />
-          </button>
+          <CustomButton type="button" onClick={handleClearOrder} title="Save Order" Icon={<DeleteIcon className="size-5" />} className="!px-2 text-red-600 hover:text-red-700" variant="transparent" />
         </div>
       </div>
 
@@ -274,14 +248,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
                   </div>
                 )}
               </div>
-              <button
-                onClick={() =>
-                  handleRemoveItem(item.id || "", item.productName)
-                }
-                className="text-red-500 hover:text-red-700 text-sm ml-2 touch-manipulation cursor-pointer"
-              >
-                ✕
-              </button>
+              <CustomButton type="button" onClick={() =>
+                handleRemoveItem(item.id || "", item.productName)
+              } className="!p-0 text-sm ml-2 text-red-500 hover:text-red-700 touch-manipulation" variant="transparent" label="✕" />
             </div>
 
             <div className="flex items-center justify-between">
@@ -310,7 +279,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 </button>
               </div>
               <span className="font-semibold text-gray-800">
-                €{(item.totalPrice*item.quantity).toFixed(2)}
+                €{(item.totalPrice * item.quantity).toFixed(2)}
               </span>
             </div>
           </div>
@@ -336,30 +305,11 @@ const OrderCart: React.FC<OrderCartProps> = ({
                   <h3 className="font-medium text-gray-800">
                     From {group.menuName} - {group.secondaryId}
                   </h3>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        handleRemoveGroup(
-                          group
-                        )
-                      }
-                      className="bg-red-500 text-white rounded-full p-1 text-sm touch-manipulation cursor-pointer"
-                    >
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                  </div>
+                    <CustomButton type="button" onClick={() =>
+                      handleRemoveGroup(
+                        group
+                      )
+                    } className="!p-1 !rounded-full !text-sm ml-2 bg-red-500 text-white hover:!text-gray-100 hover:bg-red-700 touch-manipulation" variant="transparent" Icon={<CrossIcon className="size-4"/>} />
                 </div>
 
                 {/* Price Breakdown */}
@@ -488,13 +438,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
             €{orderTotal.toFixed(2)}
           </span>
         </div>
-
-        <button
-          onClick={onProcessOrder}
-          className="w-full bg-indigo-500 text-white py-3 rounded-lg font-medium hover:bg-indigo-600 transition-colors"
-        >
-          Process Order
-        </button>
+        <CustomButton label="Process Order" type="button" className="w-full" onClick={onProcessOrder}/>
       </div>
     </div>
   );

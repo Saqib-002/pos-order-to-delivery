@@ -6,7 +6,6 @@ import { Order, OrderItem, Customer } from "@/types/order";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import {
   calculateOrderTotal,
-  calculateTaxPercentage,
 } from "@/renderer/utils/orderCalculations";
 
 interface OrderProcessingModalProps {
@@ -50,9 +49,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     setIsCustomerModalOpen(false);
   }, []);
 
-  const calculateTotal = () => {
-    return calculateOrderTotal(orderItems);
-  };
+  const {orderTotal} = calculateOrderTotal(orderItems);
+
   const formatAddress = (address: string) => {
     if (!address) return "No address provided";
     if (address.includes("|")) {
@@ -154,7 +152,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     } else {
       handlePaymentConfirm({
         paymentType: "pending",
-        totalAmount: calculateTotal(),
+        totalAmount: orderTotal,
       });
     }
   };
@@ -181,7 +179,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       paymentType:
         orderType === "delivery" ? "pending" : paymentData.paymentType,
       status: "sent to kitchen",
-      notes: notes || `Order total: €${calculateTotal().toFixed(2)}`,
+      notes: notes || `Order total: €${orderTotal.toFixed(2)}`,
     };
     onProcessOrder(orderData);
     setIsPaymentModalOpen(false);
@@ -768,7 +766,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     Total:
                   </span>
                   <span className="text-3xl font-bold text-indigo-600 px-6 py-3">
-                    €{calculateTotal().toFixed(2)}
+                    €{orderTotal.toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -817,7 +815,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
         onConfirm={handlePaymentConfirm}
-        totalAmount={calculateTotal()}
+        totalAmount={orderTotal}
         existingPaymentType={order?.paymentType}
       />
     </div>

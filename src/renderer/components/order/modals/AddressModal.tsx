@@ -25,7 +25,7 @@ const AddressModal = ({ setIsOpen,setAddress }: AddressModalProps) => {
                     <button
                         type="button"
                         onClick={() => setIsOpen(false)}
-                        className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                        className="text-gray-500 hover:text-gray-700 text-2xl font-bold cursor-pointer"
                     >
                         &times;
                     </button>

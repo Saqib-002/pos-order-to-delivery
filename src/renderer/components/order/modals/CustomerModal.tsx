@@ -1,6 +1,5 @@
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
-import AddIcon from "../../../assets/icons/add.svg?react";
 import { useEffect, useState } from "react";
 import AddressModal from "./AddressModal";
 import { Tooltip } from "react-tooltip";
@@ -8,6 +7,7 @@ import { toast } from "react-toastify";
 import { debounce } from "lodash";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { Customer } from "@/types/order";
+import { AddIcon } from "@/renderer/assets/Svg";
 
 interface CustomerModalProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -164,7 +164,7 @@ const CustomerModal = ({
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+              className="text-gray-500 hover:text-gray-700 text-2xl font-bold cursor-pointer"
             >
               &times;
             </button>
@@ -262,7 +262,7 @@ const CustomerModal = ({
                 </>
               ) : (
                 <CustomButton
-                  Icon={<AddIcon className="text-lg" />}
+                  Icon={<AddIcon className="size-6" />}
                   onClick={() => setIsAddressModalOpen(true)}
                   type="button"
                   label="Add Address"

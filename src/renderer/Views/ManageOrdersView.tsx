@@ -75,7 +75,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
   // Get unique payment statuses from orders
   const paymentStatuses = useMemo(() => {
     const statuses = orders.map((order) => {
-      const orderTotal = calculateOrderTotal(order.items || []);
+      const {orderTotal} = calculateOrderTotal(order.items || []);
       const paymentStatus = calculatePaymentStatus(
         order.paymentType || "",
         orderTotal
@@ -105,7 +105,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
 
       // Filter by payment status (local filter)
       if (localFilters.selectedStatus.length > 0) {
-        const orderTotal = calculateOrderTotal(order.items || []);
+        const {orderTotal} = calculateOrderTotal(order.items || []);
         const paymentStatus = calculatePaymentStatus(
           order.paymentType || "",
           orderTotal
@@ -134,7 +134,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
 
   const handlePaymentClick = (order: Order) => {
     setSelectedOrderForPayment(order);
-    setPaymentAmount(calculateOrderTotal(order.items || []).toFixed(2));
+    setPaymentAmount(calculateOrderTotal(order.items || []).orderTotal.toFixed(2));
     setSelectedDeliveryPerson(order.deliveryPerson?.id || "");
     setPaymentMethod("cash");
     setIsPaymentModalOpen(true);
@@ -191,7 +191,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
 
   // Render order row
   const renderOrderRow = (order: Order) => {
-    const orderTotal = calculateOrderTotal(order.items || []);
+    const {orderTotal} = calculateOrderTotal(order.items || []);
     const paymentStatus = calculatePaymentStatus(
       order.paymentType || "",
       orderTotal
@@ -239,7 +239,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
           )}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-          €{calculateOrderTotal(order.items || []).toFixed(2)}
+          €{calculateOrderTotal(order.items || []).orderTotal.toFixed(2)}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
           {new Date(order.createdAt || "").toLocaleDateString()}
@@ -531,7 +531,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
                       €
                       {calculateOrderTotal(
                         selectedOrderForPayment.items || []
-                      ).toFixed(2)}
+                      ).orderTotal.toFixed(2)}
                     </span>
                   </div>
                 </div>

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import AddIcon from "../../assets/icons/add.svg?react";
 import CustomerModal from "./modals/CustomerModal";
 import { useOrder } from "@/renderer/contexts/OrderContext";
-import ChevronLeftIcon from "../../assets/icons/chevron-left.svg?react";
 import { FilterType } from "@/types/order";
+import { AddIcon, ChevronLeftIcon } from "@/renderer/assets/Svg";
+import CustomButton from "../ui/CustomButton";
 
 const OrderComponentHeader = ({
   refreshOrdersCallback,
@@ -36,16 +36,7 @@ const OrderComponentHeader = ({
       <div className="flex justify-between items-center px-4 py-2">
         <div className="flex items-center gap-2">
           {orderItems.length > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                refreshOrdersCallback();
-                clearOrder();
-              }}
-              className="text-gray-700 cursor-pointer hover:text-indigo-500 transition-colors duration-300"
-            >
-              <ChevronLeftIcon className="w-6 h-6 stroke-current" />
-            </button>
+            <CustomButton type="button" onClick={() => {clearOrder(); refreshOrdersCallback();}} Icon={<ChevronLeftIcon className="size-6"/>} className="!p-0" variant="transparent"/>
           )}
           <h1>Order</h1>
         </div>
@@ -59,9 +50,7 @@ const OrderComponentHeader = ({
               className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
             />
           </div>
-          <button type="button" onClick={() => setIsCustomerModalOpen(true)}>
-            <AddIcon className="fill-current text-black size-6 cursor-pointer hover:text-indigo-500 transition-colors duration-300" />
-          </button>
+          <CustomButton type="button" onClick={() => setIsCustomerModalOpen(true)} Icon={<AddIcon className="size-6"/>} className="!p-0" variant="transparent"/>
         </div>
       </div>
       {isCustomerModalOpen && (
