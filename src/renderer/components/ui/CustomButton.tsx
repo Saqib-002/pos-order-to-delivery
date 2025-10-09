@@ -6,7 +6,7 @@ interface CustomButtonProps {
     postLabel?: string;
     isLoading?: boolean;
     Icon?: React.ReactElement;
-    variant?: "primary" | "secondary" | "transparent" | "yellow" | "red" | "orange";
+    variant?: "primary" | "secondary" | "transparent" | "yellow" | "red" | "orange" | "green";
     [key: string]: any;
 }
 const CustomButton = ({
@@ -34,6 +34,8 @@ const CustomButton = ({
                 return "bg-red-500 text-white hover:bg-red-600 border-red-600 focus:ring-red-300";
             case "orange":
                 return "bg-orange-500 text-white hover:bg-orange-600 border-orange-600 focus:ring-orange-300";
+            case "green":
+                return "bg-green-500 text-white hover:bg-green-600 border-green-600 focus:ring-green-300";
             default:
                 return "bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-900";
         }
@@ -42,7 +44,7 @@ const CustomButton = ({
         <button
             type={type}
             onClick={onClick}
-            className={`flex justify-center items-center gap-2 px-4 py-2 cursor-pointer font-medium border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-all duration-300 ${getVariant()} ${className}`}
+            className={`flex justify-center items-center gap-2 px-4 py-2 cursor-pointer font-medium border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-all duration-300 disabled:opacity-50 ${getVariant()} ${className}`}
             {...rest}
         >
             {isLoading ? (

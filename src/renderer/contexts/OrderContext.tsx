@@ -1,6 +1,5 @@
 import { Order, OrderItem } from "@/types/order";
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { calculateOrderTotal } from "../utils/orderCalculations";
 
 interface OrderContextType {
   orderItems: OrderItem[];
@@ -24,7 +23,6 @@ interface OrderContextType {
     }>
   ) => OrderItem | null;
   removeMenuFromOrder: (menuId: string, menuSecondaryId: number) => void;
-  getOrderTotal: () => number;
   processedMenuOrderItems: OrderItem[];
   addToProcessedMenuOrderItems: (item: OrderItem) => void;
   clearProcessedMenuOrderItems: () => void;
@@ -67,18 +65,6 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
           ? {
               ...item,
               quantity,
-              totalPrice:
-                Math.round(
-                  (item.productPrice +
-                    item.productTax +
-                    item.variantPrice +
-                    item.complements.reduce(
-                      (sum, comp) => sum + comp.price,
-                      0
-                    )) *
-                    quantity *
-                    100
-                ) / 100,
             }
           : item
       )
@@ -87,10 +73,6 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 
   const clearOrder = () => {
     setOrderItems([]);
-  };
-
-  const getOrderTotal = () => {
-    return calculateOrderTotal(orderItems);
   };
   const isProductExists = (productId: string): boolean => {
     return !!orderItems.find(
@@ -179,7 +161,6 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     findExactProductMatch,
     removeMenuFromOrder,
     clearOrder,
-    getOrderTotal,
     processedMenuOrderItems,
     addToProcessedMenuOrderItems,
     clearProcessedMenuOrderItems,

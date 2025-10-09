@@ -81,9 +81,9 @@ const OrderComponent = ({
           {orders.length > 0 ? (
             <div className="py-2 text-center text-gray-700 h-[calc(100vh-9rem)] overflow-y-auto">
               {orders.map((order) => {
-                const orderTotal = order.items
+                const {orderTotal} = order.items
                   ? calculateOrderTotal(order.items)
-                  : 0;
+                  : {orderTotal:0};
                 const paymentStatus = calculatePaymentStatus(
                   order.paymentType || "",
                   orderTotal

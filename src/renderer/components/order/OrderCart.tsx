@@ -1,10 +1,10 @@
 import { OrderItem } from "@/types/order";
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
-import ConfirmationModal from "../ui/ConfirmationModal";
 import PrinterIcon from "../../assets/icons/printer.svg?react";
 import TrashIcon from "../../assets/icons/trash.svg?react";
-import { calculateTaxPercentage } from "@/renderer/utils/orderCalculations";
+import { calculateOrderTotal, calculateTaxPercentage } from "@/renderer/utils/orderCalculations";
+import { useConfirm } from "@/renderer/hooks/useConfirm";
 
 interface OrderCartProps {
   token: string | null;
@@ -25,18 +25,10 @@ const OrderCart: React.FC<OrderCartProps> = ({
   onClearOrder,
   onProcessOrder,
 }) => {
-  const [confirmationModal, setConfirmationModal] = useState<{
-    isOpen: boolean;
-    type: "item" | "clear";
-    itemId?: string;
-    itemName?: string;
-  }>({
-    isOpen: false,
-    type: "item",
-  });
   const [isPrinterDropdownOpen, setIsPrinterDropdownOpen] = useState(false);
   const printerDropdownRef = useRef<HTMLDivElement>(null);
-  const nonMenuItems = orderItems.filter((item) => !item.menuId);
+  const {orderTotal, nonMenuItems, groups}=calculateOrderTotal(orderItems);
+  const confirm=useConfirm();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -58,37 +50,6 @@ const OrderCart: React.FC<OrderCartProps> = ({
     };
   }, [isPrinterDropdownOpen]);
 
-  const handleRemoveItemClick = (itemId: string, itemName: string) => {
-    setConfirmationModal({
-      isOpen: true,
-      type: "item",
-      itemId,
-      itemName,
-    });
-  };
-
-  const handleClearOrderClick = () => {
-    setConfirmationModal({
-      isOpen: true,
-      type: "clear",
-    });
-  };
-
-  const handleConfirmDelete = async () => {
-    if (confirmationModal.type === "item" && confirmationModal.itemId) {
-      await handleRemoveItem(confirmationModal.itemId);
-      toast.success("Item removed from order");
-    } else if (confirmationModal.type === "clear") {
-      await handleClearOrder();
-      toast.success("Order cleared");
-    }
-    setConfirmationModal({ isOpen: false, type: "item" });
-  };
-
-  const handleCancelDelete = () => {
-    setConfirmationModal({ isOpen: false, type: "item" });
-  };
-
   const handlePrinterClick = () => {
     setIsPrinterDropdownOpen(!isPrinterDropdownOpen);
   };
@@ -105,64 +66,18 @@ const OrderCart: React.FC<OrderCartProps> = ({
     setIsPrinterDropdownOpen(false);
   };
 
-  const menuGroups = orderItems
-    .filter((item) => item.menuId)
-    .reduce(
-      (
-        acc: Record<
-          string,
-          {
-            key: string;
-            menuId: string;
-            menuName: string;
-            secondaryId: number;
-            basePrice: number;
-            taxPerUnit: number;
-            supplementTotal: number;
-            items: OrderItem[];
-          }
-        >,
-        item
-      ) => {
-        const key = `${item.menuId}-${item.menuSecondaryId}`;
-        const menuPrice = item.menuPrice ?? 0;
-        const menuTax = item.menuTax ?? 0;
-        const supplement = item.supplement ?? 0;
-
-        if (!acc[key]) {
-          acc[key] = {
-            key,
-            menuId: item.menuId!,
-            menuName: item.menuName!,
-            secondaryId: item.menuSecondaryId! as number,
-            basePrice: menuPrice,
-            taxPerUnit: menuTax,
-            supplementTotal: supplement,
-            items: [],
-          };
-        } else {
-          acc[key].supplementTotal += supplement;
-        }
-        acc[key].items.push(item);
-        return acc;
-      },
-      {}
-    );
-
-  const groups = Object.values(menuGroups);
-
-  const calculateTotal = () => {
-    let total = nonMenuItems.reduce((sum, item) => sum + item.totalPrice, 0);
-    groups.forEach((group) => {
-      const qty = group.items[0]?.quantity || 1;
-      const menuTotal =
-        (group.basePrice + group.taxPerUnit + group.supplementTotal) * qty;
-      total += menuTotal;
+  const handleRemoveItem = async (itemId: string,itemName:string) => {
+    const ok = await confirm({
+      title: "Remove Item",
+      message: "Are you sure you want to remove this item from your order?",
+      type: "danger",
+      confirmText: "Remove Item",
+      cancelText: "Cancel",
+      itemName: itemName,
     });
-    return total;
-  };
-
-  const handleRemoveItem = async (itemId: string | undefined) => {
+    if(!ok){
+      return;
+    }
     const res = await (window as any).electronAPI.removeItemFromOrder(
       token,
       orderId,
@@ -176,6 +91,17 @@ const OrderCart: React.FC<OrderCartProps> = ({
   };
 
   const handleRemoveGroup = async (group: any) => {
+    const ok = await confirm({
+      title: "Remove Menu",
+      message: "Are you sure you want to remove this menu from your order?",
+      type: "danger",
+      confirmText: "Clear Order",
+      cancelText: "Cancel",
+      itemName: group.menuName,
+    });
+    if(!ok){
+      return;
+    }
     const res = await (window as any).electronAPI.removeMenuFromOrder(
       token,
       orderId,
@@ -205,6 +131,16 @@ const OrderCart: React.FC<OrderCartProps> = ({
   };
 
   const handleClearOrder = async () => {
+    const ok = await confirm({
+      title: "Clear Order",
+      message: "Are you sure you want to clear the entire order? This action cannot be undone.",
+      type: "danger",
+      confirmText: "Clear Order",
+      cancelText: "Cancel",
+    });
+    if(!ok){
+      return;
+    }
     const res = await (window as any).electronAPI.deleteOrder(token, orderId);
     if (!res.status) {
       toast.error(`Error clearing order`);
@@ -279,7 +215,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
 
           {/* Clear Button */}
           <button
-            onClick={handleClearOrderClick}
+            onClick={handleClearOrder}
             className="p-2 text-red-600 rounded-lg transition-colors touch-manipulation cursor-pointer"
             title="Clear Order"
           >
@@ -340,7 +276,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
               </div>
               <button
                 onClick={() =>
-                  handleRemoveItemClick(item.id || "", item.productName)
+                  handleRemoveItem(item.id || "", item.productName)
                 }
                 className="text-red-500 hover:text-red-700 text-sm ml-2 touch-manipulation cursor-pointer"
               >
@@ -374,7 +310,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 </button>
               </div>
               <span className="font-semibold text-gray-800">
-                €{item.totalPrice.toFixed(2)}
+                €{(item.totalPrice*item.quantity).toFixed(2)}
               </span>
             </div>
           </div>
@@ -403,9 +339,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() =>
-                        handleRemoveItemClick(
-                          group.key,
-                          `Menu: ${group.menuName}`
+                        handleRemoveGroup(
+                          group
                         )
                       }
                       className="bg-red-500 text-white rounded-full p-1 text-sm touch-manipulation cursor-pointer"
@@ -550,7 +485,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
         <div className="flex justify-between text-lg font-semibold mb-4">
           <span>Total:</span>
           <span className="text-indigo-600">
-            €{calculateTotal().toFixed(2)}
+            €{orderTotal.toFixed(2)}
           </span>
         </div>
 
@@ -561,27 +496,6 @@ const OrderCart: React.FC<OrderCartProps> = ({
           Process Order
         </button>
       </div>
-
-      {/* Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={confirmationModal.isOpen}
-        onClose={handleCancelDelete}
-        onConfirm={handleConfirmDelete}
-        title={
-          confirmationModal.type === "clear" ? "Clear Order" : "Remove Item"
-        }
-        message={
-          confirmationModal.type === "clear"
-            ? "Are you sure you want to clear the entire order? This action cannot be undone."
-            : "Are you sure you want to remove this item from your order?"
-        }
-        confirmText={
-          confirmationModal.type === "clear" ? "Clear Order" : "Remove Item"
-        }
-        cancelText="Cancel"
-        type="danger"
-        itemName={confirmationModal.itemName}
-      />
     </div>
   );
 };
