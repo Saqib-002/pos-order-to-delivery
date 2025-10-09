@@ -1,8 +1,10 @@
+import { DocumentIcon } from "@/renderer/assets/Svg";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import { calculateBaseProductPrice, calculateProductTaxAmount } from "@/renderer/utils/utils";
 import { Product } from "@/types/Menu";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import CustomButton from "../ui/CustomButton";
 
 interface MenuPageProduct {
     id: string;
@@ -53,8 +55,8 @@ const MenuOrderTakingForm = ({
         Set<string>
     >(new Set());
     const [processedCounts, setProcessedCounts] = useState<Record<string, number>>({});
-    const { order, removeMenuFromOrder,processedMenuOrderItems,getMaxSecondaryId } = useOrder();
-    const [maxSecondaryId,setMaxSecondaryId]=useState(0);
+    const { order, removeMenuFromOrder, processedMenuOrderItems, getMaxSecondaryId } = useOrder();
+    const [maxSecondaryId, setMaxSecondaryId] = useState(0);
 
     const fetchMenuPages = async () => {
         if (!token || !menu) {
@@ -214,7 +216,7 @@ const MenuOrderTakingForm = ({
             menuPageId: currentMenuPage.id,
             menuPageName: currentMenuPage.name,
             supplement: product.supplement,
-            menuSecondaryId:maxSecondaryId + 1,
+            menuSecondaryId: maxSecondaryId + 1,
         })
         setMode("menu")
     }
@@ -227,12 +229,12 @@ const MenuOrderTakingForm = ({
     };
     const handleCancel = async () => {
         if (totalProcessed !== 0) {
-            const res = await (window as any).electronAPI.removeMenuFromOrder(token, order?.id, menu.id,maxSecondaryId+1);
+            const res = await (window as any).electronAPI.removeMenuFromOrder(token, order?.id, menu.id, maxSecondaryId + 1);
             if (!res.status) {
                 toast.error("Error removing menu from order");
                 return;
             }
-            removeMenuFromOrder(menu.id,maxSecondaryId+1);
+            removeMenuFromOrder(menu.id, maxSecondaryId + 1);
         }
         resetMenuProcessing();
     }
@@ -253,7 +255,7 @@ const MenuOrderTakingForm = ({
                     <button
                         type="button"
                         onClick={() => handleCancel()}
-                        className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                        className="text-gray-500 hover:text-gray-700 text-2xl font-bold cursor-pointer"
                     >
                         &times;
                     </button>
@@ -262,19 +264,7 @@ const MenuOrderTakingForm = ({
                     {menuPages.length === 0 ? (
                         <div className="text-center py-8">
                             <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg
-                                    className="w-6 h-6 text-gray-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                    />
-                                </svg>
+                                <DocumentIcon className="size-6 text-gray-400" />
                             </div>
                             <h3 className="text-lg font-medium text-gray-900 mb-2">
                                 No Menu Pages
@@ -362,39 +352,27 @@ const MenuOrderTakingForm = ({
                                 </div>
                                 <div className="flex gap-3">
                                     {allPagesComplete ? (
-                                        <button
+                                        <CustomButton
                                             onClick={() => { resetMenuProcessing(); setProcessedMenuProducts(new Set()); }}
-                                            className="px-6 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600"
-                                        >
-                                            Complete Menu ({totalProcessed} products)
-                                        </button>
+                                            type="button" variant="green" label={`Complete Menu (${totalProcessed} products)`} />
                                     ) : (
-                                        <button
-                                            onClick={() => handleCancel()}
-                                            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                                        >
-                                            Cancel
-                                        </button>
+                                        <CustomButton
+                                            onClick={() => { handleCancel() }}
+                                            type="button" variant="secondary" label="Cancel" />
                                     )}
                                     {currentMenuPageIndex > 0 && (
-                                        <button
+                                        <CustomButton
                                             onClick={() => {
                                                 setCurrentMenuPageIndex((prev) => prev - 1);
                                             }}
-                                            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                                        >
-                                            Previous Page
-                                        </button>
+                                            type="button" label="Previous Page" className="font-medium" />
                                     )}
                                     {!isLastPage && (
-                                        <button
+                                        <CustomButton
                                             onClick={() => {
                                                 setCurrentMenuPageIndex((prev) => prev + 1);
                                             }}
-                                            className="px-6 py-2 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600"
-                                        >
-                                            Next Page
-                                        </button>
+                                            type="button" label="Next Page" className="font-medium" />
                                     )}
                                 </div>
                             </div>

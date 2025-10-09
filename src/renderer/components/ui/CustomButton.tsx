@@ -5,7 +5,7 @@ interface CustomButtonProps {
     postLabel?: string;
     isLoading?: boolean;
     Icon?: React.ReactElement;
-    variant?: "primary" | "secondary" | "transparent" | "yellow" | "red" | "orange" | "green";
+    variant?: "primary" | "secondary" | "transparent" | "yellow" | "red" | "orange" | "green" | "gradient";
     [key: string]: any;
 }
 const CustomButton = ({
@@ -24,6 +24,8 @@ const CustomButton = ({
                 return "bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-900";
             case "secondary":
                 return "bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-300";
+            case "gradient":
+                return "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700";
             case "transparent":
                 return "border-0 focus:ring-0 focus:ring-transparent text-gray-700 hover:text-indigo-500";
             case "yellow":
