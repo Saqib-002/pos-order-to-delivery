@@ -39,7 +39,6 @@ const Printers = () => {
         setCurrentPrinter(printer);
         setShowPrinterModal(true);
     };
-
     const handleDelete = async (id: string,printerName:string) => {
         const ok=await confirm({
             title:'Delete Printer',

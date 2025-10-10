@@ -99,3 +99,24 @@ export const getAllPrinters = async (
         };
     }
 };
+export const getProductPrinters = async (
+    event: IpcMainInvokeEvent,
+    token: string,
+    productId: string
+) => {
+    try {
+        await verifyToken(event, token);
+        const result = await PrinterDatabaseOperations.getProductPrinters(
+            productId
+        );
+        return {
+            status: true,
+            data: result,
+        };
+    } catch (error) {
+        return {
+            status: false,
+            error: (error as Error).message,
+        };
+    }
+};

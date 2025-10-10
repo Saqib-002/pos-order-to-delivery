@@ -49,4 +49,12 @@ export class PrinterDatabaseOperations {
             throw error;
         }
     }
+    static async getProductPrinters(productId:string){
+        try {
+            const printers = await db("printers_products").where("productId", productId);
+            return printers;
+        } catch (error) {
+            throw error;
+        }
+    }
 }

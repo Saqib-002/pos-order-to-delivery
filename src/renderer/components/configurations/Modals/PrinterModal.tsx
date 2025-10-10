@@ -64,7 +64,7 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
             }
             if (!res.status) {
                 if (res.error?.includes("already exists")) {
-                    toast.warn("Printer with this display name already exists");
+                    toast.warn("This printer already added!");
                     return;
                 }
                 const errorMsg = mode === 'add' ? "Unable to add printer" : "Unable to update printer";

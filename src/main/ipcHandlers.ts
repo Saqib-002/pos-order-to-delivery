@@ -67,7 +67,7 @@ import {
 import { createMenuPage, deleteMenuPage, getMenuPageProducts, getMenuPages, updateMenuPage } from "./handlers/menuPages.js";
 import {  createMenu, deleteMenu, getMenuById, getMenuPageAssociations, getMenus, getMenusBySubcategory, updateMenu } from "./handlers/menus.js";
 import { createCustomer, getCustomersByPhone, updateCustomer } from "./handlers/customers.js";
-import { createPrinter, deletePrinter, getAllPrinters, getConnectedPrinters, updatePrinter } from "./handlers/printers.js";
+import { createPrinter, deletePrinter, getAllPrinters, getConnectedPrinters, getProductPrinters, updatePrinter } from "./handlers/printers.js";
 
 export function registerIpcHandlers() {
   // categories handlers
@@ -161,5 +161,6 @@ export function registerIpcHandlers() {
   ipcMain.handle("update-printer", updatePrinter);
   ipcMain.handle("delete-printer", deletePrinter);
   ipcMain.handle("get-all-printers", getAllPrinters);
+  ipcMain.handle("get-product-printers", getProductPrinters);
 
 }
