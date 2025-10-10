@@ -1,14 +1,15 @@
 import { OrderItem } from "@/types/order";
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import { toast } from "react-toastify";
 import { calculateOrderTotal, calculateTaxPercentage } from "@/renderer/utils/orderCalculations";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import CustomButton from "../ui/CustomButton";
 import { CrossIcon, DeleteIcon, EditIcon, PrinterIcon } from "@/renderer/assets/Svg";
 import { useOrder } from "@/renderer/contexts/OrderContext";
+import { generateReceiptHTML, groupItemsByPrinter } from "@/renderer/utils/printer";
+import { useAuth } from "@/renderer/contexts/AuthContext";
 
 interface OrderCartProps {
-  token: string | null;
   orderId: string;
   orderItems: OrderItem[];
   onRemoveItem: (itemId: string | undefined) => void;
@@ -18,7 +19,6 @@ interface OrderCartProps {
 }
 
 const OrderCart: React.FC<OrderCartProps> = ({
-  token,
   orderId,
   orderItems,
   onRemoveItem,
@@ -26,47 +26,29 @@ const OrderCart: React.FC<OrderCartProps> = ({
   onClearOrder,
   onProcessOrder
 }) => {
-  const [isPrinterDropdownOpen, setIsPrinterDropdownOpen] = useState(false);
-  const printerDropdownRef = useRef<HTMLDivElement>(null);
   const { orderTotal, nonMenuItems, groups } = calculateOrderTotal(orderItems);
-  const { setSelectedMenu, setSelectedProduct, setEditingGroup, setEditingProduct, setMode } = useOrder();
+  const { setSelectedMenu, setSelectedProduct, setEditingGroup, setEditingProduct,order, setMode } = useOrder();
   const confirm = useConfirm();
+  const {auth:{user,token}}=useAuth();
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        printerDropdownRef.current &&
-        !printerDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsPrinterDropdownOpen(false);
-      }
-    };
-
-    if (isPrinterDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isPrinterDropdownOpen]);
-
-  const handlePrinterClick = () => {
-    setIsPrinterDropdownOpen(!isPrinterDropdownOpen);
-  };
-
-  const handlePrintCustomer = () => {
-    // TODO: Implement customer print functionality
+  const handlePrint = async () => {
     toast.info("Printing customer receipt...");
-    setIsPrinterDropdownOpen(false);
+    const printerGroups = groupItemsByPrinter(orderItems);
+    for (const [printerName, items] of Object.entries(printerGroups)) {
+      const receiptHTML = generateReceiptHTML(items, order!.orderId,user!.role);
+      const res = await (window as any).electronAPI.printToPrinter(token, printerName, { html: receiptHTML });
+      if (!res.status) {
+        if (res.error === "Printer not found") {
+          toast.error(`Printer "${printerName}" not found`);
+        } else {
+          toast.error("Error printing receipt");
+        }
+        return;
+      }
+    }
+    toast.success("Receipt printed successfully");
   };
 
-  const handlePrintKitchen = () => {
-    // TODO: Implement kitchen print functionality
-    toast.info("Printing kitchen order...");
-    setIsPrinterDropdownOpen(false);
-  };
 
   const handleRemoveItem = async (itemId: string, itemName: string) => {
     const ok = await confirm({
@@ -203,18 +185,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       <div className="flex justify-between items-center p-4 pb-2">
         <h2 className="text-lg font-semibold text-gray-800">Your Order</h2>
         <div className="flex items-center gap-1">
-          {/* Printer Dropdown */}
-          <div className="relative" ref={printerDropdownRef}>
-            <CustomButton type="button" onClick={handlePrinterClick} title="Print Options" Icon={<PrinterIcon className="size-5" />} className="!px-2" variant="transparent" />
-
-            {/* Dropdown Menu */}
-            {isPrinterDropdownOpen && (
-              <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                <CustomButton type="button" onClick={handlePrintCustomer} label="Customer" className="w-full hover:bg-gray-100 rounded-none" variant="transparent" />
-                <CustomButton type="button" onClick={handlePrintKitchen} label="Kitchen" className="w-full hover:bg-gray-100 rounded-none" variant="transparent" />
-              </div>
-            )}
-          </div>
+            <CustomButton type="button" onClick={handlePrint} title="Print Options" Icon={<PrinterIcon className="size-5" />} className="!px-2" variant="transparent" />
           <CustomButton type="button" onClick={handleClearOrder} title="Save Order" Icon={<DeleteIcon className="size-5" />} className="!px-2 text-red-600 hover:text-red-700" variant="transparent" />
         </div>
       </div>

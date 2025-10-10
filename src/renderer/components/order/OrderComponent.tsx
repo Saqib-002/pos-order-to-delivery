@@ -68,7 +68,6 @@ const OrderComponent = ({
     <>
       {orderItems.length > 0 ? (
         <OrderCart
-          token={token}
           orderId={order!.id}
           orderItems={orderItems}
           onRemoveItem={removeFromOrder}

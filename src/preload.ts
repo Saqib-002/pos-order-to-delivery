@@ -304,6 +304,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.invoke("get-all-printers", token),
     getProductPrinters: (token: string, productId: string) =>
         ipcRenderer.invoke("get-product-printers", token, productId),
+    printToPrinter: (token: string, printerName: string, printData: { html: string; options?: any }) =>
+    ipcRenderer.invoke("print-to-printer", token, printerName, printData),
 
     // Order change notifications
     onOrderChange: (callback: (change: any) => void) => {
