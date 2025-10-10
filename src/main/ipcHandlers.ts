@@ -64,7 +64,7 @@ import {
   updateProduct,
 } from "./handlers/products.js";
 import { createMenuPage, deleteMenuPage, getMenuPageProducts, getMenuPages, updateMenuPage } from "./handlers/menuPages.js";
-import {  createMenu, deleteMenu, getMenuPageAssociations, getMenus, getMenusBySubcategory, updateMenu } from "./handlers/menus.js";
+import {  createMenu, deleteMenu, getMenuById, getMenuPageAssociations, getMenus, getMenusBySubcategory, updateMenu } from "./handlers/menus.js";
 import { createCustomer, getCustomersByPhone, updateCustomer } from "./handlers/customers.js";
 
 export function registerIpcHandlers() {
@@ -117,6 +117,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("create-menu", createMenu);
   ipcMain.handle("get-menus", getMenus);
   ipcMain.handle("get-menus-by-subcategory", getMenusBySubcategory);
+  ipcMain.handle("get-menu-by-id", getMenuById);
   ipcMain.handle("update-menu", updateMenu);
   ipcMain.handle("delete-menu", deleteMenu);
   ipcMain.handle("get-menu-page-associations", getMenuPageAssociations);

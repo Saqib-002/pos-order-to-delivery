@@ -191,6 +191,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getMenus: (token: string) => ipcRenderer.invoke("get-menus", token),
   getMenusBySubcategory: (token: string, subcategoryId: string) =>
     ipcRenderer.invoke("get-menus-by-subcategory", token, subcategoryId),
+  getMenuById: (token: string, id: string) =>
+    ipcRenderer.invoke("get-menu-by-id", token, id),
   createMenu: (token: string, menuData: any, MenuPageAssociations: any) =>
     ipcRenderer.invoke("create-menu", token, menuData, MenuPageAssociations),
   updateMenu: (token: string, id: string, updates: any, MenuPageAssociations: any) =>

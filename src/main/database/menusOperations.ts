@@ -59,6 +59,16 @@ export class MenusOperations {
       throw error;
     }
   }
+  static async getMenuById(id: string): Promise<Menu> {
+    try {
+      const menu = await db("menus")
+        .where("id", id)
+        .first();
+      return menu;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   static async updateMenu(
     id: string,

@@ -4,7 +4,8 @@ import { toast } from "react-toastify";
 import { calculateOrderTotal, calculateTaxPercentage } from "@/renderer/utils/orderCalculations";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import CustomButton from "../ui/CustomButton";
-import { CrossIcon, DeleteIcon, PrinterIcon } from "@/renderer/assets/Svg";
+import { CrossIcon, DeleteIcon, EditIcon, PrinterIcon } from "@/renderer/assets/Svg";
+import { useOrder } from "@/renderer/contexts/OrderContext";
 
 interface OrderCartProps {
   token: string | null;
@@ -23,11 +24,12 @@ const OrderCart: React.FC<OrderCartProps> = ({
   onRemoveItem,
   onUpdateQuantity,
   onClearOrder,
-  onProcessOrder,
+  onProcessOrder
 }) => {
   const [isPrinterDropdownOpen, setIsPrinterDropdownOpen] = useState(false);
   const printerDropdownRef = useRef<HTMLDivElement>(null);
   const { orderTotal, nonMenuItems, groups } = calculateOrderTotal(orderItems);
+  const { setSelectedMenu, setSelectedProduct, setEditingGroup,setEditingProduct } = useOrder();
   const confirm = useConfirm();
 
   // Close dropdown when clicking outside
@@ -89,7 +91,10 @@ const OrderCart: React.FC<OrderCartProps> = ({
     }
     onRemoveItem(itemId);
   };
-
+  const handleEditItem = async (item: any) => {
+    setEditingProduct(item);
+    console.log(item);
+  }
   const handleRemoveGroup = async (group: any) => {
     const ok = await confirm({
       title: "Remove Menu",
@@ -114,7 +119,16 @@ const OrderCart: React.FC<OrderCartProps> = ({
     }
     group.items.forEach((item: any) => onRemoveItem(item.id));
   };
-
+  const handleEditGroup = async (group: any) => {
+    const res = await (window as any).electronAPI.getMenuById(token, group.menuId);
+    if (!res.status) {
+      toast.error(`Error getting menu`);
+      return;
+    }
+    setEditingGroup(group);
+    setSelectedMenu(res.data);
+    setSelectedProduct(null);
+  }
   const handleUpdateGroupQuantity = async (group: any, quantity: number) => {
     const res = await (window as any).electronAPI.updateMenuQuantity(
       token,
@@ -248,9 +262,14 @@ const OrderCart: React.FC<OrderCartProps> = ({
                   </div>
                 )}
               </div>
-              <CustomButton type="button" onClick={() =>
-                handleRemoveItem(item.id || "", item.productName)
-              } className="!p-0 text-sm ml-2 text-red-500 hover:text-red-700 touch-manipulation" variant="transparent" label="✕" />
+              <div className="ml-2 flex gap-2">
+                <CustomButton type="button" onClick={() =>
+                  handleEditItem(item)
+                } variant="transparent" Icon={<EditIcon className="size-4" />} className="!p-0" />
+                <CustomButton type="button" onClick={() =>
+                  handleRemoveItem(item.id || "", item.productName)
+                } className="!p-0 text-sm text-red-500 hover:text-red-700" variant="transparent" label="✕" />
+              </div>
             </div>
 
             <div className="flex items-center justify-between">
@@ -300,16 +319,22 @@ const OrderCart: React.FC<OrderCartProps> = ({
               className="bg-white border border-gray-200 rounded-lg mb-3"
             >
               <div className="p-3 bg-gray-50 rounded-t-lg">
-                {/* Header: Title and Total Price with Cross Icon */}
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="font-medium text-gray-800">
                     From {group.menuName} - {group.secondaryId}
                   </h3>
+                  <div className="flex gap-2">
+                    <CustomButton type="button" onClick={() =>
+                      handleEditGroup(
+                        group
+                      )
+                    } variant="transparent" Icon={<EditIcon className="size-4" />} className="!p-0" />
                     <CustomButton type="button" onClick={() =>
                       handleRemoveGroup(
                         group
                       )
-                    } className="!p-1 !rounded-full !text-sm ml-2 bg-red-500 text-white hover:!text-gray-100 hover:bg-red-700 touch-manipulation" variant="transparent" Icon={<CrossIcon className="size-4"/>} />
+                    } className="!p-1 !rounded-full !text-sm ml-2 bg-red-500 text-white hover:!text-gray-100 hover:bg-red-700" variant="transparent" Icon={<CrossIcon className="size-4" />} />
+                  </div>
                 </div>
 
                 {/* Price Breakdown */}
@@ -438,7 +463,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
             €{orderTotal.toFixed(2)}
           </span>
         </div>
-        <CustomButton label="Process Order" type="button" className="w-full" onClick={onProcessOrder}/>
+        <CustomButton label="Process Order" type="button" className="w-full" onClick={onProcessOrder} />
       </div>
     </div>
   );

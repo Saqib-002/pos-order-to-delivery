@@ -5,7 +5,7 @@ import {
   fetchMenusBySubcategory,
 } from "@/renderer/utils/menu";
 import { Category, SubCategory } from "@/types/categories";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Product } from "@/types/Menu";
 import OrderTakingForm from "./OrderTakingForm";
 import CategorySelection from "./CategorySelection";
@@ -15,7 +15,6 @@ import BreadcrumbNavigation from "./BreadcrumbNavigation";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import MenuOrderTakingForm from "./MenuOrderTakingForm";
 import { useOrder } from "@/renderer/contexts/OrderContext";
-import { toast } from "react-toastify";
 import { UnifiedCard } from "@/renderer/components/ui/UnifiedCard";
 import { DocumentIcon } from "@/renderer/assets/Svg";
 
@@ -24,15 +23,12 @@ const OrderMenu = () => {
   const [subCategories, setSubCategories] = useState<SubCategory[] | null>(
     null
   );
-  const { clearProcessedMenuOrderItems } = useOrder();
+  const { clearProcessedMenuOrderItems, setSelectedProduct, selectedProduct, selectedMenu, setSelectedMenu, setMode,setEditingGroup } = useOrder();
   const {
     auth: { token },
   } = useAuth();
   const [products, setProducts] = useState<Product[] | null>(null);
   const [menus, setMenus] = useState<any[] | null>(null);
-  const [mode, setMode] = useState<"menu" | "product">("menu");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedMenu, setSelectedMenu] = useState<any | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null
   );
@@ -98,6 +94,8 @@ const OrderMenu = () => {
     setSelectedProduct(product);
   };
   const handleMenuSelect = (menu: any) => {
+    setMode("menu");
+    setEditingGroup(null);
     clearProcessedMenuOrderItems();
     setSelectedMenu(menu);
   };
@@ -105,21 +103,13 @@ const OrderMenu = () => {
     <>
       {selectedProduct && (
         <OrderTakingForm
-          mode={mode}
           token={token}
-          product={selectedProduct}
-          setProduct={setSelectedProduct}
           currentOrderItem={currentOrderItem}
         />
       )}
       {selectedMenu && (
         <MenuOrderTakingForm
           token={token}
-          product={selectedProduct}
-          setProduct={setSelectedProduct}
-          menu={selectedMenu}
-          setMode={setMode}
-          setMenu={setSelectedMenu}
           setCurrentOrderItem={setCurrentOrderItem}
         />
       )}
@@ -151,7 +141,7 @@ const OrderMenu = () => {
           <div className="space-y-6">
             {/* Items Section */}
             {(products && products.length > 0) ||
-            (menus && menus.length > 0) ? (
+              (menus && menus.length > 0) ? (
               <div>
                 {/* Products */}
                 {products && products.length > 0 && (
@@ -173,44 +163,44 @@ const OrderMenu = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                       {isLoadingMenus
                         ? [...Array(4)].map((_, index) => (
-                            <div
-                              key={index}
-                              className="transform transition-all duration-200"
-                            >
-                              <div className="bg-gray-500 text-white border-gray-500 rounded-lg p-3 border-2 animate-pulse">
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="h-5 bg-gray-300 rounded w-3/4"></div>
-                                  <div className="h-4 bg-gray-300 rounded w-8"></div>
-                                </div>
-                                <div className="h-3 bg-gray-300 rounded w-full mb-2"></div>
-                                <div className="flex items-center justify-between">
-                                  <div className="h-4 bg-gray-300 rounded w-16"></div>
-                                  <div className="h-5 bg-gray-300 rounded w-12"></div>
-                                </div>
+                          <div
+                            key={index}
+                            className="transform transition-all duration-200"
+                          >
+                            <div className="bg-gray-500 text-white border-gray-500 rounded-lg p-3 border-2 animate-pulse">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="h-5 bg-gray-300 rounded w-3/4"></div>
+                                <div className="h-4 bg-gray-300 rounded w-8"></div>
+                              </div>
+                              <div className="h-3 bg-gray-300 rounded w-full mb-2"></div>
+                              <div className="flex items-center justify-between">
+                                <div className="h-4 bg-gray-300 rounded w-16"></div>
+                                <div className="h-5 bg-gray-300 rounded w-12"></div>
                               </div>
                             </div>
-                          ))
+                          </div>
+                        ))
                         : menus.map((menu) => (
-                            <div
-                              key={menu.id}
-                              className="transform transition-all duration-200"
-                            >
-                              <UnifiedCard
-                                data={{
-                                  id: menu.id,
-                                  name: menu.name,
-                                  description: menu.description,
-                                  price: menu.price,
-                                  color: menu.color || "indigo",
-                                  isAvailable: true,
-                                }}
-                                type="menu"
-                                onClick={() => handleMenuSelect(menu)}
-                                onEdit={() => {}}
-                                showActions={false}
-                              />
-                            </div>
-                          ))}
+                          <div
+                            key={menu.id}
+                            className="transform transition-all duration-200"
+                          >
+                            <UnifiedCard
+                              data={{
+                                id: menu.id,
+                                name: menu.name,
+                                description: menu.description,
+                                price: menu.price,
+                                color: menu.color || "indigo",
+                                isAvailable: true,
+                              }}
+                              type="menu"
+                              onClick={() => handleMenuSelect(menu)}
+                              onEdit={() => { }}
+                              showActions={false}
+                            />
+                          </div>
+                        ))}
                     </div>
                   </div>
                 )}
@@ -219,7 +209,7 @@ const OrderMenu = () => {
               /* Empty State */
               <div className="text-center py-12">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <DocumentIcon className="size-10 text-gray-400"/>
+                  <DocumentIcon className="size-10 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   No Items Available

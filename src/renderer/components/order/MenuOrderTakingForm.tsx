@@ -1,7 +1,5 @@
 import { CrossIcon, DocumentIcon } from "@/renderer/assets/Svg";
 import { useOrder } from "@/renderer/contexts/OrderContext";
-import { calculateBaseProductPrice, calculateProductTaxAmount } from "@/renderer/utils/utils";
-import { Product } from "@/types/Menu";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import CustomButton from "../ui/CustomButton";
@@ -30,22 +28,12 @@ interface MenuPage {
     maxComplements: number;
 }
 interface MenuOrderTakingFormProps {
-    product: Product | null;
-    setProduct: React.Dispatch<React.SetStateAction<Product | null>>;
     setCurrentOrderItem: React.Dispatch<React.SetStateAction<any>>;
-    setMode: React.Dispatch<React.SetStateAction<"menu" | "product">>;
-    menu: any;
-    setMenu: any;
     token: string | null;
 }
 
 const MenuOrderTakingForm = ({
-    product,
-    setProduct,
-    menu,
-    setMenu,
     setCurrentOrderItem,
-    setMode,
     token,
 }: MenuOrderTakingFormProps) => {
     const [menuPages, setMenuPages] = useState<MenuPage[]>([]);
@@ -55,14 +43,14 @@ const MenuOrderTakingForm = ({
         Set<string>
     >(new Set());
     const [processedCounts, setProcessedCounts] = useState<Record<string, number>>({});
-    const { order, removeMenuFromOrder, removeMenuItemFromOrder, processedMenuOrderItems, getMaxSecondaryId } = useOrder();
+    const { order, removeMenuFromOrder,setSelectedProduct, removeMenuItemFromOrder, processedMenuOrderItems, getMaxSecondaryId,selectedMenu,setSelectedMenu,setMode,editingGroup } = useOrder();
     const [maxSecondaryId, setMaxSecondaryId] = useState(0);
 
     const fetchMenuPages = async () => {
-        if (!token || !menu) {
+        if (!token || !selectedMenu) {
             console.log("Missing token or menuId:", {
                 token: !!token,
-                menuId: menu.id,
+                menuId: selectedMenu.id,
             });
             return;
         }
@@ -70,7 +58,7 @@ const MenuOrderTakingForm = ({
             setIsLoading(true);
             const associationsRes = await (
                 window as any
-            ).electronAPI.getMenuPageAssociations(token, menu.id);
+            ).electronAPI.getMenuPageAssociations(token, selectedMenu.id);
             if (!associationsRes.status) {
                 toast.error("Unable to get menu page associations");
                 return;
@@ -151,13 +139,14 @@ const MenuOrderTakingForm = ({
     const totalProcessed = Object.values(processedCounts).reduce((a, b) => a + b, 0);
     useEffect(() => {
         fetchMenuPages();
-        setMaxSecondaryId(getMaxSecondaryId(menu.id));
+        setMaxSecondaryId(getMaxSecondaryId(selectedMenu.id));
     }, [])
     useEffect(() => {
-        if (currentMenuPage && processedMenuOrderItems) {
-            const orderPairs = new Set(
-                processedMenuOrderItems.map(item => `${item.productId}-${item.menuPageId}`)
-            );
+        if (currentMenuPage && (processedMenuOrderItems || editingGroup)) {
+            const orderPairs = new Set([
+                ...processedMenuOrderItems.map(item => `${item.productId}-${item.menuPageId}`),
+                ...(editingGroup?.items || []).map((item:any) => `${item.productId}-${item.menuPageId}`)
+            ]);
             const processedProducts = currentMenuPage.products.filter(product => {
                 const pairKey = `${product.productId}-${product.menuPageId}`;
                 return orderPairs.has(pairKey);
@@ -165,12 +154,13 @@ const MenuOrderTakingForm = ({
             );
             setProcessedMenuProducts(new Set(processedProducts.map(product => product.productId)));
         }
-    }, [processedMenuOrderItems, currentMenuPage])
+    }, [processedMenuOrderItems, currentMenuPage,editingGroup])
     useEffect(() => {
-        if (menuPages.length > 0 && processedMenuOrderItems) {
-            const orderPairs = new Set(
-                processedMenuOrderItems.map(item => `${item.productId}-${item.menuPageId}`)
-            );
+        if (menuPages.length > 0 && (processedMenuOrderItems || editingGroup)) {
+            const orderPairs = new Set([
+                ...processedMenuOrderItems.map(item => `${item.productId}-${item.menuPageId}`),
+                ...(editingGroup?.items || []).map((item:any) => `${item.productId}-${item.menuPageId}`)
+            ]);
             const counts: Record<string, number> = {};
             menuPages.forEach((page: MenuPage) => {
                 const pageCount = page.products.filter((product: MenuPageProduct) =>
@@ -182,7 +172,7 @@ const MenuOrderTakingForm = ({
         } else {
             setProcessedCounts({});
         }
-    }, [processedMenuOrderItems, menuPages]);
+    }, [processedMenuOrderItems, menuPages,editingGroup]);
     if (isLoading) {
         return (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -205,14 +195,14 @@ const MenuOrderTakingForm = ({
             toast.error("Unable to fetch product")
             return;
         }
-        setProduct(res.data)
+        setSelectedProduct(res.data)
         setCurrentOrderItem({
-            menuId: menu.id,
-            menuName: menu.name,
-            menuDescription: menu.description,
-            menuDiscount: parseFloat(menu.discount),
-            menuPrice: parseFloat(menu.price),
-            menuTax: parseFloat(menu.tax),
+            menuId: selectedMenu.id,
+            menuName: selectedMenu.name,
+            menuDescription: selectedMenu.description,
+            menuDiscount: parseFloat(selectedMenu.discount),
+            menuPrice: parseFloat(selectedMenu.price),
+            menuTax: parseFloat(selectedMenu.tax),
             menuPageId: currentMenuPage.id,
             menuPageName: currentMenuPage.name,
             supplement: product.supplement,
@@ -224,28 +214,28 @@ const MenuOrderTakingForm = ({
         setProcessedMenuProducts(new Set());
         setCurrentMenuPageIndex(0);
         setProcessedCounts({});
-        setMenu(null);
-        setProduct(null);
+        setSelectedMenu(null);
+        setSelectedProduct(null);
     };
     const handleCancel = async () => {
         if (totalProcessed !== 0) {
-            const res = await (window as any).electronAPI.removeMenuFromOrder(token, order?.id, menu.id, maxSecondaryId + 1);
+            const res = await (window as any).electronAPI.removeMenuFromOrder(token, order?.id, selectedMenu.id, editingGroup.secondaryId);
             if (!res.status) {
                 toast.error("Error removing menu from order");
                 return;
             }
-            removeMenuFromOrder(menu.id, maxSecondaryId + 1);
+            removeMenuFromOrder(selectedMenu.id, editingGroup.secondaryId);
         }
         resetMenuProcessing();
     }
     const handleRemoveMenuItem = async (menuProduct: MenuPageProduct) => {
         if (menuProduct.menuPageId !== undefined) {
-            const res = await (window as any).electronAPI.removeMenuItemFromOrder(token, order?.id, menu.id, maxSecondaryId + 1, menuProduct.productId, menuProduct.menuPageId);
+            const res = await (window as any).electronAPI.removeMenuItemFromOrder(token, order?.id, selectedMenu.id, editingGroup.secondaryId, menuProduct.productId, menuProduct.menuPageId);
             if (!res.status) {
                 toast.error("Error removing menu item from order");
                 return;
             }
-            removeMenuItemFromOrder(menu.id, maxSecondaryId + 1, menuProduct.productId, menuProduct.menuPageId);
+            removeMenuItemFromOrder(selectedMenu.id, editingGroup.secondaryId, menuProduct.productId, menuProduct.menuPageId);
         }
     }
     return (
@@ -254,7 +244,7 @@ const MenuOrderTakingForm = ({
                 <div className="flex justify-between items-center p-6 border-b">
                     <div>
                         <h2 className="text-xl font-semibold text-indigo-500">
-                            {menu.name}
+                            {selectedMenu.name}
                         </h2>
                         <p className="text-gray-600">
                             {menuPages.length > 0

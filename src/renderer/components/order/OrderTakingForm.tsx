@@ -1,4 +1,3 @@
-import { Product } from "@/types/Menu";
 import { Group } from "@/types/groups";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -13,9 +12,6 @@ import { AddIcon, CashIcon, CheckIcon, ClockIcon, CrossIcon } from "@/renderer/a
 import CustomButton from "../ui/CustomButton";
 
 interface OrderTakingFormProps {
-  mode: "menu" | "product";
-  product: Product | null;
-  setProduct: React.Dispatch<React.SetStateAction<Product | null>>;
   token: string | null;
   currentOrderItem: any;
 }
@@ -30,9 +26,6 @@ interface AddonPage {
 }
 
 const OrderTakingForm = ({
-  mode,
-  product,
-  setProduct,
   token,
   currentOrderItem,
 }: OrderTakingFormProps) => {
@@ -44,6 +37,9 @@ const OrderTakingForm = ({
     addToProcessedMenuOrderItems,
     findExactProductMatch,
     updateQuantity,
+    selectedProduct,
+    setSelectedProduct,
+    mode
   } = useOrder();
   const [variantItems, setVariantItems] = useState<any[] | null>(null);
   const [addOnPages, setAddonPages] = useState<AddonPage[] | null>(null);
@@ -62,7 +58,7 @@ const OrderTakingForm = ({
       // Get variants
       const res = await (window as any).electronAPI.getVariantsByProductId(
         token,
-        product?.id
+        selectedProduct?.id
       );
       if (!res.status) {
         toast.error("Unable to get product's variants");
@@ -73,7 +69,7 @@ const OrderTakingForm = ({
       // Get addon pages
       const groupRes = await (
         window as any
-      ).electronAPI.getAddOnPagesByProductId(token, product?.id);
+      ).electronAPI.getAddOnPagesByProductId(token, selectedProduct?.id);
       if (!groupRes.status) {
         toast.error("Unable to get product's addon pages");
         return;
@@ -107,10 +103,10 @@ const OrderTakingForm = ({
     }
   };
   useEffect(() => {
-    if (product && token) {
+    if (selectedProduct && token) {
       getVariantAndGroups();
     }
-  }, [product, token]);
+  }, [selectedProduct, token]);
 
   const handleComplementToggle = (groupId: string, itemId: string) => {
     const currentSelection = selectedComplements[groupId] || [];
@@ -153,9 +149,9 @@ const OrderTakingForm = ({
 
   const calculateTotalPrice = () => {
     if (!selectedVariant) return 0;
-    const productTaxRate = (product?.tax || 0) / 100;
-    const baseProductPrice = product!.price / (1 + productTaxRate);
-    const productTaxAmount = product!.price - baseProductPrice;
+    const productTaxRate = (selectedProduct?.tax || 0) / 100;
+    const baseProductPrice = selectedProduct!.price / (1 + productTaxRate);
+    const productTaxAmount = selectedProduct!.price - baseProductPrice;
 
     let total = baseProductPrice + (selectedVariant.price || 0);
 
@@ -212,13 +208,13 @@ const OrderTakingForm = ({
     if (mode === "menu") {
       // For menu items, always add as new item (no duplicate checking)
       let orderItem: OrderItem = {
-        productId: product!.id,
-        productName: product?.name || "",
-        productDescription: product?.description || "",
-        productPriority: product?.priority || 0,
-        productDiscount: product?.discount || 0,
-        productPrice: calculateBaseProductPrice(product),
-        productTax: calculateProductTaxAmount(product),
+        productId: selectedProduct!.id,
+        productName: selectedProduct?.name || "",
+        productDescription: selectedProduct?.description || "",
+        productPriority: selectedProduct?.priority || 0,
+        productDiscount: selectedProduct?.discount || 0,
+        productPrice: calculateBaseProductPrice(selectedProduct),
+        productTax: calculateProductTaxAmount(selectedProduct),
         variantId: selectedVariant.id,
         variantName: selectedVariant.name || `Variant ${selectedVariant.id}`,
         variantPrice: selectedVariant.price || 0,
@@ -270,13 +266,13 @@ const OrderTakingForm = ({
         addToOrder({ ...orderItem, id: res.data.itemId });
       }
       toast.success("Item added to order!");
-      setProduct(null);
+      setSelectedProduct(null);
       return;
     }
 
     // regular product
     const existingItem = findExactProductMatch(
-      product!.id,
+      selectedProduct!.id,
       selectedVariant.id,
       complements
     );
@@ -300,19 +296,19 @@ const OrderTakingForm = ({
       // Update local state
       updateQuantity(existingItem.id, newQuantity);
       toast.success(`Quantity updated! Total: ${newQuantity}`);
-      setProduct(null);
+      setSelectedProduct(null);
       return;
     }
 
     // Add new item
     let orderItem: OrderItem = {
-      productId: product!.id,
-      productName: product?.name || "",
-      productDescription: product?.description || "",
-      productPriority: product?.priority || 0,
-      productDiscount: product?.discount || 0,
-      productPrice: calculateBaseProductPrice(product),
-      productTax: calculateProductTaxAmount(product),
+      productId: selectedProduct!.id,
+      productName: selectedProduct?.name || "",
+      productDescription: selectedProduct?.description || "",
+      productPriority: selectedProduct?.priority || 0,
+      productDiscount: selectedProduct?.discount || 0,
+      productPrice: calculateBaseProductPrice(selectedProduct),
+      productTax: calculateProductTaxAmount(selectedProduct),
       variantId: selectedVariant.id,
       variantName: selectedVariant.name || `Variant ${selectedVariant.id}`,
       variantPrice: selectedVariant.price || 0,
@@ -346,7 +342,7 @@ const OrderTakingForm = ({
       addToOrder({ ...orderItem, id: res.data.itemId });
     }
     toast.success("Item added to order!");
-    setProduct(null);
+    setSelectedProduct(null);
   };
 
   if (isLoading) {
@@ -381,13 +377,13 @@ const OrderTakingForm = ({
               <div className="w-3 h-3 bg-white"></div>
             </div>
             <div>
-              <h2 className="text-2xl font-bold">{product?.name}</h2>
+              <h2 className="text-2xl font-bold">{selectedProduct?.name}</h2>
               <p className="text-indigo-100 text-sm">Customize your order</p>
             </div>
           </div>
           <button
             type="button"
-            onClick={() => setProduct(null)}
+            onClick={() => setSelectedProduct(null)}
             className="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 touch-manipulation cursor-pointer"
           >
             <CrossIcon className="size-6" />
@@ -408,7 +404,7 @@ const OrderTakingForm = ({
                 </h3>
               </div>
               <p className="text-gray-600 ml-10">
-                Select your preferred variant for {product?.name}
+                Select your preferred variant for {selectedProduct?.name}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ml-10">
                 {variantItems.map((item) => (
@@ -613,13 +609,13 @@ const OrderTakingForm = ({
               <div className="flex justify-between items-center py-2">
                 <span className="text-gray-700">Base Product:</span>
                 <span className="font-semibold text-gray-900">
-                  €{calculateBaseProductPrice(product).toFixed(2)}
+                  €{calculateBaseProductPrice(selectedProduct).toFixed(2)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center py-2 text-gray-600">
-                <span>Tax ({product?.tax || 0}%):</span>
-                <span>€{calculateProductTaxAmount(product).toFixed(2)}</span>
+                <span>Tax ({selectedProduct?.tax || 0}%):</span>
+                <span>€{calculateProductTaxAmount(selectedProduct).toFixed(2)}</span>
               </div>
 
               {selectedVariant && (
@@ -674,7 +670,7 @@ const OrderTakingForm = ({
         {/* Modern Action Buttons */}
         <div className="p-6 bg-gray-50 border-t border-gray-200">
           <div className="flex space-x-4">
-            <CustomButton type="button" label="Cancel" onClick={() => setProduct(null)} className="flex-1 px-6 py-4" variant="secondary" />
+            <CustomButton type="button" label="Cancel" onClick={() => setSelectedProduct(null)} className="flex-1 px-6 py-4" variant="secondary" />
             <CustomButton type="button" label="Add to Order" onClick={handleAddToOrder} disabled={!canProceed()} variant={canProceed() ? "gradient" : "secondary"} Icon={
               <>
                 {canProceed() &&

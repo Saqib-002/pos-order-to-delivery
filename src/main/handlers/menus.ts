@@ -32,6 +32,22 @@ export const getMenusBySubcategory = async (
         };
     }
 };
+export const getMenuById = async (
+    event: IpcMainInvokeEvent,
+    token: string,
+    id: string
+)=>{
+    try {
+        await verifyToken(event, token);
+        const menu = await MenusOperations.getMenuById(id);
+        return { status: true, data: menu };
+    } catch (error) {
+        return {
+            status: false,
+            error: error instanceof Error ? error.message : String(error),
+        };
+    }
+}
 export const createMenu = async (
     event: IpcMainInvokeEvent,
     token: string,

@@ -1,3 +1,4 @@
+import { Product } from "@/types/Menu";
 import { Order, OrderItem } from "@/types/order";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
@@ -27,6 +28,16 @@ interface OrderContextType {
   addToProcessedMenuOrderItems: (item: OrderItem) => void;
   clearProcessedMenuOrderItems: () => void;
   getMaxSecondaryId: (menuId: string) => number;
+  selectedProduct: Product | null;
+  setSelectedProduct: React.Dispatch<React.SetStateAction<Product | null>>;
+  selectedMenu: any;
+  setSelectedMenu: React.Dispatch<React.SetStateAction<any>>;
+  mode: "menu" | "product";
+  setMode: React.Dispatch<React.SetStateAction<"menu" | "product">>;
+  editingGroup: any;
+  setEditingGroup: React.Dispatch<React.SetStateAction<any>>;
+  editingProduct: any;
+  setEditingProduct: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -49,6 +60,11 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
   >([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [order, setOrder] = useState<Order | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedMenu, setSelectedMenu] = useState<any>(null);
+  const [editingGroup, setEditingGroup] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [mode, setMode] = useState<"menu" | "product">("menu");
 
   const addToOrder = async (newItem: OrderItem) => {
     setOrderItems((prev) => [...prev, newItem]);
@@ -63,9 +79,9 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
       prev.map((item) =>
         item.id === itemId
           ? {
-              ...item,
-              quantity,
-            }
+            ...item,
+            quantity,
+          }
           : item
       )
     );
@@ -136,15 +152,21 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     const newOrderItems = orderItems.filter(
       (item) =>
         !item.menuId ||
-        !(item.menuId === menuId && item.menuSecondaryId === menuSecondaryId &&item.menuPageId === menuPageId && item.productId === productId)
+        !(item.menuId === menuId && item.menuSecondaryId === menuSecondaryId && item.menuPageId === menuPageId && item.productId === productId)
     );
     setOrderItems(newOrderItems);
     const newProcessedItems = processedMenuOrderItems.filter(
       (item) =>
         !item.menuId ||
-        !(item.menuId === menuId && item.menuSecondaryId === menuSecondaryId &&item.menuPageId === menuPageId && item.productId === productId)
+        !(item.menuId === menuId && item.menuSecondaryId === menuSecondaryId && item.menuPageId === menuPageId && item.productId === productId)
     );
     setProcessedMenuOrderItems(newProcessedItems);
+    const editingGroupItems = editingGroup.items.filter(
+      (item:any) =>
+        !item.menuId ||
+        !(item.menuId === menuId && item.menuSecondaryId === menuSecondaryId && item.menuPageId === menuPageId && item.productId === productId)
+    );
+    setEditingGroup({ ...editingGroup, items: editingGroupItems });
   };
   const addToProcessedMenuOrderItems = (newItem: OrderItem) => {
     setProcessedMenuOrderItems((prev) => [...prev, newItem]);
@@ -179,6 +201,16 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     addToProcessedMenuOrderItems,
     clearProcessedMenuOrderItems,
     getMaxSecondaryId,
+    selectedProduct,
+    setSelectedProduct,
+    selectedMenu,
+    setSelectedMenu,
+    mode,
+    setMode,
+    editingGroup,
+    setEditingGroup,
+    editingProduct,
+    setEditingProduct,
   };
 
   return (

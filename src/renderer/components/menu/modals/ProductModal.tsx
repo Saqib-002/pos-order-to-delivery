@@ -9,27 +9,7 @@ import AddIcon from "../../../assets/icons/add.svg?react";
 import CheckMark from "../../../assets/icons/mark.svg?react";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  categoryId: string;
-  subcategoryId: string;
-  isAvailable: boolean;
-  color: string;
-  priority?: number;
-  tax?: number;
-  discount?: number;
-  isDrink?: boolean;
-  isByWeight?: boolean;
-  isPerDiner?: boolean;
-  isOutstanding?: boolean;
-  isPlus18?: boolean;
-  isForMenu?: boolean;
-  image?: string;
-}
+import { Product } from "@/types/Menu";
 
 interface ProductModalProps {
   isOpen: boolean;
