@@ -28,6 +28,7 @@ interface OrderContextType {
   addToProcessedMenuOrderItems: (item: OrderItem) => void;
   clearProcessedMenuOrderItems: () => void;
   getMaxSecondaryId: (menuId: string) => number;
+  editOrderItem: (itemId: string, item: Partial<OrderItem>) => void;
   selectedProduct: Product | null;
   setSelectedProduct: React.Dispatch<React.SetStateAction<Product | null>>;
   selectedMenu: any;
@@ -168,6 +169,22 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     );
     setEditingGroup({ ...editingGroup, items: editingGroupItems });
   };
+  const editOrderItem = (itemId:string,item: Partial<OrderItem>) => {
+    const existingOrderItem=orderItems.find((orderItem) => orderItem.id === itemId);
+    if (existingOrderItem) {
+      const updatedOrderItems = orderItems.map((orderItem) => {
+        if (orderItem.id === itemId) {
+          return {
+            ...orderItem,
+            ...item,
+            id:itemId
+          };
+        }
+        return orderItem;
+      });
+      setOrderItems(updatedOrderItems);
+    }
+  }
   const addToProcessedMenuOrderItems = (newItem: OrderItem) => {
     setProcessedMenuOrderItems((prev) => [...prev, newItem]);
   };
@@ -201,6 +218,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     addToProcessedMenuOrderItems,
     clearProcessedMenuOrderItems,
     getMaxSecondaryId,
+    editOrderItem,
     selectedProduct,
     setSelectedProduct,
     selectedMenu,

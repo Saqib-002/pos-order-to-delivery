@@ -12,6 +12,7 @@ import {
   updateItemQuantity,
   updateMenuQuantity,
   updateOrder,
+  updateOrderItem,
 } from "./handlers/orders.js";
 import {
   deleteUser,
@@ -139,6 +140,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-order", deleteOrder);
   ipcMain.handle("update-item-quantity", updateItemQuantity);
   ipcMain.handle("update-menu-quantity", updateMenuQuantity);
+  ipcMain.handle("update-order-item", updateOrderItem);
   ipcMain.handle("get-order-items", getOrderItems)
   ipcMain.handle("update-order", updateOrder);
   ipcMain.handle("get-order-analytics", getOrderAnalytics);

@@ -1,5 +1,5 @@
 import { db } from "./index.js";
-import { FilterType, Order } from "@/types/order.js";
+import { FilterType, Order, OrderItem } from "@/types/order.js";
 import { randomUUID } from "crypto";
 
 export class OrderDatabaseOperations {
@@ -99,7 +99,6 @@ export class OrderDatabaseOperations {
             const totalOrderItems = await db("order_items")
                 .where("orderId", orderId)
                 .count("* as count");
-                console.log(totalOrderItems);
             if (Number(totalOrderItems[0]?.count) === 0) {
                 await db("orders").where("id", orderId).delete();
             }
@@ -132,6 +131,18 @@ export class OrderDatabaseOperations {
             const now = new Date().toISOString();
             await db("order_items").where("id", itemId).update({
                 quantity,
+                updatedAt: now,
+            });
+            return { itemId };
+        } catch (error) {
+            throw error;
+        }
+    }
+    static async updateOrderItem(itemId:string,itemData: Partial<OrderItem>): Promise<any> {
+        try {
+            const now = new Date().toISOString();
+            await db("order_items").where("id", itemId).update({
+                ...itemData,
                 updatedAt: now,
             });
             return { itemId };

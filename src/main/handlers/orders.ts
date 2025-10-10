@@ -1,6 +1,6 @@
 import Logger from "electron-log";
 import { IpcMainInvokeEvent } from "electron";
-import { Order } from "@/types/order.js";
+import { Order, OrderItem } from "@/types/order.js";
 import { OrderDatabaseOperations } from "../database/Orderoperations.js";
 
 export const saveOrder = async (event: IpcMainInvokeEvent,token:string,item:any) => {
@@ -78,6 +78,20 @@ export const deleteOrder = async (event: IpcMainInvokeEvent,token:string, id: st
 export const updateItemQuantity=async(event: IpcMainInvokeEvent,token:string, itemId:string,quantity:number)=>{
     try {
         const result = await OrderDatabaseOperations.updateItemQuantity(itemId,quantity);
+        return {
+            status:true,
+            data:result
+        };
+    } catch (error) {
+        return {
+            status:false,
+            error:(error as Error).message
+        };
+    }
+}
+export const updateOrderItem=async(event: IpcMainInvokeEvent,token:string, itemId:string,itemData: Partial<OrderItem>)=>{
+    try {
+        const result = await OrderDatabaseOperations.updateOrderItem(itemId,itemData);
         return {
             status:true,
             data:result

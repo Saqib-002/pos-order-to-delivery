@@ -206,7 +206,7 @@ const MenuOrderTakingForm = ({
             menuPageId: currentMenuPage.id,
             menuPageName: currentMenuPage.name,
             supplement: product.supplement,
-            menuSecondaryId: maxSecondaryId + 1,
+            menuSecondaryId: editingGroup?.secondaryId || maxSecondaryId + 1,
         })
         setMode("menu")
     }
@@ -219,23 +219,23 @@ const MenuOrderTakingForm = ({
     };
     const handleCancel = async () => {
         if (totalProcessed !== 0) {
-            const res = await (window as any).electronAPI.removeMenuFromOrder(token, order?.id, selectedMenu.id, editingGroup.secondaryId);
+            const res = await (window as any).electronAPI.removeMenuFromOrder(token, order?.id, selectedMenu.id, editingGroup?.secondaryId || maxSecondaryId);
             if (!res.status) {
                 toast.error("Error removing menu from order");
                 return;
             }
-            removeMenuFromOrder(selectedMenu.id, editingGroup.secondaryId);
+            removeMenuFromOrder(selectedMenu.id, editingGroup?.secondaryId || maxSecondaryId);
         }
         resetMenuProcessing();
     }
     const handleRemoveMenuItem = async (menuProduct: MenuPageProduct) => {
         if (menuProduct.menuPageId !== undefined) {
-            const res = await (window as any).electronAPI.removeMenuItemFromOrder(token, order?.id, selectedMenu.id, editingGroup.secondaryId, menuProduct.productId, menuProduct.menuPageId);
+            const res = await (window as any).electronAPI.removeMenuItemFromOrder(token, order?.id, selectedMenu.id, editingGroup?.secondaryId || maxSecondaryId, menuProduct.productId, menuProduct.menuPageId);
             if (!res.status) {
                 toast.error("Error removing menu item from order");
                 return;
             }
-            removeMenuItemFromOrder(selectedMenu.id, editingGroup.secondaryId, menuProduct.productId, menuProduct.menuPageId);
+            removeMenuItemFromOrder(selectedMenu.id, editingGroup?.secondaryId || maxSecondaryId, menuProduct.productId, menuProduct.menuPageId);
         }
     }
     return (

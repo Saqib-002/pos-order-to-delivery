@@ -29,7 +29,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
   const [isPrinterDropdownOpen, setIsPrinterDropdownOpen] = useState(false);
   const printerDropdownRef = useRef<HTMLDivElement>(null);
   const { orderTotal, nonMenuItems, groups } = calculateOrderTotal(orderItems);
-  const { setSelectedMenu, setSelectedProduct, setEditingGroup,setEditingProduct } = useOrder();
+  const { setSelectedMenu, setSelectedProduct, setEditingGroup, setEditingProduct, setMode } = useOrder();
   const confirm = useConfirm();
 
   // Close dropdown when clicking outside
@@ -92,8 +92,14 @@ const OrderCart: React.FC<OrderCartProps> = ({
     onRemoveItem(itemId);
   };
   const handleEditItem = async (item: any) => {
+    const res = await (window as any).electronAPI.getProductById(token, item.productId);
+    if (!res.status) {
+      toast.error(`Error getting product`);
+      return;
+    }
+    setMode("product");
     setEditingProduct(item);
-    console.log(item);
+    setSelectedProduct(res.data);
   }
   const handleRemoveGroup = async (group: any) => {
     const ok = await confirm({
@@ -125,6 +131,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       toast.error(`Error getting menu`);
       return;
     }
+    setMode("menu");
     setEditingGroup(group);
     setSelectedMenu(res.data);
     setSelectedProduct(null);

@@ -39,7 +39,10 @@ const OrderTakingForm = ({
     updateQuantity,
     selectedProduct,
     setSelectedProduct,
-    mode
+    mode,
+    editingProduct,
+    setEditingProduct,
+    editOrderItem
   } = useOrder();
   const [variantItems, setVariantItems] = useState<any[] | null>(null);
   const [addOnPages, setAddonPages] = useState<AddonPage[] | null>(null);
@@ -94,7 +97,14 @@ const OrderTakingForm = ({
       setGroups(groupsRes.data);
 
       if (res.data.length > 0) {
-        setSelectedVariant(res.data[0]);
+        if (editingProduct) {
+          const variant = res.data.find((v: any) => v.id === editingProduct.variantId);
+          if (variant) {
+            setSelectedVariant(variant);
+          }
+        } else {
+          setSelectedVariant(res.data[0]);
+        }
       }
     } catch (error) {
       toast.error("Error loading product data");
@@ -107,7 +117,20 @@ const OrderTakingForm = ({
       getVariantAndGroups();
     }
   }, [selectedProduct, token]);
-
+  useEffect(() => {
+    if (editingProduct) {
+      setQuantity(editingProduct.quantity);
+      editingProduct.complements.forEach((complement: any) => {
+        const currentSelection = selectedComplements[complement.groupId] || [];
+        if (!currentSelection.includes(complement.itemId)) {
+          setSelectedComplements((prev) => ({
+            ...prev,
+            [complement.groupId]: [...currentSelection, complement.itemId],
+          }));
+        }
+      })
+    }
+  }, [addOnPages, editingProduct])
   const handleComplementToggle = (groupId: string, itemId: string) => {
     const currentSelection = selectedComplements[groupId] || [];
 
@@ -221,7 +244,7 @@ const OrderTakingForm = ({
         complements,
         quantity,
         totalPrice: calculateTotalPrice(),
-        menuId: currentOrderItem.menuId,
+        menuId: currentOrderItem?.menuId,
         menuDescription: currentOrderItem.menuDescription,
         menuName: currentOrderItem.menuName,
         menuPageId: currentOrderItem.menuPageId,
@@ -277,9 +300,9 @@ const OrderTakingForm = ({
       complements
     );
 
-    if (existingItem) {
+    if (existingItem && !editingProduct) {
       // update quantity of existing item
-      const newQuantity = existingItem.quantity + quantity;
+      const newQuantity = quantity;
 
       // Update in database
       const res = await (window as any).electronAPI.updateItemQuantity(
@@ -316,8 +339,24 @@ const OrderTakingForm = ({
       quantity,
       totalPrice: calculateTotalPrice(),
     };
-
     const newComplement = ComplementsToString(orderItem.complements);
+    if (editingProduct) {
+      const res = await (window as any).electronAPI.updateOrderItem(
+        token,
+        editingProduct.id,
+        {
+          ...orderItem,
+          complements: newComplement,
+        }
+      )
+      if (!res.status) {
+        toast.error("Unable to update order");
+      }
+      setEditingProduct(null);
+      setSelectedProduct(null);
+      editOrderItem(editingProduct.id, orderItem);
+      return;
+    }
     if (orderItems.length === 0) {
       const res = await (window as any).electronAPI.saveOrder(token, {
         ...orderItem,
@@ -671,14 +710,14 @@ const OrderTakingForm = ({
         <div className="p-6 bg-gray-50 border-t border-gray-200">
           <div className="flex space-x-4">
             <CustomButton type="button" label="Cancel" onClick={() => setSelectedProduct(null)} className="flex-1 px-6 py-4" variant="secondary" />
-            <CustomButton type="button" label="Add to Order" onClick={handleAddToOrder} disabled={!canProceed()} variant={canProceed() ? "gradient" : "secondary"} Icon={
+            <CustomButton type="button" label={`${editingProduct ? "Edit" : "Add to Order"}`} onClick={handleAddToOrder} disabled={!canProceed()} variant={canProceed() ? "gradient" : "secondary"} Icon={
               <>
                 {canProceed() &&
                   <div className="size-5 p-1 bg-white flex items-center justify-center rounded-full">
                     <CheckIcon className="size-3 text-indigo-600" />
                   </div>
                 }</>
-            } className="flex-1"/>
+            } className="flex-1" />
           </div>
         </div>
       </div>
