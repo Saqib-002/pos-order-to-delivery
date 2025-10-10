@@ -196,7 +196,6 @@ const OrderTakingForm = ({
 
     return Math.round(total * quantity * 100) / 100;
   };
-
   const handleAddToOrder = async () => {
     if (!selectedVariant) {
       toast.error("Please select a variant");
@@ -241,6 +240,7 @@ const OrderTakingForm = ({
         variantId: selectedVariant.id,
         variantName: selectedVariant.name || `Variant ${selectedVariant.id}`,
         variantPrice: selectedVariant.price || 0,
+        printers: selectedProduct?.printerIds,
         complements,
         quantity,
         totalPrice: calculateTotalPrice(),
@@ -352,6 +352,7 @@ const OrderTakingForm = ({
       variantId: selectedVariant.id,
       variantName: selectedVariant.name || `Variant ${selectedVariant.id}`,
       variantPrice: selectedVariant.price || 0,
+      printers: selectedProduct?.printerIds,
       complements,
       quantity,
       totalPrice: calculateTotalPrice(),
@@ -618,7 +619,6 @@ const OrderTakingForm = ({
               })}
             </div>
           )}
-
           {
             mode === "product" &&
             <div className="bg-gray-50 rounded-xl p-6">

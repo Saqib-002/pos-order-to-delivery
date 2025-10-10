@@ -18,6 +18,7 @@ export interface OrderItem {
     price: number;
     priority: number;
   }>;
+  printers?: string[];
   quantity: number;
   totalPrice: number;
   menuDescription?: string;

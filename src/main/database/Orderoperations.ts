@@ -16,6 +16,7 @@ export class OrderDatabaseOperations {
             await trx("orders").insert(newOrder);
             const orderItem = {
                 ...item,
+                printers: item.printers.join("="),
                 id: randomUUID(),
                 orderId: newOrder.id,
                 createdAt: now,
@@ -38,6 +39,7 @@ export class OrderDatabaseOperations {
             const orderItem = {
                 ...item,
                 id: randomUUID(),
+                printers: item.printers.join("="),
                 orderId,
                 createdAt: now,
                 updatedAt: now,
@@ -87,7 +89,13 @@ export class OrderDatabaseOperations {
             throw error;
         }
     }
-    static async removeMenuItemFromOrder(orderId: string, menuId: string, menuSecondaryId: string, productId: string, menuPageId: string): Promise<any> {
+    static async removeMenuItemFromOrder(
+        orderId: string,
+        menuId: string,
+        menuSecondaryId: string,
+        productId: string,
+        menuPageId: string
+    ): Promise<any> {
         try {
             await db("order_items")
                 .where("orderId", orderId)
@@ -138,13 +146,18 @@ export class OrderDatabaseOperations {
             throw error;
         }
     }
-    static async updateOrderItem(itemId:string,itemData: Partial<OrderItem>): Promise<any> {
+    static async updateOrderItem(
+        itemId: string,
+        itemData: Partial<OrderItem>
+    ): Promise<any> {
         try {
             const now = new Date().toISOString();
-            await db("order_items").where("id", itemId).update({
-                ...itemData,
-                updatedAt: now,
-            });
+            await db("order_items")
+                .where("id", itemId)
+                .update({
+                    ...itemData,
+                    updatedAt: now,
+                });
             return { itemId };
         } catch (error) {
             throw error;
@@ -161,7 +174,10 @@ export class OrderDatabaseOperations {
     static async getOrderItems(orderId: string): Promise<any[]> {
         try {
             const items = await db("order_items").where("orderId", orderId);
-            return items;
+            return items.map((item) => ({
+                ...item,
+                printers: item.printers.split("="),
+            }));
         } catch (error) {
             throw error;
         }
@@ -298,7 +314,8 @@ export class OrderDatabaseOperations {
             .whereBetween("orders.createdAt", [
                 startDate.toISOString(),
                 endDate.toISOString(),
-            ]).andWhere("order_items.menuId",null)
+            ])
+            .andWhere("order_items.menuId", null)
             .andWhereNot("orders.status", "pending")
             .groupBy("order_items.productId", "order_items.productName")
             .select(
@@ -307,7 +324,7 @@ export class OrderDatabaseOperations {
             )
             .orderBy("count", "desc")
             .limit(8);
-          const subquery = db("order_items")
+        const subquery = db("order_items")
             .select(
                 "menuId",
                 "menuName",
@@ -323,16 +340,20 @@ export class OrderDatabaseOperations {
             .whereBetween("orders.createdAt", [
                 startDate.toISOString(),
                 endDate.toISOString(),
-            ]).andWhereNot("orders.status", "pending")
-            .select(
-                "sub.menuName as name",
-                db.sum("sub.menu_qty").as("count")
-            )
+            ])
+            .andWhereNot("orders.status", "pending")
+            .select("sub.menuName as name", db.sum("sub.menu_qty").as("count"))
             .groupBy("sub.menuId", "sub.menuName")
             .orderBy("count", "desc")
             .limit(8);
 
-        return { ...ordersStats, hourlyData, topItems, topMenus, orders: newOrders };
+        return {
+            ...ordersStats,
+            hourlyData,
+            topItems,
+            topMenus,
+            orders: newOrders,
+        };
     }
     static async getOrdersByFilter(filter: FilterType): Promise<Order[]> {
         try {
@@ -396,7 +417,10 @@ export class OrderDatabaseOperations {
                         vehicleType: order.deliveryPersonVehicleType,
                         licenseNo: order.deliveryPersonLicenseNo,
                     },
-                    items,
+                    items: items.map((item) => ({
+                        ...item,
+                        printers: item.printers.split("="),
+                    })),
                 };
                 newOrders.push(newOrder);
             }

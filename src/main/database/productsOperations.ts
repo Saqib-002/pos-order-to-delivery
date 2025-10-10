@@ -91,6 +91,21 @@ export class ProductsDatabaseOperations {
                 .select("products.*", "sub_categories.categoryId")
                 .orderBy("products.name", "asc");
             const products = await query;
+            const productIds = products.map((p: any) => p.id);
+            const allPrinters = await db("printers_products")
+                .join("printers", "printers_products.printerId", "=", "printers.id")
+                .whereIn("productId", productIds)
+                .select("productId", "printerId","name");
+            const printerMap = new Map();
+            for (const { productId, printerId,name } of allPrinters) {
+                if (!printerMap.has(productId)) {
+                    printerMap.set(productId, []);
+                }
+                printerMap.get(productId)!.push(`${printerId}|${name}`);
+            }
+            for (const product of products) {
+                product.printerIds = printerMap.get(product.id) || [];
+            }
             return products;
         } catch (error) {
             throw error;
@@ -208,7 +223,15 @@ export class ProductsDatabaseOperations {
     }
     static async getProductById(productId: string) {
         try {
-            const product = await db("products").where("id", productId).first();
+            const product = await db("products")
+                .where("id", productId)
+                .select("products.*")
+                .first();
+            const productPrinters = await db("printers_products")
+                .join("printers", "printers_products.printerId", "=", "printers.id")
+                .where("productId", productId)
+                .select("printers_products.printerId", "printers.name")
+            product.printerIds = productPrinters.map((p: any) => `${p.printerId}|${p.name}`);
             return product;
         } catch (error) {
             throw error;

@@ -39,6 +39,7 @@ export interface Product extends BaseMenuEntity {
   isPlus18?: boolean;
   isForMenu?: boolean;
   image?: string;
+  printerIds?: string[];
   type: "product";
 }
 

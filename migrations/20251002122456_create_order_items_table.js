@@ -18,6 +18,7 @@ export async function up(knex) {
     table.string('variantId');
     table.string('variantName');
     table.float('variantPrice');
+    table.text('printers');
     table.text('complements');
     table.text('menuDescription');
     table.float('menuDiscount');
