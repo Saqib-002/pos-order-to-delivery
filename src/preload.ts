@@ -203,6 +203,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getMenuPageAssociations: (token: string, menuId: string) =>
     ipcRenderer.invoke("get-menu-page-associations", token, menuId),
 
+  getConnectedPrinters: (token: string) => ipcRenderer.invoke("get-connected-printers", token),
+  createPrinter: (token: string, printerData: any) => ipcRenderer.invoke("create-printer", token, printerData),
+  updatePrinter: (token: string, printerId: string, printerData: any) => ipcRenderer.invoke("update-printer", token, printerId, printerData),
+  deletePrinter: (token: string, printerId: string) => ipcRenderer.invoke("delete-printer", token, printerId),
+  getAllPrinters: (token: string) => ipcRenderer.invoke("get-all-printers", token),
+  
   // Order change notifications
   onOrderChange: (callback: (change: any) => void) => {
     const orderChangeCallback = (event: any, change: any) => {

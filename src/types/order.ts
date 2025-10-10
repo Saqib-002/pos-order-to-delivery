@@ -75,3 +75,10 @@ export interface FilterType {
   selectedDate: Date | null;
   selectedStatus: string[];
 }
+export interface PrinterType{
+  id?:string;
+  name:string;
+  displayName:string;
+  createdAt?:string;
+  updatedAt?:string;
+}

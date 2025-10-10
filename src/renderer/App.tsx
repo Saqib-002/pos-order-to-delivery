@@ -17,6 +17,7 @@ import { OrderView } from "./Views/OrderView";
 import { ReportView } from "./Views/ReportView";
 import { UserManagement } from "./Views/UserManagement";
 import { useAuth } from "./contexts/AuthContext";
+import Configurations from "./Views/Configurations";
 
 interface ViewConfig {
   component: JSX.Element;
@@ -110,6 +111,11 @@ const App: React.FC = () => {
       ),
       roles: ["admin"],
     },
+    [VIEWS.CONFIGURATIONS]:{
+      component:(
+        <Configurations/>
+      )
+    }
   };
 
   const renderView = () => {

@@ -10,6 +10,7 @@ export const VIEWS = {
   REPORTS: "reports",
   USERS: "users",
   MENU_STRUCTURE: "menu-structure",
+  CONFIGURATIONS:"configuration"
 } as const;
 
 export const navItems = [
@@ -29,6 +30,7 @@ export const navItems = [
   { view: VIEWS.REPORTS, label: "Reports", roles: ["admin"] },
   { view: VIEWS.MENU_STRUCTURE, label: "Menu Structure", roles: ["admin"] },
   { view: VIEWS.USERS, label: "Users", roles: ["admin"] },
+  { view: VIEWS.CONFIGURATIONS, label: "Configuration", roles: ["admin"] },
 ];
 
 export const MENU_CATEGORIES = {
