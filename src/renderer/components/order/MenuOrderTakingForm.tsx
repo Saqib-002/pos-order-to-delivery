@@ -1,4 +1,4 @@
-import { CrossIcon, DocumentIcon } from "@/renderer/assets/Svg";
+import { CrossIcon, DocumentIcon, EditIcon } from "@/renderer/assets/Svg";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -43,7 +43,7 @@ const MenuOrderTakingForm = ({
         Set<string>
     >(new Set());
     const [processedCounts, setProcessedCounts] = useState<Record<string, number>>({});
-    const { order, removeMenuFromOrder,setSelectedProduct, removeMenuItemFromOrder, processedMenuOrderItems, getMaxSecondaryId,selectedMenu,setSelectedMenu,setMode,editingGroup } = useOrder();
+    const { order, removeMenuFromOrder, setSelectedProduct, removeMenuItemFromOrder, processedMenuOrderItems, getMaxSecondaryId, selectedMenu, setSelectedMenu, setMode, editingGroup, setEditingProduct } = useOrder();
     const [maxSecondaryId, setMaxSecondaryId] = useState(0);
 
     const fetchMenuPages = async () => {
@@ -145,7 +145,7 @@ const MenuOrderTakingForm = ({
         if (currentMenuPage && (processedMenuOrderItems || editingGroup)) {
             const orderPairs = new Set([
                 ...processedMenuOrderItems.map(item => `${item.productId}-${item.menuPageId}`),
-                ...(editingGroup?.items || []).map((item:any) => `${item.productId}-${item.menuPageId}`)
+                ...(editingGroup?.items || []).map((item: any) => `${item.productId}-${item.menuPageId}`)
             ]);
             const processedProducts = currentMenuPage.products.filter(product => {
                 const pairKey = `${product.productId}-${product.menuPageId}`;
@@ -154,12 +154,12 @@ const MenuOrderTakingForm = ({
             );
             setProcessedMenuProducts(new Set(processedProducts.map(product => product.productId)));
         }
-    }, [processedMenuOrderItems, currentMenuPage,editingGroup])
+    }, [processedMenuOrderItems, currentMenuPage, editingGroup])
     useEffect(() => {
         if (menuPages.length > 0 && (processedMenuOrderItems || editingGroup)) {
             const orderPairs = new Set([
                 ...processedMenuOrderItems.map(item => `${item.productId}-${item.menuPageId}`),
-                ...(editingGroup?.items || []).map((item:any) => `${item.productId}-${item.menuPageId}`)
+                ...(editingGroup?.items || []).map((item: any) => `${item.productId}-${item.menuPageId}`)
             ]);
             const counts: Record<string, number> = {};
             menuPages.forEach((page: MenuPage) => {
@@ -172,7 +172,7 @@ const MenuOrderTakingForm = ({
         } else {
             setProcessedCounts({});
         }
-    }, [processedMenuOrderItems, menuPages,editingGroup]);
+    }, [processedMenuOrderItems, menuPages, editingGroup]);
     if (isLoading) {
         return (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -236,6 +236,30 @@ const MenuOrderTakingForm = ({
                 return;
             }
             removeMenuItemFromOrder(selectedMenu.id, editingGroup?.secondaryId || maxSecondaryId, menuProduct.productId, menuProduct.menuPageId);
+        }
+    }
+    const handleEditMenuItem = async (menuProduct: MenuPageProduct) => {
+        if (menuProduct.menuPageId !== undefined) {
+            const editingItem = editingGroup.items.find((item: any) => item.productId === menuProduct.productId && item.menuPageId === menuProduct.menuPageId);
+            const res = await (window as any).electronAPI.getProductById(token, menuProduct.productId);
+            if (!res.status) {
+                toast.error(`Error getting product`);
+                return;
+            }
+            setSelectedProduct(res.data);
+            setEditingProduct(editingItem);
+            setCurrentOrderItem({
+                menuId: selectedMenu.id,
+                menuName: selectedMenu.name,
+                menuDescription: selectedMenu.description,
+                menuDiscount: parseFloat(selectedMenu.discount),
+                menuPrice: parseFloat(selectedMenu.price),
+                menuTax: parseFloat(selectedMenu.tax),
+                menuPageId: currentMenuPage.id,
+                menuPageName: currentMenuPage.name,
+                supplement: menuProduct.supplement,
+                menuSecondaryId: editingGroup?.secondaryId || maxSecondaryId + 1,
+            })
         }
     }
     return (
@@ -336,7 +360,10 @@ const MenuOrderTakingForm = ({
                                                 {processedMenuProducts.has(menuProduct.productId) ? (
                                                     <>
                                                         <span className="text-green-600">✓ Processed</span>
-                                                        <CrossIcon className="size-6 text-red-500 hover:text-red-600 touch-manipulation cursor-pointer" onClick={() => handleRemoveMenuItem(menuProduct)} />
+                                                        <span className="flex gap-2">
+                                                            <EditIcon className="size-6 text-indigo-500 hover:text-indigo-600 touch-manipulation cursor-pointer" onClick={() => handleEditMenuItem(menuProduct)} />
+                                                            <CrossIcon className="size-6 text-red-500 hover:text-red-600 touch-manipulation cursor-pointer" onClick={() => handleRemoveMenuItem(menuProduct)} />
+                                                        </span>
                                                     </>
                                                 ) : (
                                                     <span className="text-indigo-600">

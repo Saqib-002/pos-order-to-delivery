@@ -263,6 +263,23 @@ const OrderTakingForm = ({
       };
 
       const newComplement = ComplementsToString(orderItem.complements);
+      if (editingProduct) {
+        const res = await (window as any).electronAPI.updateOrderItem(
+          token,
+          editingProduct.id,
+          {
+            ...orderItem,
+            complements: newComplement,
+          }
+        )
+        if (!res.status) {
+          toast.error("Unable to update order");
+        }
+        setEditingProduct(null);
+        setSelectedProduct(null);
+        editOrderItem(editingProduct.id, orderItem);
+        return;
+      }
       if (orderItems.length === 0) {
         const res = await (window as any).electronAPI.saveOrder(token, {
           ...orderItem,
@@ -602,36 +619,38 @@ const OrderTakingForm = ({
             </div>
           )}
 
-          {/* Quantity Section */}
-          <div className="bg-gray-50 rounded-xl p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <ClockIcon className="size-4 text-purple-600" />
+          {
+            mode === "product" &&
+            <div className="bg-gray-50 rounded-xl p-6">
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <ClockIcon className="size-4 text-purple-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Quantity</h3>
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Quantity</h3>
-            </div>
-            <div className="flex items-center space-x-6">
-              <button
-                type="button"
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-14 h-14 rounded-full border-2 border-gray-300 hover:border-indigo-500 hover:bg-indigo-50 flex items-center justify-center transition-colors duration-200 group touch-manipulation"
-              >
-                <span className="bg-gray-600 group-hover:bg-indigo-600 h-[2px] w-4"></span>
-              </button>
-              <div className="w-20 h-14 bg-white border-2 border-indigo-500 rounded-xl flex items-center justify-center">
-                <span className="text-2xl font-bold text-indigo-600">
-                  {quantity}
-                </span>
+              <div className="flex items-center space-x-6">
+                <button
+                  type="button"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="w-14 h-14 rounded-full border-2 border-gray-300 hover:border-indigo-500 hover:bg-indigo-50 flex items-center justify-center transition-colors duration-200 group touch-manipulation"
+                >
+                  <span className="bg-gray-600 group-hover:bg-indigo-600 h-[2px] w-4"></span>
+                </button>
+                <div className="w-20 h-14 bg-white border-2 border-indigo-500 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl font-bold text-indigo-600">
+                    {quantity}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="w-14 h-14 rounded-full border-2 border-gray-300 hover:border-indigo-500 hover:bg-indigo-50 flex items-center justify-center transition-colors duration-200 group touch-manipulation"
+                >
+                  <AddIcon className="w-6 h-6 text-gray-600 group-hover:text-indigo-600" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setQuantity(quantity + 1)}
-                className="w-14 h-14 rounded-full border-2 border-gray-300 hover:border-indigo-500 hover:bg-indigo-50 flex items-center justify-center transition-colors duration-200 group touch-manipulation"
-              >
-                <AddIcon className="w-6 h-6 text-gray-600 group-hover:text-indigo-600" />
-              </button>
             </div>
-          </div>
+          }
 
           {/* Price Breakdown */}
           <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
