@@ -7,6 +7,7 @@ export async function up(knex) {
     table.string('id').primary();
     table.string('displayName').notNullable();
     table.string('name').notNullable();
+    table.boolean('isMain').notNullable().defaultTo(false);
     table.timestamp('createdAt').defaultTo(knex.fn.now());
     table.timestamp('updatedAt').defaultTo(knex.fn.now());
   });

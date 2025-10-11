@@ -95,13 +95,13 @@ export class ProductsDatabaseOperations {
             const allPrinters = await db("printers_products")
                 .join("printers", "printers_products.printerId", "=", "printers.id")
                 .whereIn("productId", productIds)
-                .select("productId", "printerId","name");
+                .select("productId", "printerId","name","isMain");
             const printerMap = new Map();
-            for (const { productId, printerId,name } of allPrinters) {
+            for (const { productId, printerId,name,isMain } of allPrinters) {
                 if (!printerMap.has(productId)) {
                     printerMap.set(productId, []);
                 }
-                printerMap.get(productId)!.push(`${printerId}|${name}`);
+                printerMap.get(productId)!.push(`${printerId}|${name}|${isMain}`);
             }
             for (const product of products) {
                 product.printerIds = printerMap.get(product.id) || [];
@@ -230,8 +230,8 @@ export class ProductsDatabaseOperations {
             const productPrinters = await db("printers_products")
                 .join("printers", "printers_products.printerId", "=", "printers.id")
                 .where("productId", productId)
-                .select("printers_products.printerId", "printers.name")
-            product.printerIds = productPrinters.map((p: any) => `${p.printerId}|${p.name}`);
+                .select("printers_products.printerId", "printers.name","printers.isMain")
+            product.printerIds = productPrinters.map((p: any) => `${p.printerId}|${p.name}|${p.isMain}`);
             return product;
         } catch (error) {
             throw error;

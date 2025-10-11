@@ -108,6 +108,7 @@ const Printers = () => {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Display Name</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Printer Name</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Main Printer</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
@@ -117,6 +118,7 @@ const Printers = () => {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{printer.displayName}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{printer.name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(printer.createdAt).toLocaleDateString()}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{printer.isMain ? 'Yes' : 'No'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
                                                 <CustomButton type="button" onClick={() => handleView(printer)} Icon={<EyeIcon className="size-5" />} variant="transparent" className='!p-0'/>
                                                 <CustomButton type="button" onClick={() => handleEdit(printer)} Icon={<EditIcon className="size-5" />} variant="transparent" className='!p-0 !text-blue-500 hover:!text-blue-700'/>

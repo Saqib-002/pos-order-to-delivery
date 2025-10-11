@@ -24,6 +24,7 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
 }) => {
     const [selectedPrinter, setSelectedPrinter] = useState({
         name: connectedPrinters.length > 0 ? connectedPrinters[0].name : '',
+        isMain: false,
         displayName: "",
     });
 
@@ -31,6 +32,7 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
         if (printer && (mode === 'edit' || mode === 'view')) {
             setSelectedPrinter({
                 name: printer.name,
+                isMain: printer.isMain,
                 displayName: printer.displayName,
             });
         }
@@ -54,7 +56,7 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
             return;
         }
 
-        const payload = mode === 'add' ? selectedPrinter : { displayName: selectedPrinter.displayName };
+        const payload = mode === 'add' ? selectedPrinter : { displayName: selectedPrinter.displayName, isMain: selectedPrinter.isMain , name: selectedPrinter.name };
         let res;
         try {
             if (mode === 'add') {
@@ -143,6 +145,23 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
                             readOnly={isViewMode}
                             required={isAddOrEditMode}
                         />
+                        <div className="flex items-center gap-2">
+                            <label className="flex items-center gap-2 cursor-pointer touch-manipulation">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedPrinter.isMain}
+                                    onChange={() => {
+                                        setSelectedPrinter({
+                                            ...selectedPrinter,
+                                            isMain: !selectedPrinter.isMain,
+                                        });
+                                    }}
+                                    disabled={isViewMode}
+                                    className="size-4"
+                                />
+                                <span className="text-sm">Main Printer</span>
+                            </label>
+                        </div>
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Printer {isAddOrEditMode ? '*' : ''}

@@ -30,10 +30,14 @@ const OrderCart: React.FC<OrderCartProps> = ({
   const { setSelectedMenu, setSelectedProduct, setEditingGroup, setEditingProduct,order, setMode } = useOrder();
   const confirm = useConfirm();
   const {auth:{user,token}}=useAuth();
-
+  console.log(orderItems);
   const handlePrint = async () => {
-    toast.info("Printing customer receipt...");
     const printerGroups = groupItemsByPrinter(orderItems);
+    if(!Object.keys(printerGroups).length){
+      toast.warn("No printers attached");
+      return;
+    }
+    toast.info("Printing customer receipt...");
     for (const [printerName, items] of Object.entries(printerGroups)) {
       const receiptHTML = generateReceiptHTML(items, order!.orderId,user!.role);
       const res = await (window as any).electronAPI.printToPrinter(token, printerName, { html: receiptHTML });
