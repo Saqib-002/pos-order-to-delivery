@@ -4,7 +4,7 @@ export const PageNotFound: React.FC = () => (
             <svg
                 className="mx-auto h-12 w-12 text-gray-400"
                 fill="none"
-                viewBox="0 24 24"
+                viewBox="0 0 24 24"
                 stroke="currentColor"
             >
                 <path

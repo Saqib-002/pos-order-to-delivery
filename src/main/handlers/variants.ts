@@ -87,3 +87,25 @@ export const updateVariant = async (
         };
     }
 };
+export const getAssociatedProductsByVariantId = async (
+    event: IpcMainInvokeEvent,
+    token: string,
+    variantId: string
+) => {
+    try {
+        await verifyToken(event, token);
+        const result = await VariantsDatabaseOperations.getAssociatedProductsByVariantId(
+            variantId
+        );
+        return {
+            status: true,
+            data: result,
+        };
+    } catch (error) {
+        Logger.error(`Error getting associated products for variant ${variantId}:`, error);
+        return {
+            status: false,
+            error: (error as Error).message,
+        };
+    }
+};

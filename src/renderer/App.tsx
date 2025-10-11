@@ -1,6 +1,5 @@
 import { VIEWS } from "@/constants";
 import { FilterType } from "@/types/order";
-import { AuthState } from "@/types/user";
 import { JSX, useState } from "react";
 import { toast } from "react-toastify";
 import { AccessDenied } from "./components/shared/AccessDenied";

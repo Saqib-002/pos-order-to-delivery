@@ -4,9 +4,10 @@ import { CreateVariantModal } from "./modals/CreateVariantModal";
 import { VariantItem } from "@/types/Variants";
 import { toast } from "react-toastify";
 import AddIcon from "../../assets/icons/add.svg?react";
-import { getVariants } from "@/renderer/utils/menu";
+import { fetchAssociatedProductsByVariantId, getVariants } from "@/renderer/utils/menu";
 import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";
+import { useConfirm } from "@/renderer/hooks/useConfirm";
 
 export interface Variant {
   id: string;
@@ -18,9 +19,11 @@ export interface Variant {
 export const VariantView = () => {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [isCreateVariantOpen, setIsCreateVariantOpen] = useState(false);
+  const [associatedProducts, setAssociatedProducts] = useState<any[]>([]);
+  const confirm = useConfirm();
   const [editingVariant, setEditingVariant] = useState<Variant | null>(null);
-    const {auth:{token}}=useAuth();
-  
+  const { auth: { token } } = useAuth();
+
 
   useEffect(() => {
     getVariants(token, setVariants);
@@ -37,21 +40,23 @@ export const VariantView = () => {
   };
 
   const handleDeleteVariant = async (variant: Variant) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete "${variant.name !== "" ? variant.name : variant.items.map((i) => i.name).join("-")}" with "${variant.items.length} variants"?`
-      )
-    ) {
-      const res = await (window as any).electronAPI.deleteVariant(
-        token,
-        variant.id
-      );
-      if (!res.status) {
-        toast.error("Unable to delete variant");
-        return;
-      }
-      getVariants(token, setVariants);
+    const res = await fetchAssociatedProductsByVariantId(token, variant.id, setAssociatedProducts);
+    if (!res) return;
+    const ok = await confirm({
+      title: "Delete Variant",
+      message: `Are you sure you want to delete "${variant.name !== "" ? variant.name : variant.items.map((i) => i.name).join("-")}" with "${variant.items.length} variants"? This variant is attached to ${associatedProducts.length} products. They will be detached!`,
+    })
+    if (!ok) return;
+    const delRes = await (window as any).electronAPI.deleteVariant(
+      token,
+      variant.id
+    );
+    console.log(delRes);
+    if (!delRes.status) {
+      toast.error("Unable to delete variant");
+      return;
     }
+    getVariants(token, setVariants);
   };
 
   const handleVariantSuccess = () => {
@@ -64,12 +69,12 @@ export const VariantView = () => {
     <div className="space-y-6">
       {/* Action Buttons Section */}
       <div className="flex flex-wrap gap-4 items-center">
-        <CustomButton 
+        <CustomButton
           onClick={handleCreateVariant}
           label="Create Variant"
           variant="orange"
           type="button"
-          Icon={<AddIcon className="size-5"/>}
+          Icon={<AddIcon className="size-5" />}
         />
       </div>
 

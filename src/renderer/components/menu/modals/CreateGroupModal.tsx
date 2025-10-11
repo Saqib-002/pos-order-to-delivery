@@ -1,12 +1,10 @@
 import { colorOptions } from "@/renderer/utils/utils";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import DeleteIcon from "../../../assets/icons/delete.svg?react";
-import DocumentIcon from "../../../assets/icons/document.svg?react";
-import CrossIcon from "../../../assets/icons/cross.svg?react";
-import NoProductIcon from "../../../assets/icons/no-procut.svg?react";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
+import { CrossIcon, DeleteIcon, DocumentIcon, NoProductIcon } from "@/renderer/assets/Svg";
+import { useConfirm } from "@/renderer/hooks/useConfirm";
 
 interface Group {
   id: string;
@@ -57,6 +55,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAssociatedProducts, setShowAssociatedProducts] = useState(false);
   const [associatedProducts, setAssociatedProducts] = useState<AssociatedProduct[] | null>(null);
+  const confirm = useConfirm()
 
   const fetchAssociatedProducts = async () => {
     try {
@@ -204,21 +203,20 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       setIsSubmitting(false);
     }
   };
-  const handleDeleteGroup = (id: string) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete this "${editingGroup?.name}" with ${complements.length} items?`
-      )
-    ) {
-      (window as any).electronAPI.deleteGroup(token, id).then((res: any) => {
-        if (!res.status) {
-          toast.error("Failed to delete group");
-          return;
-        }
-        toast.success("Group deleted successfully");
-        onSuccess();
-      });
-    }
+  const handleDeleteGroup = async (id: string) => {
+    const ok = await confirm({
+      title: "Delete Group",
+      message: `Are you sure you want to delete this "${editingGroup?.name}" with ${complements.length} items? This group is attached to ${associatedProducts?associatedProducts.length:0} products. They will be detached!`,
+    })
+    if (!ok) return;
+    await (window as any).electronAPI.deleteGroup(token, id).then((res: any) => {
+      if (!res.status) {
+        toast.error("Failed to delete group");
+        return;
+      }
+      toast.success("Group deleted successfully");
+      onSuccess();
+    });
   };
 
   if (!isOpen) return null;
@@ -270,7 +268,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               <CustomInput label="COMPLEMENT NAME *" name="complement-name" type="text" value={newComplement.name} onChange={(e) => setNewComplement({ ...newComplement, name: e.target.value })} placeholder="Enter complement name" />
 
               <CustomInput label="PRICE *" name="price" type="number" step="0.01" min="0" value={newComplement.price} onChange={(e) => setNewComplement({ ...newComplement, price: parseFloat(e.target.value) || 0 })} placeholder="0" preLabel="€" otherClasses="relative" inputClasses="pl-8" />
-                
+
               <CustomInput label="PRIORITY" name="priority" type="number" min="0" value={newComplement.priority} onChange={(e) => setNewComplement({ ...newComplement, priority: parseInt(e.target.value) || 0 })} placeholder="0" />
             </div>
 
@@ -411,15 +409,8 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               )}
             </div>
 
-            <div className="px-6 py-4 border-t border-gray-200">
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setShowAssociatedProducts(false)}
-                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors duration-200"
-                >
-                  Close
-                </button>
-              </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+              <CustomButton type="button" label="Close" onClick={() => setShowAssociatedProducts(false)} variant="secondary" />
             </div>
           </div>
         </div>

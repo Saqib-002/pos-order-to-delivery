@@ -57,6 +57,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.invoke("delete-variant", token, id),
     updateVariant: (token: string, variantData: any, variantItems: any) =>
         ipcRenderer.invoke("update-variant", token, variantData, variantItems),
+    getAssociatedProductsByVariantId: (token: string, variantId: string) =>
+        ipcRenderer.invoke("get-associated-products-by-variant-id", token, variantId),
     // groups
     createGroup: (token: string, groupData: any, groupItems: any) =>
         ipcRenderer.invoke("create-group", token, groupData, groupItems),

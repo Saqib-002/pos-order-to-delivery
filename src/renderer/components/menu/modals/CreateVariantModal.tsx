@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
-import DeleteIcon from "../../../assets/icons/delete.svg?react";
+import { CrossIcon, DeleteIcon, DocumentIcon, NoProductIcon } from "@/renderer/assets/Svg";
+import { fetchAssociatedProductsByVariantId } from "@/renderer/utils/menu";
 
 interface Variant {
   id: string;
@@ -25,6 +26,12 @@ interface CreateVariantModalProps {
   token: string | null;
   editingVariant?: Variant | null;
 }
+interface AssociatedProduct {
+  productId: string;
+  productName: string;
+  productPrice: number;
+  subcategoryName: string;
+}
 
 const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
   isOpen,
@@ -40,6 +47,9 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
   const [newVariantName, setNewVariantName] = useState("");
   const [variants, setVariants] = useState<VariantItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAssociatedProducts, setShowAssociatedProducts] = useState(false);
+    const [associatedProducts, setAssociatedProducts] = useState<AssociatedProduct[] | null>(null);
+
 
   // Get color classes for selection ring
   const getColorClasses = (color: string, isSelected: boolean) => {
@@ -224,6 +234,19 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
               </div>
             </div>
           )}
+          {editingVariant && <div className="mb-6">
+            <button
+              type="button"
+              onClick={async () => {
+                await fetchAssociatedProductsByVariantId(token, editingVariant.id, setAssociatedProducts);
+                setShowAssociatedProducts(true)
+              }}
+              className="cursor-pointer text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+            >
+              <DocumentIcon className="size-4" />
+              See associated products
+            </button>
+          </div>}
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-3">
@@ -232,6 +255,59 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
           </div>
         </form>
       </div>
+      {showAssociatedProducts && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-60">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Associated Products
+                </h3>
+                <button
+                  onClick={() => setShowAssociatedProducts(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                >
+                  <CrossIcon className="size-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {associatedProducts && associatedProducts.map((product) => (
+                  <div
+                    key={product.productId}
+                    className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {product.productName}
+                      </h4>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        {product.subcategoryName}
+                      </span>
+                    </div>
+                    <span className="text-lg font-semibold text-gray-900">
+                      €{product.productPrice.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {associatedProducts && associatedProducts.length === 0 && (
+                <div className="text-center py-8">
+                  <NoProductIcon className="size-12 text-gray-400 mb-4 mx-auto" />
+                  <p className="text-gray-500">No associated products found</p>
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+              <CustomButton type="button" label="Close" onClick={() => setShowAssociatedProducts(false)} variant="secondary"/>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

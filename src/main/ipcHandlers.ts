@@ -44,6 +44,7 @@ import {
 import {
   createVariant,
   deleteVariant,
+  getAssociatedProductsByVariantId,
   getVariants,
   updateVariant,
 } from "./handlers/variants.js";
@@ -86,6 +87,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-variants", getVariants);
   ipcMain.handle("delete-variant", deleteVariant);
   ipcMain.handle("update-variant", updateVariant);
+  ipcMain.handle("get-associated-products-by-variant-id", getAssociatedProductsByVariantId);
   // groups handlers
   ipcMain.handle("create-group", createGroup);
   ipcMain.handle("get-groups", getGroups);

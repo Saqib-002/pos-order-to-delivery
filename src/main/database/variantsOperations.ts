@@ -149,7 +149,7 @@ export class VariantsDatabaseOperations {
                         .andWhere("id", item.id)
                         .update(item);
                 } else {
-                    const newItemId=randomUUID();
+                    const newItemId = randomUUID();
                     await trx("variant_items").insert({
                         ...item,
                         id: newItemId,
@@ -171,6 +171,33 @@ export class VariantsDatabaseOperations {
             await trx.commit();
         } catch (error) {
             await trx.rollback();
+            throw error;
+        }
+    }
+    static async getAssociatedProductsByVariantId(variantId: string) {
+        try {
+            const products = await db("products_variants")
+                .join(
+                    "products",
+                    "products_variants.productId",
+                    "=",
+                    "products.id"
+                )
+                .join(
+                    "sub_categories",
+                    "products.subcategoryId",
+                    "=",
+                    "sub_categories.id"
+                )
+                .where("products_variants,variantId", variantId)
+                .select(
+                    "products.id as productId",
+                    "products.name as productName",
+                    "products.price as productPrice",
+                    "sub_categories.name as subcategoryName"
+                );
+            return products;
+        } catch (error) {
             throw error;
         }
     }
