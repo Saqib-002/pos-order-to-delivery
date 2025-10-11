@@ -1,6 +1,7 @@
 import { Product } from "@/types/Menu";
 import { Order, OrderItem } from "@/types/order";
 import React, { createContext, useContext, useState, ReactNode } from "react";
+import { calculateOrderTotal } from "../utils/orderCalculations";
 
 interface OrderContextType {
   orderItems: OrderItem[];
@@ -68,7 +69,15 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
   const [mode, setMode] = useState<"menu" | "product">("menu");
 
   const addToOrder = async (newItem: OrderItem) => {
-    setOrderItems((prev) => [...prev, newItem]);
+    const newItems = [...orderItems, newItem];
+    setOrderItems(newItems);
+    if (mode === "menu") {
+      const { groups } = calculateOrderTotal(newItems);
+      const group = groups.find((g) => g.key === `${newItem.menuId}-${newItem.menuSecondaryId}`);
+      if (group) {
+        setEditingGroup(group);
+      }
+    }
   };
 
   const removeFromOrder = (itemId: string | undefined) => {
@@ -163,26 +172,33 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     );
     setProcessedMenuOrderItems(newProcessedItems);
     const editingGroupItems = editingGroup.items.filter(
-      (item:any) =>
+      (item: any) =>
         !item.menuId ||
         !(item.menuId === menuId && item.menuSecondaryId === menuSecondaryId && item.menuPageId === menuPageId && item.productId === productId)
     );
     setEditingGroup({ ...editingGroup, items: editingGroupItems });
   };
-  const editOrderItem = (itemId:string,item: Partial<OrderItem>) => {
-    const existingOrderItem=orderItems.find((orderItem) => orderItem.id === itemId);
+  const editOrderItem = (itemId: string, item: Partial<OrderItem>) => {
+    const existingOrderItem = orderItems.find((orderItem) => orderItem.id === itemId);
     if (existingOrderItem) {
       const updatedOrderItems = orderItems.map((orderItem) => {
         if (orderItem.id === itemId) {
           return {
             ...orderItem,
             ...item,
-            id:itemId
+            id: itemId
           };
         }
         return orderItem;
       });
       setOrderItems(updatedOrderItems);
+      if (mode === "menu") {
+        const { groups } = calculateOrderTotal(updatedOrderItems);
+        const group = groups.find((g) => g.key === `${item.menuId}-${item.menuSecondaryId}`);
+        if (group) {
+          setEditingGroup(group);
+        }
+      }
     }
   }
   const addToProcessedMenuOrderItems = (newItem: OrderItem) => {

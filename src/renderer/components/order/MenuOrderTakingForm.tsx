@@ -196,6 +196,7 @@ const MenuOrderTakingForm = ({
             return;
         }
         setSelectedProduct(res.data)
+        setEditingProduct(null);
         setCurrentOrderItem({
             menuId: selectedMenu.id,
             menuName: selectedMenu.name,

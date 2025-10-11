@@ -23,7 +23,7 @@ const OrderMenu = () => {
   const [subCategories, setSubCategories] = useState<SubCategory[] | null>(
     null
   );
-  const { clearProcessedMenuOrderItems, setSelectedProduct, selectedProduct, selectedMenu, setSelectedMenu, setMode,setEditingGroup } = useOrder();
+  const { clearProcessedMenuOrderItems, setSelectedProduct, selectedProduct, selectedMenu, setSelectedMenu, setMode,setEditingGroup,setEditingProduct } = useOrder();
   const {
     auth: { token },
   } = useAuth();
@@ -92,6 +92,8 @@ const OrderMenu = () => {
   const handleSelectProduct = (product: Product) => {
     setMode("product");
     setSelectedProduct(product);
+    setEditingGroup(null);
+    setEditingProduct(null);
   };
   const handleMenuSelect = (menu: any) => {
     setMode("menu");
