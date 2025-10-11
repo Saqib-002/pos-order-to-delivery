@@ -30,7 +30,6 @@ const OrderCart: React.FC<OrderCartProps> = ({
   const { setSelectedMenu, setSelectedProduct, setEditingGroup, setEditingProduct,order, setMode } = useOrder();
   const confirm = useConfirm();
   const {auth:{user,token}}=useAuth();
-  console.log(orderItems);
   const handlePrint = async () => {
     const printerGroups = groupItemsByPrinter(orderItems);
     if(!Object.keys(printerGroups).length){

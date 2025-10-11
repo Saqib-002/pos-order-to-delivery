@@ -13,7 +13,7 @@ export class OrderDatabaseOperations {
                 createdAt: now,
                 updatedAt: now,
             };
-            await trx("orders").insert(newOrder);
+            const order = await trx("orders").insert(newOrder).returning("*");
             const orderItem = {
                 ...item,
                 printers: item.printers.join("="),
@@ -25,7 +25,7 @@ export class OrderDatabaseOperations {
             await trx("order_items").insert(orderItem);
             await trx.commit();
             return {
-                order: newOrder,
+                order: order[0],
                 itemId: orderItem.id,
             };
         } catch (error) {
