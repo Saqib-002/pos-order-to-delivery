@@ -69,9 +69,9 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
   const [mode, setMode] = useState<"menu" | "product">("menu");
 
   const addToOrder = async (newItem: OrderItem) => {
-    const newItems = [...orderItems, newItem];
-    setOrderItems(newItems);
+    setOrderItems((prev) => [...prev, newItem]);
     if (mode === "menu") {
+      const newItems = [...orderItems, newItem];
       const { groups } = calculateOrderTotal(newItems);
       const group = groups.find((g) => g.key === `${newItem.menuId}-${newItem.menuSecondaryId}`);
       if (group) {

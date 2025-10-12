@@ -322,6 +322,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
     printToPrinter: (token: string, printerName: string, printData: { html: string; options?: any }) =>
     ipcRenderer.invoke("print-to-printer", token, printerName, printData),
 
+    // configurations
+    createConfigurations: (token: string, configData: any) =>
+        ipcRenderer.invoke("create-configurations", token, configData),
+    getConfigurations: (token: string) =>
+        ipcRenderer.invoke("get-configurations", token),
+    updateConfigurations: (token: string, id: string, updates: Partial<any>) =>
+        ipcRenderer.invoke("update-configurations", token, id, updates),
+
     // Order change notifications
     onOrderChange: (callback: (change: any) => void) => {
         const orderChangeCallback = (event: any, change: any) => {

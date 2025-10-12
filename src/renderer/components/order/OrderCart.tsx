@@ -6,7 +6,7 @@ import { useConfirm } from "@/renderer/hooks/useConfirm";
 import CustomButton from "../ui/CustomButton";
 import { CrossIcon, DeleteIcon, EditIcon, PrinterIcon } from "@/renderer/assets/Svg";
 import { useOrder } from "@/renderer/contexts/OrderContext";
-import { generateReceiptHTML, groupItemsByPrinter } from "@/renderer/utils/printer";
+import { generateItemsReceiptHTML, generateReceiptHTML, groupItemsByPrinter } from "@/renderer/utils/printer";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 
 interface OrderCartProps {
@@ -36,9 +36,35 @@ const OrderCart: React.FC<OrderCartProps> = ({
       toast.warn("No printers attached");
       return;
     }
+    let configurations={
+      name:"Point of Sale",
+      address:"street 123",
+      logo:"",
+      id:""
+    }
+    let res=await (window as any).electronAPI.getConfigurations(token);
+    if(!res.status){
+      toast.error("Error getting configurations");
+      return;
+    }
+    if(res.data){
+      configurations=res.data;
+    }
+
     toast.info("Printing customer receipt...");
-    for (const [printerName, items] of Object.entries(printerGroups)) {
-      const receiptHTML = generateReceiptHTML(items, order!.orderId,user!.role);
+    for (const [printer, items] of Object.entries(printerGroups)) {
+      const printerName = printer.split("|")[0];
+      const printerIsMain = printer.split("|")[1];
+      let receiptHTML = "";
+      if (printerIsMain === "true") {
+        receiptHTML = generateReceiptHTML(items,configurations, order!.orderId,user!.role);
+      }
+      else{
+        receiptHTML = generateItemsReceiptHTML(items,configurations, order,user!.role);
+      }
+      if(!receiptHTML){
+        continue;
+      }
       const res = await (window as any).electronAPI.printToPrinter(token, printerName, { html: receiptHTML });
       if (!res.status) {
         if (res.error === "Printer not found") {
@@ -51,8 +77,6 @@ const OrderCart: React.FC<OrderCartProps> = ({
     }
     toast.success("Receipt printed successfully");
   };
-
-
   const handleRemoveItem = async (itemId: string, itemName: string) => {
     const ok = await confirm({
       title: "Remove Item",
@@ -114,6 +138,10 @@ const OrderCart: React.FC<OrderCartProps> = ({
     const res = await (window as any).electronAPI.getMenuById(token, group.menuId);
     if (!res.status) {
       toast.error(`Error getting menu`);
+      return;
+    }
+    if(!res.data){
+      toast.error(`Menu have been deleted`);
       return;
     }
     setMode("menu");

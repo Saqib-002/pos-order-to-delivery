@@ -450,7 +450,7 @@ const OrderTakingForm = ({
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-8 touch-pan-y">
           {/* Variants Section */}
-          {variantItems && variantItems.length > 0 && (
+          {variantItems && variantItems.length > 0 ? (
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
@@ -501,11 +501,15 @@ const OrderTakingForm = ({
                   </label>
                 ))}
               </div>
+            </div>) : (
+            <div className="text-center text-yellow-700 text-2xl">
+              Variants have been detached from product
             </div>
-          )}
+          )
+          }
 
           {/* Complements Section */}
-          {addOnPages && addOnPages.length > 0 && groups && (
+          {addOnPages && addOnPages.length > 0 && groups ? (
             <div className="space-y-6">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -618,7 +622,12 @@ const OrderTakingForm = ({
                 );
               })}
             </div>
-          )}
+          ) : (
+            <div className="text-center text-yellow-700 text-2xl">
+              Complements have been detached from product
+            </div>
+          )
+          }
           {
             mode === "product" &&
             <div className="bg-gray-50 rounded-xl p-6">
