@@ -67,6 +67,6 @@ export class ConfigurationsDatabaseOperations {
             return "";
         }
         const data = await response.json();
-        return `logo.${ext}`;
+        return data.url;
     }
 }

@@ -3,17 +3,14 @@ import CustomInput from '../shared/CustomInput'
 import CustomButton from '../ui/CustomButton'
 import { toast } from 'react-toastify'
 import { useAuth } from '@/renderer/contexts/AuthContext'
+import { useConfigurations } from '@/renderer/contexts/configurationContext'
 
 const ConfigurationsTab = () => {
-  const [configurations, setConfigurations] = useState({
-    name: "",
-    address: "",
-    logo: ""
-  });
   const [configurationsId, setConfigurationsId] = useState<string>("");
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const { auth: { token } } = useAuth();
+  const {configurations, setConfigurations}=useConfigurations();
 
   const getConfigurations = async () => {
     const res = await (window as any).electronAPI.getConfigurations(token);
