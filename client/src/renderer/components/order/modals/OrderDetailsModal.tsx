@@ -29,9 +29,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   onClose,
   view = "kitchen",
 }) => {
+  console.log("OrderDetailsModal - Order data:", order);
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center justify-between">
@@ -65,7 +66,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+        <div className="p-6 overflow-y-auto flex-1">
           {view === "manage" ? (
             <div className="space-y-6">
               {/* Customer Information */}
@@ -137,7 +138,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       Payment Status
                     </p>
                     {(() => {
-                      const orderTotal = calculateOrderTotal(order.items || []);
+                      const { orderTotal } = calculateOrderTotal(
+                        order.items || []
+                      );
                       const paymentStatus = calculatePaymentStatus(
                         order.paymentType || "",
                         orderTotal
@@ -164,7 +167,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       Total Amount
                     </p>
                     <p className="text-gray-900 font-semibold">
-                      €{calculateOrderTotal(order.items || []).toFixed(2)}
+                      €
+                      {calculateOrderTotal(
+                        order.items || []
+                      ).orderTotal.toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -206,9 +212,22 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       <p className="text-gray-900">
                         {order.assignedAt
                           ? new Date(order.assignedAt).toLocaleString()
-                          : "N/A"}
+                          : order.status === "out for delivery" ||
+                              order.status === "delivered"
+                            ? "Not recorded"
+                            : "Not assigned yet"}
                       </p>
                     </div>
+                    {order.deliveredAt && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">
+                          Delivered At
+                        </p>
+                        <p className="text-gray-900">
+                          {new Date(order.deliveredAt).toLocaleString()}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

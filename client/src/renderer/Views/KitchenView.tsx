@@ -79,78 +79,6 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
     return [];
   };
 
-  const handlePrintOrder = useCallback((order: Order) => {
-    // Create a new window for printing
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-
-    const printContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Kitchen Order - ${order.orderId}</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-                .order-info { margin-bottom: 20px; }
-                .items { margin-bottom: 20px; }
-                .item { margin-bottom: 10px; padding: 5px; border-bottom: 1px solid #eee; }
-                .complements { margin-left: 20px; font-size: 0.9em; color: #666; }
-                .footer { margin-top: 30px; text-align: center; font-size: 0.8em; color: #666; }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>KITCHEN ORDER</h1>
-                <h2>Order #${order.orderId}</h2>
-            </div>
-            
-            <div class="order-info">
-                <p><strong>Customer:</strong> ${order.customer.name}</p>
-                <p><strong>Phone:</strong> ${order.customer.phone}</p>
-                <p><strong>Type:</strong> ${order.orderType?.toUpperCase() || "N/A"}</p>
-                <p><strong>Time:</strong> ${new Date(order.createdAt || "").toLocaleString()}</p>
-            </div>
-
-            <div class="items">
-                <h3>ITEMS TO PREPARE:</h3>
-                ${
-                  order.items
-                    ?.map((item) => {
-                      const parsedComplements = parseComplements(
-                        item.complements
-                      );
-                      return `
-                    <div class="item">
-                        <strong>${item.quantity}x ${item.productName}${item.variantName ? ` (${item.variantName})` : ""}</strong>
-                        ${
-                          parsedComplements.length > 0
-                            ? `
-                            <div class="complements">
-                                Add-ons: ${parsedComplements.map((c) => c.itemName).join(", ")}
-                            </div>
-                        `
-                            : ""
-                        }
-                    </div>
-                `;
-                    })
-                    .join("") || "<p>No items found</p>"
-                }
-            </div>
-
-            <div class="footer">
-                <p>Generated on ${new Date().toLocaleString()}</p>
-            </div>
-        </body>
-        </html>
-    `;
-
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.print();
-  }, []);
-
   const stats = useMemo(() => {
     const highPriorityCount = orders.filter((order) => {
       const orderTime = new Date(order.createdAt || order.id);
@@ -282,13 +210,6 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
               title="View Order Details"
             >
               <EyeIcon className="size-4" />
-            </button>
-            <button
-              onClick={() => handlePrintOrder(order)}
-              className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
-              title="Print Order"
-            >
-              <PrinterIcon className="size-4" />
             </button>
             <button
               onClick={() => markAsReady(order.id)}

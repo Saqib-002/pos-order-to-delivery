@@ -15,6 +15,7 @@ import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
 import { FilterControls } from "../components/shared/FilterControl.order";
 import { updateOrder } from "../utils/order";
+import { formatAddress } from "../utils/utils";
 
 interface DeliveryViewProps {
   orders: Order[];
@@ -192,7 +193,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
         </td>
         <td className="px-6 py-4 min-w-[250px]">
           <div className="text-sm text-gray-900 max-w-xs">
-            {order.customer.address || "-"}
+            {order.customer.address ? formatAddress(order.customer.address) : "-"}
           </div>
         </td>
         <td className="px-6 py-4 min-w-[250px]">
@@ -249,7 +250,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
       </td>
       <td className="px-6 py-4">
         <div className="text-sm text-gray-900 max-w-xs">
-          {order.customer.address || "-"}
+          {order.customer.address ? formatAddress(order.customer.address) : "-"}
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">

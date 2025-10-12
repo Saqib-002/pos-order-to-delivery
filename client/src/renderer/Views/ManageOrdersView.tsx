@@ -7,9 +7,14 @@ import {
   calculatePaymentStatus,
   getPaymentStatusStyle,
 } from "../utils/paymentStatus";
+import { updateOrder } from "../utils/order";
+import { toast } from "react-toastify";
+import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
 import { OrderTable } from "../components/shared/OrderTable";
 import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
+import BulkPaymentModal from "../components/order/modals/BulkPaymentModal";
+import IndividualPaymentModal from "../components/order/modals/IndividualPaymentModal";
 
 // ICONS
 import SearchIcon from "../assets/icons/search.svg?react";
@@ -32,6 +37,9 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
   filter,
   setFilter,
 }) => {
+  const {
+    auth: { token },
+  } = useAuth();
   useEffect(() => {
     if (!filter.selectedDate) {
       setFilter((prev) => ({
@@ -51,11 +59,10 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] =
     useState<Order | null>(null);
-  const [selectedDeliveryPerson, setSelectedDeliveryPerson] = useState("");
-  const [paymentAmount, setPaymentAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
+
+  const [isBulkPaymentModalOpen, setIsBulkPaymentModalOpen] = useState(false);
 
   // Get unique delivery persons from orders
   const deliveryPersons = useMemo(() => {
@@ -75,7 +82,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
   // Get unique payment statuses from orders
   const paymentStatuses = useMemo(() => {
     const statuses = orders.map((order) => {
-      const {orderTotal} = calculateOrderTotal(order.items || []);
+      const { orderTotal } = calculateOrderTotal(order.items || []);
       const paymentStatus = calculatePaymentStatus(
         order.paymentType || "",
         orderTotal
@@ -105,7 +112,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
 
       // Filter by payment status (local filter)
       if (localFilters.selectedStatus.length > 0) {
-        const {orderTotal} = calculateOrderTotal(order.items || []);
+        const { orderTotal } = calculateOrderTotal(order.items || []);
         const paymentStatus = calculatePaymentStatus(
           order.paymentType || "",
           orderTotal
@@ -134,9 +141,6 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
 
   const handlePaymentClick = (order: Order) => {
     setSelectedOrderForPayment(order);
-    setPaymentAmount(calculateOrderTotal(order.items || []).orderTotal.toFixed(2));
-    setSelectedDeliveryPerson(order.deliveryPerson?.id || "");
-    setPaymentMethod("cash");
     setIsPaymentModalOpen(true);
   };
 
@@ -150,31 +154,14 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
     console.log("Print order:", order.id);
   };
 
-  const handleApplyPayment = async () => {
-    if (!selectedOrderForPayment) return;
-
-    try {
-      console.log("Applying payment:", {
-        orderId: selectedOrderForPayment.id,
-        deliveryPersonId: selectedDeliveryPerson,
-        amount: paymentAmount,
-        method: paymentMethod,
-      });
-
-      setIsPaymentModalOpen(false);
-      setSelectedOrderForPayment(null);
-      refreshOrdersCallback();
-    } catch (error) {
-      console.error("Error applying payment:", error);
-    }
-  };
-
   const closePaymentModal = () => {
     setIsPaymentModalOpen(false);
     setSelectedOrderForPayment(null);
-    setSelectedDeliveryPerson("");
-    setPaymentAmount("");
-    setPaymentMethod("cash");
+  };
+
+  // Bulk payment handler
+  const handleBulkPaymentClick = () => {
+    setIsBulkPaymentModalOpen(true);
   };
 
   // Table columns
@@ -191,7 +178,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
 
   // Render order row
   const renderOrderRow = (order: Order) => {
-    const {orderTotal} = calculateOrderTotal(order.items || []);
+    const { orderTotal } = calculateOrderTotal(order.items || []);
     const paymentStatus = calculatePaymentStatus(
       order.paymentType || "",
       orderTotal
@@ -267,14 +254,30 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
               <DocumentIcon className="w-4 h-4" />
             </button>
 
-            {/* Process Payment Button */}
-            <button
-              onClick={() => handlePaymentClick(order)}
-              className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors duration-200"
-              title="Process Payment"
-            >
-              <ThunderIcon className="w-4 h-4" />
-            </button>
+            {/* Process Payment Button - Only show for UNPAID or PARTIAL orders */}
+            {(() => {
+              const { orderTotal } = calculateOrderTotal(order.items || []);
+              const paymentStatus = calculatePaymentStatus(
+                order.paymentType || "",
+                orderTotal
+              );
+
+              const isPaymentAllowed = order.status === "complete" || order.status === "delivered";
+              const hasUnpaidAmount = paymentStatus.status === "UNPAID" || paymentStatus.status === "PARTIAL";
+
+              if (isPaymentAllowed && hasUnpaidAmount) {
+                return (
+                  <button
+                    onClick={() => handlePaymentClick(order)}
+                    className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors duration-200"
+                    title="Process Payment"
+                  >
+                    <ThunderIcon className="w-4 h-4" />
+                  </button>
+                );
+              }
+              return null;
+            })()}
           </div>
         </td>
       </tr>
@@ -292,6 +295,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto pb-6">
+
         {/* Search and Filter Bar */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4 items-end">
@@ -397,13 +401,20 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
               />
             </div>
 
-            {/* Clear Filters Button */}
-            <div className="w-full lg:w-auto">
+            {/* Action Buttons */}
+            <div className="w-full lg:w-auto flex flex-col sm:flex-row gap-3">
               <button
                 onClick={clearFilters}
-                className="w-full lg:w-auto px-4 py-3 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="w-full sm:w-auto px-4 py-3 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Clear All Filters
+              </button>
+              <button
+                onClick={handleBulkPaymentClick}
+                className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
+              >
+                <ThunderIcon className="w-4 h-4" />
+                <span>Bulk Payment</span>
               </button>
             </div>
           </div>
@@ -430,9 +441,9 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
             }
             emptyStateTitle={
               filter.searchTerm ||
-                filter.selectedDate ||
-                localFilters.selectedDeliveryPerson ||
-                localFilters.selectedStatus.length > 0
+              filter.selectedDate ||
+              localFilters.selectedDeliveryPerson ||
+              localFilters.selectedStatus.length > 0
                 ? "No orders match your filters"
                 : "No orders found"
             }
@@ -440,277 +451,24 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
         </div>
       </div>
 
-      {/* Payment Modal */}
-      {isPaymentModalOpen && selectedOrderForPayment && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-xl">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <ThunderIcon className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">
-                    Process Payment
-                  </h2>
-                  <p className="text-sm text-gray-600">
-                    Complete the payment for this order
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={closePaymentModal}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
+      {/* Individual Payment Modal */}
+      <IndividualPaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={closePaymentModal}
+        order={selectedOrderForPayment}
+        token={token || ""}
+        refreshOrdersCallback={refreshOrdersCallback}
+      />
 
-            {/* Content */}
-            <div className="p-6 space-y-6">
-              {/* Order Info */}
-              <div className="bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-5">
-                <div className="flex items-center space-x-2 mb-4">
-                  <div className="p-1.5 bg-blue-100 rounded-lg">
-                    <svg
-                      className="w-4 h-4 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold text-gray-900 text-lg">
-                    Order Details
-                  </h3>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                    <span className="text-sm font-medium text-gray-600">
-                      Order ID
-                    </span>
-                    <span className="text-sm font-semibold text-gray-900">
-                      #{selectedOrderForPayment.orderId}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                    <span className="text-sm font-medium text-gray-600">
-                      Customer
-                    </span>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {selectedOrderForPayment.customer.name}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm font-medium text-gray-600">
-                      Total Amount
-                    </span>
-                    <span className="text-lg font-bold text-green-600">
-                      €
-                      {calculateOrderTotal(
-                        selectedOrderForPayment.items || []
-                      ).orderTotal.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Delivery Person Selection */}
-              <div className="space-y-2">
-                <label className="flex items-center text-sm font-semibold text-gray-700">
-                  <PersonIcon className="w-4 h-4 mr-2 text-blue-600" />
-                  Select Delivery Person
-                </label>
-                <CustomSelect
-                  options={[
-                    { value: "", label: "Choose a delivery person..." },
-                    ...deliveryPersons.map((person) => ({
-                      value: person.id,
-                      label: person.name,
-                    })),
-                  ]}
-                  value={selectedDeliveryPerson}
-                  onChange={setSelectedDeliveryPerson}
-                  placeholder="Choose a delivery person..."
-                  className="w-full"
-                />
-              </div>
-
-              {/* Payment Amount */}
-              <CustomInput
-                label="Payment Amount"
-                name="paymentAmount"
-                type="number"
-                value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-                placeholder="0.00"
-                step="0.01"
-                min="0"
-                required
-                preLabel="€"
-                otherClasses="w-full"
-                inputClasses="pl-8 focus:ring-blue-500 focus:border-blue-500"
-              />
-
-              {/* Payment Method */}
-              <div className="space-y-3">
-                <label className="flex items-center text-sm font-semibold text-gray-700">
-                  <svg
-                    className="w-4 h-4 mr-2 text-purple-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                    />
-                  </svg>
-                  Payment Method
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("cash")}
-                    className={`p-4 border-2 rounded-xl text-center transition-all duration-200 ${paymentMethod === "cash"
-                        ? "border-green-500 bg-green-50 text-green-700 shadow-md"
-                        : "border-gray-200 hover:border-green-300 hover:bg-green-50/50"
-                      }`}
-                  >
-                    <div className="flex flex-col items-center space-y-2">
-                      <div className="p-2 bg-green-100 rounded-lg">
-                        <svg
-                          className="w-6 h-6 text-green-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                          />
-                        </svg>
-                      </div>
-                      <div className="font-semibold text-sm">Cash</div>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("card")}
-                    className={`p-4 border-2 rounded-xl text-center transition-all duration-200 ${paymentMethod === "card"
-                        ? "border-blue-500 bg-blue-50 text-blue-700 shadow-md"
-                        : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
-                      }`}
-                  >
-                    <div className="flex flex-col items-center space-y-2">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <svg
-                          className="w-6 h-6 text-blue-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                          />
-                        </svg>
-                      </div>
-                      <div className="font-semibold text-sm">Card</div>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="flex justify-between items-center p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
-              <div className="text-sm text-gray-500">
-                {!selectedDeliveryPerson || !paymentAmount ? (
-                  <span className="flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-1 text-amber-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                      />
-                    </svg>
-                    Please fill all required fields
-                  </span>
-                ) : (
-                  <span className="flex items-center text-green-600">
-                    <svg
-                      className="w-4 h-4 mr-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Ready to process payment
-                  </span>
-                )}
-              </div>
-
-              <div className="flex space-x-3">
-                <button
-                  onClick={closePaymentModal}
-                  className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 font-medium transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleApplyPayment}
-                  disabled={!selectedDeliveryPerson || !paymentAmount}
-                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-medium transition-all duration-200 flex items-center space-x-2"
-                >
-                  <ThunderIcon className="w-4 h-4" />
-                  <span>Process Payment</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Bulk Payment Modal */}
+      <BulkPaymentModal
+        isOpen={isBulkPaymentModalOpen}
+        onClose={() => setIsBulkPaymentModalOpen(false)}
+        orders={orders}
+        deliveryPersons={deliveryPersons}
+        token={token || ""}
+        refreshOrdersCallback={refreshOrdersCallback}
+      />
 
       {/* Order Details Modal */}
       {isOrderDetailsOpen && selectedOrder && (

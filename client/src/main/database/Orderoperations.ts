@@ -402,6 +402,8 @@ export class OrderDatabaseOperations {
                     },
                     createdAt: order.createdAt,
                     updatedAt: order.updatedAt,
+                    assignedAt: order.assignedAt,
+                    deliveredAt: order.deliveredAt,
                     orderId: order.orderId,
                     status: order.status,
                     paymentType: order.paymentType,

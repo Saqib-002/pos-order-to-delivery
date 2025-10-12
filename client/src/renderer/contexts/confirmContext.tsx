@@ -31,7 +31,7 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
                         className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
                         onClick={(e) => e.target === e.currentTarget && handleClose(false)}
                     >
-                        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fadeIn">
+                        <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-fadeIn">
                             {/* Header */}
                             <div className={`relative bg-gradient-to-r ${styles.headerBg} text-white p-6`}>
                                 <div className="flex items-center space-x-3">
