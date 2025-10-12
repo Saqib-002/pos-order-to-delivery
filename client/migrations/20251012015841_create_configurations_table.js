@@ -7,6 +7,7 @@ export async function up(knex) {
     table.string('id').primary();
     table.string('name').notNullable();
     table.string('address').notNullable();
+    table.string('logo').notNullable();
   });
 };
 
