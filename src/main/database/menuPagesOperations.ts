@@ -135,4 +135,14 @@ export class MenuPagesOperations {
             throw error;
         }
     }
+    static async getAssociatedMenuByMenuPageId(menuPageId: string) {
+        try {
+            const menus = await db("menu_page_associations")
+                .join("menus", "menu_page_associations.menuId", "menus.id")
+                .where("menuPageId", menuPageId).select("menus.*");
+            return menus;
+        } catch (error) {
+            throw error;
+        }
+    }
 }

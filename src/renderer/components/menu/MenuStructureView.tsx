@@ -8,14 +8,15 @@ import NoMenuPageIcon from "../../assets/icons/no-menu-page.svg?react";
 import { MenuPageProduct } from "@/types/menuPages";
 import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";
+import { useConfirm } from "@/renderer/hooks/useConfirm";
 
 
 interface MenuPage {
   id: string;
   name: string;
   description: string;
-  products: Omit<MenuPageProduct, "menuPageId"|"createdAt"| "updatedAt">[];
-  itemCount?:number;
+  products: Omit<MenuPageProduct, "menuPageId" | "createdAt" | "updatedAt">[];
+  itemCount?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -53,7 +54,8 @@ export const MenuStructureComponent = () => {
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [editingMenuPage, setEditingMenuPage] = useState<MenuPage | null>(null);
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
-  const {auth:{token}}=useAuth();
+  const { auth: { token } } = useAuth();
+  const confirm = useConfirm();
 
   // Fetch data from API
   useEffect(() => {
@@ -107,40 +109,60 @@ export const MenuStructureComponent = () => {
   };
 
   const handleDeleteMenuPage = async (menuPage: MenuPage) => {
-    if (window.confirm(`Are you sure you want to delete "${menuPage.name}"?`)) {
-      try {
-        const res = await (window as any).electronAPI.deleteMenuPage(
-          token,
-          menuPage.id
-        );
-        if (!res.status) {
-          toast.error("Failed to delete menu page");
-          return;
-        }
-        toast.success("Menu page deleted successfully");
-        fetchMenuPages(); // Refresh data
-      } catch (error) {
+    const res= await (window as any).electronAPI.getMenuPageProducts(token,menuPage.id);
+    if(!res.status){
+      toast.error("Unable to delete menu page");
+      return;
+    }
+    const ok = await confirm({
+      title: 'Delete Menu Page',
+      message: `Are you sure you want to delete "${menuPage.name}"? This menu page is attached to ${res.data.length} menus. They will be detached!`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'danger',
+      itemName: menuPage.name,
+      specialNote: "If you delete this menu page you can no longer edit this menu page in any attached order!"
+    })
+    if (!ok) return;
+    try {
+      const res = await (window as any).electronAPI.deleteMenuPage(
+        token,
+        menuPage.id
+      );
+      if (!res.status) {
         toast.error("Failed to delete menu page");
+        return;
       }
+      toast.success("Menu page deleted successfully");
+      fetchMenuPages(); // Refresh data
+    } catch (error) {
+      toast.error("Failed to delete menu page");
     }
   };
 
   const handleDeleteMenu = async (menu: Menu) => {
-    if (window.confirm(`Are you sure you want to delete "${menu.name}"?`)) {
-      try {
-        const res = await (window as any).electronAPI.deleteMenu(
-          token,
-          menu.id
-        );
-        if (!res.status) {
-          toast.error("Failed to delete menu");
-          return;
-        }
-        toast.success("Menu deleted successfully");
-        fetchMenus(); // Refresh data
-      } catch (error) {
+    const ok = await confirm({
+      title: 'Delete Menu',
+      message: `Are you sure you want to delete "${menu.name}"?`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'danger',
+      itemName: menu.name
+    })
+    if (!ok) return;
+    try {
+      const res = await (window as any).electronAPI.deleteMenu(
+        token,
+        menu.id
+      );
+      if (!res.status) {
         toast.error("Failed to delete menu");
+        return;
       }
+      toast.success("Menu deleted successfully");
+      fetchMenus(); // Refresh data
+    } catch (error) {
+      toast.error("Failed to delete menu");
     }
   };
 
@@ -157,10 +179,10 @@ export const MenuStructureComponent = () => {
   };
   return (
     <>
-        <div className="flex flex-wrap gap-4 items-center mb-4">
-          <CustomButton type="button" onClick={handleCreateMenuPage} label="Create Menu Page" variant="orange"/>
-          <CustomButton type="button" onClick={handleCreateMenu} label="Create Menu" variant="orange"/>
-        </div>
+      <div className="flex flex-wrap gap-4 items-center mb-4">
+        <CustomButton type="button" onClick={handleCreateMenuPage} label="Create Menu Page" variant="orange" />
+        <CustomButton type="button" onClick={handleCreateMenu} label="Create Menu" variant="orange" />
+      </div>
 
       {/* Menu Pages Section */}
       <div className="mb-8">

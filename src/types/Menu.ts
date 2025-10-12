@@ -70,7 +70,9 @@ export interface ContentSectionProps {
   onCategoryClick: (category: Category) => void;
   onSubcategoryClick: (subcategory: Subcategory) => void;
   onEditCategory: (category: Category) => void;
+  onDeleteCategory: (catId: string) => void;
   onEditSubcategory: (subcategory: Subcategory) => void;
+  onDeleteSubcategory:(id: string) => void;
   onEditProduct: (product: Product) => void;
   onDeleteProduct: (product: Product) => void;
 }
@@ -89,9 +91,11 @@ export interface SubcategorySectionProps {
   selectedCategory: Category | null;
   onSubcategoryClick: (subcategory: Subcategory) => void;
   onEditSubcategory: (subcategory: Subcategory) => void;
+  onDeleteSubcategory:(id: string) => void;
 }
 export interface CategorySectionProps {
   categories: Category[];
   onCategoryClick: (category: Category) => void;
   onEditCategory: (category: Category) => void;
+  onDeleteCategory: (catId: string) => void;
 }

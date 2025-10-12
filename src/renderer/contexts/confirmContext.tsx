@@ -9,7 +9,6 @@ import { ConfirmContext } from "../hooks/useConfirm";
 export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
     const [options, setOptions] = useState<ConfirmOptions | null>(null);
     const [resolver, setResolver] = useState<(value: boolean) => void>();
-    const [isLoading, setIsLoading] = useState(false);
 
     const confirm = (options: ConfirmOptions) => {
         setOptions(options);
@@ -17,7 +16,6 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const handleClose = (value: boolean) => {
-        if (isLoading) return;
         setOptions(null);
         resolver?.(value);
     };
@@ -53,7 +51,6 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
                                     type="button"
                                     onClick={() => handleClose(false)}
                                     className="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 cursor-pointer"
-                                    disabled={isLoading}
                                 >
                                     <CrossIcon className="size-5" />
                                 </button>
@@ -79,8 +76,7 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
                                                         This action cannot be undone
                                                     </p>
                                                     <p className="text-sm text-red-700 mt-1">
-                                                        Once deleted, this item will be permanently removed from the
-                                                        system.
+                                                        {options.specialNote?options.specialNote:"Once deleted, this item will be permanently removed from the system."}
                                                     </p>
                                                 </div>
                                             </div>
@@ -91,10 +87,10 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
 
                             {/* Footer */}
                             <div className="p-6 bg-gray-50 border-t border-gray-200 flex space-x-3">
-                                <CustomButton type="button" onClick={() => handleClose(false)} disabled={isLoading} className="flex-1 text-lg py-4" label={options.cancelText || "Cancel"} variant="secondary" />
-                                <CustomButton type="button" onClick={() => handleClose(true)} disabled={isLoading} label={options.confirmText || "Confirm"} isLoading={isLoading} className={`flex-1 bg-gradient-to-r ${styles.confirmBg} ${styles.confirmHover} border-none text-lg py-4`} Icon={<div className={`${styles.iconBg} rounded-full border-none p-1`}>
+                                <CustomButton type="button" onClick={() => handleClose(false)} className="flex-1 text-lg py-4" label={options.cancelText || "Cancel"} variant="secondary" />
+                                <CustomButton type="button" onClick={() => handleClose(true)} label={options.confirmText || "Confirm"} className={`flex-1 bg-gradient-to-r ${styles.confirmBg} ${styles.confirmHover} border-none text-lg py-4`} Icon={<div className={`${styles.iconBg} rounded-full border-none p-1`}>
                                     <CheckIcon className={`size-4 ${styles.iconColor}`} />
-                                </div>}/>
+                                </div>} />
                             </div>
                         </div>
                     </div>,

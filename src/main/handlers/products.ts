@@ -184,3 +184,24 @@ export const getProductById = async (
         };
     }
 };
+export const getAssociatedMenuPagesByProductId = async (
+    event: IpcMainInvokeEvent,
+    token: string,
+    productId: string
+) => {
+    try {
+        const result =
+            await ProductsDatabaseOperations.getAssociatedMenuPagesByProductId(
+                productId
+            );
+        return {
+            status: true,
+            data: result,
+        };
+    } catch (error) {
+        return {
+            status: false,
+            error: (error as Error).message,
+        };
+    }
+};

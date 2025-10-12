@@ -38,6 +38,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.invoke("delete-category", token, id),
     updateCategory: (token: string, id: string, updates: any) =>
         ipcRenderer.invoke("update-category", token, id, updates),
+
     // sub categories
     createSubcategory: (token: string, subCategory: any) =>
         ipcRenderer.invoke("create-sub-category", token, subCategory),
@@ -49,6 +50,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.invoke("delete-sub-category", token, id),
     updateSubcategory: (token: string, id: string, updates: any) =>
         ipcRenderer.invoke("update-sub-category", token, id, updates),
+
     // variants
     createVariant: (token: string, variantData: any, variantItems: any) =>
         ipcRenderer.invoke("create-variant", token, variantData, variantItems),
@@ -59,6 +61,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.invoke("update-variant", token, variantData, variantItems),
     getAssociatedProductsByVariantId: (token: string, variantId: string) =>
         ipcRenderer.invoke("get-associated-products-by-variant-id", token, variantId),
+
     // groups
     createGroup: (token: string, groupData: any, groupItems: any) =>
         ipcRenderer.invoke("create-group", token, groupData, groupItems),
@@ -69,6 +72,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.invoke("update-group", token, groupData, groupItems),
     getAttachProductsByGroupId: (token: string, groupId: string) =>
         ipcRenderer.invoke("get-attach-products-by-group-id", token, groupId),
+
     // products
     createProduct: (
         token: string,
@@ -112,6 +116,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.invoke("get-add-on-pages-by-product-id", token, productId),
     getProductById: (token: string, productId: string) =>
         ipcRenderer.invoke("get-product-by-id", token, productId),
+    getAssociatedMenuPagesByProductId: (token: string, productId: string) =>
+        ipcRenderer.invoke("get-associated-menu-pages-by-product-id", token, productId),
+    
 
     // customer operations
     createCustomer: (token: string, customer: any) =>
@@ -262,6 +269,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.invoke("delete-menu-page", token, id),
     getMenuPageProducts: (token: string, menuPageId: string) =>
         ipcRenderer.invoke("get-menu-page-products", token, menuPageId),
+    getAssociatedMenuByMenuPageId: (token: string, menuPageId: string) =>
+        ipcRenderer.invoke(
+            "get-associated-menu-by-menu-page-id",
+            token,
+            menuPageId
+        ),
 
     // Menus operations
     getMenus: (token: string) => ipcRenderer.invoke("get-menus", token),

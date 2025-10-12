@@ -18,13 +18,13 @@ interface BaseCardData {
 interface UnifiedCardProps {
   data: BaseCardData;
   type:
-    | "category"
-    | "subcategory"
-    | "product"
-    | "group"
-    | "variant"
-    | "menuPage"
-    | "menu";
+  | "category"
+  | "subcategory"
+  | "product"
+  | "group"
+  | "variant"
+  | "menuPage"
+  | "menu";
   onEdit: () => void;
   onDelete?: () => void;
   onClick?: () => void;
@@ -47,10 +47,10 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
   category: {
     padding: "p-3",
     iconSize: "size-5",
-    actionsLayout: "col",
+    actionsLayout: "row",
     headerMb: "mb-2",
     footerMb: "gap-2",
-    hasDelete: false,
+    hasDelete: true,
     getBody: () => null,
     getLeft: (data) => ({ text: `${data.itemCount || 0} Subcategories`, className: "text-xs text-white opacity-90" }),
     getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Category</span>],
@@ -58,10 +58,10 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
   subcategory: {
     padding: "p-3",
     iconSize: "size-5",
-    actionsLayout: "col",
+    actionsLayout: "row",
     headerMb: "mb-2",
     footerMb: "",
-    hasDelete: false,
+    hasDelete: true,
     getBody: () => null,
     getLeft: (data) => ({
       text: (
@@ -205,13 +205,13 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
         <Icon className={iconSize} />
       </button>
     );
-    const actionClass = `opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex ${
-      actionsLayout === "col" ? "flex-col items-center gap-1" : "items-center gap-1"
-    }`;
+    const actionClass = `opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex ${actionsLayout === "col" ? "flex-col items-center gap-1" : "items-center gap-1"
+      }`;
+      const shouldShowDelete = hasDelete && onDelete && (type === "category" ? Number(data.itemCount) === 0 : (type === "subcategory" ? (Number(data.itemCount) === 0 && Number(data.menuCount) === 0) : true));
     return (
       <div className={actionClass}>
         {createButton(onEdit, "hover:text-gray-200", "Edit", EditIcon)}
-        {hasDelete && onDelete && createButton(onDelete, "hover:text-red-200", "Delete", DeleteIcon)}
+        {shouldShowDelete && createButton(onDelete, "hover:text-red-200", "Delete", DeleteIcon)}
       </div>
     );
   };
@@ -219,9 +219,8 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
   return (
     <div onClick={onClick}>
       <div
-        className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${
-          isClickable ? "cursor-pointer" : ""
-        }`}
+        className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${isClickable ? "cursor-pointer" : ""
+          }`}
       >
         <div className={`flex items-center justify-between ${headerMb}`}>
           <h3 className="font-semibold text-white text-lg truncate">{data.name}</h3>

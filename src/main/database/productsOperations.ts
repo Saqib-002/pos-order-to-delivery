@@ -46,15 +46,17 @@ export class ProductsDatabaseOperations {
                 });
             }
             await trx("products_groups").insert(newAddonPages);
-            await trx("printers_products").insert(
-                printerIds.map((printerId) => ({
-                    id: randomUUID,
-                    printerId,
-                    productId: newProduct.id,
-                    createdAt: now,
-                    updatedAt: now,
-                }))
-            );
+            if (printerIds.length > 0) {
+                await trx("printers_products").insert(
+                    printerIds.map((printerId) => ({
+                        id: randomUUID(),
+                        printerId,
+                        productId: newProduct.id,
+                        createdAt: now,
+                        updatedAt: now,
+                    }))
+                );
+            }
             await trx.commit();
         } catch (error) {
             await trx.rollback();
@@ -93,15 +95,22 @@ export class ProductsDatabaseOperations {
             const products = await query;
             const productIds = products.map((p: any) => p.id);
             const allPrinters = await db("printers_products")
-                .join("printers", "printers_products.printerId", "=", "printers.id")
+                .join(
+                    "printers",
+                    "printers_products.printerId",
+                    "=",
+                    "printers.id"
+                )
                 .whereIn("productId", productIds)
-                .select("productId", "printerId","name","isMain");
+                .select("productId", "printerId", "name", "isMain");
             const printerMap = new Map();
-            for (const { productId, printerId,name,isMain } of allPrinters) {
+            for (const { productId, printerId, name, isMain } of allPrinters) {
                 if (!printerMap.has(productId)) {
                     printerMap.set(productId, []);
                 }
-                printerMap.get(productId)!.push(`${printerId}|${name}|${isMain}`);
+                printerMap
+                    .get(productId)!
+                    .push(`${printerId}|${name}|${isMain}`);
             }
             for (const product of products) {
                 product.printerIds = printerMap.get(product.id) || [];
@@ -160,15 +169,17 @@ export class ProductsDatabaseOperations {
             await trx("printers_products")
                 .where("productId", productData.id)
                 .delete();
-            await trx("printers_products").insert(
-                printerIds.map((printerId) => ({
-                    id: randomUUID(),
-                    printerId,
-                    productId: productData.id,
-                    createdAt: now,
-                    updatedAt: now,
-                }))
-            );
+            if (printerIds.length > 0) {
+                await trx("printers_products").insert(
+                    printerIds.map((printerId) => ({
+                        id: randomUUID(),
+                        printerId,
+                        productId: productData.id,
+                        createdAt: now,
+                        updatedAt: now,
+                    }))
+                );
+            }
             await trx.commit();
         } catch (error) {
             await trx.rollback();
@@ -228,10 +239,31 @@ export class ProductsDatabaseOperations {
                 .select("products.*")
                 .first();
             const productPrinters = await db("printers_products")
-                .join("printers", "printers_products.printerId", "=", "printers.id")
+                .join(
+                    "printers",
+                    "printers_products.printerId",
+                    "=",
+                    "printers.id"
+                )
                 .where("productId", productId)
-                .select("printers_products.printerId", "printers.name","printers.isMain")
-            product.printerIds = productPrinters.map((p: any) => `${p.printerId}|${p.name}|${p.isMain}`);
+                .select(
+                    "printers_products.printerId",
+                    "printers.name",
+                    "printers.isMain"
+                );
+            product.printerIds = productPrinters.map(
+                (p: any) => `${p.printerId}|${p.name}|${p.isMain}`
+            );
+            return product;
+        } catch (error) {
+            throw error;
+        }
+    }
+    static async getAssociatedMenuPagesByProductId(productId: string) {
+        try {
+            const product = await db("menu_page_products")
+                .where("productId", productId)
+                .select("id")
             return product;
         } catch (error) {
             throw error;

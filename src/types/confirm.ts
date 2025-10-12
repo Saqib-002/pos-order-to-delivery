@@ -3,6 +3,7 @@ export interface ConfirmOptions {
     message: string;
     confirmText?: string;
     cancelText?: string;
+    specialNote?: string;
     type?: "danger" | "warning" | "info" | "success";
     itemName?: string;
     icon?: React.ReactNode;

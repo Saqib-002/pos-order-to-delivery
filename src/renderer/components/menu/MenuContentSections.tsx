@@ -18,9 +18,11 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
   onCategoryClick,
   onSubcategoryClick,
   onEditCategory,
+  onDeleteCategory,
   onEditSubcategory,
+  onDeleteSubcategory,
   onEditProduct,
-  onDeleteProduct,
+  onDeleteProduct
 }) => {
   const getFilteredProducts = () => {
     if (!selectedSubcategory) return [];
@@ -37,6 +39,7 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
             categories={categories}
             onCategoryClick={onCategoryClick}
             onEditCategory={onEditCategory}
+            onDeleteCategory={onDeleteCategory}
           />
         );
 
@@ -47,6 +50,7 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
             selectedCategory={selectedCategory}
             onSubcategoryClick={onSubcategoryClick}
             onEditSubcategory={onEditSubcategory}
+            onDeleteSubcategory={onDeleteSubcategory}
           />
         );
 
@@ -72,6 +76,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
   categories,
   onCategoryClick,
   onEditCategory,
+  onDeleteCategory
 }) => (
   <SectionWrapper title="Categories">
     <ItemGrid>
@@ -83,6 +88,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
             key={category.id}
             data={category}
             type="category"
+            onDelete={()=>onDeleteCategory(category.id)}
             onEdit={() => onEditCategory(category)}
             onClick={() => onCategoryClick(category)}
           />
@@ -97,6 +103,7 @@ const SubcategorySection: React.FC<SubcategorySectionProps> = ({
   selectedCategory,
   onSubcategoryClick,
   onEditSubcategory,
+  onDeleteSubcategory
 }) => (
   <SectionWrapper title={`Subcategories in ${selectedCategory?.name}`}>
     <ItemGrid>
@@ -110,6 +117,7 @@ const SubcategorySection: React.FC<SubcategorySectionProps> = ({
             type="subcategory"
             onEdit={() => onEditSubcategory(subcategory)}
             onClick={() => onSubcategoryClick(subcategory)}
+            onDelete={()=>onDeleteSubcategory(subcategory.id)}
           />
         ))
       )}

@@ -177,19 +177,24 @@ export class VariantsDatabaseOperations {
     static async getAssociatedProductsByVariantId(variantId: string) {
         try {
             const products = await db("products_variants")
-                .join(
+                .leftJoin(
                     "products",
                     "products_variants.productId",
                     "=",
                     "products.id"
                 )
-                .join(
+                .leftJoin(
                     "sub_categories",
                     "products.subcategoryId",
                     "=",
                     "sub_categories.id"
+                ).leftJoin(
+                    "variant_items",
+                    "variant_items.id",
+                    "=",
+                    "products_variants.variantId"
                 )
-                .where("products_variants,variantId", variantId)
+                .where("variant_items.variantId", variantId)
                 .select(
                     "products.id as productId",
                     "products.name as productName",

@@ -26,13 +26,15 @@ export const Navigation = ({
       case "delivery-management":
         return "📦";
       case "manage-orders":
-        return "⚙️";
+        return "📋";
       case "reports":
         return "📊";
       case "menu-structure":
         return "🍽️";
       case "users":
         return "👥";
+      case "configurations":
+        return "⚙️";
       default:
         return "📄";
     }

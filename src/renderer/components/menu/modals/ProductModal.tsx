@@ -138,12 +138,26 @@ const ProductModal: React.FC<ProductModalProps> = ({
           obj[item.id] = item.price;
           return obj;
         }, {});
-        handleVariantChange(res.data[0].variantId, newPrices);
+        handleVariantChange(res.data[0]?.variantId, newPrices);
         const groupRes = await (
           window as any
         ).electronAPI.getAddOnPagesByProductId(token, product.id);
         if (!groupRes.status) {
           toast.error("Unable to get product's addon pages");
+          return;
+        }
+        if (groupRes.data.length === 0) {
+          setAddonPages([
+            {
+              id: 1,
+              minComplements: 0,
+              maxComplements: 0,
+              freeAddons: 0,
+              pageNo: 1,
+              selectedGroup: "",
+            },
+          ]);
+          setSelectedAddonPage(1);
           return;
         }
         setAddonPages(
@@ -158,7 +172,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
             };
           })
         );
-        setSelectedAddonPage(groupRes.data[0].pageNo);
+        setSelectedAddonPage(groupRes.data[0]?.pageNo);
         const printerRes = await (window as any).electronAPI.getProductPrinters(token, product.id);
         if (printerRes.status) {
           setSelectedPrinterIds(printerRes.data.map((p: any) => p.printerId));
@@ -434,8 +448,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
     const lastPage = addonPages[addonPages.length - 1];
     return (
       !groups.every((group) =>
-        addonPages.some((page) => page.selectedGroup === group.id)
-      ) && lastPage.selectedGroup !== ""
+        addonPages.some((page) => page?.selectedGroup === group.id)
+      ) && lastPage?.selectedGroup !== ""
     );
   };
 
@@ -832,6 +846,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     required
                     otherClasses="relative"
                     postLabel="%"
+                    secLabelClasses="right-3 top-2"
                   />
                   <CustomInput
                     label="DISCOUNT"
@@ -1115,7 +1130,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           type="number"
                           label="Minimum number of complements"
                           name="minComplements"
-                          value={getCurrentPageData().minComplements}
+                          value={getCurrentPageData()?.minComplements || 0}
                           onChange={(e) =>
                             handleAddonPageSetupChange(
                               selectedAddonPage,
@@ -1139,7 +1154,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           type="number"
                           label="Maximum number of complements"
                           name="maxComplements"
-                          value={getCurrentPageData().maxComplements}
+                          value={getCurrentPageData()?.maxComplements || 0}
                           onChange={(e) =>
                             handleAddonPageSetupChange(
                               selectedAddonPage,
@@ -1183,10 +1198,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   <label className="block text-sm font-medium text-gray-700">
                     ADD PLUGIN GROUP FOR PAGE {selectedAddonPage}
                   </label>
-                  {getCurrentPageData().selectedGroup && (
+                  {getCurrentPageData()?.selectedGroup && (
                     <span className="text-sm text-gray-500">
                       (Available items:{" "}
-                      {getGroupItemCount(getCurrentPageData().selectedGroup)})
+                      {getGroupItemCount(getCurrentPageData()?.selectedGroup)})
                     </span>
                   )}
                 </div>
@@ -1199,13 +1214,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       onClick={() =>
                         handlePagePluginGroupChange(selectedAddonPage, group.id)
                       }
-                      className={`cursor-pointer relative px-4 py-3 rounded-md text-sm font-medium text-white transition-colors duration-200 ${getPluginGroupColorClasses(group.color)} ${getCurrentPageData().selectedGroup === group.id
+                      className={`cursor-pointer relative px-4 py-3 rounded-md text-sm font-medium text-white transition-colors duration-200 ${getPluginGroupColorClasses(group.color)} ${getCurrentPageData()?.selectedGroup === group.id
                         ? `ring-2 ${getPluginGroupRingClasses(group.color)} ring-offset-2`
                         : ""
                         }`}
                     >
                       {group.name}
-                      {getCurrentPageData().selectedGroup === group.id && (
+                      {getCurrentPageData()?.selectedGroup === group.id && (
                         <div
                           className={`absolute -top-3 -right-2 w-5 h-5 ${getPluginGroupCheckmarkClasses(group.color)} rounded-full flex items-center justify-center`}
                         >

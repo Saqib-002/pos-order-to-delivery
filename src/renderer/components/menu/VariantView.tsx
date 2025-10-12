@@ -41,17 +41,21 @@ export const VariantView = () => {
 
   const handleDeleteVariant = async (variant: Variant) => {
     const res = await fetchAssociatedProductsByVariantId(token, variant.id, setAssociatedProducts);
-    if (!res) return;
+    if (!res?.status) return;
     const ok = await confirm({
       title: "Delete Variant",
-      message: `Are you sure you want to delete "${variant.name !== "" ? variant.name : variant.items.map((i) => i.name).join("-")}" with "${variant.items.length} variants"? This variant is attached to ${associatedProducts.length} products. They will be detached!`,
+      message: `Are you sure you want to delete "${variant.name !== "" ? variant.name : variant.items.map((i) => i.name).join("-")}" with "${variant.items.length} variants"? This variant is attached to ${res.data.length} products. They will be detached!`,
+      type: "danger",
+      confirmText: "Delete Variant",
+      cancelText: "Cancel",
+      specialNote: "If you delete this variant you can no longer edit this variant in any attached order!",
+      itemName: variant.name
     })
     if (!ok) return;
     const delRes = await (window as any).electronAPI.deleteVariant(
       token,
       variant.id
     );
-    console.log(delRes);
     if (!delRes.status) {
       toast.error("Unable to delete variant");
       return;

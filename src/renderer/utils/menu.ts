@@ -201,16 +201,21 @@ export const fetchAssociatedProductsByVariantId = async (
     try {
         const response = await (
             window as any
-        ).electronAPI.getAttachProductsByGroupId(token, variantId);
+        ).electronAPI.getAssociatedProductsByVariantId(token, variantId);
         if (!response.status) {
             toast.error("Failed to fetch associated products");
             return;
         } else {
             setAssociatedProducts(response.data);
         }
-        return true;
+        return {
+            status:true,
+            data:response.data
+        };
       } catch (error) {
         toast.error("Failed to fetch associated products");
-        return false;
+        return {
+            status:false
+        };
     }
 };

@@ -15,6 +15,8 @@ import {
 } from "@/types/Menu";
 import { fetchCategories, fetchProducts, fetchSubcategories } from "@/renderer/utils/menu";
 import { useAuth } from "@/renderer/contexts/AuthContext";
+import { toast } from "react-toastify";
+import { useConfirm } from "@/renderer/hooks/useConfirm";
 
 type NavigationLevel = "categories" | "subcategories" | "products";
 
@@ -23,7 +25,8 @@ export const MenuComponent = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const {auth:{token}}=useAuth();
+  const { auth: { token } } = useAuth();
+  const confirm = useConfirm();
 
   // State for modals
   const [modals, setModals] = useState({
@@ -47,12 +50,12 @@ export const MenuComponent = () => {
     selectedSubcategory: null as Subcategory | null,
   });
 
-  
+
 
   // Initialize data
   useEffect(() => {
     fetchCategories(token, setCategories);
-    fetchProducts(token,setProducts);
+    fetchProducts(token, setProducts);
   }, [token]);
   // Modal control functions
   const openModal = (type: keyof typeof modals, editItem?: any) => {
@@ -74,7 +77,7 @@ export const MenuComponent = () => {
       selectedCategory: category,
       selectedSubcategory: null,
     });
-    fetchSubcategories(category.id,token,setSubcategories);
+    fetchSubcategories(category.id, token, setSubcategories);
   };
 
   const handleSubcategoryClick = (subcategory: Subcategory) => {
@@ -105,19 +108,35 @@ export const MenuComponent = () => {
   // Success handlers
   const handleCategorySuccess = () => {
     closeModal("category");
-    fetchCategories(token,setCategories);
+    fetchCategories(token, setCategories);
+  };
+  const handleCategoryDelete = async (catId: string) => {
+    const res = await (window as any).electronAPI.deleteCategory(token, catId);
+    if (!res.status) {
+      toast.error("Unable to delete category");
+      return;
+    }
+    fetchCategories(token, setCategories);
   };
 
   const handleSubcategorySuccess = () => {
     closeModal("subcategory");
     if (navigation.selectedCategory) {
-      fetchSubcategories(navigation.selectedCategory.id,token,setSubcategories);
+      fetchSubcategories(navigation.selectedCategory.id, token, setSubcategories);
     }
+  };
+  const handleSubCategoryDelete = async (id: string) => {
+    const res = await (window as any).electronAPI.deleteSubcategory(token, id);
+    if (!res.status) {
+      toast.error("Unable to delete category");
+      return;
+    }
+    fetchSubcategories(navigation.selectedCategory!.id, token, setSubcategories);
   };
 
   const handleProductSuccess = () => {
     closeModal("product");
-    fetchProducts(token,setProducts);
+    fetchProducts(token, setProducts);
   };
 
   const handleMenuSuccess = () => {
@@ -125,11 +144,28 @@ export const MenuComponent = () => {
   };
 
   // Delete handler
-  const handleDeleteProduct = (product: Product) => {
-    if (window.confirm(`Are you sure you want to delete "${product.name}"?`)) {
-      setProducts((prev) => prev.filter((p) => p.id !== product.id));
-      // TODO: Call API to delete product
+  const handleDeleteProduct = async (product: Product) => {
+    const menuRes=await (window as any).electronAPI.getAssociatedMenuPagesByProductId(token,product.id);
+    if(!menuRes.status){
+      toast.error("Unable to delete product");
+      return;
     }
+    const ok = await confirm({
+      title: 'Delete Product',
+      message: `Are you sure you want to delete "${product.name}"? ${menuRes.data.length} menu pages are attached`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'danger',
+      specialNote:"If you delete this product you can no longer edit this product in order!",
+      itemName: product.name
+    })
+    if (!ok) return;
+    const res=await (window as any).electronAPI.deleteProduct(token, product.id);
+    if (!res.status) {
+      toast.error("Unable to delete product");
+      return;
+    }
+    fetchProducts(token, setProducts);
   };
 
   return (
@@ -163,9 +199,11 @@ export const MenuComponent = () => {
         onCategoryClick={handleCategoryClick}
         onSubcategoryClick={handleSubcategoryClick}
         onEditCategory={(category) => openModal("category", category)}
+        onDeleteCategory={handleCategoryDelete}
         onEditSubcategory={(subcategory) =>
           openModal("subcategory", subcategory)
         }
+        onDeleteSubcategory={handleSubCategoryDelete}
         onEditProduct={(product) => openModal("product", product)}
         onDeleteProduct={handleDeleteProduct}
       />
@@ -199,7 +237,7 @@ export const MenuComponent = () => {
         product={editing.product}
         categories={categories}
         subcategories={subcategories}
-        onFetchSubcategories={(id)=>fetchSubcategories(id,token,setSubcategories)}
+        onFetchSubcategories={(id) => fetchSubcategories(id, token, setSubcategories)}
         onClearSubcategories={() => setSubcategories([])}
       />
 

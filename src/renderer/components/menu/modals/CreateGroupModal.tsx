@@ -63,7 +63,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         token,
         editingGroup!.id
       );
-      console.log(response);
       if (!response.status) {
         toast.error("Failed to fetch associated products");
         return;
@@ -99,6 +98,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
   useEffect(() => {
     if (editingGroup) {
+      if (isOpen) {
+        fetchAssociatedProducts();
+      }
       setFormData({
         name: editingGroup.name,
         color: editingGroup.color,
@@ -203,10 +205,15 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       setIsSubmitting(false);
     }
   };
-  const handleDeleteGroup = async (id: string) => {
+  const handleDeleteGroup = async (id: string,name:string) => {
     const ok = await confirm({
       title: "Delete Group",
-      message: `Are you sure you want to delete this "${editingGroup?.name}" with ${complements.length} items? This group is attached to ${associatedProducts?associatedProducts.length:0} products. They will be detached!`,
+      message: `Are you sure you want to delete this "${editingGroup?.name}" with ${complements.length} items? This group is attached to ${associatedProducts ? associatedProducts.length : 0} products. They will be detached!`,
+      itemName: name,
+      type: "danger",
+      confirmText: "Delete Group",
+      cancelText: "Cancel",
+      specialNote: "If you delete this group you can no longer edit this group in any attached order!",
     })
     if (!ok) return;
     await (window as any).electronAPI.deleteGroup(token, id).then((res: any) => {
@@ -335,7 +342,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             <button
               type="button"
               onClick={() => {
-                fetchAssociatedProducts();
                 setShowAssociatedProducts(true)
               }}
               className="cursor-pointer text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
@@ -350,7 +356,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             className={`flex ${editingGroup ? "justify-between" : "justify-end"} items-center`}
           >
             {editingGroup && (
-              <CustomButton type="button" onClick={() => handleDeleteGroup(editingGroup.id)} variant="transparent" label="ELIMINATE" className="text-red-500 hover:text-red-700" />
+              <CustomButton type="button" onClick={() => handleDeleteGroup(editingGroup.id, editingGroup.name)} variant="transparent" label="ELIMINATE" className="text-red-500 hover:text-red-700" />
             )}
 
             <div className="flex gap-3">
