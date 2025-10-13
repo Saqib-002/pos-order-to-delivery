@@ -4,11 +4,18 @@ import PaymentProcessingModal from "./modals/PaymentProcessingModal";
 import { toast } from "react-toastify";
 import { Order, OrderItem, Customer } from "@/types/order";
 import { useAuth } from "@/renderer/contexts/AuthContext";
-import {
-  calculateOrderTotal,
-} from "@/renderer/utils/orderCalculations";
+import { calculateOrderTotal } from "@/renderer/utils/orderCalculations";
 import { formatAddress } from "@/renderer/utils/utils";
-import { AddIcon, CashIcon, CheckIcon, CrossIcon, DocumentIcon, LocationFilledIcon, LocationIcon, SearchIcon } from "@/renderer/assets/Svg";
+import {
+  AddIcon,
+  CashIcon,
+  CheckIcon,
+  CrossIcon,
+  DocumentIcon,
+  LocationFilledIcon,
+  LocationIcon,
+  SearchIcon,
+} from "@/renderer/assets/Svg";
 import CustomInput from "../shared/CustomInput";
 import CustomButton from "../ui/CustomButton";
 
@@ -53,8 +60,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     setIsCustomerModalOpen(false);
   }, []);
 
-  const { orderTotal,nonMenuItems, groups } = calculateOrderTotal(orderItems);
-
+  const { orderTotal, nonMenuItems, groups } = calculateOrderTotal(orderItems);
 
   const searchCustomers = async (searchTerm: string) => {
     if (!searchTerm.trim() || !token) return;
@@ -125,12 +131,16 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   }, [showSearchResults]);
 
   const handleProcessOrder = () => {
-    if (!selectedCustomer) {
-      toast.error("Please select a customer");
+    if (orderType === "delivery" && !selectedCustomer) {
+      toast.error("Please select a customer for delivery orders");
       return;
     }
 
-    if (orderType === "delivery" && !selectedCustomer.address.trim()) {
+    if (
+      orderType === "delivery" &&
+      selectedCustomer &&
+      !selectedCustomer.address.trim()
+    ) {
       toast.error(
         "Selected customer has no address. Please select a different customer or change to pickup."
       );
@@ -151,17 +161,19 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     paymentType: string;
     totalAmount: number;
   }) => {
-    if (!selectedCustomer) return;
+    if (orderType === "delivery" && !selectedCustomer) return;
 
     const orderData = {
-      customerName: selectedCustomer.name,
-      customerPhone: selectedCustomer.phone,
-      customerCIF: selectedCustomer.cif || "",
-      customerEmail: selectedCustomer.email || "",
-      customerComments: selectedCustomer.comments || "",
+      customerName:
+        selectedCustomer?.name ||
+        (orderType === "dine-in" ? "Dine-in Customer" : "Walk-in Customer"),
+      customerPhone: selectedCustomer?.phone || "",
+      customerCIF: selectedCustomer?.cif || "",
+      customerEmail: selectedCustomer?.email || "",
+      customerComments: selectedCustomer?.comments || "",
       customerAddress:
         orderType === "delivery"
-          ? selectedCustomer.address
+          ? selectedCustomer?.address || ""
           : orderType === "dine-in"
             ? "Dine-in"
             : "In-store",
@@ -187,9 +199,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             </div>
             <div>
               <h2 className="text-2xl font-bold">Process Order</h2>
-              <p className="text-indigo-100 text-sm">
-                Complete order details
-              </p>
+              <p className="text-indigo-100 text-sm">Complete order details</p>
             </div>
           </div>
           <button
@@ -212,22 +222,50 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 </div>
               </div>
               <h3 className="text-xl font-bold text-gray-900">
-                Customer Search
+                Customer Search {orderType === "delivery" ? "*" : "(Optional)"}
               </h3>
             </div>
 
             {/* Search Input */}
             <div className="flex gap-6 relative">
-              <CustomInput label="Search Customer *" placeholder="Type customer name or phone to search..." value={customerSearch} onChange={(e) => setCustomerSearch(e.target.value)} required name="search-customer" type="text" inputClasses="py-3 px-4 text-lg pr-12" postLabel={isSearching ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500 touch-manipulation"></div> : <SearchIcon className="size-5 text-gray-400" />} secLabelClasses="absolute right-4 top-4 w-max" otherClasses="flex-1" />
-              <CustomButton label="Add New" type="button" variant="green" onClick={() => setIsCustomerModalOpen(true)} Icon={<AddIcon className="size-5" />} className="h-max py-3 self-end text-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 touch-manipulation" />
+              <CustomInput
+                label={`Search Customer ${orderType === "delivery" ? "*" : "(Optional)"}`}
+                placeholder="Type customer name or phone to search..."
+                value={customerSearch}
+                onChange={(e) => setCustomerSearch(e.target.value)}
+                required={orderType === "delivery"}
+                name="search-customer"
+                type="text"
+                inputClasses="py-3 px-4 text-lg pr-12"
+                postLabel={
+                  isSearching ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500 touch-manipulation"></div>
+                  ) : (
+                    <SearchIcon className="size-5 text-gray-400" />
+                  )
+                }
+                secLabelClasses="absolute right-4 top-4 w-max"
+                otherClasses="flex-1"
+              />
+              <CustomButton
+                label="Add New"
+                type="button"
+                variant="green"
+                onClick={() => setIsCustomerModalOpen(true)}
+                Icon={<AddIcon className="size-5" />}
+                className="h-max py-3 self-end text-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 touch-manipulation"
+              />
               {showSearchResults && searchResults.length > 0 && (
                 <div className="absolute z-50 top-20 w-full bg-white border-2 border-gray-200 rounded-xl shadow-xl max-h-48 overflow-y-auto mt-2 customer-search-container">
                   {searchResults.map((customer) => (
-                    <CustomButton key={customer.id} type="button" onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      selectCustomer(customer);
-                    }}
+                    <CustomButton
+                      key={customer.id}
+                      type="button"
+                      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        selectCustomer(customer);
+                      }}
                       variant="transparent"
                       label={
                         <>
@@ -256,7 +294,13 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     </div>
                     <span>Selected Customer</span>
                   </h4>
-                  <CustomButton type="button" onClick={clearCustomerSelection} label="Change" variant="transparent" className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 touch-manipulation !py-1 !px-3" />
+                  <CustomButton
+                    type="button"
+                    onClick={clearCustomerSelection}
+                    label="Change"
+                    variant="transparent"
+                    className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 touch-manipulation !py-1 !px-3"
+                  />
                 </div>
                 <div className="space-y-4">
                   {/* Name, Phone, Email in one row */}
@@ -311,36 +355,63 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               <h3 className="text-xl font-bold text-gray-900">Order Type</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <CustomButton type="button" onClick={() => setOrderType("pickup")} variant="transparent" className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${orderType === "pickup"
-                ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
-                : "border-gray-200 hover:border-indigo-300 bg-white"
-                }`} label={
+              <CustomButton
+                type="button"
+                onClick={() => setOrderType("pickup")}
+                variant="transparent"
+                className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
+                  orderType === "pickup"
+                    ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
+                    : "border-gray-200 hover:border-indigo-300 bg-white"
+                }`}
+                label={
                   <>
                     <div className="text-3xl mb-3">🏪</div>
                     <div className="font-semibold text-base">Pickup</div>
-                    <div className="text-xs text-gray-500 mt-1">Customer pickup</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Customer pickup
+                    </div>
                   </>
-                } />
-              <CustomButton type="button" onClick={() => setOrderType("delivery")} variant="transparent" className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${orderType === "delivery"
-                ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
-                : "border-gray-200 hover:border-indigo-300 bg-white"
-                }`} label={
+                }
+              />
+              <CustomButton
+                type="button"
+                onClick={() => setOrderType("delivery")}
+                variant="transparent"
+                className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
+                  orderType === "delivery"
+                    ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
+                    : "border-gray-200 hover:border-indigo-300 bg-white"
+                }`}
+                label={
                   <>
                     <div className="text-3xl mb-3">🚚</div>
                     <div className="font-semibold text-base">Delivery</div>
-                    <div className="text-xs text-gray-500 mt-1">Home delivery</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Home delivery
+                    </div>
                   </>
-                } />
-              <CustomButton type="button" onClick={() => setOrderType("dine-in")} variant="transparent" className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${orderType === "dine-in"
-                ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
-                : "border-gray-200 hover:border-indigo-300 bg-white"
-                }`} label={
+                }
+              />
+              <CustomButton
+                type="button"
+                onClick={() => setOrderType("dine-in")}
+                variant="transparent"
+                className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
+                  orderType === "dine-in"
+                    ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
+                    : "border-gray-200 hover:border-indigo-300 bg-white"
+                }`}
+                label={
                   <>
                     <div className="text-3xl mb-3">🍽️</div>
                     <div className="font-semibold text-base">Dine In</div>
-                    <div className="text-xs text-gray-500 mt-1">In restaurant</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      In restaurant
+                    </div>
                   </>
-                } />
+                }
+              />
             </div>
           </div>
 
@@ -405,40 +476,39 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             </div>
             <div className="space-y-4">
               {/* Non-Menu Items */}
-              {nonMenuItems
-                .map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex justify-between items-start p-4 bg-white rounded-xl border border-gray-100 shadow-sm"
-                  >
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-900 text-lg">
-                        {item.quantity}x {item.productName}
-                      </div>
-                      <div className="text-sm text-gray-600 mt-1">
-                        Variant: {item.variantName}
-                      </div>
-                      {item.complements.length > 0 && (
-                        <div className="text-xs text-gray-500 mt-2 flex flex-wrap gap-1">
-                          <span className="font-medium">Add-ons:</span>
-                          {item.complements.map((c, index) => (
-                            <span
-                              key={index}
-                              className="bg-gray-100 px-2 py-1 rounded-full"
-                            >
-                              {c.itemName}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+              {nonMenuItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex justify-between items-start p-4 bg-white rounded-xl border border-gray-100 shadow-sm"
+                >
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900 text-lg">
+                      {item.quantity}x {item.productName}
                     </div>
-                    <div className="text-right ml-4">
-                      <div className="font-bold text-gray-900 text-lg">
-                        €{item.totalPrice.toFixed(2)}
+                    <div className="text-sm text-gray-600 mt-1">
+                      Variant: {item.variantName}
+                    </div>
+                    {item.complements.length > 0 && (
+                      <div className="text-xs text-gray-500 mt-2 flex flex-wrap gap-1">
+                        <span className="font-medium">Add-ons:</span>
+                        {item.complements.map((c, index) => (
+                          <span
+                            key={index}
+                            className="bg-gray-100 px-2 py-1 rounded-full"
+                          >
+                            {c.itemName}
+                          </span>
+                        ))}
                       </div>
+                    )}
+                  </div>
+                  <div className="text-right ml-4">
+                    <div className="font-bold text-gray-900 text-lg">
+                      €{item.totalPrice.toFixed(2)}
                     </div>
                   </div>
-                ))}
+                </div>
+              ))}
 
               {/* Menu Groups */}
               {groups.map((group) => {
@@ -562,13 +632,21 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           <CustomButton
             type="button"
             onClick={onClose}
-            variant="secondary" label="Cancel" className="flex-1 text-lg"/>
-            <CustomButton
+            variant="secondary"
+            label="Cancel"
+            className="flex-1 text-lg"
+          />
+          <CustomButton
             type="button"
             onClick={handleProcessOrder}
             className="flex-1 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold hover:from-indigo-700 hover:to-purple-700"
-            Icon={<span className="bg-white rounded-full size-5 flex justify-center items-center"><CheckIcon className="size-3 text-indigo-600"/></span>}
-            label="Proceed Order"/>
+            Icon={
+              <span className="bg-white rounded-full size-5 flex justify-center items-center">
+                <CheckIcon className="size-3 text-indigo-600" />
+              </span>
+            }
+            label="Proceed Order"
+          />
         </div>
       </div>
 
