@@ -609,7 +609,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   min="0"
                   max="100"
                   inputClasses="focus:ring-orange-500 pr-8"
+                  otherClasses="relative"
                   postLabel="%"
+                  secLabelClasses="right-3 top-2"
                 />
                 <CustomInput
                   label="DISCOUNT"
@@ -802,7 +804,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   />
                 </div>
 
-                <div className="w-24">
+                {/* <div className="w-24">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     MULTIPLE
                   </label>
@@ -819,7 +821,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     className="w-full"
                     maxHeight="max-h-36"
                   />
-                </div>
+                </div> */}
 
                 <div className="flex justify-end">
                   <CustomButton

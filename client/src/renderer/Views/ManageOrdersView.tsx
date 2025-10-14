@@ -23,6 +23,7 @@ import EyeIcon from "../assets/icons/eye.svg?react";
 import DocumentIcon from "../assets/icons/document.svg?react";
 import ThunderIcon from "../assets/icons/thunder.svg?react";
 import DeliveredIcon from "../assets/icons/delivered.svg?react";
+import { Euro } from "@/renderer/assets/Svg";
 
 interface ManageOrdersViewProps {
   orders: Order[];
@@ -272,7 +273,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
                     className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors duration-200"
                     title="Process Payment"
                   >
-                    <ThunderIcon className="w-4 h-4" />
+                    <Euro className="w-4 h-4"/>
                   </button>
                 );
               }

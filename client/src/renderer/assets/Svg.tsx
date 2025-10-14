@@ -337,3 +337,10 @@ export const DoubleBackArrowIcon = (props: React.SVGProps<SVGSVGElement>) => (
         />
     </svg>
 );
+
+export const Euro = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+  <path d="M15 18a6 6 0 0 1-5.917-5H8a1 1 0 1 1 0-2h1.083A6.002 6.002 0 0 1 15 6a1 1 0 1 1 0 2 4 4 0 0 0-3.874 3H15a1 1 0 1 1 0 2h-3.874A4.002 4.002 0 0 0 15 16a1 1 0 1 1 0 2z"/>
+</svg>
+
+)
