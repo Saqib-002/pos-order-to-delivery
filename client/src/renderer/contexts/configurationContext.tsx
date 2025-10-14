@@ -4,6 +4,7 @@ interface ConfigurationType {
     name: string;
     address: string;
     logo: string;
+    language?: 'en' | 'es';
 }
 interface ConfigurationContextType {
     configurations: ConfigurationType;
@@ -22,7 +23,8 @@ export const ConfigurationsProvider = ({ children }: { children: React.ReactNode
     const [configurations, setConfigurations] = useState<{
         name?: string,
         address: string,
-        logo: string
+        logo: string,
+        language?: 'en' | 'es'
     }>({
         name: "",
         address: "",

@@ -1,0 +1,111 @@
+
+  {
+    "greeting": "¡Hola!",
+    "welcome": "Bienvenido a nuestro sitio web.",
+
+    "configurations": {
+      "title": "Configuraciones",
+      "languageLabel": "Idioma",
+      "languageOptions": {
+        "en": "Inglés",
+        "es": "Español"
+      },
+      "companyName": "Nombre de la empresa",
+      "companyNamePlaceholder": "Ingrese el nombre de la empresa",
+      "companyAddress": "Dirección de la empresa",
+      "companyAddressPlaceholder": "Ingrese la dirección de la empresa",
+      "companyLogo": "Logo de la empresa",
+      "uploadLogoPrompt": "Sube el logo de tu empresa",
+      "uploadLogoSub": "PNG, JPG hasta 2MB",
+      "clickChangeLogo": "Haz clic para cambiar el logo",
+      "save": "Guardar",
+      "savedSuccess": "Configuraciones guardadas correctamente",
+      "errorGetting": "Error al obtener las configuraciones",
+      "errorSaving": "Error al guardar las configuraciones"
+    },
+
+    "printers": {
+      "title": "Impresoras",
+      "subtitle": "Administrar impresoras",
+      "addPrinter": "Agregar impresora",
+      "manageDescription": "Agrega y administra tus impresoras",
+      "connectedPrinters": "Impresoras conectadas",
+      "noPrinters": "Aún no hay impresoras conectadas. Agrega una arriba.",
+      "table": {
+        "displayName": "Nombre para mostrar",
+        "printerName": "Nombre de la impresora",
+        "createdAt": "Creado el",
+        "mainPrinter": "Impresora principal",
+        "actions": "Acciones"
+      },
+      "deleteTitle": "Eliminar impresora",
+      "deleteMessage": "¿Estás seguro de que deseas eliminar esta impresora? Cada producto asociado a esta impresora será desvinculado.",
+      "deleteConfirm": "Eliminar",
+      "deleteCancel": "Cancelar",
+      "deletedSuccess": "Impresora eliminada correctamente",
+      "deletedFailed": "No se pudo eliminar la impresora",
+      "deletedError": "Ocurrió un error al eliminar la impresora",
+      "yes": "Sí",
+      "no": "No"
+    },
+  "userManagement": {
+    "title": "Administración de usuarios",
+    "subtitle": "Administra los usuarios del sistema y sus roles",
+    "addUser": "Agregar usuario",
+    "totalUsers": "Usuarios totales",
+    "admins": "Admins",
+    "staff": "Personal",
+    "kitchenManager": "Cocina/Gerente",
+    "searchPlaceholder": "Buscar usuarios...",
+    "noUsersTitle": "No se encontraron usuarios",
+    "noUsersFirst": "Comienza agregando tu primer usuario.",
+    "noUsersTry": "Intenta ajustar tu búsqueda o filtro de roles.",
+    "table": {
+      "user": "Usuario",
+      "role": "Rol",
+      "email": "Correo electrónico",
+      "actions": "Acciones"
+    },
+    "modal": {
+      "addNew": "Agregar nuevo usuario",
+      "edit": "Editar usuario",
+      "username": "Nombre de usuario",
+      "password": "Contraseña",
+      "newPassword": "Nueva contraseña",
+      "fullName": "Nombre completo",
+      "email": "Correo electrónico",
+      "role": "Rol",
+      "cancel": "Cancelar",
+      "add": "Agregar usuario",
+      "update": "Actualizar usuario"
+    },
+    "roles": {
+      "all": "Todos",
+      "admin": "Admin",
+      "staff": "Personal",
+      "kitchen": "Cocina",
+      "manager": "Gerente"
+    },
+    "validation": {
+      "emailRequired": "El correo es obligatorio",
+      "emailInvalid": "Por favor ingresa una dirección de correo válida",
+      "usernameRequired": "Por favor ingresa un nombre de usuario",
+      "nameRequired": "Por favor ingresa un nombre",
+      "passwordRequired": "Por favor ingresa una contraseña"
+    },
+    "messages": {
+      "fetchFailed": "Error al obtener usuarios",
+      "addFailed": "Error al agregar usuario",
+      "updateFailed": "Error al actualizar usuario",
+      "deleteFailed": "Error al eliminar usuario",
+      "usernameTaken": "Nombre de usuario ya en uso",
+      "added": "Usuario agregado correctamente",
+      "updated": "Usuario actualizado correctamente",
+      "deleted": "Usuario eliminado correctamente"
+    },
+    "deleteConfirmTitle": "Eliminar usuario",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar este usuario?",
+    "yes": "Sí",
+    "no": "No"
+  }
+}

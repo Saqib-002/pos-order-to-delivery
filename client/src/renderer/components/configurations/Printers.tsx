@@ -7,6 +7,7 @@ import { useAuth } from '@/renderer/contexts/AuthContext';
 import { toast } from "react-toastify";
 import { PrinterModal } from './Modals/PrinterModal';
 import { useConfirm } from '@/renderer/hooks/useConfirm';
+import { useTranslation } from 'react-i18next';
 
 const Printers = () => {
     const [connectedPrinters, setConnectedPrinters] = useState([]);
@@ -16,6 +17,7 @@ const Printers = () => {
     const [currentPrinter, setCurrentPrinter] = useState<any>(null);
     const { auth: { token } } = useAuth();
     const confirm =useConfirm();
+    const { t } = useTranslation();
 
     useEffect(() => {
         fetchConnectedPrinters(token, setConnectedPrinters);
@@ -41,23 +43,23 @@ const Printers = () => {
     };
     const handleDelete = async (id: string,printerName:string) => {
         const ok=await confirm({
-            title:'Delete Printer',
-            message:'Are you sure you want to delete this printer?Every product attach to this printer will be detached and?',
-            confirmText:'Delete',
-            cancelText:'Cancel',
+            title: t('printers.deleteTitle'),
+            message: t('printers.deleteMessage'),
+            confirmText: t('printers.deleteConfirm'),
+            cancelText: t('printers.deleteCancel'),
             itemName:printerName
         });
         if(!ok) return;
         try {
             const res = await (window as any).electronAPI.deletePrinter(token, id);
             if (res.status) {
-                toast.success('Printer deleted successfully');
+                toast.success(t('printers.deletedSuccess'));
                 fetchPrinters(token, setPrinters);
             } else {
-                toast.error('Failed to delete printer');
+                toast.error(t('printers.deletedFailed'));
             }
         } catch (error) {
-            toast.error('An error occurred while deleting the printer');
+            toast.error(t('printers.deletedError'));
         }
     };
 
@@ -79,37 +81,37 @@ const Printers = () => {
                     onSuccess={() => fetchPrinters(token, setPrinters)}
                 />
             )}
-            <Header title='Printers' subtitle='Manage Printers' icon={<PrinterIcon className='size-8 text-blue-500' />} iconbgClasses="bg-blue-100" />
+            <Header title={t('printers.title')} subtitle={t('printers.subtitle')} icon={<PrinterIcon className='size-8 text-blue-500' />} iconbgClasses="bg-blue-100" />
             <div className="pb-6 flex-1">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                     <div className="flex justify-between items-center">
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900">
-                                Printers
+                                {t('printers.title')}
                             </h3>
                             <p className="text-sm text-gray-500 mt-1">
-                                Add and manage your printers
+                                {t('printers.manageDescription')}
                             </p>
                         </div>
-                        <CustomButton type="button" label="Add Printer" onClick={handleAddPrinter} Icon={<PrinterIcon className="size-5" />} />
+                        <CustomButton type="button" label={t('printers.addPrinter')} onClick={handleAddPrinter} Icon={<PrinterIcon className="size-5" />} />
                     </div>
                 </div>
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                        Connected Printers
+                        {t('printers.connectedPrinters')}
                     </h3>
                     {printers.length === 0 ? (
-                        <p className="text-gray-500">No printers connected yet. Add one above.</p>
+                        <p className="text-gray-500">{t('printers.noPrinters')}</p>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Display Name</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Printer Name</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Main Printer</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('printers.table.displayName')}</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('printers.table.printerName')}</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('printers.table.createdAt')}</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('printers.table.mainPrinter')}</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('printers.table.actions')}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -118,7 +120,7 @@ const Printers = () => {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{printer.displayName}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{printer.name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(printer.createdAt).toLocaleDateString()}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{printer.isMain ? 'Yes' : 'No'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{printer.isMain ? t('printers.yes') : t('printers.no')}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
                                                 <CustomButton type="button" onClick={() => handleView(printer)} Icon={<EyeIcon className="size-5" />} variant="transparent" className='!p-0'/>
                                                 <CustomButton type="button" onClick={() => handleEdit(printer)} Icon={<EditIcon className="size-5" />} variant="transparent" className='!p-0 !text-blue-500 hover:!text-blue-700'/>
