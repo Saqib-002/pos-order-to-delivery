@@ -1,6 +1,7 @@
 import { DeliveryPerson, FilterType, Order } from "@/types/order";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import { DeliveryPersonInput } from "../components/delivery/DeliveryPersonInput.view";
 import { OrderTable } from "../components/shared/OrderTable";
 import { StatsCard } from "../components/shared/StatsCard.order";
@@ -29,6 +30,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
   filter,
   setFilter,
 }) => {
+  const { t } = useTranslation();
   useEffect(() => {
     if (!filter.selectedDate) {
       setFilter((prev) => ({
@@ -193,7 +195,9 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
         </td>
         <td className="px-6 py-4 min-w-[250px]">
           <div className="text-sm text-gray-900 max-w-xs">
-            {order.customer.address ? formatAddress(order.customer.address) : "-"}
+            {order.customer.address
+              ? formatAddress(order.customer.address)
+              : "-"}
           </div>
         </td>
         <td className="px-6 py-4 min-w-[250px]">
@@ -292,7 +296,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105"
         >
           <MarkIcon className="size-4" />
-          Delivered
+          {t("deliveryView.delivered")}
         </button>
       </td>
     </tr>
@@ -301,8 +305,8 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
   return (
     <div className="flex flex-col">
       <Header
-        title="Delivery Management"
-        subtitle="Assign and track order deliveries"
+        title={t("deliveryView.title")}
+        subtitle={t("deliveryView.subtitle")}
         icon={<DeliveredIcon className="size-8 text-blue-600" />}
         iconbgClasses="bg-blue-100"
       />
@@ -334,8 +338,8 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
                     {readyOrders.length > 0
-                      ? "Ready for Delivery Orders"
-                      : "No orders ready for delivery"}
+                      ? t("deliveryView.readyForDeliveryOrders")
+                      : t("deliveryView.noOrdersReady")}
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">
                     {readyOrders.length > 0

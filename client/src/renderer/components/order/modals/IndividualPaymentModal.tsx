@@ -4,6 +4,7 @@ import { calculateOrderTotal } from "../../../utils/orderCalculations";
 import { calculatePaymentStatus } from "../../../utils/paymentStatus";
 import { updateOrder } from "../../../utils/order";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import CustomInput from "../../shared/CustomInput";
 import PersonIcon from "../../../assets/icons/person.svg?react";
 import ThunderIcon from "../../../assets/icons/thunder.svg?react";
@@ -23,6 +24,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
   token,
   refreshOrdersCallback,
 }) => {
+  const { t } = useTranslation();
   const [paymentMethods, setPaymentMethods] = useState<
     Array<{ type: string; amount: number }>
   >([]);
@@ -62,12 +64,12 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
   const handleAddPayment = () => {
     const amount = parseFloat(currentAmount);
     if (amount <= 0) {
-      toast.error("Please enter a valid amount");
+      toast.error(t("individualPaymentModal.errors.enterValidAmount"));
       return;
     }
 
     if (!order) {
-      toast.error("No order selected");
+      toast.error(t("individualPaymentModal.errors.noOrderSelected"));
       return;
     }
 
@@ -78,7 +80,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
     );
 
     if (totalPaid + amount > orderTotal) {
-      toast.error("Total payment cannot exceed order total");
+      toast.error(t("individualPaymentModal.errors.totalExceedsOrder"));
       return;
     }
 
@@ -106,13 +108,13 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
 
   const handleApplyPayment = async () => {
     if (!order) {
-      toast.error("No order selected");
+      toast.error(t("individualPaymentModal.errors.noOrderSelected"));
       return;
     }
 
     try {
       if (paymentMethods.length === 0) {
-        toast.error("Please add at least one payment method");
+        toast.error(t("individualPaymentModal.errors.addPaymentMethod"));
         return;
       }
 
@@ -153,22 +155,27 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
       const success = await updateOrder(token, order.id, updateData);
       if (success) {
         if (totalPaid >= orderTotal) {
-          toast.success(`Payment completed successfully: ${paymentTypeString}`);
+          toast.success(
+            t("individualPaymentModal.success.paymentCompleted", {
+              paymentString: paymentTypeString,
+            })
+          );
         } else {
           toast.success(
-            `Partial payment recorded: ${paymentTypeString}. Remaining: €${(orderTotal - totalPaid).toFixed(2)}`
+            t("individualPaymentModal.success.partialPayment", {
+              paymentString: paymentTypeString,
+              remaining: (orderTotal - totalPaid).toFixed(2),
+            })
           );
         }
         handleClose();
         refreshOrdersCallback();
       } else {
-        toast.error("Failed to update payment. Please try again.");
+        toast.error(t("individualPaymentModal.errors.updateFailed"));
       }
     } catch (error) {
       console.error("Error applying payment:", error);
-      toast.error(
-        "An error occurred while processing the payment. Please try again."
-      );
+      toast.error(t("individualPaymentModal.errors.processingError"));
     }
   };
 
@@ -200,10 +207,10 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">
-                Process Payment
+                {t("individualPaymentModal.title")}
               </h2>
               <p className="text-sm text-gray-600">
-                Complete the payment for this order
+                {t("individualPaymentModal.subtitle")}
               </p>
             </div>
           </div>
@@ -248,14 +255,14 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                 </svg>
               </div>
               <h3 className="font-semibold text-gray-900 text-lg">
-                Order Details
+                {t("individualPaymentModal.orderDetails")}
               </h3>
             </div>
 
             <div className="space-y-3">
               <div className="flex justify-between items-center py-2 border-b border-gray-200">
                 <span className="text-sm font-medium text-gray-600">
-                  Order ID
+                  {t("individualPaymentModal.orderId")}
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
                   #{order.orderId}
@@ -264,7 +271,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
 
               <div className="flex justify-between items-center py-2 border-b border-gray-200">
                 <span className="text-sm font-medium text-gray-600">
-                  Customer
+                  {t("individualPaymentModal.customer")}
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
                   {order.customer.name}
@@ -273,7 +280,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
 
               <div className="flex justify-between items-center py-2">
                 <span className="text-sm font-medium text-gray-600">
-                  Total Amount
+                  {t("individualPaymentModal.totalAmount")}
                 </span>
                 <span className="text-lg font-bold text-green-600">
                   €
@@ -287,7 +294,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
           <div className="space-y-2">
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <PersonIcon className="w-4 h-4 mr-2 text-blue-600" />
-              Delivery Person
+              {t("individualPaymentModal.deliveryPerson")}
             </label>
             <div className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-900">
               {order.deliveryPerson ? (
@@ -300,7 +307,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                 </div>
               ) : (
                 <span className="text-gray-500">
-                  No delivery person assigned
+                  {t("individualPaymentModal.noDeliveryPersonAssigned")}
                 </span>
               )}
             </div>
@@ -323,15 +330,17 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                     d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                   />
                 </svg>
-                Payment Methods
+                {t("individualPaymentModal.paymentMethods")}
               </label>
               <div className="text-sm text-gray-500">
-                Total: €
-                {paymentMethods
-                  .reduce((sum, method) => sum + method.amount, 0)
-                  .toFixed(2)}{" "}
-                / €
-                {calculateOrderTotal(order.items || []).orderTotal.toFixed(2)}
+                {t("individualPaymentModal.total", {
+                  paid: paymentMethods
+                    .reduce((sum, method) => sum + method.amount, 0)
+                    .toFixed(2),
+                  total: calculateOrderTotal(
+                    order.items || []
+                  ).orderTotal.toFixed(2),
+                })}
               </div>
             </div>
 
@@ -360,7 +369,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                       : "border-gray-200 hover:border-green-300"
                   }`}
                 >
-                  Cash
+                  {t("individualPaymentModal.cash")}
                 </button>
                 <button
                   type="button"
@@ -371,7 +380,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                       : "border-gray-200 hover:border-blue-300"
                   }`}
                 >
-                  Card
+                  {t("individualPaymentModal.card")}
                 </button>
               </div>
               <button
@@ -379,7 +388,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                 onClick={handleAddPayment}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
               >
-                Add
+                {t("individualPaymentModal.addPayment")}
               </button>
             </div>
 
@@ -387,7 +396,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
             {paymentMethods.length > 0 && (
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-gray-700">
-                  All Payments:
+                  {t("individualPaymentModal.allPayments")}
                 </h4>
                 {paymentMethods.map((method, index) => (
                   <div
@@ -452,7 +461,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
                   />
                 </svg>
-                Please add at least one payment method
+                {t("individualPaymentModal.pleaseAddPaymentMethod")}
               </span>
             ) : (
               <span className="flex items-center text-green-600">
@@ -469,7 +478,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
-                Ready to process payment
+                {t("individualPaymentModal.readyToProcess")}
               </span>
             )}
           </div>
@@ -479,7 +488,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
               onClick={handleClose}
               className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 font-medium transition-colors duration-200"
             >
-              Cancel
+              {t("individualPaymentModal.cancel")}
             </button>
             <button
               onClick={handleApplyPayment}
@@ -487,7 +496,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
               className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-medium transition-all duration-200 flex items-center space-x-2"
             >
               <ThunderIcon className="w-4 h-4" />
-              <span>Process Payment</span>
+              <span>{t("individualPaymentModal.processPayment")}</span>
             </button>
           </div>
         </div>

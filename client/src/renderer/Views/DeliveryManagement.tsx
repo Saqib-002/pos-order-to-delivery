@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import { DeliveryPerson } from "@/types/delivery";
 import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
@@ -7,11 +8,21 @@ import { OrderTable } from "../components/shared/OrderTable";
 import { DeliveryPersonModal } from "../components/delivery/modals/DeliveryPersonModal";
 import DeliveredIcon from "../assets/icons/delivered.svg?react";
 import CustomButton from "../components/ui/CustomButton";
-import { AddIcon, BikeIcon, CarIcon, DeleteIcon, EditIcon, LocationIcon, MotorcycleIcon, SearchIcon } from "../assets/Svg";
+import {
+  AddIcon,
+  BikeIcon,
+  CarIcon,
+  DeleteIcon,
+  EditIcon,
+  LocationIcon,
+  MotorcycleIcon,
+  SearchIcon,
+} from "../assets/Svg";
 import { StatsCard } from "../components/shared/StatsCard.order";
 import CustomInput from "../components/shared/CustomInput";
 
 export const DeliveryManagement = () => {
+  const { t } = useTranslation();
   const [deliveryPersons, setDeliveryPersons] = useState<DeliveryPerson[]>([]);
   const [currentDeliveryPerson, setCurrentDeliveryPerson] =
     useState<DeliveryPerson | null>(null);
@@ -34,10 +45,10 @@ export const DeliveryManagement = () => {
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email.trim()) {
-      return "Email is required";
+      return t("deliveryManagement.errors.emailRequired");
     }
     if (!emailRegex.test(email)) {
-      return "Please enter a valid email address";
+      return t("deliveryManagement.errors.validEmail");
     }
     return "";
   };
@@ -46,17 +57,17 @@ export const DeliveryManagement = () => {
   const validatePhone = (phone: string) => {
     const phoneRegex = /^[0-9\s\-\(\)\+]*$/;
     if (!phone.trim()) {
-      return "Phone number is required";
+      return t("deliveryManagement.errors.phoneRequired");
     }
     if (!phoneRegex.test(phone)) {
-      return "Please enter a valid phone number";
+      return t("deliveryManagement.errors.validPhone");
     }
     const digitsOnly = phone.replace(/\D/g, "");
     if (digitsOnly.length < 10) {
-      return "Phone number must have at least 10 digits";
+      return t("deliveryManagement.errors.phoneMinDigits");
     }
     if (digitsOnly.length > 15) {
-      return "Phone number cannot exceed 15 digits";
+      return t("deliveryManagement.errors.phoneMaxDigits");
     }
     return "";
   };
@@ -90,13 +101,13 @@ export const DeliveryManagement = () => {
       setLoading(true);
       const res = await (window as any).electronAPI.getDeliveryPersons(token);
       if (!res.status) {
-        toast.error("Failed to fetch delivery personnel");
+        toast.error(t("deliveryManagement.errors.fetchFailed"));
         return;
       }
       setDeliveryPersons(res.data);
     } catch (error) {
       console.log(error);
-      toast.error("Failed to fetch delivery personnel");
+      toast.error(t("deliveryManagement.errors.fetchFailed"));
     } finally {
       setLoading(false);
     }
@@ -108,11 +119,11 @@ export const DeliveryManagement = () => {
 
     // Validate required fields
     if (!currentDeliveryPerson.name.trim()) {
-      toast.error("Please enter a name");
+      toast.error(t("deliveryManagement.errors.enterName"));
       return;
     }
     if (!(currentDeliveryPerson as any).licenseNo?.trim()) {
-      toast.error("Please enter a license number");
+      toast.error(t("deliveryManagement.errors.enterLicenseNumber"));
       return;
     }
 
@@ -164,8 +175,12 @@ export const DeliveryManagement = () => {
       if (!res.status) {
         toast.error(
           res.error.includes("UNIQUE constraint failed: delivery_persons.email")
-            ? "Email already exists"
-            : `Failed to ${isEditing ? "update" : "add"} delivery person`
+            ? t("deliveryManagement.errors.emailExists")
+            : t(
+                isEditing
+                  ? "deliveryManagement.errors.updateFailed"
+                  : "deliveryManagement.errors.addFailed"
+              )
         );
         return;
       }
@@ -177,28 +192,39 @@ export const DeliveryManagement = () => {
       setEmailError("");
       setPhoneError("");
       toast.success(
-        `Delivery person ${isEditing ? "updated" : "added"} successfully`
+        t(
+          isEditing
+            ? "deliveryManagement.success.updated"
+            : "deliveryManagement.success.added"
+        )
       );
     } catch (error) {
-      toast.error(`Failed to ${isEditing ? "update" : "add"} delivery person`);
+      toast.error(
+        t(
+          isEditing
+            ? "deliveryManagement.errors.updateFailed"
+            : "deliveryManagement.errors.addFailed"
+        )
+      );
     }
   };
 
   const handleDeleteDeliveryPerson = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this delivery person?"))
-      return;
+    if (!confirm(t("deliveryManagement.errors.deleteConfirm"))) return;
     try {
       const statsRes = await (window as any).electronAPI.getDeliveryPersonStats(
         token,
         userId
       );
       if (!statsRes.status) {
-        toast.error("Failed to fetch delivery person stats");
+        toast.error(t("deliveryManagement.errors.fetchStatsFailed"));
         return;
       }
       if (statsRes.data.totalAssigned > 0) {
         alert(
-          `Cannot delete delivery person with ${statsRes.data.totalAssigned} assigned orders`
+          t("deliveryManagement.errors.cannotDeleteWithOrders", {
+            count: statsRes.data.totalAssigned,
+          })
         );
         return;
       }
@@ -207,13 +233,13 @@ export const DeliveryManagement = () => {
         userId
       );
       if (!res.status) {
-        toast.error("Failed to delete delivery person");
+        toast.error(t("deliveryManagement.errors.deleteFailed"));
         return;
       }
       await fetchDeliveryPersons();
-      toast.success("Delivery person deleted successfully");
+      toast.success(t("deliveryManagement.success.deleted"));
     } catch (error) {
-      toast.error("Failed to delete delivery person");
+      toast.error(t("deliveryManagement.errors.deleteFailed"));
     }
   };
 
@@ -249,10 +275,10 @@ export const DeliveryManagement = () => {
   };
 
   const getVehicleTypeOptions = () => [
-    { value: "bike", label: "Bike" },
-    { value: "motorcycle", label: "Motorcycle" },
-    { value: "car", label: "Car" },
-    { value: "scooter", label: "Scooter" },
+    { value: "bike", label: t("deliveryManagement.bike") },
+    { value: "motorcycle", label: t("deliveryManagement.motorcycle") },
+    { value: "car", label: t("deliveryManagement.car") },
+    { value: "scooter", label: t("deliveryManagement.scooter") },
   ];
 
   const filteredDeliveryPersons: DeliveryPerson[] = deliveryPersons.filter(
@@ -305,7 +331,9 @@ export const DeliveryManagement = () => {
             <div className="text-sm font-medium text-gray-900">
               {person.name}
             </div>
-            <div className="text-sm text-gray-500">Delivery Personnel</div>
+            <div className="text-sm text-gray-500">
+              {t("deliveryManagement.deliveryPersonnelLabel")}
+            </div>
           </div>
         </div>
       </td>
@@ -341,13 +369,27 @@ export const DeliveryManagement = () => {
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-gray-900">
           {person.avgDeliveryTime
-            ? `${person.avgDeliveryTime.toFixed(2)}min`
-            : "0min"}
+            ? `${person.avgDeliveryTime.toFixed(2)}${t("deliveryManagement.minutes")}`
+            : `0${t("deliveryManagement.minutes")}`}
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2">
-        <CustomButton type="button" label="Edit" variant="transparent" onClick={() => handleEditDeliveryPerson(person as DeliveryPerson)} Icon={<EditIcon className="size-4" />} className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 hover:scale-105 !px-2 !py-1 !gap-1" />
-        <CustomButton type="button" label="Delete" variant="transparent" onClick={() => person.id && handleDeleteDeliveryPerson(person.id)} Icon={<DeleteIcon className="size-4" />} className="text-red-600 hover:text-red-900 hover:bg-red-50 hover:scale-105 !px-2 !py-1 !gap-1" />
+        <CustomButton
+          type="button"
+          label={t("deliveryManagement.edit")}
+          variant="transparent"
+          onClick={() => handleEditDeliveryPerson(person as DeliveryPerson)}
+          Icon={<EditIcon className="size-4" />}
+          className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 hover:scale-105 !px-2 !py-1 !gap-1"
+        />
+        <CustomButton
+          type="button"
+          label={t("deliveryManagement.delete")}
+          variant="transparent"
+          onClick={() => person.id && handleDeleteDeliveryPerson(person.id)}
+          Icon={<DeleteIcon className="size-4" />}
+          className="text-red-600 hover:text-red-900 hover:bg-red-50 hover:scale-105 !px-2 !py-1 !gap-1"
+        />
       </td>
     </tr>
   );
@@ -362,8 +404,8 @@ export const DeliveryManagement = () => {
   return (
     <div className="flex flex-col">
       <Header
-        title="Delivery Management"
-        subtitle="Manage delivery personnel and their vehicle information"
+        title={t("deliveryManagement.title")}
+        subtitle={t("deliveryManagement.subtitle")}
         icon={<DeliveredIcon className="size-8 text-blue-600" />}
         iconbgClasses="bg-blue-100"
       />
@@ -372,63 +414,121 @@ export const DeliveryManagement = () => {
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
-                Delivery Personnel
+                {t("deliveryManagement.deliveryPersonnel")}
               </h3>
               <p className="text-sm text-gray-500 mt-1">
-                Add and manage delivery staff
+                {t("deliveryManagement.addAndManageStaff")}
               </p>
             </div>
-            <CustomButton type="button" label="Add Delivery Person" onClick={handleAddDeliveryPerson} Icon={<AddIcon className="size-5" />} />
+            <CustomButton
+              type="button"
+              label={t("deliveryManagement.addDeliveryPerson")}
+              onClick={handleAddDeliveryPerson}
+              Icon={<AddIcon className="size-5" />}
+            />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <StatsCard title="Delivery Personnel" value={deliveryPersons.length} icon={<LocationIcon className="size-6 text-indigo-600" />} bgColor="bg-indigo-100" />
-          <StatsCard title="Bikes" value={deliveryPersons.filter(
-            (person) => person.vehicleType === "bike"
-          ).length} icon={<BikeIcon className="size-6 text-blue-600" />} bgColor="bg-blue-100" />
-          <StatsCard title="Motorcycles" value={deliveryPersons.filter(
-            (person) => person.vehicleType === "motorcycle"
-          ).length} icon={<MotorcycleIcon className="size-6 text-orange-600 " />} bgColor="bg-orange-100" />
-          <StatsCard title="Cars" value={deliveryPersons.filter(
-            (person) => person.vehicleType === "car"
-          ).length} icon={<CarIcon className="size-6 text-green-600" />} bgColor="bg-green-100" />
+          <StatsCard
+            title={t("deliveryManagement.deliveryPersonnelCount")}
+            value={deliveryPersons.length}
+            icon={<LocationIcon className="size-6 text-indigo-600" />}
+            bgColor="bg-indigo-100"
+          />
+          <StatsCard
+            title={t("deliveryManagement.bikes")}
+            value={
+              deliveryPersons.filter((person) => person.vehicleType === "bike")
+                .length
+            }
+            icon={<BikeIcon className="size-6 text-blue-600" />}
+            bgColor="bg-blue-100"
+          />
+          <StatsCard
+            title={t("deliveryManagement.motorcycles")}
+            value={
+              deliveryPersons.filter(
+                (person) => person.vehicleType === "motorcycle"
+              ).length
+            }
+            icon={<MotorcycleIcon className="size-6 text-orange-600 " />}
+            bgColor="bg-orange-100"
+          />
+          <StatsCard
+            title={t("deliveryManagement.cars")}
+            value={
+              deliveryPersons.filter((person) => person.vehicleType === "car")
+                .length
+            }
+            icon={<CarIcon className="size-6 text-green-600" />}
+            bgColor="bg-green-100"
+          />
         </div>
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <CustomInput placeholder="Search delivery personnel..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} type="text" name="search" preLabel={<SearchIcon className="size-5 text-gray-400" />} inputClasses="pl-9 !shadow-none focus:!ring-1 text-sm" otherClasses="flex-1" />
+          <CustomInput
+            placeholder={t("deliveryManagement.searchDeliveryPersonnel")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            type="text"
+            name="search"
+            preLabel={<SearchIcon className="size-5 text-gray-400" />}
+            inputClasses="pl-9 !shadow-none focus:!ring-1 text-sm"
+            otherClasses="flex-1"
+          />
           <div className="flex gap-2">
-            {["all", "bike", "motorcycle", "car", "scooter"].map((vehicleType) => (
-              <CustomButton key={vehicleType} type="button" label={getVehicleTypeLabel(vehicleType)} onClick={() => setSelectedVehicleType(vehicleType)} variant={selectedVehicleType !== vehicleType ? "secondary" : "primary"} />
-            ))}
+            {["all", "bike", "motorcycle", "car", "scooter"].map(
+              (vehicleType) => (
+                <CustomButton
+                  key={vehicleType}
+                  type="button"
+                  label={
+                    vehicleType === "all"
+                      ? t("deliveryManagement.all")
+                      : getVehicleTypeLabel(vehicleType)
+                  }
+                  onClick={() => setSelectedVehicleType(vehicleType)}
+                  variant={
+                    selectedVehicleType !== vehicleType
+                      ? "secondary"
+                      : "primary"
+                  }
+                />
+              )
+            )}
           </div>
         </div>
 
         <OrderTable
-          title={`Delivery Personnel (${filteredDeliveryPersons.length})`}
+          title={t("deliveryManagement.deliveryPersonnelTable", {
+            count: filteredDeliveryPersons.length,
+          })}
           subtitle={
             filteredDeliveryPersons.length === 0
               ? deliveryPersons.length === 0
-                ? "Get started by adding your first delivery person."
-                : "Try adjusting your search or vehicle filter."
+                ? t("deliveryManagement.getStartedMessage")
+                : t("deliveryManagement.adjustFiltersMessage")
               : undefined
           }
           columns={[
-            "Delivery Person",
-            "Vehicle",
-            "Contact",
-            "License",
-            "Total Assigned",
-            "Total Delivered",
-            "Total Cancelled",
-            "Avg. Delivery Time",
-            "Actions",
+            t("deliveryManagement.deliveryPerson"),
+            t("deliveryManagement.vehicle"),
+            t("deliveryManagement.contact"),
+            t("deliveryManagement.license"),
+            t("deliveryManagement.totalAssigned"),
+            t("deliveryManagement.totalDelivered"),
+            t("deliveryManagement.totalCancelled"),
+            t("deliveryManagement.avgDeliveryTime"),
+            t("deliveryManagement.actions"),
           ]}
           data={filteredDeliveryPersons}
           renderRow={renderDeliveryPersonRow}
-          emptyStateIcon={<LocationIcon className="mx-auto h-12 w-12 text-gray-400" />}
-          emptyStateTitle="No delivery personnel found"
+          emptyStateIcon={
+            <LocationIcon className="mx-auto h-12 w-12 text-gray-400" />
+          }
+          emptyStateTitle={t("deliveryManagement.noDeliveryPersonnelFound")}
         />
       </div>
 

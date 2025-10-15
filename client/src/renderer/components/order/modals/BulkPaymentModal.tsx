@@ -4,6 +4,7 @@ import { calculateOrderTotal } from "../../../utils/orderCalculations";
 import { calculatePaymentStatus } from "../../../utils/paymentStatus";
 import { updateOrder } from "../../../utils/order";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import CustomInput from "../../shared/CustomInput";
 import { CustomSelect } from "../../ui/CustomSelect";
 import PersonIcon from "../../../assets/icons/person.svg?react";
@@ -26,6 +27,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
   token,
   refreshOrdersCallback,
 }) => {
+  const { t } = useTranslation();
   const [selectedBulkDeliveryPerson, setSelectedBulkDeliveryPerson] =
     useState("");
   const [bulkPaymentMethods, setBulkPaymentMethods] = useState<
@@ -107,12 +109,12 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
   const handleBulkAddPayment = () => {
     const amount = parseFloat(bulkCurrentAmount);
     if (amount <= 0) {
-      toast.error("Please enter a valid amount");
+      toast.error(t("individualPaymentModal.errors.enterValidAmount"));
       return;
     }
 
     if (!selectedBulkDeliveryPerson) {
-      toast.error("Please select a delivery person first");
+      toast.error(t("individualPaymentModal.errors.selectDeliveryPerson"));
       return;
     }
 
@@ -123,7 +125,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
     );
 
     if (totalPaid + amount > totalAmount) {
-      toast.error("Total payment cannot exceed remaining amount");
+      toast.error(t("individualPaymentModal.errors.totalExceedsRemaining"));
       return;
     }
 
@@ -151,13 +153,13 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
 
   const handleBulkApplyPayment = async () => {
     if (!selectedBulkDeliveryPerson) {
-      toast.error("Please select a delivery person");
+      toast.error(t("bulkPaymentModal.pleaseSelectDeliveryPerson"));
       return;
     }
 
     try {
       if (bulkPaymentMethods.length === 0) {
-        toast.error("Please add at least one payment method");
+        toast.error(t("individualPaymentModal.errors.addPaymentMethod"));
         return;
       }
 
@@ -165,7 +167,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
         selectedBulkDeliveryPerson
       );
       if (ordersForDelivery.length === 0) {
-        toast.error("No orders found for this delivery person");
+        toast.error(t("individualPaymentModal.errors.noOrdersFound"));
         return;
       }
 
@@ -184,7 +186,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
       let remainingBulkPayment = totalBulkPayment;
 
       for (const order of sortedOrders) {
-        if (remainingBulkPayment <= 0) break; 
+        if (remainingBulkPayment <= 0) break;
 
         const { orderTotal } = calculateOrderTotal(order.items || []);
         const paymentStatus = calculatePaymentStatus(
@@ -251,20 +253,24 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
           .map((method) => `${method.type}:${method.amount}`)
           .join(", ");
         toast.success(
-          `Bulk payment processed successfully for ${successCount} orders: ${totalPaymentString}`
+          t("individualPaymentModal.success.bulkPaymentSuccess", {
+            count: successCount,
+            paymentString: totalPaymentString,
+          })
         );
         handleClose();
         refreshOrdersCallback();
       } else {
         toast.error(
-          `Payment processed for ${successCount} out of ${ordersForDelivery.length} orders`
+          t("individualPaymentModal.success.bulkPaymentPartial", {
+            successCount,
+            totalCount: ordersForDelivery.length,
+          })
         );
       }
     } catch (error) {
       console.error("Error applying bulk payment:", error);
-      toast.error(
-        "An error occurred while processing the bulk payment. Please try again."
-      );
+      toast.error(t("individualPaymentModal.errors.bulkProcessingError"));
     }
   };
 
@@ -289,11 +295,10 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">
-                Bulk Payment Processing
+                {t("bulkPaymentModal.title")}
               </h2>
               <p className="text-sm text-gray-600">
-                Process payments for multiple delivered orders by delivery
-                person
+                {t("bulkPaymentModal.subtitle")}
               </p>
             </div>
           </div>
@@ -323,11 +328,14 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
           <div className="space-y-2">
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <PersonIcon className="w-4 h-4 mr-2 text-purple-600" />
-              Select Delivery Person
+              {t("bulkPaymentModal.selectDeliveryPerson")}
             </label>
             <CustomSelect
               options={[
-                { value: "", label: "Choose a delivery person..." },
+                {
+                  value: "",
+                  label: t("bulkPaymentModal.chooseDeliveryPerson"),
+                },
                 ...deliveryPersons.map((person) => ({
                   value: person.id,
                   label: person.name,
@@ -335,7 +343,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
               ]}
               value={selectedBulkDeliveryPerson}
               onChange={setSelectedBulkDeliveryPerson}
-              placeholder="Choose a delivery person..."
+              placeholder={t("bulkPaymentModal.chooseDeliveryPerson")}
               className="w-full"
             />
           </div>
@@ -360,14 +368,14 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                   </svg>
                 </div>
                 <h3 className="font-semibold text-gray-900 text-lg">
-                  Orders Summary
+                  {t("bulkPaymentModal.ordersSummary")}
                 </h3>
               </div>
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center py-2 border-b border-gray-200">
                   <span className="text-sm font-medium text-gray-600">
-                    Delivery Person
+                    {t("bulkPaymentModal.deliveryPerson")}
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {
@@ -380,20 +388,20 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
 
                 <div className="flex justify-between items-center py-2 border-b border-gray-200">
                   <span className="text-sm font-medium text-gray-600">
-                    Orders Count
+                    {t("bulkPaymentModal.ordersCount")}
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {
                       getOrdersForDeliveryPerson(selectedBulkDeliveryPerson)
                         .length
                     }{" "}
-                    orders
+                    {t("bulkPaymentModal.orders")}
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center py-2">
                   <span className="text-sm font-medium text-gray-600">
-                    Total Amount Due
+                    {t("bulkPaymentModal.totalAmountDue")}
                   </span>
                   <span className="text-lg font-bold text-purple-600">
                     €
@@ -422,15 +430,17 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                       d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                     />
                   </svg>
-                  Payment Methods
+                  {t("bulkPaymentModal.paymentMethods")}
                 </label>
                 <div className="text-sm text-gray-500">
-                  Total: €
-                  {bulkPaymentMethods
-                    .reduce((sum, method) => sum + method.amount, 0)
-                    .toFixed(2)}{" "}
-                  / €
-                  {getBulkPaymentTotal(selectedBulkDeliveryPerson).toFixed(2)}
+                  {t("bulkPaymentModal.total", {
+                    paid: bulkPaymentMethods
+                      .reduce((sum, method) => sum + method.amount, 0)
+                      .toFixed(2),
+                    total: getBulkPaymentTotal(
+                      selectedBulkDeliveryPerson
+                    ).toFixed(2),
+                  })}
                 </div>
               </div>
 
@@ -459,7 +469,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                         : "border-gray-200 hover:border-green-300"
                     }`}
                   >
-                    Cash
+                    {t("bulkPaymentModal.cash")}
                   </button>
                   <button
                     type="button"
@@ -470,7 +480,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                         : "border-gray-200 hover:border-blue-300"
                     }`}
                   >
-                    Card
+                    {t("bulkPaymentModal.card")}
                   </button>
                 </div>
                 <button
@@ -478,7 +488,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                   onClick={handleBulkAddPayment}
                   className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Add
+                  {t("bulkPaymentModal.add")}
                 </button>
               </div>
 
@@ -486,7 +496,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
               {bulkPaymentMethods.length > 0 && (
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium text-gray-700">
-                    All Payments:
+                    {t("bulkPaymentModal.allPayments")}
                   </h4>
                   {bulkPaymentMethods.map((method, index) => (
                     <div
@@ -552,7 +562,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
                   />
                 </svg>
-                Please select a delivery person
+                {t("bulkPaymentModal.pleaseSelectDeliveryPerson")}
               </span>
             ) : bulkPaymentMethods.length === 0 ? (
               <span className="flex items-center">
@@ -569,7 +579,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
                   />
                 </svg>
-                Please add at least one payment method
+                {t("individualPaymentModal.pleaseAddPaymentMethod")}
               </span>
             ) : (
               <span className="flex items-center text-green-600">
@@ -586,7 +596,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
-                Ready to process bulk payment
+                {t("bulkPaymentModal.readyToProcess")}
               </span>
             )}
           </div>
@@ -596,7 +606,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
               onClick={handleClose}
               className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 font-medium transition-colors duration-200"
             >
-              Cancel
+              {t("bulkPaymentModal.cancel")}
             </button>
             <button
               onClick={handleBulkApplyPayment}
@@ -606,7 +616,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
               className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-medium transition-all duration-200 flex items-center space-x-2"
             >
               <ThunderIcon className="w-4 h-4" />
-              <span>Process Bulk Payment</span>
+              <span>{t("bulkPaymentModal.processPayments")}</span>
             </button>
           </div>
         </div>

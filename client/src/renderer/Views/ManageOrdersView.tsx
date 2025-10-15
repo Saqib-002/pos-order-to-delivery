@@ -9,6 +9,7 @@ import {
 } from "../utils/paymentStatus";
 import { updateOrder } from "../utils/order";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
 import { OrderTable } from "../components/shared/OrderTable";
@@ -38,6 +39,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
   filter,
   setFilter,
 }) => {
+  const { t } = useTranslation();
   const {
     auth: { token },
   } = useAuth();
@@ -167,14 +169,14 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
 
   // Table columns
   const columns = [
-    "Order #",
-    "Customer",
-    "Order Type",
-    "Payment Status",
-    "Delivery Person",
-    "Total",
-    "Created",
-    "Actions",
+    t("manageOrders.table.orderNumber"),
+    t("manageOrders.table.customer"),
+    t("manageOrders.table.orderType"),
+    t("manageOrders.table.paymentStatus"),
+    t("manageOrders.table.deliveryPerson"),
+    t("manageOrders.table.total"),
+    t("manageOrders.table.created"),
+    t("manageOrders.table.actions"),
   ];
 
   // Render order row
@@ -197,7 +199,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            {order.orderType?.toUpperCase() || "N/A"}
+            {order.orderType?.toUpperCase() || t("manageOrders.statuses.nA")}
           </span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
@@ -223,7 +225,9 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
               </div>
             </div>
           ) : (
-            <span className="text-gray-400">Not assigned</span>
+            <span className="text-gray-400">
+              {t("manageOrders.statuses.notAssigned")}
+            </span>
           )}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -241,7 +245,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
             <button
               onClick={() => handleViewOrder(order)}
               className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-              title="View Order"
+              title={t("manageOrders.actions.viewOrder")}
             >
               <EyeIcon className="w-4 h-4" />
             </button>
@@ -250,7 +254,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
             <button
               onClick={() => handlePrintOrder(order)}
               className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200"
-              title="Print Order"
+              title={t("manageOrders.actions.printOrder")}
             >
               <DocumentIcon className="w-4 h-4" />
             </button>
@@ -263,17 +267,20 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
                 orderTotal
               );
 
-              const isPaymentAllowed = order.status === "complete" || order.status === "delivered";
-              const hasUnpaidAmount = paymentStatus.status === "UNPAID" || paymentStatus.status === "PARTIAL";
+              const isPaymentAllowed =
+                order.status === "complete" || order.status === "delivered";
+              const hasUnpaidAmount =
+                paymentStatus.status === "UNPAID" ||
+                paymentStatus.status === "PARTIAL";
 
               if (isPaymentAllowed && hasUnpaidAmount) {
                 return (
                   <button
                     onClick={() => handlePaymentClick(order)}
                     className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors duration-200"
-                    title="Process Payment"
+                    title={t("manageOrders.actions.processPayment")}
                   >
-                    <Euro className="w-4 h-4"/>
+                    <Euro className="w-4 h-4" />
                   </button>
                 );
               }
@@ -289,14 +296,13 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
     <div className="flex flex-col">
       {/* Header */}
       <Header
-        title="Manage Orders"
-        subtitle="View and manage all orders with advanced filtering options"
+        title={t("manageOrders.title")}
+        subtitle={t("manageOrders.subtitle")}
         icon={<DocumentIcon className="w-8 h-8" />}
       />
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto pb-6">
-
         {/* Search and Filter Bar */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4 items-end">
@@ -304,7 +310,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
             <div className="w-full lg:w-80">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <span className="inline w-4 h-4 mr-1">🔍</span>
-                Search Orders
+                {t("manageOrders.searchOrders")}
               </label>
               <div className="relative">
                 <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -319,7 +325,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
                       searchTerm: e.target.value,
                     }))
                   }
-                  placeholder="Search by order number..."
+                  placeholder={t("manageOrders.searchPlaceholder")}
                   otherClasses="w-full"
                   inputClasses="pl-10 py-2.5"
                 />
@@ -330,7 +336,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
             <div className="w-full lg:w-48">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <span className="inline w-4 h-4 mr-1">📅</span>
-                Filter by Date
+                {t("manageOrders.filterByDate")}
               </label>
               <input
                 type="date"
@@ -355,11 +361,11 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
             <div className="w-full lg:w-48">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <PersonIcon className="inline w-4 h-4 mr-1" />
-                Delivery Person
+                {t("manageOrders.deliveryPerson")}
               </label>
               <CustomSelect
                 options={[
-                  { value: "", label: "All Delivery Persons" },
+                  { value: "", label: t("manageOrders.allDeliveryPersons") },
                   ...deliveryPersons.map((person) => ({
                     value: person.id,
                     label: person.name,
@@ -372,19 +378,19 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
                     selectedDeliveryPerson: value,
                   }))
                 }
-                placeholder="All Delivery Persons"
+                placeholder={t("manageOrders.allDeliveryPersons")}
                 className="w-full"
               />
             </div>
 
             {/* Payment Status Filter */}
-            <div className="w-full lg:w-48">
+            <div className="w-full lg:w-64">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Payment Status
+                {t("manageOrders.paymentStatus")}
               </label>
               <CustomSelect
                 options={[
-                  { value: "", label: "All Payment Statuses" },
+                  { value: "", label: t("manageOrders.allPaymentStatuses") },
                   ...paymentStatuses.map((status) => ({
                     value: status,
                     label: status.charAt(0).toUpperCase() + status.slice(1),
@@ -397,7 +403,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
                     selectedStatus: value ? [value] : [],
                   }))
                 }
-                placeholder="All Payment Statuses"
+                placeholder={t("manageOrders.allPaymentStatuses")}
                 className="w-full"
               />
             </div>
@@ -408,14 +414,14 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
                 onClick={clearFilters}
                 className="w-full sm:w-auto px-4 py-3 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Clear All Filters
+                {t("manageOrders.clearAllFilters")}
               </button>
               <button
                 onClick={handleBulkPaymentClick}
                 className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
               >
                 <ThunderIcon className="w-4 h-4" />
-                <span>Bulk Payment</span>
+                <span>{t("manageOrders.bulkPayment")}</span>
               </button>
             </div>
           </div>
@@ -424,10 +430,15 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
         {/* Results Summary */}
         <div className="mb-4 flex justify-between items-center">
           <p className="text-sm text-gray-600">
-            Showing {filteredOrders.length} of {orders.length} orders
+            {t("manageOrders.showingOrders", {
+              filtered: filteredOrders.length,
+              total: orders.length,
+            })}
           </p>
           <div className="text-sm text-gray-500">
-            Last updated: {new Date().toLocaleString()}
+            {t("manageOrders.lastUpdated", {
+              time: new Date().toLocaleString(),
+            })}
           </div>
         </div>
 
@@ -445,8 +456,8 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
               filter.selectedDate ||
               localFilters.selectedDeliveryPerson ||
               localFilters.selectedStatus.length > 0
-                ? "No orders match your filters"
-                : "No orders found"
+                ? t("manageOrders.noOrdersMatch")
+                : t("manageOrders.noOrdersFound")
             }
           />
         </div>

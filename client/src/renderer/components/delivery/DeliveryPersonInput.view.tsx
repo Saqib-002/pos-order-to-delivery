@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import AddIcon from "../../assets/icons/add.svg?react";
 import { DeliveryPerson } from "@/types/order";
@@ -23,6 +24,7 @@ export const DeliveryPersonInput: React.FC<{
   onAssign,
   disabled,
 }) => {
+  const { t } = useTranslation();
   const deliveryPersonOptions = useMemo(
     () =>
       deliveryPersons.map((person) => ({
@@ -49,13 +51,13 @@ export const DeliveryPersonInput: React.FC<{
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
         <div className="flex-1">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Delivery Person
+            {t("deliveryPersonInput.selectDeliveryPerson")}
           </label>
           <CustomSelect
             options={deliveryPersonOptions}
             value={deliveryPerson?.id || deliveryPerson?.name || ""}
             onChange={handleSelectChange}
-            placeholder="Choose a delivery person..."
+            placeholder={t("deliveryPersonInput.chooseDeliveryPerson")}
             portalClassName="delivery-person-select-portal"
           />
         </div>
@@ -65,7 +67,7 @@ export const DeliveryPersonInput: React.FC<{
           className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
         >
           <AddIcon className="size-5" />
-          Quick Assign
+          {t("deliveryPersonInput.quickAssign")}
         </button>
       </div>
     </div>

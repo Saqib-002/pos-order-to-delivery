@@ -7,6 +7,7 @@ import {
   getPaymentStatusStyle,
 } from "../../../utils/paymentStatus";
 import { formatAddress } from "../../../utils/utils";
+import { useTranslation } from "react-i18next";
 
 const parseComplements = (complements: any) => {
   if (Array.isArray(complements)) return complements;
@@ -29,7 +30,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   onClose,
   view = "kitchen",
 }) => {
-  console.log("OrderDetailsModal - Order data:", order);
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] overflow-hidden flex flex-col">
@@ -38,10 +39,12 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                Order Items - K{order.orderId}
+                {t("orderDetailsModal.title", { orderId: order.orderId })}
               </h2>
               <p className="text-sm text-gray-600 mt-1">
-                Created: {new Date(order.createdAt || "").toLocaleString()}
+                {t("orderDetailsModal.created", {
+                  date: new Date(order.createdAt || "").toLocaleString(),
+                })}
               </p>
             </div>
             <button
@@ -72,19 +75,25 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               {/* Customer Information */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                  Customer Information
+                  {t("orderDetailsModal.customerInformation")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Name</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("orderDetailsModal.name")}
+                    </p>
                     <p className="text-gray-900">{order.customer.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Phone</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("orderDetailsModal.phone")}
+                    </p>
                     <p className="text-gray-900">{order.customer.phone}</p>
                   </div>
                   <div className="md:col-span-2">
-                    <p className="text-sm font-medium text-gray-600">Address</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("orderDetailsModal.address")}
+                    </p>
                     <p className="text-gray-900">
                       {formatAddress(order.customer.address)}
                     </p>
@@ -95,33 +104,40 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               {/* Order Information */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                  Order Information
+                  {t("orderDetailsModal.orderInformation")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-600">
-                      Order Type
+                      {t("orderDetailsModal.orderType")}
                     </p>
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {order.orderType?.toUpperCase() || "N/A"}
+                      {order.orderType?.toUpperCase() ||
+                        t("manageOrders.statuses.nA")}
                     </span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Status</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("orderDetailsModal.status")}
+                    </p>
                     <p className="text-gray-900">{order.status}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Created</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("orderDetailsModal.created")}
+                    </p>
                     <p className="text-gray-900">
                       {new Date(order.createdAt || "").toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Updated</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("orderDetailsModal.updated")}
+                    </p>
                     <p className="text-gray-900">
                       {order.updatedAt
                         ? new Date(order.updatedAt).toLocaleString()
-                        : "N/A"}
+                        : t("manageOrders.statuses.nA")}
                     </p>
                   </div>
                 </div>
@@ -130,12 +146,12 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               {/* Payment Information */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                  Payment Information
+                  {t("orderDetailsModal.paymentInformation")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-600">
-                      Payment Status
+                      {t("orderDetailsModal.paymentStatus")}
                     </p>
                     {(() => {
                       const { orderTotal } = calculateOrderTotal(
@@ -164,7 +180,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">
-                      Total Amount
+                      {t("orderDetailsModal.totalAmount")}
                     </p>
                     <p className="text-gray-900 font-semibold">
                       €
@@ -180,26 +196,28 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               {order.deliveryPerson && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                    Delivery Information
+                    {t("orderDetailsModal.deliveryInformation")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Delivery Person
+                        {t("orderDetailsModal.deliveryPerson")}
                       </p>
                       <p className="text-gray-900">
                         {order.deliveryPerson.name}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Phone</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        {t("orderDetailsModal.phone")}
+                      </p>
                       <p className="text-gray-900">
                         {order.deliveryPerson.phone}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Vehicle Type
+                        {t("orderDetailsModal.vehicleType")}
                       </p>
                       <p className="text-gray-900">
                         {order.deliveryPerson.vehicleType}
@@ -207,21 +225,21 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Assigned At
+                        {t("orderDetailsModal.assignedAt")}
                       </p>
                       <p className="text-gray-900">
                         {order.assignedAt
                           ? new Date(order.assignedAt).toLocaleString()
                           : order.status === "out for delivery" ||
                               order.status === "delivered"
-                            ? "Not recorded"
-                            : "Not assigned yet"}
+                            ? t("orderDetailsModal.notRecorded")
+                            : t("orderDetailsModal.notAssignedYet")}
                       </p>
                     </div>
                     {order.deliveredAt && (
                       <div>
                         <p className="text-sm font-medium text-gray-600">
-                          Delivered At
+                          {t("orderDetailsModal.deliveredAt")}
                         </p>
                         <p className="text-gray-900">
                           {new Date(order.deliveredAt).toLocaleString()}
@@ -235,7 +253,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               {/* Order Items */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                  Order Items
+                  {t("orderDetailsModal.orderItems")}
                 </h3>
                 <div className="space-y-3">
                   {order.items?.map((item, index) => {
@@ -261,7 +279,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                             {parsedComplements.length > 0 && (
                               <div className="mt-2">
                                 <p className="text-sm font-medium text-gray-700 mb-1">
-                                  Add-ons:
+                                  {t("orderDetailsModal.addOns")}
                                 </p>
                                 <div className="flex flex-wrap gap-1">
                                   {parsedComplements.map(
@@ -284,7 +302,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                             </p>
                             <p className="text-xs text-gray-500">
                               €{(item.totalPrice / item.quantity).toFixed(2)}{" "}
-                              each
+                              {t("orderDetailsModal.each")}
                             </p>
                           </div>
                         </div>
@@ -292,7 +310,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     );
                   }) || (
                     <p className="text-gray-500 text-center py-4">
-                      No items found
+                      {t("orderDetailsModal.noItemsFound")}
                     </p>
                   )}
                 </div>
@@ -302,7 +320,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               {order.notes && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                    Order Notes
+                    {t("orderDetailsModal.orderNotes")}
                   </h3>
                   <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">
                     {order.notes}

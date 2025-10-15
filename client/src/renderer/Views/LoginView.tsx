@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 
 export const LoginView: React.FC<{
   onLogin: () => void;
 }> = ({ onLogin }) => {
+  const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -12,8 +14,8 @@ export const LoginView: React.FC<{
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const res=await login(username, password);
-    if(res) onLogin();
+    const res = await login(username, password);
+    if (res) onLogin();
     setIsLoading(false);
   };
 
@@ -23,7 +25,7 @@ export const LoginView: React.FC<{
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <img
           src="./restaurant.jpg"
-          alt="Restaurant Interior"
+          alt={t("login.restaurantInterior")}
           className="w-full h-full object-cover"
         />
       </div>
@@ -35,20 +37,20 @@ export const LoginView: React.FC<{
             <div className="lg:hidden mb-6">
               <img
                 src="./assets/logo.png"
-                alt="Restaurant Logo"
+                alt={t("login.restaurantLogo")}
                 className="w-16 h-16 mx-auto"
               />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome Back
+              {t("login.welcomeBack")}
             </h2>
-            <p className="text-gray-600">Sign in to your account to continue</p>
+            <p className="text-gray-600">{t("login.signInSubtitle")}</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Username
+                {t("login.username")}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -71,7 +73,7 @@ export const LoginView: React.FC<{
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
-                  placeholder="Enter your username"
+                  placeholder={t("login.usernamePlaceholder")}
                   required
                 />
               </div>
@@ -79,7 +81,7 @@ export const LoginView: React.FC<{
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
+                {t("login.password")}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -102,7 +104,7 @@ export const LoginView: React.FC<{
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
-                  placeholder="Enter your password"
+                  placeholder={t("login.passwordPlaceholder")}
                   required
                 />
               </div>
@@ -135,7 +137,7 @@ export const LoginView: React.FC<{
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Signing in...
+                  {t("login.signingIn")}
                 </>
               ) : (
                 <>
@@ -152,7 +154,7 @@ export const LoginView: React.FC<{
                       d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                     />
                   </svg>
-                  Sign In
+                  {t("login.signIn")}
                 </>
               )}
             </button>
