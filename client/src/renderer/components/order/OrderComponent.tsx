@@ -54,6 +54,14 @@ const OrderComponent = ({
     clearOrder();
   };
   const handleOrderClick = async (order: Order) => {
+    // Check if order is assigned to a delivery person
+    if (order.deliveryPerson && order.deliveryPerson.id) {
+      toast.info(
+        "This order is assigned to a delivery person and cannot be edited. It can only be viewed."
+      );
+      return;
+    }
+
     setOrder(order);
     if (order.items) {
       order.items.forEach((item: any) => {
@@ -78,11 +86,11 @@ const OrderComponent = ({
       ) : (
         <>
           {orders.length > 0 ? (
-            <div className="py-2 text-center text-gray-700 h-[calc(100vh-9rem)] overflow-y-auto">
+            <div className="h-[calc(100vh-9rem)] overflow-y-auto">
               {orders.map((order) => {
-                const {orderTotal} = order.items
+                const { orderTotal } = order.items
                   ? calculateOrderTotal(order.items)
-                  : {orderTotal:0};
+                  : { orderTotal: 0 };
                 const paymentStatus = calculatePaymentStatus(
                   order.paymentType || "",
                   orderTotal
@@ -91,48 +99,160 @@ const OrderComponent = ({
                 const getPaymentStatusStyle = (status: string) => {
                   switch (status) {
                     case "PAID":
-                      return "border-green-500 bg-green-300 text-green-800";
+                      return "bg-green-100 text-green-800 border-green-200";
                     case "PARTIAL":
-                      return "border-yellow-500 bg-yellow-300 text-yellow-800";
+                      return "bg-yellow-100 text-yellow-800 border-yellow-200";
                     case "UNPAID":
                     default:
-                      return "border-red-500 bg-red-300 text-red-800";
+                      return "bg-red-100 text-red-800 border-red-200";
                   }
                 };
+
+                const getOrderTypeStyle = (orderType: string) => {
+                  switch (orderType?.toLowerCase()) {
+                    case "pickup":
+                      return "bg-blue-100 text-blue-800 border-blue-200";
+                    case "dine-in":
+                      return "bg-purple-100 text-purple-800 border-purple-200";
+                    case "delivery":
+                      return "bg-orange-100 text-orange-800 border-orange-200";
+                    default:
+                      return "bg-gray-100 text-gray-800 border-gray-200";
+                  }
+                };
+
+                const getOrderStatusStyle = (status: string) => {
+                  switch (status?.toLowerCase()) {
+                    case "pending":
+                      return "bg-yellow-100 text-yellow-800 border-yellow-200";
+                    case "sent to kitchen":
+                      return "bg-indigo-100 text-indigo-800 border-indigo-200";
+                    case "ready for delivery":
+                      return "bg-cyan-100 text-cyan-800 border-cyan-200";
+                    case "out for delivery":
+                      return "bg-blue-100 text-blue-800 border-blue-200";
+                    case "completed":
+                      return "bg-green-100 text-green-800 border-green-200";
+                    case "delivered":
+                      return "bg-emerald-100 text-emerald-800 border-emerald-200";
+                    case "cancelled":
+                      return "bg-red-100 text-red-800 border-red-200";
+                    default:
+                      return "bg-gray-100 text-gray-800 border-gray-200";
+                  }
+                };
+
+                const isAssignedToDelivery = Boolean(
+                  order.deliveryPerson && order.deliveryPerson.id
+                );
 
                 return (
                   <button
                     key={order.id}
-                    className="flex justify-between items-center gap-2 border-b border-gray-300 mb-2 pb-2 hover:border-gray-500 hover:shadow-md w-full px-2 cursor-pointer"
+                    className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-3 pb-3 w-full px-3 py-2 transition-all duration-200 ${
+                      isAssignedToDelivery
+                        ? "bg-gray-100 cursor-not-allowed opacity-75"
+                        : "hover:bg-gray-50 cursor-pointer"
+                    }`}
                     onClick={() => handleOrderClick(order)}
+                    disabled={isAssignedToDelivery}
                   >
-                    <div className="flex flex-col items-start gap-2">
-                      <p>
-                        {order.orderType
-                          ? order.orderType?.toUpperCase()
-                          : "Not Selected"}
+                    <div className="flex flex-col items-start gap-2 flex-1">
+                      {/* Order Number and Total */}
+                      <div className="flex items-center justify-between gap-3 w-full">
+                        <h3 className="font-semibold text-black text-xl">
+                          K{order.orderId}
+                        </h3>
+                        <div className="text-xl font-bold text-black">
+                          €{orderTotal.toFixed(2)}
+                        </div>
+                      </div>
+
+                      {/* Status Pills Row */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {/* Order Type Pill */}
                         <span
-                          className={`border-2 ${getPaymentStatusStyle(paymentStatus.status)} rounded-full px-2 py-[2px] text-xs ml-2`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getOrderTypeStyle(order.orderType || "")}`}
+                        >
+                          {order.orderType
+                            ? order.orderType.toUpperCase()
+                            : "NOT SELECTED"}
+                        </span>
+
+                        {/* Order Status Pill */}
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getOrderStatusStyle(order.status || "")}`}
+                        >
+                          {order.status || "UNKNOWN"}
+                        </span>
+
+                        {/* Payment Status Pill */}
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusStyle(paymentStatus.status)}`}
                         >
                           {paymentStatus.status}
                         </span>
-                      </p>
-                      <p>Order No. K{order.orderId}</p>
-                      <p>{order.status}</p>
+
+                        {/* Delivery Person Assigned Pill */}
+                        {isAssignedToDelivery && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                            🚚 {order.deliveryPerson?.name}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Partial Payment Info */}
                       {paymentStatus.status === "PARTIAL" && (
-                        <p className="text-xs text-yellow-700">
+                        <p className="text-xs text-yellow-700 font-medium">
                           Paid: €{paymentStatus.totalPaid.toFixed(2)} / €
                           {orderTotal.toFixed(2)}
                         </p>
                       )}
+
+                      {/* Customer Info (if available) */}
+                      {order.customer && (
+                        <div className="text-xs text-gray-600">
+                          <span className="font-medium">
+                            {order.customer.name}
+                          </span>
+                          {order.customer.phone && (
+                            <span className="ml-1">
+                              • {order.customer.phone}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <p className="text-2xl">€{orderTotal.toFixed(2)}</p>
                   </button>
                 );
               })}
             </div>
           ) : (
-            <div className="p-4">No items in the order</div>
+            <div className="p-4 text-center">
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-8">
+                <div className="text-gray-400 mb-2">
+                  <svg
+                    className="w-12 h-12 mx-auto"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1}
+                      d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-black mb-1">
+                  No Orders
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  No orders available to display
+                </p>
+              </div>
+            </div>
           )}
         </>
       )}

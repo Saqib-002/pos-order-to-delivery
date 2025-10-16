@@ -56,6 +56,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
       searchTerm: "",
       selectedDate: null,
       selectedStatus: [],
+      selectedPaymentStatus: [],
     });
   }, []);
 
@@ -135,6 +136,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
       searchTerm: "",
       selectedDate: new Date(),
       selectedStatus: ["all"],
+      selectedPaymentStatus: [],
     });
     setLocalFilters({
       selectedDeliveryPerson: "",
@@ -293,7 +295,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="p-4 flex flex-col">
       {/* Header */}
       <Header
         title={t("manageOrders.title")}

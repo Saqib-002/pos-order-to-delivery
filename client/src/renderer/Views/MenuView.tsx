@@ -64,7 +64,7 @@ export const MenuView= memo(() => {
     }
   };
   return (
-      <div className="max-w-[98%] mx-auto">
+      <div className="p-4 flex flex-col">
         <MenuHeader currentView={currentView} onViewChange={setCurrentView} />
         {renderContent()}
       </div>

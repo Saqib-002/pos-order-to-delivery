@@ -42,14 +42,24 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
       selectedDate: null,
       searchTerm: "",
       selectedStatus: ["sent to kitchen"],
+      selectedPaymentStatus: [],
     });
   }, [token, setFilter]);
 
   const markAsReady = useCallback(
-    async (id: string) => {
+    async (order: Order) => {
       try {
-        const res = await updateOrder(token, id, {
-          status: "ready for delivery",
+        // Determine status based on order type
+        let newStatus: string;
+        if (order.orderType === "delivery") {
+          newStatus = "ready for delivery";
+        } else {
+          // For pickup and dine-in orders, mark as completed
+          newStatus = "completed";
+        }
+
+        const res = await updateOrder(token, order.id, {
+          status: newStatus,
           readyAt: new Date(Date.now()).toISOString(),
         });
         if (!res) {
@@ -57,7 +67,9 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
           return;
         }
         refreshOrdersCallback();
-        toast.success("Order marked as ready");
+        toast.success(
+          `Order marked as ${newStatus === "completed" ? "completed" : "ready"}`
+        );
       } catch (error) {
         console.error("Failed to update order:", error);
       }
@@ -212,7 +224,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
               <EyeIcon className="size-4" />
             </button>
             <button
-              onClick={() => markAsReady(order.id)}
+              onClick={() => markAsReady(order)}
               className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
               title="Mark as Ready"
             >
@@ -224,7 +236,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
     );
   };
   return (
-    <div className="flex flex-col">
+    <div className="p-4 flex flex-col">
       <Header
         title="Kitchen Management"
         subtitle="Monitor and manage orders in preparation"

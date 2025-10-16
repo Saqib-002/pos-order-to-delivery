@@ -251,8 +251,8 @@ export const UserManagement = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-50">
-      <div className="max-w-[98%] mx-auto">
+    <div className="p-4">
+      <div className="">
         <div className="flex justify-between items-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">

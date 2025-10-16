@@ -8,7 +8,13 @@ import {
   calculateProductTaxAmount,
 } from "@/renderer/utils/utils";
 import { OrderItem } from "@/types/order";
-import { AddIcon, CashIcon, CheckIcon, ClockIcon, CrossIcon } from "@/renderer/assets/Svg";
+import {
+  AddIcon,
+  CashIcon,
+  CheckIcon,
+  ClockIcon,
+  CrossIcon,
+} from "@/renderer/assets/Svg";
 import CustomButton from "../ui/CustomButton";
 
 interface OrderTakingFormProps {
@@ -25,10 +31,7 @@ interface AddonPage {
   pageNo: number;
 }
 
-const OrderTakingForm = ({
-  token,
-  currentOrderItem,
-}: OrderTakingFormProps) => {
+const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
   const {
     orderItems,
     addToOrder,
@@ -42,7 +45,7 @@ const OrderTakingForm = ({
     mode,
     editingProduct,
     setEditingProduct,
-    editOrderItem
+    editOrderItem,
   } = useOrder();
   const [variantItems, setVariantItems] = useState<any[] | null>(null);
   const [addOnPages, setAddonPages] = useState<AddonPage[] | null>(null);
@@ -98,7 +101,9 @@ const OrderTakingForm = ({
 
       if (res.data.length > 0) {
         if (editingProduct) {
-          const variant = res.data.find((v: any) => v.id === editingProduct.variantId);
+          const variant = res.data.find(
+            (v: any) => v.id === editingProduct.variantId
+          );
           if (variant) {
             setSelectedVariant(variant);
           }
@@ -128,9 +133,9 @@ const OrderTakingForm = ({
             [complement.groupId]: [...currentSelection, complement.itemId],
           }));
         }
-      })
+      });
     }
-  }, [addOnPages, editingProduct])
+  }, [addOnPages, editingProduct]);
   const handleComplementToggle = (groupId: string, itemId: string) => {
     const currentSelection = selectedComplements[groupId] || [];
 
@@ -197,6 +202,14 @@ const OrderTakingForm = ({
     return Math.round(total * quantity * 100) / 100;
   };
   const handleAddToOrder = async () => {
+    // Check if order is assigned to a delivery person
+    if (order && order.deliveryPerson && order.deliveryPerson.id) {
+      toast.info(
+        "This order is assigned to a delivery person and cannot be edited."
+      );
+      return;
+    }
+
     if (!selectedVariant) {
       toast.error("Please select a variant");
       return;
@@ -271,7 +284,7 @@ const OrderTakingForm = ({
             ...orderItem,
             complements: newComplement,
           }
-        )
+        );
         if (!res.status) {
           toast.error("Unable to update order");
         }
@@ -366,7 +379,7 @@ const OrderTakingForm = ({
           ...orderItem,
           complements: newComplement,
         }
-      )
+      );
       if (!res.status) {
         toast.error("Unable to update order");
       }
@@ -467,10 +480,11 @@ const OrderTakingForm = ({
                 {variantItems.map((item) => (
                   <label
                     key={item.id}
-                    className={`group relative flex items-center p-6 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md touch-manipulation ${selectedVariant?.id === item.id
-                      ? "border-indigo-500 bg-indigo-50 shadow-md"
-                      : "border-gray-200 hover:border-indigo-300 bg-white"
-                      }`}
+                    className={`group relative flex items-center p-6 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md touch-manipulation ${
+                      selectedVariant?.id === item.id
+                        ? "border-indigo-500 bg-indigo-50 shadow-md"
+                        : "border-gray-200 hover:border-indigo-300 bg-white"
+                    }`}
                   >
                     <input
                       type="radio"
@@ -481,10 +495,11 @@ const OrderTakingForm = ({
                       className="sr-only"
                     />
                     <div
-                      className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center transition-colors ${selectedVariant?.id === item.id
-                        ? "border-indigo-500 bg-indigo-500"
-                        : "border-gray-300 group-hover:border-indigo-400"
-                        }`}
+                      className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center transition-colors ${
+                        selectedVariant?.id === item.id
+                          ? "border-indigo-500 bg-indigo-500"
+                          : "border-gray-300 group-hover:border-indigo-400"
+                      }`}
                     >
                       {selectedVariant?.id === item.id && (
                         <div className="w-3 h-3 bg-white rounded-full"></div>
@@ -501,12 +516,12 @@ const OrderTakingForm = ({
                   </label>
                 ))}
               </div>
-            </div>) : (
+            </div>
+          ) : (
             <div className="text-center text-yellow-700 text-2xl">
               Variants have been detached from product
             </div>
-          )
-          }
+          )}
 
           {/* Complements Section */}
           {addOnPages && addOnPages.length > 0 && groups ? (
@@ -549,14 +564,21 @@ const OrderTakingForm = ({
                     <div className="flex flex-wrap gap-2">
                       {page.minComplements > 0 && (
                         <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${(selectedComplements[group.id]?.length || 0) >=
+                          className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${
+                            (selectedComplements[group.id]?.length || 0) >=
                             page.minComplements
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                            }`}
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
                         >
-                          <div className={`size-[14px] p-[2px] ${(selectedComplements[group.id]?.length || 0) >=
-                            page.minComplements ? "bg-green-600" : "bg-red-600"} flex items-center justify-center rounded-full`}>
+                          <div
+                            className={`size-[14px] p-[2px] ${
+                              (selectedComplements[group.id]?.length || 0) >=
+                              page.minComplements
+                                ? "bg-green-600"
+                                : "bg-red-600"
+                            } flex items-center justify-center rounded-full`}
+                          >
                             <CheckIcon className="size-2 text-white" />
                           </div>
                           <span>Min: {page.minComplements}</span>
@@ -589,10 +611,11 @@ const OrderTakingForm = ({
                             onClick={() =>
                               handleComplementToggle(group.id, item.id)
                             }
-                            className={`group relative p-5 border-2 rounded-xl text-left transition-all duration-200 hover:shadow-md touch-manipulation min-h-[80px] ${isSelected
-                              ? "border-indigo-500 bg-indigo-50 shadow-md"
-                              : "border-gray-200 hover:border-indigo-300 bg-white"
-                              }`}
+                            className={`group relative p-5 border-2 rounded-xl text-left transition-all duration-200 hover:shadow-md touch-manipulation min-h-[80px] ${
+                              isSelected
+                                ? "border-indigo-500 bg-indigo-50 shadow-md"
+                                : "border-gray-200 hover:border-indigo-300 bg-white"
+                            }`}
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
@@ -604,10 +627,11 @@ const OrderTakingForm = ({
                                 </div>
                               </div>
                               <div
-                                className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected
-                                  ? "border-indigo-500 bg-indigo-500"
-                                  : "border-gray-300 group-hover:border-indigo-400"
-                                  }`}
+                                className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                  isSelected
+                                    ? "border-indigo-500 bg-indigo-500"
+                                    : "border-gray-300 group-hover:border-indigo-400"
+                                }`}
                               >
                                 {isSelected && (
                                   <CheckIcon className="size-4 text-white" />
@@ -626,10 +650,8 @@ const OrderTakingForm = ({
             <div className="text-center text-yellow-700 text-2xl">
               Complements have been detached from product
             </div>
-          )
-          }
-          {
-            mode === "product" &&
+          )}
+          {mode === "product" && (
             <div className="bg-gray-50 rounded-xl p-6">
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -659,7 +681,7 @@ const OrderTakingForm = ({
                 </button>
               </div>
             </div>
-          }
+          )}
 
           {/* Price Breakdown */}
           <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
@@ -682,7 +704,9 @@ const OrderTakingForm = ({
 
               <div className="flex justify-between items-center py-2 text-gray-600">
                 <span>Tax ({selectedProduct?.tax || 0}%):</span>
-                <span>€{calculateProductTaxAmount(selectedProduct).toFixed(2)}</span>
+                <span>
+                  €{calculateProductTaxAmount(selectedProduct).toFixed(2)}
+                </span>
               </div>
 
               {selectedVariant && (
@@ -737,15 +761,30 @@ const OrderTakingForm = ({
         {/* Modern Action Buttons */}
         <div className="p-6 bg-gray-50 border-t border-gray-200">
           <div className="flex space-x-4">
-            <CustomButton type="button" label="Cancel" onClick={() => setSelectedProduct(null)} className="flex-1 px-6 py-4" variant="secondary" />
-            <CustomButton type="button" label={`${editingProduct ? "Edit" : "Add to Order"}`} onClick={handleAddToOrder} disabled={!canProceed()} variant={canProceed() ? "gradient" : "secondary"} Icon={
-              <>
-                {canProceed() &&
-                  <div className="size-5 p-1 bg-white flex items-center justify-center rounded-full">
-                    <CheckIcon className="size-3 text-indigo-600" />
-                  </div>
-                }</>
-            } className="flex-1" />
+            <CustomButton
+              type="button"
+              label="Cancel"
+              onClick={() => setSelectedProduct(null)}
+              className="flex-1 px-6 py-4"
+              variant="secondary"
+            />
+            <CustomButton
+              type="button"
+              label={`${editingProduct ? "Edit" : "Add to Order"}`}
+              onClick={handleAddToOrder}
+              disabled={!canProceed()}
+              variant={canProceed() ? "gradient" : "secondary"}
+              Icon={
+                <>
+                  {canProceed() && (
+                    <div className="size-5 p-1 bg-white flex items-center justify-center rounded-full">
+                      <CheckIcon className="size-3 text-indigo-600" />
+                    </div>
+                  )}
+                </>
+              }
+              className="flex-1"
+            />
           </div>
         </div>
       </div>

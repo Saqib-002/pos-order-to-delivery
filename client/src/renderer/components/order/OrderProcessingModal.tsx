@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import CustomerModal from "./modals/CustomerModal";
 import PaymentProcessingModal from "./modals/PaymentProcessingModal";
+import PaymentOptionModal from "./modals/PaymentOptionModal";
 import { toast } from "react-toastify";
 import { Order, OrderItem, Customer } from "@/types/order";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { calculateOrderTotal } from "@/renderer/utils/orderCalculations";
 import { formatAddress } from "@/renderer/utils/utils";
+import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
 import {
   AddIcon,
   CashIcon,
@@ -37,7 +39,11 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     "pickup"
   );
   const [notes, setNotes] = useState("");
+  const [customCustomerName, setCustomCustomerName] = useState("");
+  const [customCustomerPhone, setCustomCustomerPhone] = useState("");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isPaymentOptionModalOpen, setIsPaymentOptionModalOpen] =
+    useState(false);
   const [searchResults, setSearchResults] = useState<Customer[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
@@ -53,6 +59,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     setCustomerSearch(order?.customer?.name || "");
     setOrderType(order?.orderType || "pickup");
     setNotes(order?.notes || "");
+    setCustomCustomerName("");
+    setCustomCustomerPhone("");
     setSearchResults([]);
     setSelectedCustomer(order?.customer?.name ? order.customer : null);
     setIsSearching(false);
@@ -84,12 +92,16 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const selectCustomer = (customer: Customer) => {
     setSelectedCustomer(customer);
     setCustomerSearch(customer.name);
+    setCustomCustomerName("");
+    setCustomCustomerPhone("");
     setShowSearchResults(false);
   };
 
   const clearCustomerSelection = () => {
     setSelectedCustomer(null);
     setCustomerSearch("");
+    setCustomCustomerName("");
+    setCustomCustomerPhone("");
     setSearchResults([]);
     setShowSearchResults(false);
   };
@@ -132,8 +144,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
 
   const handleProcessOrder = () => {
     if (orderType === "delivery" && !selectedCustomer) {
-      toast.error("Please select a customer for delivery orders");
-      return;
+      if (!customCustomerName.trim() || !customCustomerPhone.trim()) {
+        toast.error(
+          "Please enter customer name and phone number for delivery orders"
+        );
+        return;
+      }
     }
 
     if (
@@ -147,8 +163,24 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       return;
     }
 
+    const currentPaymentStatus = calculatePaymentStatus(
+      order?.paymentType || "",
+      orderTotal
+    );
+
+    if (currentPaymentStatus.status === "PAID") {
+      toast.info(
+        "Order is already paid. Processing with existing payment information."
+      );
+      handlePaymentConfirm({
+        paymentType: order?.paymentType || "paid",
+        totalAmount: orderTotal,
+      });
+      return;
+    }
+
     if (orderType === "dine-in" || orderType === "pickup") {
-      setIsPaymentModalOpen(true);
+      setIsPaymentOptionModalOpen(true);
     } else {
       handlePaymentConfirm({
         paymentType: "pending",
@@ -157,17 +189,43 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     }
   };
 
+  const handlePayNow = () => {
+    setIsPaymentOptionModalOpen(false);
+    setIsPaymentModalOpen(true);
+  };
+
+  const handlePayLater = () => {
+    setIsPaymentOptionModalOpen(false);
+    handlePaymentConfirm({
+      paymentType: "pending",
+      totalAmount: orderTotal,
+    });
+  };
+
   const handlePaymentConfirm = (paymentData: {
     paymentType: string;
     totalAmount: number;
   }) => {
-    if (orderType === "delivery" && !selectedCustomer) return;
+    if (
+      orderType === "delivery" &&
+      !selectedCustomer &&
+      (!customCustomerName.trim() || !customCustomerPhone.trim())
+    ) {
+      toast.error(
+        "Please select a customer or enter customer details for delivery orders"
+      );
+      return;
+    }
+
+    const customerName =
+      selectedCustomer?.name ||
+      customCustomerName.trim() ||
+      (orderType === "dine-in" ? "Dine-in Customer" : "Walk-in Customer");
+    const customerPhone = selectedCustomer?.phone || customCustomerPhone.trim();
 
     const orderData = {
-      customerName:
-        selectedCustomer?.name ||
-        (orderType === "dine-in" ? "Dine-in Customer" : "Walk-in Customer"),
-      customerPhone: selectedCustomer?.phone || "",
+      customerName,
+      customerPhone,
       customerCIF: selectedCustomer?.cif || "",
       customerEmail: selectedCustomer?.email || "",
       customerComments: selectedCustomer?.comments || "",
@@ -232,7 +290,14 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 label={`Search Customer ${orderType === "delivery" ? "*" : "(Optional)"}`}
                 placeholder="Type customer name or phone to search..."
                 value={customerSearch}
-                onChange={(e) => setCustomerSearch(e.target.value)}
+                onChange={(e) => {
+                  setCustomerSearch(e.target.value);
+                  // Clear custom fields when user starts typing in search
+                  if (e.target.value.trim() && !selectedCustomer) {
+                    setCustomCustomerName("");
+                    setCustomCustomerPhone("");
+                  }
+                }}
                 required={orderType === "delivery"}
                 name="search-customer"
                 type="text"
@@ -331,16 +396,78 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     )}
                   </div>
 
-                  {/* Address formatted properly */}
-                  <div className="">
-                    <div className="text-sm font-semibold text-gray-700 mb-2 flex items-center space-x-2">
-                      <LocationFilledIcon className="text-indigo-600 size-4" />
-                      <span>Address</span>
-                    </div>
-                    <div className="text-gray-800 text-sm leading-relaxed">
-                      {formatAddress(selectedCustomer.address)}
+                  {/* Address formatted properly - only show if customer has address */}
+                  {selectedCustomer.address &&
+                    selectedCustomer.address.trim() &&
+                    formatAddress(selectedCustomer.address) && (
+                      <div className="">
+                        <div className="text-sm font-semibold text-gray-700 mb-2 flex items-center space-x-2">
+                          <LocationFilledIcon className="text-indigo-600 size-4" />
+                          <span>Address</span>
+                        </div>
+                        <div className="text-gray-800 text-sm leading-relaxed">
+                          {formatAddress(selectedCustomer.address)}
+                        </div>
+                      </div>
+                    )}
+                </div>
+              </div>
+            )}
+
+            {/* Custom Customer Fields - Show when no customer is selected */}
+            {!selectedCustomer && (
+              <div className="mt-6 p-6 bg-gradient-to-br from-gray-50 to-blue-50 border-2 border-gray-200 rounded-xl">
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <div className="bg-blue-500 size-4 p-0.5 rounded-full">
+                      <CheckIcon className="size-3 text-white" />
                     </div>
                   </div>
+                  <h4 className="text-lg font-bold text-gray-900">
+                    Customer Details{" "}
+                    {orderType === "delivery" ? "*" : "(Optional)"}
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CustomInput
+                    label="Customer Name"
+                    placeholder="Enter customer name..."
+                    value={customCustomerName}
+                    onChange={(e) => {
+                      setCustomCustomerName(e.target.value);
+                      // Clear customer search when user starts typing custom name
+                      if (e.target.value.trim() && !selectedCustomer) {
+                        setCustomerSearch("");
+                      }
+                    }}
+                    required={orderType === "delivery"}
+                    name="custom-customer-name"
+                    type="text"
+                    inputClasses="py-3 px-4 text-lg"
+                    otherClasses="w-full"
+                  />
+                  <CustomInput
+                    label="Phone Number"
+                    placeholder="Enter phone number..."
+                    value={customCustomerPhone}
+                    onChange={(e) => {
+                      setCustomCustomerPhone(e.target.value);
+                      // Clear customer search when user starts typing custom phone
+                      if (e.target.value.trim() && !selectedCustomer) {
+                        setCustomerSearch("");
+                      }
+                    }}
+                    required={orderType === "delivery"}
+                    name="custom-customer-phone"
+                    type="tel"
+                    inputClasses="py-3 px-4 text-lg"
+                    otherClasses="w-full"
+                  />
+                </div>
+                <div className="mt-3 text-sm text-gray-600">
+                  {orderType === "delivery"
+                    ? "Customer details are required for delivery orders"
+                    : "Enter customer details to personalize the order (optional)"}
                 </div>
               </div>
             )}
@@ -657,6 +784,16 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           onCustomerCreated={handleNewCustomerCreated}
         />
       )}
+
+      {/* Payment Option Modal */}
+      <PaymentOptionModal
+        isOpen={isPaymentOptionModalOpen}
+        onClose={() => setIsPaymentOptionModalOpen(false)}
+        onPayNow={handlePayNow}
+        onPayLater={handlePayLater}
+        totalAmount={orderTotal}
+        orderType={orderType as "pickup" | "dine-in"}
+      />
 
       {/* Payment Processing Modal */}
       <PaymentProcessingModal

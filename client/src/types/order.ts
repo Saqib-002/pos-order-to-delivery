@@ -43,7 +43,7 @@ export interface Customer {
   createdAt?: string;
   updatedAt?: string;
 }
-export interface DeliveryPerson{
+export interface DeliveryPerson {
   id?: string;
   name: string;
   phone: string;
@@ -59,7 +59,7 @@ export interface Order {
   customer: Customer;
   notes: string;
   orderType: "pickup" | "delivery" | "dine-in";
-  paymentType: "cash" | "card" ;
+  paymentType: "cash" | "card";
   isPaid: boolean;
   status: string;
   deliveryPerson?: DeliveryPerson;
@@ -67,7 +67,7 @@ export interface Order {
   readyAt?: string;
   cancelAt?: string;
   deliveredAt?: string;
-  updatedAt?: string; 
+  updatedAt?: string;
   createdAt?: string;
   items?: OrderItem[];
 }
@@ -75,11 +75,12 @@ export interface FilterType {
   searchTerm: string;
   selectedDate: Date | null;
   selectedStatus: string[];
+  selectedPaymentStatus: string[];
 }
-export interface PrinterType{
-  id?:string;
-  name:string;
-  displayName:string;
-  createdAt?:string;
-  updatedAt?:string;
+export interface PrinterType {
+  id?: string;
+  name: string;
+  displayName: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

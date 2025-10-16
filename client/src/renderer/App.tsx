@@ -29,6 +29,7 @@ const App: React.FC = () => {
     searchTerm: "",
     selectedDate: null,
     selectedStatus: ["all"],
+    selectedPaymentStatus: [],
   });
   const { auth, logout } = useAuth();
 
@@ -145,7 +146,7 @@ const App: React.FC = () => {
         userRole={auth.user?.role}
         onLogout={handleLogout}
       />
-      <div className="ml-16 p-4 h-screen overflow-y-auto">{renderView()}</div>
+      <div className="ml-16 h-screen overflow-y-auto">{renderView()}</div>
     </div>
   );
 };

@@ -65,6 +65,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
       selectedDate: null,
       searchTerm: "",
       selectedStatus: ["ready for delivery", "out for delivery"],
+      selectedPaymentStatus: [],
     });
   }, [token, setFilter]);
 
@@ -303,7 +304,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
   );
 
   return (
-    <div className="flex flex-col">
+    <div className="p-4 flex flex-col">
       <Header
         title={t("deliveryView.title")}
         subtitle={t("deliveryView.subtitle")}

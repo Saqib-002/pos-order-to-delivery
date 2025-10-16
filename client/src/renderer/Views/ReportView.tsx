@@ -140,7 +140,7 @@ export const ReportView = () => {
   const ordersData = analytics?.orders.slice(0, 20) || [];
 
   return (
-    <div className="max-w-[98%] mx-auto mt-4 p-6 bg-gray-50 flex flex-col gap-6">
+    <div className="p-4 flex flex-col">
       <Header
         title={t("reports.title")}
         subtitle={t("reports.subtitle")}

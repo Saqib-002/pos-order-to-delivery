@@ -402,7 +402,7 @@ export const DeliveryManagement = () => {
     );
   }
   return (
-    <div className="flex flex-col">
+    <div className="p-4 flex flex-col">
       <Header
         title={t("deliveryManagement.title")}
         subtitle={t("deliveryManagement.subtitle")}

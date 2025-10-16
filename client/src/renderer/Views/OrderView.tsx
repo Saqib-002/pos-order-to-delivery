@@ -31,6 +31,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
       searchTerm: "",
       selectedDate: localMidnight,
       selectedStatus: [],
+      selectedPaymentStatus: [],
     });
   }, []);
   return (

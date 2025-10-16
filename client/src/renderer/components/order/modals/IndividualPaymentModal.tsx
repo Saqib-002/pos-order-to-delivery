@@ -31,9 +31,12 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
   const [currentAmount, setCurrentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
 
-  // Parse existing payments from payment string
   const parseExistingPayments = (paymentTypeString: string) => {
-    if (!paymentTypeString || paymentTypeString.trim() === "") {
+    if (
+      !paymentTypeString ||
+      paymentTypeString.trim() === "" ||
+      paymentTypeString === "pending"
+    ) {
       return [];
     }
 
@@ -120,29 +123,11 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
 
       const { orderTotal } = calculateOrderTotal(order.items || []);
 
-      // Calculate new payment string by combining existing and new payments
-      const existingPayments = parseExistingPayments(order.paymentType || "");
-      const allPayments = [...existingPayments, ...paymentMethods];
-
-      // Combine same payment types
-      const combinedPayments = allPayments.reduce(
-        (acc, payment) => {
-          const existing = acc.find((p) => p.type === payment.type);
-          if (existing) {
-            existing.amount += payment.amount;
-          } else {
-            acc.push({ ...payment });
-          }
-          return acc;
-        },
-        [] as Array<{ type: string; amount: number }>
-      );
-
-      const paymentTypeString = combinedPayments
+      const paymentTypeString = paymentMethods
         .map((method) => `${method.type}:${method.amount}`)
         .join(", ");
 
-      const totalPaid = combinedPayments.reduce(
+      const totalPaid = paymentMethods.reduce(
         (sum, method) => sum + method.amount,
         0
       );
@@ -278,13 +263,29 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                 </span>
               </div>
 
-              <div className="flex justify-between items-center py-2">
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
                 <span className="text-sm font-medium text-gray-600">
                   {t("individualPaymentModal.totalAmount")}
                 </span>
                 <span className="text-lg font-bold text-green-600">
                   €
                   {calculateOrderTotal(order.items || []).orderTotal.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm font-medium text-gray-600">
+                  {t("individualPaymentModal.remainingAmount")}
+                </span>
+                <span className="text-lg font-bold text-orange-600">
+                  €
+                  {(
+                    calculateOrderTotal(order.items || []).orderTotal -
+                    paymentMethods.reduce(
+                      (sum, method) => sum + method.amount,
+                      0
+                    )
+                  ).toFixed(2)}
                 </span>
               </div>
             </div>
