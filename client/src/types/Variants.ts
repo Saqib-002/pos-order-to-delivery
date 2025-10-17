@@ -12,6 +12,7 @@ export interface VariantItem {
   priority: number;
   variantId: string;
   price?: number;
+  imgUrl?: string;
   createdAt: string;
   updatedAt: string;
 }

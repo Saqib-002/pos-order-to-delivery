@@ -6,6 +6,7 @@ export async function up(knex) {
   return knex.schema.createTable('variant_items', function(table) {
     table.string('id').primary();
     table.string('name').notNullable();
+    table.string("imgUrl");
     table.integer('priority').notNullable();
     table.string('variantId').notNullable();
     table.timestamp('createdAt').defaultTo(knex.fn.now());

@@ -38,6 +38,7 @@ export interface Menu {
   subcategoryId: string;
   description?: string;
   price: number;
+  imgUrl?: string;
   priority: number;
   tax: number;
   discount: number;

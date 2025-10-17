@@ -1,5 +1,8 @@
 import { randomUUID } from "crypto";
 import { db } from "./index.js";
+import { uploadImg } from "../utils/utils.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 export class ProductsDatabaseOperations {
     static async createProduct(
@@ -11,6 +14,9 @@ export class ProductsDatabaseOperations {
         const trx = await db.transaction();
         try {
             const now = new Date().toISOString();
+            if (productData.imgUrl && !productData.imgUrl.startsWith("http")) {
+                productData.imgUrl = await uploadImg(productData.imgUrl, false);
+            }
             const newProduct = {
                 ...productData,
                 id: randomUUID(),
@@ -75,7 +81,10 @@ export class ProductsDatabaseOperations {
                 .select("products.*", "sub_categories.categoryId")
                 .orderBy("products.name", "asc");
             const products = await query;
-            return products;
+            return products.map((p: any) => ({
+                ...p,
+                imgUrl: `${p.imgUrl ? `${process.env.CDN_URL}/uploads/${p.imgUrl}` : ""}`,
+            }));
         } catch (error) {
             throw error;
         }
@@ -113,7 +122,9 @@ export class ProductsDatabaseOperations {
                     .push(`${printerId}|${name}|${isMain}`);
             }
             for (const product of products) {
+                const uploadUrl = process.env.CDN_URL;
                 product.printerIds = printerMap.get(product.id) || [];
+                product.imgUrl = `${product.imgUrl ? `${uploadUrl}/uploads/${product.imgUrl}` : ""}`;
             }
             return products;
         } catch (error) {
@@ -129,6 +140,11 @@ export class ProductsDatabaseOperations {
         const trx = await db.transaction();
         try {
             const now = new Date().toISOString();
+            if (productData.imgUrl && !productData.imgUrl.startsWith("http")) {
+                productData.imgUrl = await uploadImg(productData.imgUrl, false);
+            } else if (productData.imgUrl) {
+                productData.imgUrl = productData.imgUrl?.split("/").at(-1);
+            }
             await trx("products")
                 .where("id", productData.id)
                 .update(productData);
@@ -254,7 +270,10 @@ export class ProductsDatabaseOperations {
             product.printerIds = productPrinters.map(
                 (p: any) => `${p.printerId}|${p.name}|${p.isMain}`
             );
-            return product;
+            return {
+                ...product,
+                imgUrl: `${product.imgUrl ? `${process.env.CDN_URL}/uploads/${product.imgUrl}` : ""}`,
+            };
         } catch (error) {
             throw error;
         }
@@ -263,7 +282,7 @@ export class ProductsDatabaseOperations {
         try {
             const product = await db("menu_page_products")
                 .where("productId", productId)
-                .select("id")
+                .select("id");
             return product;
         } catch (error) {
             throw error;

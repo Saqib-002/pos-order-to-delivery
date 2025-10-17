@@ -9,6 +9,7 @@ export async function up(knex) {
     table.string('subcategoryId').notNullable();
     table.text('description');
     table.decimal('price', 10, 2).notNullable();
+    table.string('imgUrl');
     table.integer('priority').defaultTo(0);
     table.decimal('tax', 5, 2).defaultTo(10);
     table.decimal('discount', 10, 2).defaultTo(0);

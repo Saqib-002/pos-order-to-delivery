@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { CustomSelect } from "../../ui/CustomSelect";
 import CrossIcon from "../../../assets/icons/cross.svg?react";
 import DeleteIcon from "../../../assets/icons/delete.svg?react";
 import CustomButton from "../../ui/CustomButton";
 import CustomInput from "../../shared/CustomInput";
+import { ImgIcon } from "@/renderer/assets/Svg";
 
 interface MenuPage {
   id: string;
@@ -30,6 +31,7 @@ interface Menu {
   subcategoryId: string;
   description: string;
   price: number;
+  imgUrl: string;
   priority: number;
   tax: number;
   discount: number;
@@ -58,6 +60,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
     description: "",
     price: 0,
     priority: 0,
+    imgUrl: "",
     tax: 0,
     discount: 0,
     outstanding: false,
@@ -87,6 +90,8 @@ export const MenuModal: React.FC<MenuModalProps> = ({
     minimum?: string;
     maximum?: string;
   }>({});
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const kitchenPriorityOptions = [
     { value: "Priority 1", label: "Priority 1" },
@@ -214,6 +219,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
         name: editingMenu.name,
         subcategoryId: editingMenu.subcategoryId,
         description: editingMenu.description || "",
+        imgUrl: editingMenu.imgUrl || "",
         price: editingMenu.price,
         priority: editingMenu.priority,
         tax: editingMenu.tax,
@@ -222,11 +228,15 @@ export const MenuModal: React.FC<MenuModalProps> = ({
       });
       // Fetch existing menu page associations from database
       fetchMenuPageAssociations(editingMenu.id);
+      if (editingMenu.imgUrl) {
+        setImagePreview(editingMenu.imgUrl);
+      }
     } else {
       setFormData({
         name: "",
         subcategoryId: "",
         description: "",
+        imgUrl: "",
         price: 0,
         priority: 0,
         tax: 0,
@@ -234,6 +244,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
         outstanding: false,
       });
       setMenuPageAssociations([]);
+      setImagePreview(null);
     }
     setNewPageAssociation({
       menuPageId: "",
@@ -499,6 +510,27 @@ export const MenuModal: React.FC<MenuModalProps> = ({
       }
     }
   };
+  const handleMenuImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setFormData({ ...formData, imgUrl: base64 });
+        setImagePreview(base64);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveMenuImage = () => {
+    setFormData({ ...formData, imgUrl: "" });
+    setImagePreview(null);
+    // Reset the file input to allow re-selection
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -569,7 +601,52 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                 </p>
               </div>
             </div>
-
+{/* Menu Image Upload */}
+<div className="mt-4">
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    MENU IMAGE
+  </label>
+  <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-orange-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-[150px] flex items-center justify-center">
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept="image/*"
+      onChange={handleMenuImageChange}
+      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+    />
+    {imagePreview ? (
+      <div className="flex flex-col items-center">
+        <div className="relative mb-2">
+          <img
+            crossOrigin="anonymous"
+            src={imagePreview}
+            alt="Menu Preview"
+            className="w-48 h-32 object-cover rounded-lg shadow-md"
+          />
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent triggering file input
+              handleRemoveMenuImage();
+            }}
+            className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors"
+          >
+            <CrossIcon className="size-4 text-gray-600 hover:text-gray-800" />
+          </button>
+        </div>
+        <span className="text-xs text-gray-500 text-center">
+          Click to change
+        </span>
+      </div>
+    ) : (
+      <div className="flex flex-col items-center text-gray-500">
+        <ImgIcon className="size-12 mb-2" />
+        <p className="text-sm font-medium">Upload menu image</p>
+        <p className="text-xs">PNG, JPG up to 2MB</p>
+      </div>
+    )}
+  </div>
+</div>
             {/* Financial Details Section */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -726,7 +803,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     onChange={handlePageSelect}
                     placeholder={
                       availableMenuPages.length === 1 &&
-                      availableMenuPages[0].disabled
+                        availableMenuPages[0].disabled
                         ? "No menu pages available"
                         : "Select a menu page"
                     }
@@ -878,9 +955,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   prev.map((assoc) =>
                                     assoc.id === association.id
                                       ? {
-                                          ...assoc,
-                                          minimum: value,
-                                        }
+                                        ...assoc,
+                                        minimum: value,
+                                      }
                                       : assoc
                                   )
                                 );
@@ -899,9 +976,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   prev.map((assoc) =>
                                     assoc.id === association.id
                                       ? {
-                                          ...assoc,
-                                          maximum: value,
-                                        }
+                                        ...assoc,
+                                        maximum: value,
+                                      }
                                       : assoc
                                   )
                                 );
@@ -920,9 +997,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   prev.map((assoc) =>
                                     assoc.id === association.id
                                       ? {
-                                          ...assoc,
-                                          priority: value,
-                                        }
+                                        ...assoc,
+                                        priority: value,
+                                      }
                                       : assoc
                                   )
                                 );
@@ -940,9 +1017,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   prev.map((assoc) =>
                                     assoc.id === association.id
                                       ? {
-                                          ...assoc,
-                                          kitchenPriority: value,
-                                        }
+                                        ...assoc,
+                                        kitchenPriority: value,
+                                      }
                                       : assoc
                                   )
                                 );
@@ -960,9 +1037,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   prev.map((assoc) =>
                                     assoc.id === association.id
                                       ? {
-                                          ...assoc,
-                                          multiple: value,
-                                        }
+                                        ...assoc,
+                                        multiple: value,
+                                      }
                                       : assoc
                                   )
                                 );

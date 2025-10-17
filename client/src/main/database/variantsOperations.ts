@@ -1,6 +1,9 @@
 import { Variant, VariantItem } from "@/types/Variants.js";
 import { db } from "./index.js";
 import { randomUUID } from "crypto";
+import { uploadImg } from "../utils/utils.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 export class VariantsDatabaseOperations {
     static async createVariant(
@@ -20,6 +23,9 @@ export class VariantsDatabaseOperations {
                 await trx("variants").insert(newVariant);
                 const newVariantItems = [];
                 for (const item of variantItems) {
+                    if (item.imgUrl && !item.imgUrl.startsWith("http")) {
+                        item.imgUrl = await uploadImg(item.imgUrl, false);
+                    }
                     const newItem = {
                         ...item,
                         id: randomUUID(),
@@ -27,9 +33,9 @@ export class VariantsDatabaseOperations {
                         createdAt: now,
                         updatedAt: now,
                     };
-                    await trx("variant_items").insert(newItem);
                     newVariantItems.push(newItem);
                 }
+                await trx("variant_items").insert(newVariantItems);
                 await trx.commit();
                 return {
                     variant: newVariant,
@@ -52,6 +58,7 @@ export class VariantsDatabaseOperations {
                     "variants.updatedAt as variantUpdatedAt",
                     "variant_items.id as itemId",
                     "variant_items.name as itemName",
+                    "variant_items.imgUrl as imgUrl",
                     "variant_items.priority",
                     "variant_items.createdAt as itemCreatedAt",
                     "variant_items.updatedAt as itemUpdatedAt"
@@ -79,10 +86,12 @@ export class VariantsDatabaseOperations {
                     variantsMap.set(row.variantId, variant);
                 }
                 if (row.itemId) {
+                    const uploadUrl = process.env.CDN_URL;
                     variantsMap.get(row.variantId).items.push({
                         id: row.itemId,
                         name: row.itemName,
                         priority: row.priority,
+                        imgUrl: `${row.imgUrl ? `${uploadUrl}/uploads/${row.imgUrl}` : ""}`,
                         createdAt: row.itemCreatedAt,
                         updatedAt: row.itemUpdatedAt,
                     });
@@ -144,12 +153,22 @@ export class VariantsDatabaseOperations {
                     .andWhere("id", item.id)
                     .first();
                 if (existingItem) {
+                    if (item.imgUrl && !item.imgUrl.startsWith("http")) {
+                        item.imgUrl = await uploadImg(item.imgUrl, false);
+                    } else if (
+                        existingItem.imgUrl
+                    ) {
+                        item.imgUrl = item.imgUrl?.split("/").at(-1);
+                    }
                     await trx("variant_items")
                         .where("variantId", variantData.id)
                         .andWhere("id", item.id)
                         .update(item);
                 } else {
                     const newItemId = randomUUID();
+                    if (item.imgUrl && !item.imgUrl.startsWith("http")) {
+                        item.imgUrl = await uploadImg(item.imgUrl, false);
+                    }
                     await trx("variant_items").insert({
                         ...item,
                         id: newItemId,
@@ -188,7 +207,8 @@ export class VariantsDatabaseOperations {
                     "products.subcategoryId",
                     "=",
                     "sub_categories.id"
-                ).leftJoin(
+                )
+                .leftJoin(
                     "variant_items",
                     "variant_items.id",
                     "=",

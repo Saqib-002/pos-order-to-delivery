@@ -1,6 +1,7 @@
 import { IpcMainInvokeEvent } from "electron";
 import { verifyToken } from "./auth.js";
 import { ConfigurationsDatabaseOperations } from "../database/configurationsOperations.js";
+import { uploadImg } from "../utils/utils.js";
 
 export const createConfigurations = async (
     event: IpcMainInvokeEvent,
@@ -10,8 +11,8 @@ export const createConfigurations = async (
     try {
         await verifyToken(event, token);
         if (configData.logo && !configData.logo.startsWith("http")) {
-            configData.logo = await ConfigurationsDatabaseOperations.uploadLogo(
-                configData.logo
+            configData.logo = await uploadImg(
+                configData.logo,true
             );
         }
         const result =
@@ -57,8 +58,8 @@ export const updateConfigurations = async (
     try {
         await verifyToken(event, token);
         if (updates.logo && !updates.logo.startsWith("http")) {
-            updates.logo = await ConfigurationsDatabaseOperations.uploadLogo(
-                updates.logo
+            updates.logo = await uploadImg(
+                updates.logo,true
             );
         }
         const result =

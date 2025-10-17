@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { CustomSelect } from "../../ui/CustomSelect";
 import { getGroups, getVariants } from "@/renderer/utils/menu";
@@ -11,6 +11,7 @@ import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { Product } from "@/types/Menu";
 import { fetchPrinters } from "@/renderer/utils/printer";
+import { ImgIcon } from "@/renderer/assets/Svg";
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -82,6 +83,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
     discount: 0,
     categoryId: "",
     subcategoryId: "",
+    imgUrl: "",
     isAvailable: true,
     isOutOfStock: false,
     isDrink: false,
@@ -91,6 +93,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
     isPlus18: false,
     isForMenu: false,
   });
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     getVariants(token, setVariants);
     getGroups(token, (groups) =>
@@ -115,6 +119,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
         subcategoryId: product.subcategoryId || "",
         isAvailable: product.isAvailable ?? true,
         isOutOfStock: false,
+        imgUrl: product.imgUrl || "",
         isDrink: product.isDrink || false,
         isByWeight: product.isByWeight || false,
         isPerDiner: product.isPerDiner || false,
@@ -181,6 +186,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
         }
       };
       getVariantAndGroups();
+      if (product.imgUrl) {
+        setImagePreview(product.imgUrl);
+      }
     } else {
       setFormData({
         name: "",
@@ -191,6 +199,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
         discount: 0,
         categoryId: "",
         subcategoryId: "",
+        imgUrl: "",
         isAvailable: true,
         isOutOfStock: false,
         isDrink: false,
@@ -214,6 +223,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setVariantPrices({});
       setValidationErrors({});
       setSelectedPrinterIds([]);
+      setImagePreview(null);
     }
   }, [product, isOpen]);
   // Get category options for CustomSelect
@@ -602,6 +612,26 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setIsSubmitting(false);
     }
   };
+  const handleProductImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setFormData({ ...formData, imgUrl: base64 });
+        setImagePreview(base64);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveProductImage = () => {
+    setFormData({ ...formData, imgUrl: "" });
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -762,6 +792,52 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       portalClassName="product-subcategory-dropdown-portal"
                       disabled={!formData.categoryId}
                     />
+                  </div>
+                </div>
+                {/* Product Image Upload */}
+                <div className="col-span-1 md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    PRODUCT IMAGE
+                  </label>
+                  <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-orange-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-[150px] flex items-center justify-center">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProductImageChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    {imagePreview ? (
+                      <div className="flex flex-col items-center">
+                        <div className="relative mb-2">
+                          <img
+                            crossOrigin="anonymous"
+                            src={imagePreview}
+                            alt="Product Preview"
+                            className="w-48 h-32 object-cover rounded-lg shadow-md"
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent triggering file input
+                              handleRemoveProductImage();
+                            }}
+                            className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors"
+                          >
+                            <CrossIcon className="size-4 text-gray-600 hover:text-gray-800" />
+                          </button>
+                        </div>
+                        <span className="text-xs text-gray-500 text-center">
+                          Click to change
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center text-gray-500">
+                        <ImgIcon className="size-12 mb-2" />
+                        <p className="text-sm font-medium">Upload product image</p>
+                        <p className="text-xs">PNG, JPG up to 2MB</p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div>

@@ -31,6 +31,7 @@ export interface Product extends BaseMenuEntity {
   isAvailable: boolean;
   priority?: number;
   tax?: number;
+  imgUrl?: string;
   discount?: number;
   isDrink?: boolean;
   isByWeight?: boolean;

@@ -1,9 +1,9 @@
 import { colorOptions } from "@/renderer/utils/utils";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
-import { CrossIcon, DeleteIcon, DocumentIcon, NoProductIcon } from "@/renderer/assets/Svg";
+import { CrossIcon, DeleteIcon, DocumentIcon, ImgIcon, NoProductIcon } from "@/renderer/assets/Svg";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 
 interface Group {
@@ -18,6 +18,7 @@ interface Complement {
   name: string;
   price: number;
   priority: number;
+  imgUrl?: string;
 }
 
 interface CreateGroupModalProps {
@@ -55,6 +56,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAssociatedProducts, setShowAssociatedProducts] = useState(false);
   const [associatedProducts, setAssociatedProducts] = useState<AssociatedProduct[] | null>(null);
+  const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const confirm = useConfirm()
 
   const fetchAssociatedProducts = async () => {
@@ -132,6 +134,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       name: newComplement.name.trim(),
       price: newComplement.price,
       priority: newComplement.priority,
+      imgUrl: "",
     };
 
     setComplements([...complements, complement]);
@@ -174,6 +177,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
     try {
       let res;
+      console.log(formData, complements);
       if (editingGroup) {
         res = await (window as any).electronAPI.updateGroup(
           token,
@@ -205,7 +209,8 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       setIsSubmitting(false);
     }
   };
-  const handleDeleteGroup = async (id: string,name:string) => {
+
+  const handleDeleteGroup = async (id: string, name: string) => {
     const ok = await confirm({
       title: "Delete Group",
       message: `Are you sure you want to delete this "${editingGroup?.name}" with ${complements.length} items? This group is attached to ${associatedProducts ? associatedProducts.length : 0} products. They will be detached!`,
@@ -224,6 +229,24 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       toast.success("Group deleted successfully");
       onSuccess();
     });
+  };
+  const handleComplementImageChange = (complementId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        updateComplement(complementId, "imgUrl", base64);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveComplementImage = (complementId: string) => {
+    updateComplement(complementId, "imgUrl", "");
+    if (fileInputRefs.current[complementId]) {
+      fileInputRefs.current[complementId]!.value = "";
+    }
   };
 
   if (!isOpen) return null;
@@ -304,6 +327,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                         Priority
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Image
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -319,6 +345,47 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <CustomInput label="" name={`priority-${complement.id}`} type="number" min="0" value={complement.priority} onChange={(e) => updateComplement(complement.id, "priority", parseInt(e.target.value) || 0)} placeholder="0" inputClasses="!w-20" />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-1 hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 flex items-center justify-center touch-manipulation w-32">
+                            <input
+                              ref={(el) => {
+                                if (el) {
+                                  fileInputRefs.current[complement.id] = el;
+                                }
+                              }}
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleComplementImageChange(complement.id, e)}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            {complement.imgUrl ? (
+                              <div className="flex flex-col items-center">
+                                <div className="relative">
+                                  <img
+                                    crossOrigin="anonymous"
+                                    src={complement.imgUrl}
+                                    alt="Complement Preview"
+                                    className="size-9 object-cover rounded shadow-md"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation(); // Prevent triggering file input
+                                      handleRemoveComplementImage(complement.id);
+                                    }}
+                                    className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-md hover:bg-gray-100 transition-colors"
+                                  >
+                                    <CrossIcon className="size-3 text-gray-600 hover:text-gray-800" />
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center text-gray-500 text-xs">
+                                <ImgIcon className="size-9" />
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
