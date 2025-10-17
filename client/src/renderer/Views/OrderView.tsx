@@ -4,19 +4,10 @@ import OrderMenu from "../components/order/OrderMenu";
 import OrderComponentHeader from "../components/order/OrderComponentHeader";
 import { OrderProvider } from "../contexts/OrderContext";
 import { useEffect } from "react";
-interface OrderViewProps {
-  orders: Order[];
-  refreshOrdersCallback: () => void;
-  filter: FilterType;
-  setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
-}
+import { useOrderManagement } from "../hooks/useOrderManagement";
+import { useAuth } from "../contexts/AuthContext";
 
-export const OrderView: React.FC<OrderViewProps> = ({
-  orders,
-  refreshOrdersCallback,
-  filter,
-  setFilter,
-}) => {
+export const OrderView = () => {
   const now = new Date();
   const localMidnight = new Date(
     now.getFullYear(),
@@ -26,6 +17,10 @@ export const OrderView: React.FC<OrderViewProps> = ({
     0,
     0
   );
+  const { auth } = useAuth();
+  const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagement(
+      auth
+    );
   useEffect(() => {
     setFilter({
       searchTerm: "",

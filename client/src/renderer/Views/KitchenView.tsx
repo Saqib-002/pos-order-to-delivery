@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { FilterControls } from "../components/shared/FilterControl.order";
-import { Order, FilterType } from "@/types/order";
+import { Order } from "@/types/order";
 import { StatsCard } from "../components/shared/StatsCard.order";
 import SentToKitchenIcon from "../assets/icons/sent-to-kitchen.svg?react";
 
@@ -11,30 +11,22 @@ import HighPriorityIcon from "../assets/icons/high-priority.svg?react";
 import ThunderIcon from "../assets/icons/thunder.svg?react";
 import MarkIcon from "../assets/icons/mark.svg?react";
 import EyeIcon from "../assets/icons/eye.svg?react";
-import PrinterIcon from "../assets/icons/printer.svg?react";
 
 import { useAuth } from "../contexts/AuthContext";
 import { updateOrder, StringToComplements } from "../utils/order";
 import Header from "../components/shared/Header.order";
 import { OrderTable } from "../components/shared/OrderTable";
 import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
+import { useOrderManagement } from "../hooks/useOrderManagement";
 
-interface KitchenViewProps {
-  orders: Order[];
-  filter: FilterType;
-  setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
-  refreshOrdersCallback: () => void;
-}
-
-export const KitchenView: React.FC<KitchenViewProps> = ({
-  orders,
-  filter,
-  setFilter,
-  refreshOrdersCallback,
-}) => {
+export const KitchenView = () => {
   const {
-    auth: { token },
+    auth
   } = useAuth();
+  const { token } = auth;
+  const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagement(
+    auth
+  );
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
   useEffect(() => {

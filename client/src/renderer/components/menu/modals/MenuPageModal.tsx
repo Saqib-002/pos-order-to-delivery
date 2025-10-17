@@ -221,7 +221,6 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
           products
         );
         if (!res.status) {
-          console.log(res);
           toast.error("Failed to update menu page");
           return;
         }
