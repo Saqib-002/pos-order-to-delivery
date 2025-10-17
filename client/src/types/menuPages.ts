@@ -4,6 +4,7 @@ export interface MenuPage {
   description?: string;
   createdAt: string;
   updatedAt: string;
+  itemCount?: number;
   isDeleted: boolean;
 }
 
@@ -20,16 +21,16 @@ export interface MenuPageProduct {
 
 export interface MenuPageAssociation {
   id: string;
-  menuId: string;
-  menuPageId: string;
+  menuId?: string;
+  menuPageId?: string;
   pageName: string;
   minimum: number;
   maximum: number;
   priority: number;
   kitchenPriority: string;
   multiple: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Menu {

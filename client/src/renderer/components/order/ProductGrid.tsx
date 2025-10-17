@@ -57,6 +57,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                 id: product.id,
                 name: product.name,
                 description: product.description,
+                imgUrl: product.imgUrl,
                 price: product.price,
                 color: product.color,
                 isAvailable: product.isAvailable,

@@ -52,7 +52,6 @@ const OrderMenu = () => {
   useEffect(() => {
     loadCategories();
   }, []);
-
   const loadCategories = async () => {
     setIsLoadingCategories(true);
     await fetchCategories(token, setCategories);
@@ -197,6 +196,7 @@ const OrderMenu = () => {
                                 data={{
                                   id: menu.id,
                                   name: menu.name,
+                                  imgUrl:menu.imgUrl,
                                   description: menu.description,
                                   price: menu.price,
                                   color: menu.color || "indigo",

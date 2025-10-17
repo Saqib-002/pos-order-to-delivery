@@ -6,38 +6,9 @@ import DeleteIcon from "../../../assets/icons/delete.svg?react";
 import CustomButton from "../../ui/CustomButton";
 import CustomInput from "../../shared/CustomInput";
 import { ImgIcon } from "@/renderer/assets/Svg";
+import { Menu, MenuPage, MenuPageAssociation } from "@/types/menuPages";
 
-interface MenuPage {
-  id: string;
-  name: string;
-  description: string;
-  products: any[];
-}
 
-interface MenuPageAssociation {
-  id: string;
-  menuPageId: string;
-  pageName: string;
-  minimum: number;
-  maximum: number;
-  priority: number;
-  kitchenPriority: string;
-  multiple: string;
-}
-
-interface Menu {
-  id: string;
-  name: string;
-  subcategoryId: string;
-  description: string;
-  price: number;
-  imgUrl: string;
-  priority: number;
-  tax: number;
-  discount: number;
-  outstanding: boolean;
-  menuPageAssociations: MenuPageAssociation[];
-}
 
 interface MenuModalProps {
   isOpen: boolean;

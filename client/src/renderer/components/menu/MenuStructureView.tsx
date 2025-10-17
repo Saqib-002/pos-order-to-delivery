@@ -5,47 +5,12 @@ import { MenuModal } from "./modals/MenuModal";
 import { UnifiedCard } from "../ui/UnifiedCard";
 import NoMenuIcon from "../../assets/icons/no-menu.svg?react";
 import NoMenuPageIcon from "../../assets/icons/no-menu-page.svg?react";
-import { MenuPageProduct } from "@/types/menuPages";
+import { Menu, MenuPage, MenuPageProduct } from "@/types/menuPages";
 import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 
 
-interface MenuPage {
-  id: string;
-  name: string;
-  description: string;
-  products: Omit<MenuPageProduct, "menuPageId" | "createdAt" | "updatedAt">[];
-  itemCount?: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface MenuPageAssociation {
-  id: string;
-  menuPageId: string;
-  pageName: string;
-  minimum: number;
-  maximum: number;
-  priority: number;
-  kitchenPriority: string;
-  multiple: string;
-}
-
-interface Menu {
-  id: string;
-  name: string;
-  subcategoryId: string;
-  description: string;
-  price: number;
-  priority: number;
-  tax: number;
-  discount: number;
-  outstanding: boolean;
-  menuPageAssociations: MenuPageAssociation[];
-  createdAt?: string;
-  updatedAt?: string;
-}
 
 export const MenuStructureComponent = () => {
   const [menuPages, setMenuPages] = useState<MenuPage[]>([]);
@@ -238,9 +203,10 @@ export const MenuStructureComponent = () => {
                   id: menu.id,
                   name: menu.name,
                   description: menu.description,
+                  imgUrl: menu.imgUrl,
                   price: menu.price,
-                  isAvailable: !menu.outstanding, // Assuming outstanding means not available
-                  color: "orange", // Default color for menus
+                  isAvailable: !menu.outstanding,
+                  color: "orange",
                 }}
                 type="menu"
                 onEdit={() => handleEditMenu(menu)}

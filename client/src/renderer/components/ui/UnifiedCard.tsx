@@ -9,6 +9,7 @@ interface BaseCardData {
   menuCount?: number;
   color?: string;
   description?: string;
+  imgUrl?: string;
   price?: number;
   isAvailable?: boolean;
   groupName?: string;
@@ -207,7 +208,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
     );
     const actionClass = `opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex ${actionsLayout === "col" ? "flex-col items-center gap-1" : "items-center gap-1"
       }`;
-      const shouldShowDelete = hasDelete && onDelete && (type === "category" ? Number(data.itemCount) === 0 : (type === "subcategory" ? (Number(data.itemCount) === 0 && Number(data.menuCount) === 0) : true));
+    const shouldShowDelete = hasDelete && onDelete && (type === "category" ? Number(data.itemCount) === 0 : (type === "subcategory" ? (Number(data.itemCount) === 0 && Number(data.menuCount) === 0) : true));
     return (
       <div className={actionClass}>
         {createButton(onEdit, "hover:text-gray-200", "Edit", EditIcon)}
@@ -215,13 +216,22 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
       </div>
     );
   };
-
+  console.log(type);
+console.log(['product', 'menu'].includes(type));
   return (
     <div onClick={onClick}>
       <div
         className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${isClickable ? "cursor-pointer" : ""
           }`}
       >
+        {['product', 'menu'].includes(type) &&
+          <img
+            crossOrigin="anonymous"
+            src={data.imgUrl || '../../assets/pizza.jpg'}
+            alt={`${data.name || 'Product'} image`}
+            className="w-full h-48 object-cover rounded-md"
+          />
+        }
         <div className={`flex items-center justify-between ${headerMb}`}>
           <h3 className="font-semibold text-white text-lg truncate">{data.name}</h3>
           {renderActions()}

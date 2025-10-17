@@ -6,14 +6,7 @@ import DeleteIcon from "../../../assets/icons/delete.svg?react";
 import AddIcon from "../../../assets/icons/add.svg?react";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
-import { MenuPageProduct } from "@/types/menuPages";
-
-interface MenuPage {
-  id: string;
-  name: string;
-  description: string;
-  products: Omit<MenuPageProduct, "menuPageId" | "createdAt" | "updatedAt">[];
-}
+import { MenuPage, MenuPageProduct } from "@/types/menuPages";
 
 interface MenuPageModalProps {
   isOpen: boolean;
