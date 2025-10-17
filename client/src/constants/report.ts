@@ -6,6 +6,11 @@ export const STATUS_DISTRIBUTION = [
     color: "bg-green-500",
   },
   {
+    status: "reports.statuses.completed",
+    key: "totalCompleted",
+    color: "bg-green-500",
+  },
+  {
     status: "reports.statuses.sentToKitchen",
     key: "totalSentToKitchen",
     color: "bg-orange-500",

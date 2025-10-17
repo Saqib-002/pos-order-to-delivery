@@ -153,7 +153,7 @@ export const ReportView = () => {
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-4">
         <StatsCard
           title={t("reports.totalOrders")}
           value={analytics?.totalOrders || 0}
@@ -162,7 +162,7 @@ export const ReportView = () => {
         />
         <StatsCard
           title={t("reports.delivered")}
-          value={analytics?.totalDelivered || 0}
+          value={(analytics?.totalDelivered || 0)+ (analytics?.totalCompleted || 0)}
           icon={<CheckIcon className="size-8 text-green-600" />}
           subtext={`${analytics?.successRate || 0}% ${t("reports.successRate")}`}
           bgColor="bg-green-100"
@@ -198,7 +198,7 @@ export const ReportView = () => {
           title={t("reports.topOrderedMenus")}
         />
       )}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden my-4">
         <OrderTable
           data={ordersData}
           title={t("reports.orderDetails")}

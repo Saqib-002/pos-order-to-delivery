@@ -265,6 +265,9 @@ export class OrderDatabaseOperations {
           `COUNT(CASE WHEN LOWER("status") = LOWER('Cancelled') THEN 1 END) as "totalCancelled"`
         ),
         db.raw(
+          `COUNT(CASE WHEN LOWER("status") = LOWER('Completed') THEN 1 END) as "totalCompleted"`
+        ),
+        db.raw(
           `AVG(CASE WHEN LOWER("status") = LOWER('Delivered') AND "assignedAt" IS NOT NULL AND "deliveredAt" IS NOT NULL THEN EXTRACT(EPOCH FROM ("deliveredAt" - "assignedAt")) / 60 END) as "avgDeliveryTime"`
         )
       )
@@ -277,6 +280,7 @@ export class OrderDatabaseOperations {
     ordersStats.totalOutForDelivery =
       parseInt(ordersStats.totalOutForDelivery, 10) || 0;
     ordersStats.totalCancelled = parseInt(ordersStats.totalCancelled, 10) || 0;
+    ordersStats.totalCompleted = parseInt(ordersStats.totalCompleted, 10) || 0;
     ordersStats.avgDeliveryTime = parseFloat(ordersStats.avgDeliveryTime) || 0;
     const hourlyData = new Array(24).fill(0);
     const orders = await db("orders")

@@ -4,6 +4,7 @@ export interface AnalyticsType {
     totalOrders: number;
     inProgress: number;
     successRate: number;
+    totalCompleted: number;
     totalDelivered: number;
     totalSentToKitchen: number;
     totalReadyForDelivery: number;

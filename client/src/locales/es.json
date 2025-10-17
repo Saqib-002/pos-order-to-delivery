@@ -114,7 +114,7 @@
     "title": "Análisis e Informes",
     "subtitle": "Información completa sobre el rendimiento de pedidos y tendencias",
     "totalOrders": "Total de Pedidos",
-    "delivered": "Entregados",
+    "delivered": "Delivered/Completed",
     "avgDeliveryTime": "Tiempo Promedio de Entrega",
     "inProgress": "En Progreso",
     "successRate": "Tasa de Éxito",
@@ -131,6 +131,7 @@
     "noOrdersSubtitle": "Intenta ajustar tu rango de fechas o selección de período.",
     "showingOrders": "Mostrando los primeros 20 pedidos de {{total}} pedidos totales",
     "statuses": {
+      "completed": "Completado",
       "delivered": "Entregado",
       "sentToKitchen": "Enviado a Cocina",
       "outForDelivery": "En Camino",

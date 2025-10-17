@@ -111,7 +111,7 @@
     "title": "Analytics & Reports",
     "subtitle": "Comprehensive insights into order performance and trends",
     "totalOrders": "Total Orders",
-    "delivered": "Delivered",
+    "delivered": "Delivered/Completed",
     "avgDeliveryTime": "Avg Delivery Time",
     "inProgress": "In Progress",
     "successRate": "Success Rate",
@@ -129,6 +129,7 @@
     "showingOrders": "Showing first 20 orders of {{total}} total orders",
     "statuses": {
       "delivered": "Delivered",
+      "completed": "Completed",
       "sentToKitchen": "Sent to Kitchen",
       "outForDelivery": "Out for Delivery",
       "cancelled": "Cancelled",
