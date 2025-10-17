@@ -99,22 +99,18 @@ export const ReportView = () => {
       className="hover:bg-gray-50 transition-colors duration-150"
     >
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-medium text-gray-900">
-          #{order.orderId}
-        </div>
+        <div className="text-sm font-medium text-black">#{order.orderId}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900">{order.customer.name}</div>
+        <div className="text-sm text-black">{order.customer.name}</div>
         <div className="text-sm text-gray-500">{order.customer.phone}</div>
       </td>
       <td className="px-6 py-4">
-        <div className="text-sm text-gray-900">
+        <div className="text-sm text-black">
           {order.items.map((item: any, index: number) => (
             <div key={index} className="flex justify-between">
               <span className="text-gray-600">{item.name}</span>
-              <span className="text-gray-900 font-medium">
-                x{item.quantity}
-              </span>
+              <span className="text-black font-medium">x{item.quantity}</span>
             </div>
           ))}
         </div>
@@ -127,7 +123,7 @@ export const ReportView = () => {
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900">
+        <div className="text-sm text-black">
           {new Date(order.createdAt).toLocaleTimeString()}
         </div>
         <div className="text-sm text-gray-500">
@@ -162,7 +158,9 @@ export const ReportView = () => {
         />
         <StatsCard
           title={t("reports.delivered")}
-          value={(analytics?.totalDelivered || 0)+ (analytics?.totalCompleted || 0)}
+          value={
+            (analytics?.totalDelivered || 0) + (analytics?.totalCompleted || 0)
+          }
           icon={<CheckIcon className="size-8 text-green-600" />}
           subtext={`${analytics?.successRate || 0}% ${t("reports.successRate")}`}
           bgColor="bg-green-100"

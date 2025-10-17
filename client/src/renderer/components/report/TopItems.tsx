@@ -7,7 +7,7 @@ export const TopItems: React.FC<{
   const { t } = useTranslation();
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+      <h3 className="text-lg font-semibold text-black mb-4">{title}</h3>
       <div className="space-y-3">
         {topItems.map((item, index) => (
           <div key={index} className="flex items-center">
@@ -30,7 +30,7 @@ export const TopItems: React.FC<{
                   }}
                 ></div>
               </div>
-              <span className="w-12 text-sm font-bold text-gray-900">
+              <span className="w-12 text-sm font-bold text-black">
                 {item.count}
               </span>
             </div>

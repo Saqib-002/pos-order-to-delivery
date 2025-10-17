@@ -274,7 +274,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
         <div className="p-6">
           {/* Modal Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900 uppercase">
+            <h2 className="text-xl font-bold text-black uppercase">
               {editingMenuPage ? "EDIT MENU PAGE" : "CREATE MENU PAGE"}
             </h2>
             <button
@@ -314,9 +314,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
 
             {/* Product Addition Section */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                PRODUCT
-              </h3>
+              <h3 className="text-lg font-semibold text-black mb-4">PRODUCT</h3>
               <div className="flex items-end gap-4">
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -380,7 +378,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
             {/* Existing Products List */}
             {products.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                <h3 className="text-lg font-semibold text-black mb-4">
                   PRODUCTS
                 </h3>
                 <div className="space-y-2">
@@ -390,7 +388,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                       className="flex items-center justify-between p-3 bg-gray-100 rounded-md"
                     >
                       <div className="flex-1">
-                        <span className="font-medium text-gray-900">
+                        <span className="font-medium text-black">
                           {product.productName}
                         </span>
                       </div>

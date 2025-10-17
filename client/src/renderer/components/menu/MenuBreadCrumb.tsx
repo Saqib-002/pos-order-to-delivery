@@ -25,7 +25,7 @@ export const MenuBreadcrumb: React.FC<BreadcrumbProps> = ({
           <>
             <span className="text-gray-400">/</span>
             {currentLevel === "subcategories" ? (
-              <span className="text-gray-900 font-medium">
+              <span className="text-black font-medium">
                 {selectedCategory.name}
               </span>
             ) : (
@@ -41,7 +41,7 @@ export const MenuBreadcrumb: React.FC<BreadcrumbProps> = ({
         {selectedSubcategory && currentLevel === "products" && (
           <>
             <span className="text-gray-400">/</span>
-            <span className="text-gray-900 font-medium">
+            <span className="text-black font-medium">
               {selectedSubcategory.name}
             </span>
           </>
@@ -65,7 +65,7 @@ const BreadcrumbLink: React.FC<BreadcrumbLinkProps> = ({
   <button
     onClick={isClickable ? onClick : undefined}
     className={`transition-colors duration-200 ${
-      isClickable ? "hover:text-gray-900 cursor-pointer" : "cursor-default"
+      isClickable ? "hover:text-black cursor-pointer" : "cursor-default"
     }`}
     disabled={!isClickable}
   >

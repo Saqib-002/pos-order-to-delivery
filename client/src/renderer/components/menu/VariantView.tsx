@@ -4,7 +4,10 @@ import { CreateVariantModal } from "./modals/CreateVariantModal";
 import { VariantItem } from "@/types/Variants";
 import { toast } from "react-toastify";
 import AddIcon from "../../assets/icons/add.svg?react";
-import { fetchAssociatedProductsByVariantId, getVariants } from "@/renderer/utils/menu";
+import {
+  fetchAssociatedProductsByVariantId,
+  getVariants,
+} from "@/renderer/utils/menu";
 import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
@@ -22,8 +25,9 @@ export const VariantView = () => {
   const [associatedProducts, setAssociatedProducts] = useState<any[]>([]);
   const confirm = useConfirm();
   const [editingVariant, setEditingVariant] = useState<Variant | null>(null);
-  const { auth: { token } } = useAuth();
-
+  const {
+    auth: { token },
+  } = useAuth();
 
   useEffect(() => {
     getVariants(token, setVariants);
@@ -40,7 +44,11 @@ export const VariantView = () => {
   };
 
   const handleDeleteVariant = async (variant: Variant) => {
-    const res = await fetchAssociatedProductsByVariantId(token, variant.id, setAssociatedProducts);
+    const res = await fetchAssociatedProductsByVariantId(
+      token,
+      variant.id,
+      setAssociatedProducts
+    );
     if (!res?.status) return;
     const ok = await confirm({
       title: "Delete Variant",
@@ -48,9 +56,10 @@ export const VariantView = () => {
       type: "danger",
       confirmText: "Delete Variant",
       cancelText: "Cancel",
-      specialNote: "If you delete this variant you can no longer edit this variant in any attached order!",
-      itemName: variant.name
-    })
+      specialNote:
+        "If you delete this variant you can no longer edit this variant in any attached order!",
+      itemName: variant.name,
+    });
     if (!ok) return;
     const delRes = await (window as any).electronAPI.deleteVariant(
       token,
@@ -83,7 +92,7 @@ export const VariantView = () => {
       </div>
 
       <div className="">
-        <h2 className="text-xl font-semibold text-gray-900">Variants</h2>
+        <h2 className="text-xl font-semibold text-black">Variants</h2>
       </div>
 
       {/* Variants Grid */}

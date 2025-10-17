@@ -10,8 +10,6 @@ import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 
-
-
 export const MenuStructureComponent = () => {
   const [menuPages, setMenuPages] = useState<MenuPage[]>([]);
   const [menus, setMenus] = useState<Menu[]>([]);
@@ -19,7 +17,9 @@ export const MenuStructureComponent = () => {
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [editingMenuPage, setEditingMenuPage] = useState<MenuPage | null>(null);
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
-  const { auth: { token } } = useAuth();
+  const {
+    auth: { token },
+  } = useAuth();
   const confirm = useConfirm();
 
   // Fetch data from API
@@ -74,20 +74,24 @@ export const MenuStructureComponent = () => {
   };
 
   const handleDeleteMenuPage = async (menuPage: MenuPage) => {
-    const res= await (window as any).electronAPI.getMenuPageProducts(token,menuPage.id);
-    if(!res.status){
+    const res = await (window as any).electronAPI.getMenuPageProducts(
+      token,
+      menuPage.id
+    );
+    if (!res.status) {
       toast.error("Unable to delete menu page");
       return;
     }
     const ok = await confirm({
-      title: 'Delete Menu Page',
+      title: "Delete Menu Page",
       message: `Are you sure you want to delete "${menuPage.name}"? This menu page is attached to ${res.data.length} menus. They will be detached!`,
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-      type: 'danger',
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger",
       itemName: menuPage.name,
-      specialNote: "If you delete this menu page you can no longer edit this menu page in any attached order!"
-    })
+      specialNote:
+        "If you delete this menu page you can no longer edit this menu page in any attached order!",
+    });
     if (!ok) return;
     try {
       const res = await (window as any).electronAPI.deleteMenuPage(
@@ -107,19 +111,16 @@ export const MenuStructureComponent = () => {
 
   const handleDeleteMenu = async (menu: Menu) => {
     const ok = await confirm({
-      title: 'Delete Menu',
+      title: "Delete Menu",
       message: `Are you sure you want to delete "${menu.name}"?`,
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-      type: 'danger',
-      itemName: menu.name
-    })
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger",
+      itemName: menu.name,
+    });
     if (!ok) return;
     try {
-      const res = await (window as any).electronAPI.deleteMenu(
-        token,
-        menu.id
-      );
+      const res = await (window as any).electronAPI.deleteMenu(token, menu.id);
       if (!res.status) {
         toast.error("Failed to delete menu");
         return;
@@ -145,14 +146,24 @@ export const MenuStructureComponent = () => {
   return (
     <>
       <div className="flex flex-wrap gap-4 items-center mb-4">
-        <CustomButton type="button" onClick={handleCreateMenuPage} label="Create Menu Page" variant="orange" />
-        <CustomButton type="button" onClick={handleCreateMenu} label="Create Menu" variant="orange" />
+        <CustomButton
+          type="button"
+          onClick={handleCreateMenuPage}
+          label="Create Menu Page"
+          variant="orange"
+        />
+        <CustomButton
+          type="button"
+          onClick={handleCreateMenu}
+          label="Create Menu"
+          variant="orange"
+        />
       </div>
 
       {/* Menu Pages Section */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Menu pages</h2>
+          <h2 className="text-lg font-semibold text-black">Menu pages</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -177,7 +188,7 @@ export const MenuStructureComponent = () => {
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-0">
                 <NoMenuPageIcon />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-0">
+              <h3 className="text-lg font-medium text-black mb-0">
                 No Menu Pages
               </h3>
               <p className="text-gray-500 mb-0">
@@ -191,7 +202,7 @@ export const MenuStructureComponent = () => {
       {/* Menus Section */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Menus</h2>
+          <h2 className="text-lg font-semibold text-black">Menus</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -218,9 +229,7 @@ export const MenuStructureComponent = () => {
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-0">
                 <NoMenuIcon />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-0">
-                No Menus
-              </h3>
+              <h3 className="text-lg font-medium text-black mb-0">No Menus</h3>
               <p className="text-gray-500 mb-0">
                 Get started by creating your first menu.
               </p>

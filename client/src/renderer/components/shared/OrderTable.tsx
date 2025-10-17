@@ -23,7 +23,7 @@ export const OrderTable = <T,>({
   <div>
     {title && (
       <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-lg font-semibold text-black">{title}</h3>
         {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
       </div>
     )}
@@ -32,7 +32,7 @@ export const OrderTable = <T,>({
         {emptyStateIcon || (
           <DeliveredIcon className="mx-auto size-12 text-gray-400" />
         )}
-        <h3 className="mt-2 text-sm font-medium text-gray-900">
+        <h3 className="mt-2 text-sm font-medium text-black">
           {emptyStateTitle || (title ? `No data found` : "No data found")}
         </h3>
         {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}

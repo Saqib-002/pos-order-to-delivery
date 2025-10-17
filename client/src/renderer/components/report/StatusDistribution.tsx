@@ -20,7 +20,7 @@ export const StatusDistribution: React.FC<{
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <h3 className="text-lg font-semibold text-black mb-4">
         {t("reports.components.statusDistribution.title")}
       </h3>
       <div className="space-y-4">
@@ -33,9 +33,7 @@ export const StatusDistribution: React.FC<{
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-sm font-bold text-gray-900">
-                {item.count}
-              </span>
+              <span className="text-sm font-bold text-black">{item.count}</span>
               <span className="text-sm text-gray-500">
                 (
                 {analytics?.totalOrders

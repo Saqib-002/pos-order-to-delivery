@@ -43,7 +43,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
         onClick={() =>
           setFilter({ ...filter, searchTerm: "", selectedDate: null })
         }
-        className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150 whitespace-nowrap flex-shrink-0 cursor-pointer"
+        className="px-4 py-2 text-sm text-gray-600 hover:text-black border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150 whitespace-nowrap flex-shrink-0 cursor-pointer"
       >
         Clear Filters
       </button>

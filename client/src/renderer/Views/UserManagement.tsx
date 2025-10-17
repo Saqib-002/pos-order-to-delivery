@@ -3,11 +3,21 @@ import { User } from "@/types/user";
 import { toast } from "react-toastify";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import { useAuth } from "../contexts/AuthContext";
-import { AddIcon, CrossIcon, DeleteIcon, EditIcon, GroupIcon, GroupIcon2, OfficeBuilding, SearchIcon, ShieldCheck } from "../assets/Svg";
+import {
+  AddIcon,
+  CrossIcon,
+  DeleteIcon,
+  EditIcon,
+  GroupIcon,
+  GroupIcon2,
+  OfficeBuilding,
+  SearchIcon,
+  ShieldCheck,
+} from "../assets/Svg";
 import CustomButton from "../components/ui/CustomButton";
 import { StatsCard } from "../components/shared/StatsCard.order";
 import CustomInput from "../components/shared/CustomInput";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 export const UserManagement = () => {
   const { t } = useTranslation();
@@ -26,7 +36,9 @@ export const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
   const [emailError, setEmailError] = useState("");
-  const { auth: { token } } = useAuth();
+  const {
+    auth: { token },
+  } = useAuth();
 
   useEffect(() => {
     fetchUsers();
@@ -36,10 +48,10 @@ export const UserManagement = () => {
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email.trim()) {
-      return t('userManagement.validation.emailRequired');
+      return t("userManagement.validation.emailRequired");
     }
     if (!emailRegex.test(email)) {
-      return t('userManagement.validation.emailInvalid');
+      return t("userManagement.validation.emailInvalid");
     }
     return "";
   };
@@ -63,12 +75,12 @@ export const UserManagement = () => {
       setLoading(true);
       const res = await (window as any).electronAPI.getUsers(token);
       if (!res.status) {
-        toast.error(res.error || t('userManagement.messages.fetchFailed'));
+        toast.error(res.error || t("userManagement.messages.fetchFailed"));
         return;
       }
       setUsers(res.data);
     } catch (error) {
-      toast.error(t('userManagement.messages.fetchFailed'));
+      toast.error(t("userManagement.messages.fetchFailed"));
     } finally {
       setLoading(false);
     }
@@ -78,11 +90,11 @@ export const UserManagement = () => {
     e.preventDefault();
     // Validate required fields
     if (!formData.username.trim()) {
-      toast.error(t('userManagement.validation.usernameRequired'));
+      toast.error(t("userManagement.validation.usernameRequired"));
       return;
     }
     if (!formData.name.trim()) {
-      toast.error(t('userManagement.validation.nameRequired'));
+      toast.error(t("userManagement.validation.nameRequired"));
       return;
     }
 
@@ -96,26 +108,23 @@ export const UserManagement = () => {
 
     if (modalMode === "add") {
       if (!formData.password.trim()) {
-        toast.error(t('userManagement.validation.passwordRequired'));
+        toast.error(t("userManagement.validation.passwordRequired"));
         return;
       }
 
       try {
-        const res = await (window as any).electronAPI.registerUser(
-          token,
-          {
-            username: formData.username,
-            password: formData.password,
-            name: formData.name,
-            email: formData.email,
-            role: formData.role,
-          }
-        );
+        const res = await (window as any).electronAPI.registerUser(token, {
+          username: formData.username,
+          password: formData.password,
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+        });
         if (!res.status) {
           toast.error(
             res.error.includes("UNIQUE constraint failed: users.username")
-              ? t('userManagement.messages.usernameTaken')
-              : t('userManagement.messages.addFailed')
+              ? t("userManagement.messages.usernameTaken")
+              : t("userManagement.messages.addFailed")
           );
           return;
         }
@@ -123,9 +132,9 @@ export const UserManagement = () => {
         setUsers([...users, user]);
         resetForm();
         setIsModalOpen(false);
-        toast.success(t('userManagement.messages.added'));
+        toast.success(t("userManagement.messages.added"));
       } catch (error) {
-        toast.error(t('userManagement.messages.addFailed'));
+        toast.error(t("userManagement.messages.addFailed"));
       }
     } else {
       try {
@@ -136,16 +145,16 @@ export const UserManagement = () => {
         if (!res.status) {
           toast.error(
             res.error.includes("UNIQUE constraint failed: users.username")
-              ? t('userManagement.messages.usernameTaken')
-              : t('userManagement.messages.updateFailed')
+              ? t("userManagement.messages.usernameTaken")
+              : t("userManagement.messages.updateFailed")
           );
           return;
         }
         setUsers(users.map((u) => (u.id === res.data.id ? res.data : u)));
         setIsModalOpen(false);
-        toast.success(t('userManagement.messages.updated'));
+        toast.success(t("userManagement.messages.updated"));
       } catch (error) {
-        toast.error(t('userManagement.messages.updateFailed'));
+        toast.error(t("userManagement.messages.updateFailed"));
       }
     }
   };
@@ -163,18 +172,18 @@ export const UserManagement = () => {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm(t('userManagement.deleteConfirmMessage'))) return;
+    if (!confirm(t("userManagement.deleteConfirmMessage"))) return;
 
     try {
       const res = await (window as any).electronAPI.deleteUser(token, userId);
       if (!res.status) {
-        toast.error(res.error || t('userManagement.messages.deleteFailed'));
+        toast.error(res.error || t("userManagement.messages.deleteFailed"));
         return;
       }
       setUsers(users.filter((u) => u.id !== userId));
-      toast.success(t('userManagement.messages.deleted'));
+      toast.success(t("userManagement.messages.deleted"));
     } catch (error) {
-      toast.error(t('userManagement.messages.deleteFailed'));
+      toast.error(t("userManagement.messages.deleteFailed"));
     }
   };
 
@@ -204,10 +213,10 @@ export const UserManagement = () => {
   };
 
   const getRoleOptions = () => [
-    { value: "admin", label: t('userManagement.roles.admin') },
-    { value: "staff", label: t('userManagement.roles.staff') },
-    { value: "kitchen", label: t('userManagement.roles.kitchen') },
-    { value: "manager", label: t('userManagement.roles.manager') },
+    { value: "admin", label: t("userManagement.roles.admin") },
+    { value: "staff", label: t("userManagement.roles.staff") },
+    { value: "kitchen", label: t("userManagement.roles.kitchen") },
+    { value: "manager", label: t("userManagement.roles.manager") },
   ];
 
   const filteredUsers = users.filter((user) => {
@@ -221,7 +230,10 @@ export const UserManagement = () => {
 
   const getRoleLabel = (role: string) => {
     try {
-      return t(`userManagement.roles.${role}`) || (role.charAt(0).toUpperCase() + role.slice(1));
+      return (
+        t(`userManagement.roles.${role}`) ||
+        role.charAt(0).toUpperCase() + role.slice(1)
+      );
     } catch {
       return role.charAt(0).toUpperCase() + role.slice(1);
     }
@@ -255,35 +267,78 @@ export const UserManagement = () => {
       <div className="">
         <div className="flex justify-between items-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              {t('userManagement.title')}
+            <h2 className="text-2xl font-bold text-black">
+              {t("userManagement.title")}
             </h2>
-            <p className="text-gray-600 mt-1">
-              {t('userManagement.subtitle')}
-            </p>
+            <p className="text-gray-600 mt-1">{t("userManagement.subtitle")}</p>
           </div>
-          <CustomButton onClick={openAddModal} type="button" label={t('userManagement.addUser')} Icon={<AddIcon className="size-5" />} className="whitespace-nowrap" />
+          <CustomButton
+            onClick={openAddModal}
+            type="button"
+            label={t("userManagement.addUser")}
+            Icon={<AddIcon className="size-5" />}
+            className="whitespace-nowrap"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <StatsCard title={t('userManagement.totalUsers')} value={users.length} icon={<GroupIcon className="size-6 text-indigo-600" />} bgColor="bg-indigo-100" />
-          <StatsCard title={t('userManagement.admins')} value={users.filter((user) => user.role === "admin").length} icon={<ShieldCheck className="size-6 text-red-600" />} bgColor="bg-red-100" />
-          <StatsCard title={t('userManagement.staff')} value={users.filter((user) => user.role === "staff").length} icon={<GroupIcon2 className="size-6 text-blue-600" />} bgColor="bg-blue-100" />
-          <StatsCard title={t('userManagement.kitchenManager')} value={users.filter((user) => user.role === "kitchen" || user.role === "manager").length} icon={<OfficeBuilding className="size-6 text-orange-600" />} bgColor="bg-orange-100" />
+          <StatsCard
+            title={t("userManagement.totalUsers")}
+            value={users.length}
+            icon={<GroupIcon className="size-6 text-indigo-600" />}
+            bgColor="bg-indigo-100"
+          />
+          <StatsCard
+            title={t("userManagement.admins")}
+            value={users.filter((user) => user.role === "admin").length}
+            icon={<ShieldCheck className="size-6 text-red-600" />}
+            bgColor="bg-red-100"
+          />
+          <StatsCard
+            title={t("userManagement.staff")}
+            value={users.filter((user) => user.role === "staff").length}
+            icon={<GroupIcon2 className="size-6 text-blue-600" />}
+            bgColor="bg-blue-100"
+          />
+          <StatsCard
+            title={t("userManagement.kitchenManager")}
+            value={
+              users.filter(
+                (user) => user.role === "kitchen" || user.role === "manager"
+              ).length
+            }
+            icon={<OfficeBuilding className="size-6 text-orange-600" />}
+            bgColor="bg-orange-100"
+          />
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <CustomInput placeholder={t('userManagement.searchPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} type="text" name="search" preLabel={<SearchIcon className="size-5 text-gray-400" />} inputClasses="pl-9 !shadow-none focus:!ring-1 text-sm" otherClasses="flex-1" />
+          <CustomInput
+            placeholder={t("userManagement.searchPlaceholder")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            type="text"
+            name="search"
+            preLabel={<SearchIcon className="size-5 text-gray-400" />}
+            inputClasses="pl-9 !shadow-none focus:!ring-1 text-sm"
+            otherClasses="flex-1"
+          />
           <div className="flex gap-2">
             {["all", "admin", "staff", "kitchen", "manager"].map((role) => (
-              <CustomButton key={role} type="button" label={getRoleLabel(role)} onClick={() => setSelectedRole(role)} variant={selectedRole !== role ? "secondary" : "primary"} />
+              <CustomButton
+                key={role}
+                type="button"
+                label={getRoleLabel(role)}
+                onClick={() => setSelectedRole(role)}
+                variant={selectedRole !== role ? "secondary" : "primary"}
+              />
             ))}
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-black">
               Users ({filteredUsers.length})
             </h3>
           </div>
@@ -291,14 +346,14 @@ export const UserManagement = () => {
           {filteredUsers.length === 0 ? (
             <div className="text-center py-12">
               <GroupIcon className="size-12 mx-auto text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">
-                  {t('userManagement.noUsersTitle')}
-                </h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {users.length === 0
-                    ? t('userManagement.noUsersFirst')
-                    : t('userManagement.noUsersTry')}
-                </p>
+              <h3 className="mt-2 text-sm font-medium text-black">
+                {t("userManagement.noUsersTitle")}
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                {users.length === 0
+                  ? t("userManagement.noUsersFirst")
+                  : t("userManagement.noUsersTry")}
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -306,16 +361,16 @@ export const UserManagement = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('userManagement.table.user')}
+                      {t("userManagement.table.user")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('userManagement.table.role')}
+                      {t("userManagement.table.role")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('userManagement.table.email')}
+                      {t("userManagement.table.email")}
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('userManagement.table.actions')}
+                      {t("userManagement.table.actions")}
                     </th>
                   </tr>
                 </thead>
@@ -335,7 +390,7 @@ export const UserManagement = () => {
                             </div>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-black">
                               {user.name}
                             </div>
                             <div className="text-sm text-gray-500">
@@ -354,13 +409,28 @@ export const UserManagement = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {user.email || t('userManagement.noEmail', 'No email')}
+                        <div className="text-sm text-black">
+                          {user.email ||
+                            t("userManagement.noEmail", "No email")}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2">
-                        <CustomButton type="button" label={t('common.edit', 'Edit')} variant="transparent" onClick={() => openEditModal(user as User)} Icon={<EditIcon className="size-4" />} className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 hover:scale-105 !px-2 !py-1 !gap-1" />
-                        <CustomButton type="button" label={t('common.delete', 'Delete')} variant="transparent" onClick={() => user.id && handleDeleteUser(user.id)} Icon={<DeleteIcon className="size-4" />} className="text-red-600 hover:text-red-900 hover:bg-red-50 hover:scale-105 !px-2 !py-1 !gap-1" />
+                        <CustomButton
+                          type="button"
+                          label={t("common.edit", "Edit")}
+                          variant="transparent"
+                          onClick={() => openEditModal(user as User)}
+                          Icon={<EditIcon className="size-4" />}
+                          className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 hover:scale-105 !px-2 !py-1 !gap-1"
+                        />
+                        <CustomButton
+                          type="button"
+                          label={t("common.delete", "Delete")}
+                          variant="transparent"
+                          onClick={() => user.id && handleDeleteUser(user.id)}
+                          Icon={<DeleteIcon className="size-4" />}
+                          className="text-red-600 hover:text-red-900 hover:bg-red-50 hover:scale-105 !px-2 !py-1 !gap-1"
+                        />
                       </td>
                     </tr>
                   ))}
@@ -377,19 +447,77 @@ export const UserManagement = () => {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-white rounded-t-2xl">
               <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold">{modalMode === "add" ? t('userManagement.modal.addNew') : t('userManagement.modal.edit')}</h3>
-                <CustomButton type="button" variant="transparent" onClick={closeModal} Icon={<CrossIcon className="size-6" />} className="text-white hover:text-indigo-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20" />
+                <h3 className="text-xl font-bold">
+                  {modalMode === "add"
+                    ? t("userManagement.modal.addNew")
+                    : t("userManagement.modal.edit")}
+                </h3>
+                <CustomButton
+                  type="button"
+                  variant="transparent"
+                  onClick={closeModal}
+                  Icon={<CrossIcon className="size-6" />}
+                  className="text-white hover:text-indigo-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
+                />
               </div>
             </div>
             <form onSubmit={handleSubmit} className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <CustomInput label={`${t('userManagement.modal.username')} *`} type="text" name="username" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} placeholder={t('userManagement.modal.username')} inputClasses="py-3 px-4" />
-                <CustomInput label={modalMode === "add" ? `${t('userManagement.modal.password')} *` : t('userManagement.modal.newPassword')} type="password" name="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} placeholder={modalMode === "add" ? t('userManagement.modal.password') : t('userManagement.modal.newPassword')} inputClasses="py-3 px-4" />
-                <CustomInput label={`${t('userManagement.modal.fullName')} *`} type="text" name="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder={t('userManagement.modal.fullName')} inputClasses="py-3 px-4" />
-                <CustomInput label={`${t('userManagement.modal.email')} *`} type="email" name="email" value={formData.email} onChange={(e) => handleEmailChange(e.target.value)} placeholder={t('userManagement.modal.email')} inputClasses={`py-3 px-4 ${emailError ? "border-red-300 focus:!ring-1 focus:ring-red-600 focus:border-red-600" : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"}`} onBlur={handleEmailBlur} error={emailError} />
+                <CustomInput
+                  label={`${t("userManagement.modal.username")} *`}
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={(e) =>
+                    setFormData({ ...formData, username: e.target.value })
+                  }
+                  placeholder={t("userManagement.modal.username")}
+                  inputClasses="py-3 px-4"
+                />
+                <CustomInput
+                  label={
+                    modalMode === "add"
+                      ? `${t("userManagement.modal.password")} *`
+                      : t("userManagement.modal.newPassword")
+                  }
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  placeholder={
+                    modalMode === "add"
+                      ? t("userManagement.modal.password")
+                      : t("userManagement.modal.newPassword")
+                  }
+                  inputClasses="py-3 px-4"
+                />
+                <CustomInput
+                  label={`${t("userManagement.modal.fullName")} *`}
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  placeholder={t("userManagement.modal.fullName")}
+                  inputClasses="py-3 px-4"
+                />
+                <CustomInput
+                  label={`${t("userManagement.modal.email")} *`}
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  placeholder={t("userManagement.modal.email")}
+                  inputClasses={`py-3 px-4 ${emailError ? "border-red-300 focus:!ring-1 focus:ring-red-600 focus:border-red-600" : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"}`}
+                  onBlur={handleEmailBlur}
+                  error={emailError}
+                />
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('userManagement.modal.role')} *
+                    {t("userManagement.modal.role")} *
                   </label>
                   <CustomSelect
                     options={getRoleOptions()}
@@ -397,14 +525,29 @@ export const UserManagement = () => {
                     onChange={(value: string) =>
                       setFormData({ ...formData, role: value as any })
                     }
-                    placeholder={t('userManagement.modal.role')}
+                    placeholder={t("userManagement.modal.role")}
                     portalClassName="role-dropdown-portal"
                   />
                 </div>
               </div>
               <div className="flex justify-end gap-4 mt-8">
-                <CustomButton type="button" variant="secondary" onClick={closeModal} label={t('userManagement.modal.cancel')} className="hover:scale-105" />
-                <CustomButton type="submit" variant="primary" label={modalMode === "add" ? t('userManagement.modal.add') : t('userManagement.modal.update')} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-105" />
+                <CustomButton
+                  type="button"
+                  variant="secondary"
+                  onClick={closeModal}
+                  label={t("userManagement.modal.cancel")}
+                  className="hover:scale-105"
+                />
+                <CustomButton
+                  type="submit"
+                  variant="primary"
+                  label={
+                    modalMode === "add"
+                      ? t("userManagement.modal.add")
+                      : t("userManagement.modal.update")
+                  }
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-105"
+                />
               </div>
             </form>
           </div>

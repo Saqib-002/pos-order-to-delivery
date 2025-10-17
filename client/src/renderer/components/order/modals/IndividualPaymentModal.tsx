@@ -191,7 +191,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
               <ThunderIcon className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-black">
                 {t("individualPaymentModal.title")}
               </h2>
               <p className="text-sm text-gray-600">
@@ -239,7 +239,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                   />
                 </svg>
               </div>
-              <h3 className="font-semibold text-gray-900 text-lg">
+              <h3 className="font-semibold text-black text-lg">
                 {t("individualPaymentModal.orderDetails")}
               </h3>
             </div>
@@ -249,7 +249,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                 <span className="text-sm font-medium text-gray-600">
                   {t("individualPaymentModal.orderId")}
                 </span>
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-semibold text-black">
                   #{order.orderId}
                 </span>
               </div>
@@ -258,7 +258,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                 <span className="text-sm font-medium text-gray-600">
                   {t("individualPaymentModal.customer")}
                 </span>
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-semibold text-black">
                   {order.customer.name}
                 </span>
               </div>
@@ -297,7 +297,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
               <PersonIcon className="w-4 h-4 mr-2 text-blue-600" />
               {t("individualPaymentModal.deliveryPerson")}
             </label>
-            <div className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-900">
+            <div className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-black">
               {order.deliveryPerson ? (
                 <div>
                   <div className="font-medium">{order.deliveryPerson.name}</div>

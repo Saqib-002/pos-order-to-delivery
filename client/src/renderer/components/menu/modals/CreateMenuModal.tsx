@@ -48,9 +48,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Create New Menu
-          </h2>
+          <h2 className="text-xl font-semibold text-black">Create New Menu</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">

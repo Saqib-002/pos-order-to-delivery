@@ -52,7 +52,7 @@ const PaymentOptionModal: React.FC<PaymentOptionModalProps> = ({
         {/* Content - Scrollable */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="text-center mb-6">
-            <div className="text-3xl font-bold text-gray-900 mb-2">
+            <div className="text-3xl font-bold text-black mb-2">
               €{totalAmount.toFixed(2)}
             </div>
             <p className="text-gray-600">
@@ -72,7 +72,7 @@ const PaymentOptionModal: React.FC<PaymentOptionModalProps> = ({
                   <OutlineCreditCardIcon className="w-6 h-6 text-indigo-600" />
                 </div>
                 <div className="flex-1 text-left">
-                  <h3 className="font-semibold text-gray-900">Pay Now</h3>
+                  <h3 className="font-semibold text-black">Pay Now</h3>
                   <p className="text-sm text-gray-600">
                     Process payment immediately and send to kitchen
                   </p>
@@ -105,7 +105,7 @@ const PaymentOptionModal: React.FC<PaymentOptionModalProps> = ({
                   <ClockIcon className="w-6 h-6 text-gray-600" />
                 </div>
                 <div className="flex-1 text-left">
-                  <h3 className="font-semibold text-gray-900">Pay Later</h3>
+                  <h3 className="font-semibold text-black">Pay Later</h3>
                   <p className="text-sm text-gray-600">
                     Send to kitchen now, collect payment later
                   </p>

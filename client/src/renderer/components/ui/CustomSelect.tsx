@@ -73,7 +73,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
             disabled ? "bg-gray-100 cursor-not-allowed" : ""
           }`}
         >
-          <span className="text-gray-900">
+          <span className="text-black">
             {selectedOption ? selectedOption.label : placeholder}
           </span>
           <svg
@@ -122,7 +122,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                     ? "text-gray-400 cursor-not-allowed bg-gray-50"
                     : value === option.value
                       ? "bg-indigo-100 text-indigo-900 font-medium hover:bg-indigo-200"
-                      : "text-gray-900 hover:bg-indigo-500 hover:text-white"
+                      : "text-black hover:bg-indigo-500 hover:text-white"
                 }`}
               >
                 {option.label}

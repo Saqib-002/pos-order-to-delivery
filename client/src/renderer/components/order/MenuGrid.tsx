@@ -54,7 +54,7 @@ const MenuGrid: React.FC<MenuGridProps> = ({
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No Menus</h3>
+        <h3 className="text-lg font-medium text-black mb-2">No Menus</h3>
         <p className="text-gray-500">No menus available in this subcategory.</p>
       </div>
     );

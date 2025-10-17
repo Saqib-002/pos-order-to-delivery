@@ -38,7 +38,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-black">
                 {t("orderDetailsModal.title", { orderId: order.orderId })}
               </h2>
               <p className="text-sm text-gray-600 mt-1">
@@ -74,7 +74,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             <div className="space-y-6">
               {/* Customer Information */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
                   {t("orderDetailsModal.customerInformation")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -82,19 +82,19 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     <p className="text-sm font-medium text-gray-600">
                       {t("orderDetailsModal.name")}
                     </p>
-                    <p className="text-gray-900">{order.customer.name}</p>
+                    <p className="text-black">{order.customer.name}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">
                       {t("orderDetailsModal.phone")}
                     </p>
-                    <p className="text-gray-900">{order.customer.phone}</p>
+                    <p className="text-black">{order.customer.phone}</p>
                   </div>
                   <div className="md:col-span-2">
                     <p className="text-sm font-medium text-gray-600">
                       {t("orderDetailsModal.address")}
                     </p>
-                    <p className="text-gray-900">
+                    <p className="text-black">
                       {formatAddress(order.customer.address)}
                     </p>
                   </div>
@@ -103,7 +103,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
               {/* Order Information */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
                   {t("orderDetailsModal.orderInformation")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -120,13 +120,13 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     <p className="text-sm font-medium text-gray-600">
                       {t("orderDetailsModal.status")}
                     </p>
-                    <p className="text-gray-900">{order.status}</p>
+                    <p className="text-black">{order.status}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">
                       {t("orderDetailsModal.created")}
                     </p>
-                    <p className="text-gray-900">
+                    <p className="text-black">
                       {new Date(order.createdAt || "").toLocaleString()}
                     </p>
                   </div>
@@ -134,7 +134,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     <p className="text-sm font-medium text-gray-600">
                       {t("orderDetailsModal.updated")}
                     </p>
-                    <p className="text-gray-900">
+                    <p className="text-black">
                       {order.updatedAt
                         ? new Date(order.updatedAt).toLocaleString()
                         : t("manageOrders.statuses.nA")}
@@ -145,7 +145,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
               {/* Payment Information */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
                   {t("orderDetailsModal.paymentInformation")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -182,7 +182,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     <p className="text-sm font-medium text-gray-600">
                       {t("orderDetailsModal.totalAmount")}
                     </p>
-                    <p className="text-gray-900 font-semibold">
+                    <p className="text-black font-semibold">
                       €
                       {calculateOrderTotal(
                         order.items || []
@@ -195,7 +195,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               {/* Delivery Information */}
               {order.deliveryPerson && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
+                  <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
                     {t("orderDetailsModal.deliveryInformation")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -203,23 +203,19 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       <p className="text-sm font-medium text-gray-600">
                         {t("orderDetailsModal.deliveryPerson")}
                       </p>
-                      <p className="text-gray-900">
-                        {order.deliveryPerson.name}
-                      </p>
+                      <p className="text-black">{order.deliveryPerson.name}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-600">
                         {t("orderDetailsModal.phone")}
                       </p>
-                      <p className="text-gray-900">
-                        {order.deliveryPerson.phone}
-                      </p>
+                      <p className="text-black">{order.deliveryPerson.phone}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-600">
                         {t("orderDetailsModal.vehicleType")}
                       </p>
-                      <p className="text-gray-900">
+                      <p className="text-black">
                         {order.deliveryPerson.vehicleType}
                       </p>
                     </div>
@@ -227,7 +223,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       <p className="text-sm font-medium text-gray-600">
                         {t("orderDetailsModal.assignedAt")}
                       </p>
-                      <p className="text-gray-900">
+                      <p className="text-black">
                         {order.assignedAt
                           ? new Date(order.assignedAt).toLocaleString()
                           : order.status === "out for delivery" ||
@@ -241,7 +237,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         <p className="text-sm font-medium text-gray-600">
                           {t("orderDetailsModal.deliveredAt")}
                         </p>
-                        <p className="text-gray-900">
+                        <p className="text-black">
                           {new Date(order.deliveredAt).toLocaleString()}
                         </p>
                       </div>
@@ -252,7 +248,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
               {/* Order Items */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
                   {t("orderDetailsModal.orderItems")}
                 </h3>
                 <div className="space-y-3">
@@ -267,7 +263,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 text-lg">
+                            <h4 className="font-semibold text-black text-lg">
                               {item.quantity}x {item.productName}
                               {item.variantName && (
                                 <span className="text-gray-600 font-normal">
@@ -297,7 +293,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                             )}
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-black">
                               €{item.totalPrice.toFixed(2)}
                             </p>
                             <p className="text-xs text-gray-500">
@@ -319,10 +315,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               {/* Notes */}
               {order.notes && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
+                  <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
                     {t("orderDetailsModal.orderNotes")}
                   </h3>
-                  <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">
+                  <p className="text-black bg-gray-50 p-3 rounded-lg">
                     {order.notes}
                   </p>
                 </div>
@@ -331,7 +327,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           ) : (
             // Kitchen view - simplified
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+              <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2">
                 Order Items
               </h3>
               <div className="space-y-3">
@@ -343,7 +339,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       className="border border-gray-200 rounded-lg p-4"
                     >
                       <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900 text-lg">
+                        <h4 className="font-semibold text-black text-lg">
                           {item.quantity}x {item.productName}
                           {item.variantName && (
                             <span className="text-gray-600 font-normal">

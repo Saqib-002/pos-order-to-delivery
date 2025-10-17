@@ -23,8 +23,9 @@ export const GroupView = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
-  const { auth: { token } } = useAuth();
-
+  const {
+    auth: { token },
+  } = useAuth();
 
   useEffect(() => {
     getGroups(token, setGroups);
@@ -49,11 +50,16 @@ export const GroupView = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4 items-center">
-        <CustomButton type="button" label="CREATE GROUP" variant="yellow" onClick={handleCreateGroup} />
+        <CustomButton
+          type="button"
+          label="CREATE GROUP"
+          variant="yellow"
+          onClick={handleCreateGroup}
+        />
       </div>
 
       <div className="">
-        <h2 className="text-xl font-semibold text-gray-900">Groups</h2>
+        <h2 className="text-xl font-semibold text-black">Groups</h2>
       </div>
 
       {/* Groups Grid */}

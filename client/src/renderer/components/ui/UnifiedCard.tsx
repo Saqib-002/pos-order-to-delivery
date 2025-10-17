@@ -76,7 +76,7 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Subcategory</span>],
   },
   product: {
-    padding: "p-3",
+    padding: "p-2",
     iconSize: "size-5",
     actionsLayout: "row",
     headerMb: "mb-0",
@@ -227,10 +227,10 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
             crossOrigin="anonymous"
             src={data.imgUrl || '../../assets/pizza.jpg'}
             alt={`${data.name || 'Product'} image`}
-            className="w-full h-48 object-cover rounded-md"
+            className="w-full h-34 object-cover rounded-md"
           />
         }
-        <div className={`flex items-center justify-between ${headerMb}`}>
+        <div className={`flex items-center justify-between mt-1 ${headerMb}`}>
           <h3 className="font-semibold text-white text-lg truncate">{data.name}</h3>
           {renderActions()}
         </div>

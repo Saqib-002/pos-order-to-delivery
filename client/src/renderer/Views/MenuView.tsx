@@ -23,31 +23,44 @@ const VIEW_CONFIG = {
   },
 } as const;
 type ViewKey = keyof typeof VIEW_CONFIG;
-const MenuHeader: React.FC<{ currentView: ViewKey; onViewChange: (view: ViewKey) => void }> = memo(
-  ({ currentView, onViewChange }) => {
-    const config = VIEW_CONFIG[currentView];
-    const toggleViews: ViewKey[] = ["menu", "menu-structure", "group", "variant"];
-    return (
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-0">
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold text-gray-900">{config.title}</h1>
-          </div>
-          <div className="flex bg-gray-100 rounded-lg p-1">
-            {toggleViews.map((view) => (
-              <CustomButton type="button" key={view} onClick={() => onViewChange(view)} label={view.charAt(0).toUpperCase() + view.replace(/-/g, " ").slice(1)} variant="transparent" className={`${currentView === view ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
-                }`} />
-            ))}
-          </div>
+const MenuHeader: React.FC<{
+  currentView: ViewKey;
+  onViewChange: (view: ViewKey) => void;
+}> = memo(({ currentView, onViewChange }) => {
+  const config = VIEW_CONFIG[currentView];
+  const toggleViews: ViewKey[] = ["menu", "menu-structure", "group", "variant"];
+  return (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-0">
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-black">{config.title}</h1>
         </div>
-        <div className="flex items-center justify-between">
-          <p className="text-gray-600">{config.description}</p>
+        <div className="flex bg-gray-100 rounded-lg p-1">
+          {toggleViews.map((view) => (
+            <CustomButton
+              type="button"
+              key={view}
+              onClick={() => onViewChange(view)}
+              label={
+                view.charAt(0).toUpperCase() + view.replace(/-/g, " ").slice(1)
+              }
+              variant="transparent"
+              className={`${
+                currentView === view
+                  ? "bg-white text-black shadow-sm"
+                  : "text-gray-600 hover:text-black"
+              }`}
+            />
+          ))}
         </div>
       </div>
-    );
-  }
-);
-export const MenuView= memo(() => {
+      <div className="flex items-center justify-between">
+        <p className="text-gray-600">{config.description}</p>
+      </div>
+    </div>
+  );
+});
+export const MenuView = memo(() => {
   const [currentView, setCurrentView] = useState<ViewKey>("menu");
   const renderContent = () => {
     switch (currentView) {
@@ -56,7 +69,7 @@ export const MenuView= memo(() => {
       case "menu-structure":
         return <MenuStructureComponent />;
       case "group":
-        return <GroupView  />;
+        return <GroupView />;
       case "variant":
         return <VariantView />;
       default:
@@ -64,9 +77,9 @@ export const MenuView= memo(() => {
     }
   };
   return (
-      <div className="p-4 flex flex-col">
-        <MenuHeader currentView={currentView} onViewChange={setCurrentView} />
-        {renderContent()}
-      </div>
+    <div className="p-4 flex flex-col">
+      <MenuHeader currentView={currentView} onViewChange={setCurrentView} />
+      {renderContent()}
+    </div>
   );
 });

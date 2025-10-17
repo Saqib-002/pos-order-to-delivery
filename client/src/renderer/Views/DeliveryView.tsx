@@ -180,35 +180,33 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
         className="hover:bg-gray-50 transition-colors duration-150"
       >
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-sm font-medium text-gray-900">
-            K{order.orderId}
-          </div>
+          <div className="text-sm font-medium text-black">K{order.orderId}</div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-sm font-medium text-gray-900">
+          <div className="text-sm font-medium text-black">
             {order.customer.name || "-"}
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-sm text-gray-900">
+          <div className="text-sm text-black">
             {order.customer.phone || "-"}
           </div>
         </td>
         <td className="px-6 py-4 min-w-[250px]">
-          <div className="text-sm text-gray-900 max-w-xs">
+          <div className="text-sm text-black max-w-xs">
             {order.customer.address
               ? formatAddress(order.customer.address)
               : "-"}
           </div>
         </td>
         <td className="px-6 py-4 min-w-[250px]">
-          <div className="text-sm text-gray-900">
+          <div className="text-sm text-black">
             <div className="space-y-1">
               {order.items && order.items.length > 0 ? (
                 order.items.map((item, index) => (
                   <div key={index} className="flex justify-between">
                     <span className="text-gray-600">{item.productName}</span>
-                    <span className="text-gray-900 font-medium">
+                    <span className="text-black font-medium">
                       x{item.quantity}
                     </span>
                   </div>
@@ -220,7 +218,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-sm text-gray-900 font-medium">{readySince}</div>
+          <div className="text-sm text-black font-medium">{readySince}</div>
           <div className="text-xs text-gray-500">
             {readyTime.toLocaleTimeString()}
           </div>
@@ -244,24 +242,22 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
       className="hover:bg-gray-50 transition-colors duration-150"
     >
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-medium text-gray-900">
-          #{order.orderId}
-        </div>
+        <div className="text-sm font-medium text-black">#{order.orderId}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-medium text-gray-900">
+        <div className="text-sm font-medium text-black">
           {order.customer.name || "-"}
         </div>
       </td>
       <td className="px-6 py-4">
-        <div className="text-sm text-gray-900 max-w-xs">
+        <div className="text-sm text-black max-w-xs">
           {order.customer.address ? formatAddress(order.customer.address) : "-"}
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         {order.deliveryPerson ? (
           <div className="text-sm">
-            <div className="font-medium text-gray-900">
+            <div className="font-medium text-black">
               {order.deliveryPerson.name || "-"}
             </div>
             <div className="text-gray-500 text-xs">
@@ -274,13 +270,13 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
         )}
       </td>
       <td className="px-6 py-4">
-        <div className="text-sm text-gray-900">
+        <div className="text-sm text-black">
           <div className="space-y-1">
             {order.items && order.items.length > 0 ? (
               order.items.map((item, index) => (
                 <div key={index} className="flex justify-between">
                   <span className="text-gray-600">{item.productName}</span>
-                  <span className="text-gray-900 font-medium">
+                  <span className="text-black font-medium">
                     x{item.quantity}
                   </span>
                 </div>
@@ -337,7 +333,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold text-black">
                     {readyOrders.length > 0
                       ? t("deliveryView.readyForDeliveryOrders")
                       : t("deliveryView.noOrdersReady")}
@@ -370,7 +366,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-black">
                       Out for Delivery
                     </h3>
                     <p className="text-sm text-gray-500 mt-1">

@@ -28,7 +28,7 @@ export const HourlyDistribution: React.FC<{
   const { data, options } = getHourlyChartConfig(analytics);
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <h3 className="text-lg font-semibold text-black mb-4">
         {t("reports.components.hourlyDistribution.title")}
       </h3>
       <div className="h-64">

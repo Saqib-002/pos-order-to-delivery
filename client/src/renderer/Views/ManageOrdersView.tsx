@@ -191,15 +191,15 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
 
     return (
       <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
           K{order.orderId}
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-sm font-medium text-gray-900">
+          <div className="text-sm font-medium text-black">
             {order.customer.name}
           </div>
         </td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
             {order.orderType?.toUpperCase() || t("manageOrders.statuses.nA")}
           </span>
@@ -218,7 +218,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
             )}
           </div>
         </td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
           {order.deliveryPerson ? (
             <div>
               <div className="font-medium">{order.deliveryPerson.name}</div>
@@ -232,7 +232,7 @@ export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
             </span>
           )}
         </td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
           €{calculateOrderTotal(order.items || []).orderTotal.toFixed(2)}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

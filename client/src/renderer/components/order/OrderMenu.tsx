@@ -196,7 +196,7 @@ const OrderMenu = () => {
                                 data={{
                                   id: menu.id,
                                   name: menu.name,
-                                  imgUrl:menu.imgUrl,
+                                  imgUrl: menu.imgUrl,
                                   description: menu.description,
                                   price: menu.price,
                                   color: menu.color || "indigo",
@@ -219,7 +219,7 @@ const OrderMenu = () => {
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <DocumentIcon className="size-10 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-black mb-2">
                   No Items Available
                 </h3>
                 <p className="text-gray-500">

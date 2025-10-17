@@ -3,7 +3,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
-import { CrossIcon, DeleteIcon, DocumentIcon, ImgIcon, NoProductIcon } from "@/renderer/assets/Svg";
+import {
+  CrossIcon,
+  DeleteIcon,
+  DocumentIcon,
+  ImgIcon,
+  NoProductIcon,
+} from "@/renderer/assets/Svg";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 
 interface Group {
@@ -55,16 +61,17 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   const [complements, setComplements] = useState<Complement[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAssociatedProducts, setShowAssociatedProducts] = useState(false);
-  const [associatedProducts, setAssociatedProducts] = useState<AssociatedProduct[] | null>(null);
+  const [associatedProducts, setAssociatedProducts] = useState<
+    AssociatedProduct[] | null
+  >(null);
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
-  const confirm = useConfirm()
+  const confirm = useConfirm();
 
   const fetchAssociatedProducts = async () => {
     try {
-      const response = await (window as any).electronAPI.getAttachProductsByGroupId(
-        token,
-        editingGroup!.id
-      );
+      const response = await (
+        window as any
+      ).electronAPI.getAttachProductsByGroupId(token, editingGroup!.id);
       if (!response.status) {
         toast.error("Failed to fetch associated products");
         return;
@@ -74,7 +81,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     } catch (error) {
       toast.error("Failed to fetch associated products");
     }
-  }
+  };
   // Get color classes for selection ring
   const getColorClasses = (color: string, isSelected: boolean) => {
     if (!isSelected) {
@@ -120,7 +127,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       price: 0,
       priority: 0,
     });
-
   }, [editingGroup, isOpen]);
 
   const addComplement = () => {
@@ -218,19 +224,25 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       type: "danger",
       confirmText: "Delete Group",
       cancelText: "Cancel",
-      specialNote: "If you delete this group you can no longer edit this group in any attached order!",
-    })
-    if (!ok) return;
-    await (window as any).electronAPI.deleteGroup(token, id).then((res: any) => {
-      if (!res.status) {
-        toast.error("Failed to delete group");
-        return;
-      }
-      toast.success("Group deleted successfully");
-      onSuccess();
+      specialNote:
+        "If you delete this group you can no longer edit this group in any attached order!",
     });
+    if (!ok) return;
+    await (window as any).electronAPI
+      .deleteGroup(token, id)
+      .then((res: any) => {
+        if (!res.status) {
+          toast.error("Failed to delete group");
+          return;
+        }
+        toast.success("Group deleted successfully");
+        onSuccess();
+      });
   };
-  const handleComplementImageChange = (complementId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleComplementImageChange = (
+    complementId: string,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -254,12 +266,20 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-semibold text-gray-900 px-6 py-4 border-b border-gray-200">
+        <h2 className="text-xl font-semibold text-black px-6 py-4 border-b border-gray-200">
           {editingGroup ? "EDIT PLUGIN GROUP" : "CREATE PLUGIN GROUP"}
         </h2>
 
         <form onSubmit={handleSubmit} className="p-6">
-          <CustomInput label="GROUP NAME *" name="name" type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Enter group name" required />
+          <CustomInput
+            label="GROUP NAME *"
+            name="name"
+            type="text"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="Enter group name"
+            required
+          />
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               COLOR
@@ -280,9 +300,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                     formData.color === option.value
                   )}`}
                 >
-                  <div
-                    className={`w-8 h-8 rounded-full ${option.color}`}
-                  ></div>
+                  <div className={`w-8 h-8 rounded-full ${option.color}`}></div>
                   {/* <span className="text-xs text-gray-700">{option.label}</span> */}
                 </button>
               ))}
@@ -291,26 +309,70 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
           {/* Add New Complement Section */}
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <h3 className="text-lg font-semibold text-black mb-4">
               Add New Complement
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <CustomInput label="COMPLEMENT NAME *" name="complement-name" type="text" value={newComplement.name} onChange={(e) => setNewComplement({ ...newComplement, name: e.target.value })} placeholder="Enter complement name" />
+              <CustomInput
+                label="COMPLEMENT NAME *"
+                name="complement-name"
+                type="text"
+                value={newComplement.name}
+                onChange={(e) =>
+                  setNewComplement({ ...newComplement, name: e.target.value })
+                }
+                placeholder="Enter complement name"
+              />
 
-              <CustomInput label="PRICE *" name="price" type="number" step="0.01" min="0" value={newComplement.price} onChange={(e) => setNewComplement({ ...newComplement, price: parseFloat(e.target.value) || 0 })} placeholder="0" preLabel="€" otherClasses="relative" inputClasses="pl-8" />
+              <CustomInput
+                label="PRICE *"
+                name="price"
+                type="number"
+                step="0.01"
+                min="0"
+                value={newComplement.price}
+                onChange={(e) =>
+                  setNewComplement({
+                    ...newComplement,
+                    price: parseFloat(e.target.value) || 0,
+                  })
+                }
+                placeholder="0"
+                preLabel="€"
+                otherClasses="relative"
+                inputClasses="pl-8"
+              />
 
-              <CustomInput label="PRIORITY" name="priority" type="number" min="0" value={newComplement.priority} onChange={(e) => setNewComplement({ ...newComplement, priority: parseInt(e.target.value) || 0 })} placeholder="0" />
+              <CustomInput
+                label="PRIORITY"
+                name="priority"
+                type="number"
+                min="0"
+                value={newComplement.priority}
+                onChange={(e) =>
+                  setNewComplement({
+                    ...newComplement,
+                    priority: parseInt(e.target.value) || 0,
+                  })
+                }
+                placeholder="0"
+              />
             </div>
 
             <div className="flex justify-end">
-              <CustomButton type="button" onClick={addComplement} variant="orange" label="ADD" />
+              <CustomButton
+                type="button"
+                onClick={addComplement}
+                variant="orange"
+                label="ADD"
+              />
             </div>
           </div>
 
           {/* Complements Table */}
           {complements.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-black mb-4">
                 Complements
               </h3>
               <div className="overflow-x-auto">
@@ -338,13 +400,58 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                     {complements.map((complement) => (
                       <tr key={complement.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <CustomInput label="" name={`complement-name-${complement.id}`} type="text" value={complement.name} onChange={(e) => updateComplement(complement.id, "name", e.target.value)} placeholder="Enter complement name" />
+                          <CustomInput
+                            label=""
+                            name={`complement-name-${complement.id}`}
+                            type="text"
+                            value={complement.name}
+                            onChange={(e) =>
+                              updateComplement(
+                                complement.id,
+                                "name",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Enter complement name"
+                          />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <CustomInput label="" name={`price-${complement.id}`} type="number" step="0.01" min="0" value={complement.price} onChange={(e) => updateComplement(complement.id, "price", parseFloat(e.target.value) || 0)} placeholder="0" preLabel="€" inputClasses="!w-28 pl-8" />
+                          <CustomInput
+                            label=""
+                            name={`price-${complement.id}`}
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={complement.price}
+                            onChange={(e) =>
+                              updateComplement(
+                                complement.id,
+                                "price",
+                                parseFloat(e.target.value) || 0
+                              )
+                            }
+                            placeholder="0"
+                            preLabel="€"
+                            inputClasses="!w-28 pl-8"
+                          />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <CustomInput label="" name={`priority-${complement.id}`} type="number" min="0" value={complement.priority} onChange={(e) => updateComplement(complement.id, "priority", parseInt(e.target.value) || 0)} placeholder="0" inputClasses="!w-20" />
+                          <CustomInput
+                            label=""
+                            name={`priority-${complement.id}`}
+                            type="number"
+                            min="0"
+                            value={complement.priority}
+                            onChange={(e) =>
+                              updateComplement(
+                                complement.id,
+                                "priority",
+                                parseInt(e.target.value) || 0
+                              )
+                            }
+                            placeholder="0"
+                            inputClasses="!w-20"
+                          />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-1 hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 flex items-center justify-center touch-manipulation w-32">
@@ -356,7 +463,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                               }}
                               type="file"
                               accept="image/*"
-                              onChange={(e) => handleComplementImageChange(complement.id, e)}
+                              onChange={(e) =>
+                                handleComplementImageChange(complement.id, e)
+                              }
                               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             />
                             {complement.imgUrl ? (
@@ -372,7 +481,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation(); // Prevent triggering file input
-                                      handleRemoveComplementImage(complement.id);
+                                      handleRemoveComplementImage(
+                                        complement.id
+                                      );
                                     }}
                                     className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-md hover:bg-gray-100 transition-colors"
                                   >
@@ -405,30 +516,51 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           )}
 
           {/* Associated Products Link */}
-          {editingGroup && <div className="mb-6">
-            <button
-              type="button"
-              onClick={() => {
-                setShowAssociatedProducts(true)
-              }}
-              className="cursor-pointer text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
-            >
-              <DocumentIcon className="size-4" />
-              See associated products
-            </button>
-          </div>}
+          {editingGroup && (
+            <div className="mb-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAssociatedProducts(true);
+                }}
+                className="cursor-pointer text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+              >
+                <DocumentIcon className="size-4" />
+                See associated products
+              </button>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div
             className={`flex ${editingGroup ? "justify-between" : "justify-end"} items-center`}
           >
             {editingGroup && (
-              <CustomButton type="button" onClick={() => handleDeleteGroup(editingGroup.id, editingGroup.name)} variant="transparent" label="ELIMINATE" className="text-red-500 hover:text-red-700" />
+              <CustomButton
+                type="button"
+                onClick={() =>
+                  handleDeleteGroup(editingGroup.id, editingGroup.name)
+                }
+                variant="transparent"
+                label="ELIMINATE"
+                className="text-red-500 hover:text-red-700"
+              />
             )}
 
             <div className="flex gap-3">
-              <CustomButton type="button" onClick={onClose} variant="secondary" label="CANCEL" />
-              <CustomButton type="submit" disabled={isSubmitting} variant="yellow" label="KEEP" isLoading={isSubmitting} />
+              <CustomButton
+                type="button"
+                onClick={onClose}
+                variant="secondary"
+                label="CANCEL"
+              />
+              <CustomButton
+                type="submit"
+                disabled={isSubmitting}
+                variant="yellow"
+                label="KEEP"
+                isLoading={isSubmitting}
+              />
             </div>
           </div>
         </form>
@@ -440,7 +572,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900">
+                <h3 className="text-xl font-semibold text-black">
                   Associated Products
                 </h3>
                 <button
@@ -454,24 +586,25 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {associatedProducts && associatedProducts.map((product) => (
-                  <div
-                    key={product.productId}
-                    className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-gray-900 text-sm">
-                        {product.productName}
-                      </h4>
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                        {product.subcategoryName}
+                {associatedProducts &&
+                  associatedProducts.map((product) => (
+                    <div
+                      key={product.productId}
+                      className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-medium text-black text-sm">
+                          {product.productName}
+                        </h4>
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                          {product.subcategoryName}
+                        </span>
+                      </div>
+                      <span className="text-lg font-semibold text-black">
+                        €{product.productPrice.toFixed(2)}
                       </span>
                     </div>
-                    <span className="text-lg font-semibold text-gray-900">
-                      €{product.productPrice.toFixed(2)}
-                    </span>
-                  </div>
-                ))}
+                  ))}
               </div>
 
               {associatedProducts && associatedProducts.length === 0 && (
@@ -483,7 +616,12 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             </div>
 
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
-              <CustomButton type="button" label="Close" onClick={() => setShowAssociatedProducts(false)} variant="secondary" />
+              <CustomButton
+                type="button"
+                label="Close"
+                onClick={() => setShowAssociatedProducts(false)}
+                variant="secondary"
+              />
             </div>
           </div>
         </div>

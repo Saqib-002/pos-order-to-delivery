@@ -41,7 +41,7 @@ export const LoginView: React.FC<{
                 className="w-16 h-16 mx-auto"
               />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-black mb-2">
               {t("login.welcomeBack")}
             </h2>
             <p className="text-gray-600">{t("login.signInSubtitle")}</p>

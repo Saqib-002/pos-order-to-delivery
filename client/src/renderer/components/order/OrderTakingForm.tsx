@@ -99,6 +99,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       }
       setGroups(groupsRes.data);
 
+      console.log("Variant items data:", res.data);
       if (res.data.length > 0) {
         if (editingProduct) {
           const variant = res.data.find(
@@ -425,7 +426,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent absolute top-0 left-0"></div>
             </div>
             <div className="text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              <h3 className="text-lg font-semibold text-black mb-1">
                 Loading Product Details
               </h3>
               <p className="text-sm text-gray-600">
@@ -469,18 +470,16 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                 <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
                   <div className="w-3 h-2 bg-indigo-600"></div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900">
-                  Choose Variant
-                </h3>
+                <h3 className="text-xl font-bold text-black">Choose Variant</h3>
               </div>
               <p className="text-gray-600 ml-10">
                 Select your preferred variant for {selectedProduct?.name}
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ml-10">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 ml-10">
                 {variantItems.map((item) => (
                   <label
                     key={item.id}
-                    className={`group relative flex items-center p-6 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md touch-manipulation ${
+                    className={`group relative flex flex-col p-2 border-2 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md touch-manipulation ${
                       selectedVariant?.id === item.id
                         ? "border-indigo-500 bg-indigo-50 shadow-md"
                         : "border-gray-200 hover:border-indigo-300 bg-white"
@@ -494,22 +493,76 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                       onChange={() => setSelectedVariant(item)}
                       className="sr-only"
                     />
-                    <div
-                      className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center transition-colors ${
-                        selectedVariant?.id === item.id
-                          ? "border-indigo-500 bg-indigo-500"
-                          : "border-gray-300 group-hover:border-indigo-400"
-                      }`}
-                    >
-                      {selectedVariant?.id === item.id && (
-                        <div className="w-3 h-3 bg-white rounded-full"></div>
-                      )}
+
+                    {/* Image Section */}
+                    <div className="relative mb-2">
+                      <div className="w-full h-24 rounded-md overflow-hidden bg-gray-100">
+                        {item.imgUrl ? (
+                          <img
+                            crossOrigin="anonymous"
+                            src={item.imgUrl}
+                            alt={item.name || `Variant ${item.id}`}
+                            className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                            onError={(e) => {
+                              console.error(
+                                "Failed to load variant image:",
+                                item.imgUrl
+                              );
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = "none";
+                              target.nextElementSibling?.classList.remove(
+                                "hidden"
+                              );
+                            }}
+                            onLoad={() => {
+                              console.log(
+                                "Successfully loaded variant image:",
+                                item.imgUrl
+                              );
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className={`w-full h-full flex items-center justify-center ${item.imgUrl ? "hidden" : ""}`}
+                        >
+                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <svg
+                              className="w-4 h-4 text-gray-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Selection Indicator */}
+                      <div
+                        className={`absolute top-1 right-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                          selectedVariant?.id === item.id
+                            ? "border-indigo-500 bg-indigo-500"
+                            : "border-white bg-white shadow-sm group-hover:border-indigo-400"
+                        }`}
+                      >
+                        {selectedVariant?.id === item.id && (
+                          <div className="w-3 h-3 bg-white rounded-full"></div>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-900">
+
+                    {/* Content Section */}
+                    <div className="flex-1 flex items-center justify-between px-1">
+                      <div className="font-medium text-black text-sm truncate flex-1">
                         {item.name || `Variant ${item.id}`}
                       </div>
-                      <div className="text-lg font-bold text-indigo-600">
+                      <div className="text-sm font-bold text-indigo-600 ml-2">
                         €{item.price?.toFixed(2) || "0.00"}
                       </div>
                     </div>
@@ -532,7 +585,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                     <CheckIcon className="size-2 text-white" />
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900">
+                <h3 className="text-xl font-bold text-black">
                   Add Complements
                 </h3>
               </div>
@@ -546,7 +599,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                     className="bg-gray-50 rounded-xl p-6 space-y-4"
                   >
                     <div className="flex items-center justify-between">
-                      <h4 className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+                      <h4 className="text-lg font-bold text-black flex items-center space-x-2">
                         <span className="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                           {index + 1}
                         </span>
@@ -600,7 +653,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                       )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                       {group.items?.map((item) => {
                         const isSelected =
                           selectedComplements[group.id]?.includes(item.id) ||
@@ -611,31 +664,83 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                             onClick={() =>
                               handleComplementToggle(group.id, item.id)
                             }
-                            className={`group relative p-5 border-2 rounded-xl text-left transition-all duration-200 hover:shadow-md touch-manipulation min-h-[80px] ${
+                            className={`group relative flex flex-col p-3 border-2 rounded-lg text-left transition-all duration-200 hover:shadow-md touch-manipulation ${
                               isSelected
                                 ? "border-indigo-500 bg-indigo-50 shadow-md"
                                 : "border-gray-200 hover:border-indigo-300 bg-white"
                             }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="font-semibold text-gray-900 mb-1">
-                                  {item.name}
-                                </div>
-                                <div className="text-lg font-bold text-indigo-600">
-                                  €{item.price.toFixed(2)}
+                            {/* Image Section */}
+                            <div className="relative mb-2">
+                              <div className="w-full h-20 rounded-md overflow-hidden bg-gray-100">
+                                {item.imgUrl ? (
+                                  <img
+                                    crossOrigin="anonymous"
+                                    src={item.imgUrl}
+                                    alt={item.name}
+                                    className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                                    onError={(e) => {
+                                      console.error(
+                                        "Failed to load group item image:",
+                                        item.imgUrl
+                                      );
+                                      const target =
+                                        e.target as HTMLImageElement;
+                                      target.style.display = "none";
+                                      target.nextElementSibling?.classList.remove(
+                                        "hidden"
+                                      );
+                                    }}
+                                    onLoad={() => {
+                                      console.log(
+                                        "Successfully loaded group item image:",
+                                        item.imgUrl
+                                      );
+                                    }}
+                                  />
+                                ) : null}
+                                <div
+                                  className={`w-full h-full flex items-center justify-center ${item.imgUrl ? "hidden" : ""}`}
+                                >
+                                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                    <svg
+                                      className="w-4 h-4 text-gray-400"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                      />
+                                    </svg>
+                                  </div>
                                 </div>
                               </div>
+
+                              {/* Selection Indicator */}
                               <div
-                                className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
                                   isSelected
                                     ? "border-indigo-500 bg-indigo-500"
-                                    : "border-gray-300 group-hover:border-indigo-400"
+                                    : "border-gray-300 bg-white shadow-sm group-hover:border-indigo-400"
                                 }`}
                               >
                                 {isSelected && (
-                                  <CheckIcon className="size-4 text-white" />
+                                  <CheckIcon className="size-3 text-white" />
                                 )}
+                              </div>
+                            </div>
+
+                            {/* Content Section */}
+                            <div className="flex-1 flex items-center justify-between px-1">
+                              <div className="font-medium text-black text-xs truncate flex-1">
+                                {item.name}
+                              </div>
+                              <div className="text-sm font-bold text-indigo-600 ml-2">
+                                €{item.price.toFixed(2)}
                               </div>
                             </div>
                           </button>
@@ -657,7 +762,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                   <ClockIcon className="size-4 text-purple-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900">Quantity</h3>
+                <h3 className="text-xl font-bold text-black">Quantity</h3>
               </div>
               <div className="flex items-center space-x-6">
                 <button
@@ -689,15 +794,13 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
               <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
                 <CashIcon className="size-4 text-indigo-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">
-                Price Breakdown
-              </h3>
+              <h3 className="text-xl font-bold text-black">Price Breakdown</h3>
             </div>
 
             <div className="space-y-3">
               <div className="flex justify-between items-center py-2">
                 <span className="text-gray-700">Base Product:</span>
-                <span className="font-semibold text-gray-900">
+                <span className="font-semibold text-black">
                   €{calculateBaseProductPrice(selectedProduct).toFixed(2)}
                 </span>
               </div>
@@ -715,7 +818,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                     Variant (
                     {selectedVariant.name || `Variant ${selectedVariant.id}`}):
                   </span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-semibold text-black">
                     €{(selectedVariant.price || 0).toFixed(2)}
                   </span>
                 </div>

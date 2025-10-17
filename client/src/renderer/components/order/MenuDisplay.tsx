@@ -172,7 +172,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
                     />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-black mb-2">
                   No Products
                 </h3>
                 <p className="text-gray-500">
@@ -246,7 +246,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-black mb-2">
                 No Menu Pages
               </h3>
               <p className="text-gray-500">

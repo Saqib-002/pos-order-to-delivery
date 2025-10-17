@@ -164,13 +164,13 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
             {label}
           </span>
         </td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
           K{order.orderId}
         </td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
           {order.customer.name}
         </td>
-        <td className="px-6 py-4 min-w-[300px] text-sm text-gray-900">
+        <td className="px-6 py-4 min-w-[300px] text-sm text-black">
           <div className="space-y-2">
             {order.items &&
               order.items.map((item, index) => {
@@ -182,7 +182,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <div className="font-medium text-gray-900">
+                        <div className="font-medium text-black">
                           {item.quantity}x {item.productName}
                           {item.variantName && (
                             <span className="text-gray-600">
@@ -207,9 +207,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-sm text-gray-900 font-medium">
-            {timeInKitchen}
-          </div>
+          <div className="text-sm text-black font-medium">{timeInKitchen}</div>
           <div className="text-xs text-gray-500">
             {orderTime.toLocaleTimeString()}
           </div>
@@ -254,7 +252,7 @@ export const KitchenView: React.FC<KitchenViewProps> = ({
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold text-black">
                     {orders.length > 0
                       ? "Kitchen Orders"
                       : "No orders match your search"}

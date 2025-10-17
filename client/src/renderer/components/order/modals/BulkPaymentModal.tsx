@@ -294,7 +294,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
               <ThunderIcon className="w-6 h-6 text-purple-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-black">
                 {t("bulkPaymentModal.title")}
               </h2>
               <p className="text-sm text-gray-600">
@@ -367,7 +367,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                     />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-gray-900 text-lg">
+                <h3 className="font-semibold text-black text-lg">
                   {t("bulkPaymentModal.ordersSummary")}
                 </h3>
               </div>
@@ -377,7 +377,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                   <span className="text-sm font-medium text-gray-600">
                     {t("bulkPaymentModal.deliveryPerson")}
                   </span>
-                  <span className="text-sm font-semibold text-gray-900">
+                  <span className="text-sm font-semibold text-black">
                     {
                       deliveryPersons.find(
                         (p) => p.id === selectedBulkDeliveryPerson
@@ -390,7 +390,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                   <span className="text-sm font-medium text-gray-600">
                     {t("bulkPaymentModal.ordersCount")}
                   </span>
-                  <span className="text-sm font-semibold text-gray-900">
+                  <span className="text-sm font-semibold text-black">
                     {
                       getOrdersForDeliveryPerson(selectedBulkDeliveryPerson)
                         .length

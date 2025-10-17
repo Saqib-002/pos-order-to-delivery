@@ -8,8 +8,6 @@ import CustomInput from "../../shared/CustomInput";
 import { ImgIcon } from "@/renderer/assets/Svg";
 import { Menu, MenuPage, MenuPageAssociation } from "@/types/menuPages";
 
-
-
 interface MenuModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -511,7 +509,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
         <div className="p-6">
           {/* Modal Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900 uppercase">
+            <h2 className="text-xl font-bold text-black uppercase">
               {editingMenu ? "EDIT MENU" : "CREATE MENU"}
             </h2>
             <button
@@ -525,7 +523,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
           <form onSubmit={handleSubmit}>
             {/* Basic Information Section */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-black mb-4">
                 BASIC INFORMATION
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -572,55 +570,55 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                 </p>
               </div>
             </div>
-{/* Menu Image Upload */}
-<div className="mt-4">
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    MENU IMAGE
-  </label>
-  <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-orange-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-[150px] flex items-center justify-center">
-    <input
-      ref={fileInputRef}
-      type="file"
-      accept="image/*"
-      onChange={handleMenuImageChange}
-      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-    />
-    {imagePreview ? (
-      <div className="flex flex-col items-center">
-        <div className="relative mb-2">
-          <img
-            crossOrigin="anonymous"
-            src={imagePreview}
-            alt="Menu Preview"
-            className="w-48 h-32 object-cover rounded-lg shadow-md"
-          />
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent triggering file input
-              handleRemoveMenuImage();
-            }}
-            className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors"
-          >
-            <CrossIcon className="size-4 text-gray-600 hover:text-gray-800" />
-          </button>
-        </div>
-        <span className="text-xs text-gray-500 text-center">
-          Click to change
-        </span>
-      </div>
-    ) : (
-      <div className="flex flex-col items-center text-gray-500">
-        <ImgIcon className="size-12 mb-2" />
-        <p className="text-sm font-medium">Upload menu image</p>
-        <p className="text-xs">PNG, JPG up to 2MB</p>
-      </div>
-    )}
-  </div>
-</div>
+            {/* Menu Image Upload */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                MENU IMAGE
+              </label>
+              <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-orange-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-[150px] flex items-center justify-center">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleMenuImageChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                {imagePreview ? (
+                  <div className="flex flex-col items-center">
+                    <div className="relative mb-2">
+                      <img
+                        crossOrigin="anonymous"
+                        src={imagePreview}
+                        alt="Menu Preview"
+                        className="w-48 h-32 object-cover rounded-lg shadow-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent triggering file input
+                          handleRemoveMenuImage();
+                        }}
+                        className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors"
+                      >
+                        <CrossIcon className="size-4 text-gray-600 hover:text-gray-800" />
+                      </button>
+                    </div>
+                    <span className="text-xs text-gray-500 text-center">
+                      Click to change
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center text-gray-500">
+                    <ImgIcon className="size-12 mb-2" />
+                    <p className="text-sm font-medium">Upload menu image</p>
+                    <p className="text-xs">PNG, JPG up to 2MB</p>
+                  </div>
+                )}
+              </div>
+            </div>
             {/* Financial Details Section */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-black mb-4">
                 FINANCIAL DETAILS
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -678,7 +676,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
 
             {/* Price Breakdown Section */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-black mb-4">
                 PRICE BREAKDOWN
               </h3>
               <div className="p-4 bg-gray-50 rounded-lg border border-gray-300">
@@ -687,7 +685,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     <span className="text-sm font-medium text-gray-700">
                       Subtotal:
                     </span>
-                    <span className="text-sm font-semibold text-gray-900">
+                    <span className="text-sm font-semibold text-black">
                       €{calculatePriceBreakdown().subtotal.toFixed(2)}
                     </span>
                   </div>
@@ -695,7 +693,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     <span className="text-sm font-medium text-gray-700">
                       Tax ({formData.tax || 0}%):
                     </span>
-                    <span className="text-sm font-semibold text-gray-900">
+                    <span className="text-sm font-semibold text-black">
                       €{calculatePriceBreakdown().taxAmount.toFixed(2)}
                     </span>
                   </div>
@@ -711,7 +709,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   )}
                   <div className="border-t border-gray-300 pt-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-semibold text-gray-900">
+                      <span className="text-lg font-semibold text-black">
                         Total:
                       </span>
                       <span className="text-lg font-bold text-green-600">
@@ -725,7 +723,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
 
             {/* Visual Attributes Section */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-black mb-4">
                 VISUAL ATTRIBUTES
               </h3>
               <div className="flex items-center gap-4">
@@ -746,7 +744,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
 
             {/* Add Pages Section */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-black mb-4">
                 ADD PAGES
               </h3>
               <div className="flex items-end gap-4 mb-4">
@@ -774,7 +772,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     onChange={handlePageSelect}
                     placeholder={
                       availableMenuPages.length === 1 &&
-                        availableMenuPages[0].disabled
+                      availableMenuPages[0].disabled
                         ? "No menu pages available"
                         : "Select a menu page"
                     }
@@ -913,7 +911,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     <tbody className="divide-y divide-gray-200">
                       {menuPageAssociations.map((association) => (
                         <tr key={association.id}>
-                          <td className="px-4 py-2 text-sm text-gray-900">
+                          <td className="px-4 py-2 text-sm text-black">
                             {association.pageName}
                           </td>
                           <td className="px-4 py-2">
@@ -926,9 +924,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   prev.map((assoc) =>
                                     assoc.id === association.id
                                       ? {
-                                        ...assoc,
-                                        minimum: value,
-                                      }
+                                          ...assoc,
+                                          minimum: value,
+                                        }
                                       : assoc
                                   )
                                 );
@@ -947,9 +945,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   prev.map((assoc) =>
                                     assoc.id === association.id
                                       ? {
-                                        ...assoc,
-                                        maximum: value,
-                                      }
+                                          ...assoc,
+                                          maximum: value,
+                                        }
                                       : assoc
                                   )
                                 );
@@ -968,9 +966,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   prev.map((assoc) =>
                                     assoc.id === association.id
                                       ? {
-                                        ...assoc,
-                                        priority: value,
-                                      }
+                                          ...assoc,
+                                          priority: value,
+                                        }
                                       : assoc
                                   )
                                 );
@@ -988,9 +986,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   prev.map((assoc) =>
                                     assoc.id === association.id
                                       ? {
-                                        ...assoc,
-                                        kitchenPriority: value,
-                                      }
+                                          ...assoc,
+                                          kitchenPriority: value,
+                                        }
                                       : assoc
                                   )
                                 );
@@ -1008,9 +1006,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   prev.map((assoc) =>
                                     assoc.id === association.id
                                       ? {
-                                        ...assoc,
-                                        multiple: value,
-                                      }
+                                          ...assoc,
+                                          multiple: value,
+                                        }
                                       : assoc
                                   )
                                 );

@@ -22,7 +22,7 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
   onEditSubcategory,
   onDeleteSubcategory,
   onEditProduct,
-  onDeleteProduct
+  onDeleteProduct,
 }) => {
   const getFilteredProducts = () => {
     if (!selectedSubcategory) return [];
@@ -76,7 +76,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
   categories,
   onCategoryClick,
   onEditCategory,
-  onDeleteCategory
+  onDeleteCategory,
 }) => (
   <SectionWrapper title="Categories">
     <ItemGrid>
@@ -88,7 +88,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
             key={category.id}
             data={category}
             type="category"
-            onDelete={()=>onDeleteCategory(category.id)}
+            onDelete={() => onDeleteCategory(category.id)}
             onEdit={() => onEditCategory(category)}
             onClick={() => onCategoryClick(category)}
           />
@@ -103,7 +103,7 @@ const SubcategorySection: React.FC<SubcategorySectionProps> = ({
   selectedCategory,
   onSubcategoryClick,
   onEditSubcategory,
-  onDeleteSubcategory
+  onDeleteSubcategory,
 }) => (
   <SectionWrapper title={`Subcategories in ${selectedCategory?.name}`}>
     <ItemGrid>
@@ -117,7 +117,7 @@ const SubcategorySection: React.FC<SubcategorySectionProps> = ({
             type="subcategory"
             onEdit={() => onEditSubcategory(subcategory)}
             onClick={() => onSubcategoryClick(subcategory)}
-            onDelete={()=>onDeleteSubcategory(subcategory.id)}
+            onDelete={() => onDeleteSubcategory(subcategory.id)}
           />
         ))
       )}
@@ -153,7 +153,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({
 const SectionWrapper: React.FC<SectionWrapperProps> = ({ title, children }) => (
   <div>
     <div className="flex items-center gap-2 mb-4">
-      <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+      <h2 className="text-xl font-semibold text-black">{title}</h2>
     </div>
     {children}
   </div>

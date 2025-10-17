@@ -178,7 +178,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
           })
         );
         setSelectedAddonPage(groupRes.data[0]?.pageNo);
-        const printerRes = await (window as any).electronAPI.getProductPrinters(token, product.id);
+        const printerRes = await (window as any).electronAPI.getProductPrinters(
+          token,
+          product.id
+        );
         if (printerRes.status) {
           setSelectedPrinterIds(printerRes.data.map((p: any) => p.printerId));
         } else {
@@ -583,7 +586,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
           newFormData,
           variantPrices,
           validAddonPages,
-          selectedPrinterIds,
+          selectedPrinterIds
         );
       } else {
         res = await (window as any).electronAPI.updateProduct(
@@ -591,7 +594,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
           { id: product.id, ...newFormData },
           variantPrices,
           validAddonPages,
-          selectedPrinterIds,
+          selectedPrinterIds
         );
       }
       if (!res.status) {
@@ -640,7 +643,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-black">
               {product ? "EDIT PRODUCT" : "CREATE PRODUCT"}
             </h2>
             <button
@@ -662,10 +665,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`cursor-pointer py-2 px-1 text-sm font-medium border-b-2 transition-colors duration-200 ${activeTab === tab.id
-                  ? "border-orange-500 text-orange-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
+                className={`cursor-pointer py-2 px-1 text-sm font-medium border-b-2 transition-colors duration-200 ${
+                  activeTab === tab.id
+                    ? "border-orange-500 text-orange-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
               >
                 {tab.label}
               </button>
@@ -679,7 +683,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
             <div className="space-y-6">
               {/* Product Status */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-black">
                   Product Status
                 </h3>
                 <div className="flex items-center space-x-4">
@@ -693,14 +697,16 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           isAvailable: !formData.isAvailable,
                         })
                       }
-                      className={`cursor-pointer relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${formData.isAvailable ? "bg-orange-500" : "bg-gray-200"
-                        }`}
+                      className={`cursor-pointer relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+                        formData.isAvailable ? "bg-orange-500" : "bg-gray-200"
+                      }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${formData.isAvailable
-                          ? "translate-x-6"
-                          : "translate-x-1"
-                          }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                          formData.isAvailable
+                            ? "translate-x-6"
+                            : "translate-x-1"
+                        }`}
                       />
                     </button>
                   </div>
@@ -729,7 +735,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
               {/* Basic Product Information */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-black">
                   Basic Product Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -834,7 +840,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     ) : (
                       <div className="flex flex-col items-center text-gray-500">
                         <ImgIcon className="size-12 mb-2" />
-                        <p className="text-sm font-medium">Upload product image</p>
+                        <p className="text-sm font-medium">
+                          Upload product image
+                        </p>
                         <p className="text-xs">PNG, JPG up to 2MB</p>
                       </div>
                     )}
@@ -865,7 +873,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
               {/* Pricing and Financials */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-black">
                   Pricing and Financials
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -952,7 +960,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       <span className="text-sm font-medium text-gray-700">
                         Subtotal:
                       </span>
-                      <span className="text-sm font-semibold text-gray-900">
+                      <span className="text-sm font-semibold text-black">
                         €{calculatePriceBreakdown().subtotal.toFixed(2)}
                       </span>
                     </div>
@@ -960,7 +968,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       <span className="text-sm font-medium text-gray-700">
                         Tax ({formData.tax || 0}%):
                       </span>
-                      <span className="text-sm font-semibold text-gray-900">
+                      <span className="text-sm font-semibold text-black">
                         €{calculatePriceBreakdown().taxAmount.toFixed(2)}
                       </span>
                     </div>
@@ -977,7 +985,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     )}
                     <div className="border-t border-gray-300 pt-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-semibold text-gray-900">
+                        <span className="text-lg font-semibold text-black">
                           Total:
                         </span>
                         <span className="text-lg font-bold text-green-600">
@@ -991,7 +999,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
               {/* Product Attributes */}
               <div className="space-y-4 mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-black">
                   Product Attributes
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -1083,7 +1091,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           <div
                             className={`w-3 h-3 rounded-full bg-${variant.color}-500`}
                           ></div>
-                          <h5 className="font-medium text-gray-900">
+                          <h5 className="font-medium text-black">
                             {variant.name !== ""
                               ? variant.name
                               : variant.items.map((i) => i.name).join("-")}
@@ -1159,10 +1167,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setSelectedAddonPage(page.pageNo)}
-                          className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${selectedAddonPage === page.pageNo
-                            ? "bg-orange-500 text-white"
-                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                            }`}
+                          className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                            selectedAddonPage === page.pageNo
+                              ? "bg-orange-500 text-white"
+                              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                          }`}
                         >
                           {index + 1}
                         </button>
@@ -1290,10 +1299,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       onClick={() =>
                         handlePagePluginGroupChange(selectedAddonPage, group.id)
                       }
-                      className={`cursor-pointer relative px-4 py-3 rounded-md text-sm font-medium text-white transition-colors duration-200 ${getPluginGroupColorClasses(group.color)} ${getCurrentPageData()?.selectedGroup === group.id
-                        ? `ring-2 ${getPluginGroupRingClasses(group.color)} ring-offset-2`
-                        : ""
-                        }`}
+                      className={`cursor-pointer relative px-4 py-3 rounded-md text-sm font-medium text-white transition-colors duration-200 ${getPluginGroupColorClasses(group.color)} ${
+                        getCurrentPageData()?.selectedGroup === group.id
+                          ? `ring-2 ${getPluginGroupRingClasses(group.color)} ring-offset-2`
+                          : ""
+                      }`}
                     >
                       {group.name}
                       {getCurrentPageData()?.selectedGroup === group.id && (
@@ -1312,31 +1322,40 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
           {activeTab === "printers" && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900">Printers</h3>
+              <h3 className="text-lg font-semibold text-black">Printers</h3>
               <p className="text-gray-600">Configure printer settings here.</p>
               <div className="grid grid-cols-4 gap-4">
-                {
-                  printers.map((printer) => (
-                    <div key={printer.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-md">
-                      <input
-                        type="checkbox"
-                        id={`printer-${printer.id}`}
-                        checked={selectedPrinterIds.includes(printer.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedPrinterIds([...selectedPrinterIds, printer.id]);
-                          } else {
-                            setSelectedPrinterIds(selectedPrinterIds.filter(id => id !== printer.id));
-                          }
-                        }}
-                        className="size-6 text-orange-600 focus:ring-orange-500 border-gray-300 rounded cursor-pointer"
-                      />
-                      <label htmlFor={`printer-${printer.id}`} className="text-sm font-medium text-gray-900 cursor-pointer max-w-36 min-w-36">
-                        {printer.displayName}
-                      </label>
-                    </div>
-                  ))
-                }
+                {printers.map((printer) => (
+                  <div
+                    key={printer.id}
+                    className="flex items-center space-x-3 p-3 border border-gray-200 rounded-md"
+                  >
+                    <input
+                      type="checkbox"
+                      id={`printer-${printer.id}`}
+                      checked={selectedPrinterIds.includes(printer.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedPrinterIds([
+                            ...selectedPrinterIds,
+                            printer.id,
+                          ]);
+                        } else {
+                          setSelectedPrinterIds(
+                            selectedPrinterIds.filter((id) => id !== printer.id)
+                          );
+                        }
+                      }}
+                      className="size-6 text-orange-600 focus:ring-orange-500 border-gray-300 rounded cursor-pointer"
+                    />
+                    <label
+                      htmlFor={`printer-${printer.id}`}
+                      className="text-sm font-medium text-black cursor-pointer max-w-36 min-w-36"
+                    >
+                      {printer.displayName}
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
           )}

@@ -279,7 +279,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   <CheckIcon className="size-3 text-white" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900">
+              <h3 className="text-xl font-bold text-black">
                 Customer Search {orderType === "delivery" ? "*" : "(Optional)"}
               </h3>
             </div>
@@ -334,7 +334,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                       variant="transparent"
                       label={
                         <>
-                          <div className="text-base font-semibold text-gray-900">
+                          <div className="text-base font-semibold text-black">
                             {customer.name}
                           </div>
                           <div className="text-sm text-gray-600">
@@ -353,7 +353,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             {selectedCustomer && (
               <div className="mt-6 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl">
                 <div className="flex justify-between items-start mb-4">
-                  <h4 className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+                  <h4 className="text-lg font-bold text-black flex items-center space-x-2">
                     <div className="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                       ✓
                     </div>
@@ -372,7 +372,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-gray-600">Name:</span>
-                      <span className="text-gray-900 font-medium">
+                      <span className="text-black font-medium">
                         {selectedCustomer.name}
                       </span>
                     </div>
@@ -380,7 +380,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                       <span className="font-semibold text-gray-600">
                         Phone:
                       </span>
-                      <span className="text-gray-900 font-medium">
+                      <span className="text-black font-medium">
                         {selectedCustomer.phone}
                       </span>
                     </div>
@@ -389,7 +389,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                         <span className="font-semibold text-gray-600">
                           Email:
                         </span>
-                        <span className="text-gray-900 font-medium">
+                        <span className="text-black font-medium">
                           {selectedCustomer.email}
                         </span>
                       </div>
@@ -423,7 +423,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                       <CheckIcon className="size-3 text-white" />
                     </div>
                   </div>
-                  <h4 className="text-lg font-bold text-gray-900">
+                  <h4 className="text-lg font-bold text-black">
                     Customer Details{" "}
                     {orderType === "delivery" ? "*" : "(Optional)"}
                   </h4>
@@ -479,7 +479,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
                 <div className="w-3 h-2 bg-orange-600"></div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Order Type</h3>
+              <h3 className="text-xl font-bold text-black">Order Type</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <CustomButton
@@ -582,7 +582,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                 <DocumentIcon className="text-purple-600 size-5" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Order Notes</h3>
+              <h3 className="text-xl font-bold text-black">Order Notes</h3>
             </div>
             <textarea
               value={notes}
@@ -599,7 +599,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
                 <div className="w-3 h-2 bg-indigo-600"></div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Order Summary</h3>
+              <h3 className="text-xl font-bold text-black">Order Summary</h3>
             </div>
             <div className="space-y-4">
               {/* Non-Menu Items */}
@@ -609,7 +609,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   className="flex justify-between items-start p-4 bg-white rounded-xl border border-gray-100 shadow-sm"
                 >
                   <div className="flex-1">
-                    <div className="font-semibold text-gray-900 text-lg">
+                    <div className="font-semibold text-black text-lg">
                       {item.quantity}x {item.productName}
                     </div>
                     <div className="text-sm text-gray-600 mt-1">
@@ -630,7 +630,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     )}
                   </div>
                   <div className="text-right ml-4">
-                    <div className="font-bold text-gray-900 text-lg">
+                    <div className="font-bold text-black text-lg">
                       €{item.totalPrice.toFixed(2)}
                     </div>
                   </div>
@@ -654,7 +654,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   >
                     <div className="p-4 bg-gray-50 rounded-t-xl">
                       <div className="flex justify-between items-start">
-                        <div className="font-semibold text-gray-900 text-lg">
+                        <div className="font-semibold text-black text-lg">
                           {sectionQuantity}x {group.menuName}
                           {/* {group.secondaryId} */}
                         </div>
@@ -680,7 +680,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                               </div>
                             )}
                           </div> */}
-                        <div className="font-bold text-gray-900 text-xl">
+                        <div className="font-bold text-black text-xl">
                           €{sectionTotal.toFixed(2)}
                         </div>
                       </div>
@@ -742,9 +742,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               })}
               <div className="border-t-2 border-indigo-200 pt-6 mt-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-gray-900">
-                    Total:
-                  </span>
+                  <span className="text-2xl font-bold text-black">Total:</span>
                   <span className="text-3xl font-bold text-indigo-600 px-6 py-3">
                     €{orderTotal.toFixed(2)}
                   </span>

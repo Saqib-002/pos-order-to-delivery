@@ -222,10 +222,15 @@ export class ProductsDatabaseOperations {
                 .select(
                     "variant_items.variantId as variantId",
                     "variant_items.name as name",
+                    "variant_items.imgUrl as imgUrl",
                     "products_variants.price as price",
                     "products_variants.variantId as id"
                 );
-            return variants;
+            const uploadUrl = process.env.CDN_URL;
+            return variants.map((variant: any) => ({
+                ...variant,
+                imgUrl: variant.imgUrl ? `${uploadUrl}/uploads/${variant.imgUrl}` : null
+            }));
         } catch (error) {
             throw error;
         }

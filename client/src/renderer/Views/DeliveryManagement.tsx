@@ -328,9 +328,7 @@ export const DeliveryManagement = () => {
             </div>
           </div>
           <div className="ml-4">
-            <div className="text-sm font-medium text-gray-900">
-              {person.name}
-            </div>
+            <div className="text-sm font-medium text-black">{person.name}</div>
             <div className="text-sm text-gray-500">
               {t("deliveryManagement.deliveryPersonnelLabel")}
             </div>
@@ -347,27 +345,23 @@ export const DeliveryManagement = () => {
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900">{person.email || "-"}</div>
+        <div className="text-sm text-black">{person.email || "-"}</div>
         <div className="text-sm text-gray-500">{person.phone || "-"}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900">{person.licenseNo || "-"}</div>
+        <div className="text-sm text-black">{person.licenseNo || "-"}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900">{person.totalAssigned || 0}</div>
+        <div className="text-sm text-black">{person.totalAssigned || 0}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900">
-          {person.totalDelivered || 0}
-        </div>
+        <div className="text-sm text-black">{person.totalDelivered || 0}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900">
-          {person.totalCancelled || 0}
-        </div>
+        <div className="text-sm text-black">{person.totalCancelled || 0}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900">
+        <div className="text-sm text-black">
           {person.avgDeliveryTime
             ? `${person.avgDeliveryTime.toFixed(2)}${t("deliveryManagement.minutes")}`
             : `0${t("deliveryManagement.minutes")}`}
@@ -413,7 +407,7 @@ export const DeliveryManagement = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-black">
                 {t("deliveryManagement.deliveryPersonnel")}
               </h3>
               <p className="text-sm text-gray-500 mt-1">
