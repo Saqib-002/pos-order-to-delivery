@@ -216,8 +216,6 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
       </div>
     );
   };
-  console.log(type);
-console.log(['product', 'menu'].includes(type));
   return (
     <div onClick={onClick}>
       <div
