@@ -25,24 +25,17 @@ import DocumentIcon from "../assets/icons/document.svg?react";
 import ThunderIcon from "../assets/icons/thunder.svg?react";
 import DeliveredIcon from "../assets/icons/delivered.svg?react";
 import { Euro } from "@/renderer/assets/Svg";
+import { useOrderManagement } from "../hooks/useOrderManagement";
 
-interface ManageOrdersViewProps {
-  orders: Order[];
-  refreshOrdersCallback: () => void;
-  filter: FilterType;
-  setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
-}
-
-export const ManageOrdersView: React.FC<ManageOrdersViewProps> = ({
-  orders,
-  refreshOrdersCallback,
-  filter,
-  setFilter,
-}) => {
+export const ManageOrdersView = () => {
   const { t } = useTranslation();
   const {
-    auth: { token },
-  } = useAuth();
+      auth
+    } = useAuth();
+    const { token } = auth;
+    const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagement(
+      auth
+    );
   useEffect(() => {
     if (!filter.selectedDate) {
       setFilter((prev) => ({

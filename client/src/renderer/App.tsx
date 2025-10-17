@@ -1,5 +1,4 @@
 import { VIEWS } from "@/constants";
-import { FilterType } from "@/types/order";
 import { JSX, useState } from "react";
 import { toast } from "react-toastify";
 import { AccessDenied } from "./components/shared/AccessDenied";
@@ -25,17 +24,10 @@ interface ViewConfig {
 
 const App: React.FC = () => {
   const [view, setView] = useState<string>(VIEWS.LOGIN);
-  const [filter, setFilter] = useState<FilterType>({
-    searchTerm: "",
-    selectedDate: null,
-    selectedStatus: ["all"],
-    selectedPaymentStatus: [],
-  });
   const { auth, logout } = useAuth();
 
-  const { orders, setOrders, refreshOrdersCallback } = useOrderManagement(
-    auth,
-    filter
+  const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagement(
+    auth
   );
   const handleLogin = () => {
     setView(VIEWS.ORDER);
@@ -52,33 +44,18 @@ const App: React.FC = () => {
   const viewConfig: Record<string, ViewConfig> = {
     [VIEWS.ORDER]: {
       component: (
-        <OrderView
-          orders={orders}
-          refreshOrdersCallback={refreshOrdersCallback}
-          filter={filter}
-          setFilter={setFilter}
-        />
+        <OrderView />
       ),
     },
     [VIEWS.KITCHEN]: {
       component: (
-        <KitchenView
-          orders={orders}
-          filter={filter}
-          setFilter={setFilter}
-          refreshOrdersCallback={refreshOrdersCallback}
-        />
+        <KitchenView />
       ),
       roles: ["admin", "kitchen"],
     },
     [VIEWS.DELIVERY]: {
       component: (
-        <DeliveryView
-          orders={orders}
-          refreshOrdersCallback={refreshOrdersCallback}
-          filter={filter}
-          setFilter={setFilter}
-        />
+        <DeliveryView />
       ),
       roles: ["admin", "delivery"],
     },
@@ -102,12 +79,7 @@ const App: React.FC = () => {
     },
     [VIEWS.MANAGE_ORDERS]: {
       component: (
-        <ManageOrdersView
-          orders={orders}
-          refreshOrdersCallback={refreshOrdersCallback}
-          filter={filter}
-          setFilter={setFilter}
-        />
+        <ManageOrdersView />
       ),
       roles: ["admin"],
     },

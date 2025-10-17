@@ -17,20 +17,17 @@ import Header from "../components/shared/Header.order";
 import { FilterControls } from "../components/shared/FilterControl.order";
 import { updateOrder } from "../utils/order";
 import { formatAddress } from "../utils/utils";
+import { useOrderManagement } from "../hooks/useOrderManagement";
 
-interface DeliveryViewProps {
-  orders: Order[];
-  refreshOrdersCallback: () => void;
-  filter: FilterType;
-  setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
-}
-export const DeliveryView: React.FC<DeliveryViewProps> = ({
-  orders,
-  refreshOrdersCallback,
-  filter,
-  setFilter,
-}) => {
+export const DeliveryView = () => {
   const { t } = useTranslation();
+  const {
+      auth
+    } = useAuth();
+    const { token } = auth;
+    const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagement(
+      auth
+    );
   useEffect(() => {
     if (!filter.selectedDate) {
       setFilter((prev) => ({
@@ -39,9 +36,6 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
       }));
     }
   }, [filter.selectedDate, setFilter]);
-  const {
-    auth: { token },
-  } = useAuth();
   const [deliveryPerson, setDeliveryPerson] = useState<DeliveryPerson | null>(
     null
   );
@@ -67,7 +61,7 @@ export const DeliveryView: React.FC<DeliveryViewProps> = ({
       selectedStatus: ["ready for delivery", "out for delivery"],
       selectedPaymentStatus: [],
     });
-  }, [token, setFilter]);
+  }, []);
 
   const readyOrders = useMemo(
     () => orders.filter((o) => o.status.toLowerCase() === "ready for delivery"),
