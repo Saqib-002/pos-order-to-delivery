@@ -5,7 +5,8 @@ module.exports = {
   packagerConfig: {
     asar: true,
     extraResource: [
-      '.env'
+      '.env',
+      'migrations'
     ]
   },
   rebuildConfig: {},
