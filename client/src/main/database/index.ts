@@ -32,14 +32,6 @@ export async function initDatabase(): Promise<void> {
                     directory: path.join(process.resourcesPath, "migrations"),
                 },
             };
-        } else {
-            config = {
-                ...config,
-                migrations: {
-                    ...config.migrations,
-                    directory: path.join(getDirname(), "../../migrations"),
-                },
-            };
         }
         db = knex(config);
         Logger.info("PostgreSQL database initialized");
