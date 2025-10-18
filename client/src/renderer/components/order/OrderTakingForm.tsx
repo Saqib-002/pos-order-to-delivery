@@ -124,17 +124,20 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
     }
   }, [selectedProduct, token]);
   useEffect(() => {
-    if (editingProduct) {
+    if (editingProduct && addOnPages) {
       setQuantity(editingProduct.quantity);
+      const newSelections: { [groupId: string]: string[] } = {};
       editingProduct.complements.forEach((complement: any) => {
-        const currentSelection = selectedComplements[complement.groupId] || [];
-        if (!currentSelection.includes(complement.itemId)) {
-          setSelectedComplements((prev) => ({
-            ...prev,
-            [complement.groupId]: [...currentSelection, complement.itemId],
-          }));
+        if (!newSelections[complement.groupId]) {
+          newSelections[complement.groupId] = [];
+        }
+        if (!newSelections[complement.groupId].includes(complement.itemId)) {
+          newSelections[complement.groupId].push(complement.itemId);
         }
       });
+      setSelectedComplements(newSelections);
+    } else if (!editingProduct) {
+      setSelectedComplements({});
     }
   }, [addOnPages, editingProduct]);
   const handleComplementToggle = (groupId: string, itemId: string) => {

@@ -387,7 +387,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               onClick={onClose}
               className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
             >
-              Close
+              {t("orderDetailsModal.close")}
             </button>
           </div>
         </div>

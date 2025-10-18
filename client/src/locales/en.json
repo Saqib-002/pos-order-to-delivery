@@ -407,6 +407,82 @@
     "subtitle": "Assign and track order deliveries",
     "readyForDeliveryOrders": "Ready for Delivery Orders",
     "noOrdersReady": "No orders ready for delivery",
-    "delivered": "Delivered"
+    "delivered": "Delivered",
+    "stats": {
+      "readyForDelivery": "Ready for Delivery",
+      "outForDelivery": "Out for Delivery",
+      "deliveredToday": "Delivered Today",
+      "activeDrivers": "Active Drivers"
+    },
+    "descriptions": {
+      "ordersReadyToAssign": "Orders ready to be assigned for delivery",
+      "allOrdersInKitchenOrAssigned": "All orders are either in kitchen or already assigned for delivery.",
+      "ordersCurrentlyBeingDelivered": "Orders currently being delivered"
+    },
+    "table": {
+      "orderId": "Order ID",
+      "customer": "Customer",
+      "contact": "Contact",
+      "address": "Address",
+      "items": "Items",
+      "readySince": "Ready Since",
+      "driver": "Driver",
+      "actions": "Actions",
+      "outForDelivery": "Out for Delivery"
+    },
+    "messages": {
+      "pleaseEnterDeliveryPersonName": "Please enter delivery person name",
+      "failedToAssignDeliveryPerson": "Failed to assign delivery person",
+      "failedToAssignDelivery": "Failed to assign delivery. Please try again.",
+      "failedToMarkAsDelivered": "Failed to mark as delivered",
+      "orderMarkedAsDelivered": "Order marked as delivered",
+      "failedToMarkAsDeliveredRetry": "Failed to mark as delivered. Please try again."
+    }
+  },
+  "kitchenView": {
+    "title": "Kitchen Management",
+    "subtitle": "Monitor and manage orders in preparation",
+    "stats": {
+      "ordersInKitchen": "Orders in Kitchen",
+      "highPriority": "High Priority",
+      "avgPrepTime": "Avg Prep Time",
+      "avgPrepTimeValue": "~25 min"
+    },
+    "table": {
+      "priority": "Priority",
+      "orderId": "Order ID",
+      "customer": "Customer",
+      "items": "Items",
+      "timeInKitchen": "Time in Kitchen",
+      "actions": "Actions",
+      "kitchenOrders": "Kitchen Orders",
+      "noOrdersMatch": "No orders match your search"
+    },
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "actions": {
+      "viewOrderDetails": "View Order Details",
+      "markAsReady": "Mark as Ready"
+    },
+    "addOns": "Add-ons:",
+    "timeFormat": {
+      "hours": "h",
+      "minutes": "m"
+    },
+    "messages": {
+      "orderMarkedAsReady": "Order marked as ready",
+      "orderMarkedAsCompleted": "Order marked as completed",
+      "failedToUpdateOrder": "Failed to update order"
+    }
+  },
+  "filterControls": {
+    "searchPlaceholder": "Search orders...",
+    "clearFilters": "Clear Filters"
+  },
+  "orderTable": {
+    "noDataFound": "No data found"
   }
 }

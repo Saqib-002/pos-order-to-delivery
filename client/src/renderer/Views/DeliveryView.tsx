@@ -21,13 +21,10 @@ import { useOrderManagement } from "../hooks/useOrderManagement";
 
 export const DeliveryView = () => {
   const { t } = useTranslation();
-  const {
-      auth
-    } = useAuth();
-    const { token } = auth;
-    const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagement(
-      auth
-    );
+  const { auth } = useAuth();
+  const { token } = auth;
+  const { orders, filter, setFilter, refreshOrdersCallback } =
+    useOrderManagement(auth);
   useEffect(() => {
     if (!filter.selectedDate) {
       setFilter((prev) => ({
@@ -75,7 +72,7 @@ export const DeliveryView = () => {
   const assignDelivery = useCallback(
     async (order: Order) => {
       if (!deliveryPerson?.name.trim()) {
-        toast.error("Please enter delivery person name");
+        toast.error(t("deliveryView.messages.pleaseEnterDeliveryPersonName"));
         return;
       }
       try {
@@ -90,14 +87,14 @@ export const DeliveryView = () => {
           assignedAt: new Date(Date.now()).toISOString(),
         });
         if (!res) {
-          toast.error("Failed to assign delivery person");
+          toast.error(t("deliveryView.messages.failedToAssignDeliveryPerson"));
           return;
         }
         refreshOrdersCallback();
         setDeliveryPerson(null);
       } catch (error) {
         console.error("Failed to assign delivery:", error);
-        toast.error("Failed to assign delivery. Please try again.");
+        toast.error(t("deliveryView.messages.failedToAssignDelivery"));
       }
     },
     [deliveryPerson, token, refreshOrdersCallback]
@@ -111,14 +108,14 @@ export const DeliveryView = () => {
           deliveredAt: new Date(Date.now()).toISOString(),
         });
         if (!res) {
-          toast.error("Failed to mark as delivered");
+          toast.error(t("deliveryView.messages.failedToMarkAsDelivered"));
           return;
         }
         refreshOrdersCallback();
-        toast.success("Order marked as delivered");
+        toast.success(t("deliveryView.messages.orderMarkedAsDelivered"));
       } catch (error) {
         console.error("Failed to mark as delivered:", error);
-        toast.error("Failed to mark as delivered. Please try again.");
+        toast.error(t("deliveryView.messages.failedToMarkAsDeliveredRetry"));
       }
     },
     [token, refreshOrdersCallback]
@@ -127,19 +124,19 @@ export const DeliveryView = () => {
   const stats = useMemo(
     () => [
       {
-        title: "Ready for Delivery",
+        title: t("deliveryView.stats.readyForDelivery"),
         value: readyOrders.length,
         icon: <CircleCheckIcon className="size-6 text-green-600" />,
         bgColor: "bg-green-100",
       },
       {
-        title: "Out for Delivery",
+        title: t("deliveryView.stats.outForDelivery"),
         value: outForDeliveryOrders.length,
         icon: <ThunderIcon className="text-blue-600 size-6" />,
         bgColor: "bg-blue-100",
       },
       {
-        title: "Delivered Today",
+        title: t("deliveryView.stats.deliveredToday"),
         value: orders.filter((o) => {
           if (o.status.toLowerCase() !== "delivered") return false;
           const deliveredDate = new Date(o.id);
@@ -150,7 +147,7 @@ export const DeliveryView = () => {
         bgColor: "bg-gray-100",
       },
       {
-        title: "Active Drivers",
+        title: t("deliveryView.stats.activeDrivers"),
         value: new Set(
           outForDeliveryOrders.map((o) => o.deliveryPerson?.id).filter(Boolean)
         ).size,
@@ -158,7 +155,7 @@ export const DeliveryView = () => {
         bgColor: "bg-purple-100",
       },
     ],
-    [readyOrders, outForDeliveryOrders, orders]
+    [readyOrders, outForDeliveryOrders, orders, t]
   );
   const renderReadyOrderRow = (order: Order) => {
     const readyTime = new Date(order.readyAt || order.createdAt || "");
@@ -334,8 +331,10 @@ export const DeliveryView = () => {
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">
                     {readyOrders.length > 0
-                      ? "Orders ready to be assigned for delivery"
-                      : "All orders are either in kitchen or already assigned for delivery."}
+                      ? t("deliveryView.descriptions.ordersReadyToAssign")
+                      : t(
+                          "deliveryView.descriptions.allOrdersInKitchenOrAssigned"
+                        )}
                   </p>
                 </div>
                 <FilterControls filter={filter} setFilter={setFilter} />
@@ -344,13 +343,13 @@ export const DeliveryView = () => {
             <OrderTable
               data={readyOrders}
               columns={[
-                "Order ID",
-                "Customer",
-                "Contact",
-                "Address",
-                "Items",
-                "Ready Since",
-                "Actions",
+                t("deliveryView.table.orderId"),
+                t("deliveryView.table.customer"),
+                t("deliveryView.table.contact"),
+                t("deliveryView.table.address"),
+                t("deliveryView.table.items"),
+                t("deliveryView.table.readySince"),
+                t("deliveryView.table.actions"),
               ]}
               renderRow={renderReadyOrderRow}
             />
@@ -361,10 +360,12 @@ export const DeliveryView = () => {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
                     <h3 className="text-lg font-semibold text-black">
-                      Out for Delivery
+                      {t("deliveryView.table.outForDelivery")}
                     </h3>
                     <p className="text-sm text-gray-500 mt-1">
-                      Orders currently being delivered
+                      {t(
+                        "deliveryView.descriptions.ordersCurrentlyBeingDelivered"
+                      )}
                     </p>
                   </div>
                 </div>
@@ -372,12 +373,12 @@ export const DeliveryView = () => {
               <OrderTable
                 data={outForDeliveryOrders}
                 columns={[
-                  "Order ID",
-                  "Customer",
-                  "Address",
-                  "Driver",
-                  "Items",
-                  "Actions",
+                  t("deliveryView.table.orderId"),
+                  t("deliveryView.table.customer"),
+                  t("deliveryView.table.address"),
+                  t("deliveryView.table.driver"),
+                  t("deliveryView.table.items"),
+                  t("deliveryView.table.actions"),
                 ]}
                 renderRow={renderOutForDeliveryRow}
               />

@@ -410,6 +410,82 @@
     "subtitle": "Asignar y rastrear entregas de pedidos",
     "readyForDeliveryOrders": "Pedidos Listos para Entrega",
     "noOrdersReady": "No hay pedidos listos para entrega",
-    "delivered": "Entregado"
+    "delivered": "Entregado",
+    "stats": {
+      "readyForDelivery": "Listo para Entrega",
+      "outForDelivery": "En Camino",
+      "deliveredToday": "Entregado Hoy",
+      "activeDrivers": "Conductores Activos"
+    },
+    "descriptions": {
+      "ordersReadyToAssign": "Pedidos listos para ser asignados para entrega",
+      "allOrdersInKitchenOrAssigned": "Todos los pedidos están en cocina o ya asignados para entrega.",
+      "ordersCurrentlyBeingDelivered": "Pedidos siendo entregados actualmente"
+    },
+    "table": {
+      "orderId": "ID del Pedido",
+      "customer": "Cliente",
+      "contact": "Contacto",
+      "address": "Dirección",
+      "items": "Artículos",
+      "readySince": "Listo Desde",
+      "driver": "Conductor",
+      "actions": "Acciones",
+      "outForDelivery": "En Camino"
+    },
+    "messages": {
+      "pleaseEnterDeliveryPersonName": "Por favor ingresa el nombre del repartidor",
+      "failedToAssignDeliveryPerson": "Error al asignar repartidor",
+      "failedToAssignDelivery": "Error al asignar entrega. Por favor intenta de nuevo.",
+      "failedToMarkAsDelivered": "Error al marcar como entregado",
+      "orderMarkedAsDelivered": "Pedido marcado como entregado",
+      "failedToMarkAsDeliveredRetry": "Error al marcar como entregado. Por favor intenta de nuevo."
+    }
+  },
+  "kitchenView": {
+    "title": "Gestión de Cocina",
+    "subtitle": "Monitorear y gestionar pedidos en preparación",
+    "stats": {
+      "ordersInKitchen": "Pedidos en Cocina",
+      "highPriority": "Alta Prioridad",
+      "avgPrepTime": "Tiempo Promedio de Prep",
+      "avgPrepTimeValue": "~25 min"
+    },
+    "table": {
+      "priority": "Prioridad",
+      "orderId": "ID del Pedido",
+      "customer": "Cliente",
+      "items": "Artículos",
+      "timeInKitchen": "Tiempo en Cocina",
+      "actions": "Acciones",
+      "kitchenOrders": "Pedidos de Cocina",
+      "noOrdersMatch": "No hay pedidos que coincidan con tu búsqueda"
+    },
+    "priority": {
+      "high": "Alta",
+      "medium": "Media",
+      "low": "Baja"
+    },
+    "actions": {
+      "viewOrderDetails": "Ver Detalles del Pedido",
+      "markAsReady": "Marcar como Listo"
+    },
+    "addOns": "Complementos:",
+    "timeFormat": {
+      "hours": "h",
+      "minutes": "m"
+    },
+    "messages": {
+      "orderMarkedAsReady": "Pedido marcado como listo",
+      "orderMarkedAsCompleted": "Pedido marcado como completado",
+      "failedToUpdateOrder": "Error al actualizar el pedido"
+    }
+  },
+  "filterControls": {
+    "searchPlaceholder": "Buscar pedidos...",
+    "clearFilters": "Limpiar Filtros"
+  },
+  "orderTable": {
+    "noDataFound": "No se encontraron datos"
   }
 }

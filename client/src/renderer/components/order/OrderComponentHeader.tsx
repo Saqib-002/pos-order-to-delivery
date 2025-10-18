@@ -86,8 +86,8 @@ const OrderComponentHeader = ({
 
   return (
     <>
-      <div className="flex justify-between items-center px-4 py-2">
-        <div className="flex items-center gap-2">
+      <div className="flex justify-between items-center px-0 py-2">
+        <div className="flex items-center gap-0">
           {orderItems.length > 0 && (
             <CustomButton
               type="button"
@@ -96,12 +96,12 @@ const OrderComponentHeader = ({
                 refreshOrdersCallback();
               }}
               Icon={<ChevronLeftIcon className="size-6" />}
-              className="!p-0"
+              className="!p-0 !m-0"
               variant="transparent"
             />
           )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
           <div className="flex items-center gap-2">
             <input
               id="date-filter"

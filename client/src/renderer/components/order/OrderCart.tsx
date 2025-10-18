@@ -236,19 +236,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 </h3>
                 <div className="text-sm text-gray-600 space-y-1">
                   <div className="flex justify-between">
-                    <span>Base Product</span>
-                    <span>€{item.productPrice.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-500">
-                    <span>
-                      Tax (
-                      {calculateTaxPercentage(
-                        item.productPrice,
-                        item.productTax
-                      )}
-                      %)
-                    </span>
-                    <span>€{item.productTax.toFixed(2)}</span>
+                    <span>Base Price</span>
+                    <span>€{(item.productPrice + item.productTax).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Variant: {item.variantName}</span>
