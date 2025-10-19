@@ -216,7 +216,8 @@ export const MenuStructureComponent = () => {
                   description: menu.description,
                   imgUrl: menu.imgUrl,
                   price: menu.price,
-                  isAvailable: !menu.outstanding,
+                  // isAvailable: !menu.outstanding,
+                  isAvailable: true,
                   color: "orange",
                 }}
                 type="menu"

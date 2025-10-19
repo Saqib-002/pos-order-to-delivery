@@ -71,7 +71,6 @@ export const handleOrderChange = ({
 
           return updatedOrders;
         } else {
-          // Order doesn't exist locally, add it
           toast.info(`Order #${updatedOrder.orderId || "N/A"} synchronized`);
           return [...prevOrders, updatedOrder];
         }

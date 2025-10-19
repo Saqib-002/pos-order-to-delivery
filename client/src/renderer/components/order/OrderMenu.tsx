@@ -199,7 +199,7 @@ const OrderMenu = () => {
                                   imgUrl: menu.imgUrl,
                                   description: menu.description,
                                   price: menu.price,
-                                  color: menu.color || "indigo",
+                                  color: menu.color || "gray",
                                   isAvailable: true,
                                 }}
                                 type="menu"
