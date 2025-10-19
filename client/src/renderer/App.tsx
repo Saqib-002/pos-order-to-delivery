@@ -1,5 +1,5 @@
 import { VIEWS } from "@/constants";
-import { JSX, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { AccessDenied } from "./components/shared/AccessDenied";
 import { Navigation } from "./components/shared/Navigation";
@@ -16,6 +16,8 @@ import { UserManagement } from "./Views/UserManagement";
 import { useAuth } from "./contexts/AuthContext";
 import Configurations from "./Views/Configurations";
 import { OrderManagementProvider } from "./contexts/orderManagementContext";
+import i18n from "@/i18n";
+import { useConfigurations } from "./contexts/configurationContext";
 
 interface ViewConfig {
   component: JSX.Element;
@@ -25,6 +27,15 @@ interface ViewConfig {
 const App: React.FC = () => {
   const [view, setView] = useState<string>(VIEWS.LOGIN);
   const { auth, logout } = useAuth();
+  const { setLanguage } = useConfigurations();
+
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'es')) {
+      i18n.changeLanguage(savedLanguage);
+      setLanguage(savedLanguage as 'en' | 'es');
+    }
+  }, [])
   const handleLogin = () => {
     setView(VIEWS.ORDER);
   };

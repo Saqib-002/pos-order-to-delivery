@@ -61,6 +61,8 @@ export const updateConfigurations = async (
             updates.logo = await uploadImg(
                 updates.logo,true
             );
+        }else if (updates.logo){
+            updates.logo = updates.logo?.split("/").at(-1);
         }
         const result =
             await ConfigurationsDatabaseOperations.updateConfigurations(

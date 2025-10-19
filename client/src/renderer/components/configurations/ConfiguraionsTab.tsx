@@ -15,7 +15,7 @@ const ConfigurationsTab = () => {
   const {
     auth: { token },
   } = useAuth();
-  const { configurations, setConfigurations } = useConfigurations();
+  const { configurations, setConfigurations, language, setLanguage } = useConfigurations();
   const { i18n, t } = useTranslation();
 
   const getConfigurations = async () => {
@@ -31,6 +31,11 @@ const ConfigurationsTab = () => {
       if (res.data.logo) {
         setLogoPreview(res.data.logo);
       }
+    }
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'es')) {
+      i18n.changeLanguage(savedLanguage);
+      setLanguage(savedLanguage as 'en' | 'es');
     }
   };
 
@@ -103,11 +108,12 @@ const ConfigurationsTab = () => {
                     label: t("configurations.languageOptions.es"),
                   },
                 ]}
-                value={configurations.language || "en"}
+                value={language || "en"}
                 onChange={(val) => {
                   const lang = val as "en" | "es";
                   i18n.changeLanguage(lang);
-                  setConfigurations({ ...configurations, language: lang });
+                  setLanguage(lang);
+                  localStorage.setItem('language', lang);
                 }}
                 className="w-full"
                 portalClassName="language-select-portal"
@@ -156,6 +162,59 @@ const ConfigurationsTab = () => {
               required={false}
               inputClasses="bg-white"
             />
+            <div>
+              <h3>{t("configurations.kitchenPriorityLabel")}</h3>
+              <div className="flex gap-4">
+                <CustomInput
+                  type="number"
+                  value={String(configurations.lowKitchenPriorityTime) || "0"}
+                  onChange={(e) =>
+                    setConfigurations({
+                      ...configurations,
+                      lowKitchenPriorityTime: Number(e.target.value),
+                    })
+                  }
+                  label={t("configurations.lowKitchenPriorityTime")}
+                  name="low"
+                  placeholder="0"
+                  min="0"
+                  required={false}
+                  inputClasses="bg-white"
+                />
+                <CustomInput
+                  type="number"
+                  value={String(configurations.mediumKitchenPriorityTime) || "0"}
+                  onChange={(e) =>
+                    setConfigurations({
+                      ...configurations,
+                      mediumKitchenPriorityTime: Number(e.target.value),
+                    })
+                  }
+                  min="0"
+                  label={t("configurations.mediumKitchenPriorityTime")}
+                  name="medium"
+                  placeholder="0"
+                  required={false}
+                  inputClasses="bg-white"
+                />
+                <CustomInput
+                  type="number"
+                  value={String(configurations.highKitchenPriorityTime) || "0"}
+                  onChange={(e) =>
+                    setConfigurations({
+                      ...configurations,
+                      highKitchenPriorityTime: Number(e.target.value),
+                    })
+                  }
+                  min="0"
+                  label={t("configurations.highKitchenPriorityTime")}
+                  name="high"
+                  placeholder="0"
+                  required={false}
+                  inputClasses="bg-white"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Company Logo */}
@@ -184,7 +243,7 @@ const ConfigurationsTab = () => {
                 </div>
               ) : (
                 <div className="flex flex-col items-center text-gray-500">
-                  <ImgIcon className="size-16 mb-3"/>
+                  <ImgIcon className="size-16 mb-3" />
                   <p className="text-sm font-medium">
                     {t("configurations.uploadLogoPrompt")}
                   </p>
@@ -197,7 +256,7 @@ const ConfigurationsTab = () => {
 
         <CustomButton
           type="submit"
-          className="w-36 mx-auto"
+          className="w-36"
           label={t("configurations.save")}
         />
       </form>

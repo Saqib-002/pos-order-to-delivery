@@ -8,7 +8,9 @@ export async function up(knex) {
     table.string('name').notNullable();
     table.string('address').notNullable();
     table.string('logo').notNullable();
-    table.string('language').defaultTo('en');
+    table.integer('lowKitchenPriorityTime')
+    table.integer('mediumKitchenPriorityTime')
+    table.integer('highKitchenPriorityTime')
     table.string('vatNumber');
   });
 };

@@ -1,15 +1,19 @@
 import { createContext, useContext, useState } from "react";
 
 interface ConfigurationType {
-  name: string;
+  name?: string;
   address: string;
   logo: string;
-  language?: "en" | "es";
   vatNumber?: string;
+  lowKitchenPriorityTime?: number;
+  mediumKitchenPriorityTime?: number;
+  highKitchenPriorityTime?: number;
 }
 interface ConfigurationContextType {
   configurations: ConfigurationType;
   setConfigurations: React.Dispatch<React.SetStateAction<ConfigurationType>>;
+  language: "en" | "es";
+  setLanguage: React.Dispatch<React.SetStateAction<"en" | "es">>
 }
 
 const ConfigurationContext = createContext<ConfigurationContextType | null>(
@@ -29,22 +33,21 @@ export const ConfigurationsProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [configurations, setConfigurations] = useState<{
-    name?: string;
-    address: string;
-    logo: string;
-    language?: "en" | "es";
-    vatNumber?: string;
-  }>({
+  const [configurations, setConfigurations] = useState<ConfigurationType>({
     name: "",
     address: "",
     logo: "",
-    language: "en",
     vatNumber: "",
+    lowKitchenPriorityTime: 0,
+    mediumKitchenPriorityTime: 0,
+    highKitchenPriorityTime: 0,
   });
+  const [language, setLanguage] = useState("en");
   const value = {
     configurations,
     setConfigurations,
+    language,
+    setLanguage
   } as ConfigurationContextType;
   return (
     <ConfigurationContext.Provider value={value}>

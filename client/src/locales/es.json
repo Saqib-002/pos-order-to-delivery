@@ -1,491 +1,494 @@
-
-  {
+{
     "greeting": "¡Hola!",
     "welcome": "Bienvenido a nuestro sitio web.",
 
     "configurations": {
-      "title": "Configuraciones",
-      "languageLabel": "Idioma",
-      "languageOptions": {
-        "en": "Inglés",
-        "es": "Español"
-      },
-      "companyName": "Nombre de la empresa",
-      "companyNamePlaceholder": "Ingrese el nombre de la empresa",
-      "companyAddress": "Dirección de la empresa",
-      "companyAddressPlaceholder": "Ingrese la dirección de la empresa",
-      "vatNumber": "Número de IVA",
-      "vatNumberPlaceholder": "Ingrese el número de IVA",
-      "companyLogo": "Logo de la empresa",
-      "uploadLogoPrompt": "Sube el logo de tu empresa",
-      "uploadLogoSub": "PNG, JPG hasta 2MB",
-      "clickChangeLogo": "Haz clic para cambiar el logo",
-      "save": "Guardar",
-      "savedSuccess": "Configuraciones guardadas correctamente",
-      "errorGetting": "Error al obtener las configuraciones",
-      "errorSaving": "Error al guardar las configuraciones"
+        "title": "Configuraciones",
+        "languageLabel": "Idioma",
+        "languageOptions": {
+            "en": "Inglés",
+            "es": "Español"
+        },
+        "companyName": "Nombre de la empresa",
+        "companyNamePlaceholder": "Ingrese el nombre de la empresa",
+        "companyAddress": "Dirección de la empresa",
+        "companyAddressPlaceholder": "Ingrese la dirección de la empresa",
+        "vatNumber": "Número de IVA",
+        "vatNumberPlaceholder": "Ingrese el número de IVA",
+        "kitchenPriorityLabel": "Tiempo de prioridad en la cocina (en minutos)",
+        "lowKitchenPriorityTime": "Bajo",
+        "mediumKitchenPriorityTime": "Medio",
+        "highKitchenPriorityTime": "Alto",
+        "companyLogo": "Logo de la empresa",
+        "uploadLogoPrompt": "Sube el logo de tu empresa",
+        "uploadLogoSub": "PNG, JPG hasta 2MB",
+        "clickChangeLogo": "Haz clic para cambiar el logo",
+        "save": "Guardar",
+        "savedSuccess": "Configuraciones guardadas correctamente",
+        "errorGetting": "Error al obtener las configuraciones",
+        "errorSaving": "Error al guardar las configuraciones"
     },
 
     "printers": {
-      "title": "Impresoras",
-      "subtitle": "Administrar impresoras",
-      "addPrinter": "Agregar impresora",
-      "manageDescription": "Agrega y administra tus impresoras",
-      "connectedPrinters": "Impresoras conectadas",
-      "noPrinters": "Aún no hay impresoras conectadas. Agrega una arriba.",
-      "table": {
-        "displayName": "Nombre para mostrar",
-        "printerName": "Nombre de la impresora",
-        "createdAt": "Creado el",
-        "mainPrinter": "Impresora principal",
-        "actions": "Acciones"
-      },
-      "deleteTitle": "Eliminar impresora",
-      "deleteMessage": "¿Estás seguro de que deseas eliminar esta impresora? Cada producto asociado a esta impresora será desvinculado.",
-      "deleteConfirm": "Eliminar",
-      "deleteCancel": "Cancelar",
-      "deletedSuccess": "Impresora eliminada correctamente",
-      "deletedFailed": "No se pudo eliminar la impresora",
-      "deletedError": "Ocurrió un error al eliminar la impresora",
-      "yes": "Sí",
-      "no": "No"
+        "title": "Impresoras",
+        "subtitle": "Administrar impresoras",
+        "addPrinter": "Agregar impresora",
+        "manageDescription": "Agrega y administra tus impresoras",
+        "connectedPrinters": "Impresoras conectadas",
+        "noPrinters": "Aún no hay impresoras conectadas. Agrega una arriba.",
+        "table": {
+            "displayName": "Nombre para mostrar",
+            "printerName": "Nombre de la impresora",
+            "createdAt": "Creado el",
+            "mainPrinter": "Impresora principal",
+            "actions": "Acciones"
+        },
+        "deleteTitle": "Eliminar impresora",
+        "deleteMessage": "¿Estás seguro de que deseas eliminar esta impresora? Cada producto asociado a esta impresora será desvinculado.",
+        "deleteConfirm": "Eliminar",
+        "deleteCancel": "Cancelar",
+        "deletedSuccess": "Impresora eliminada correctamente",
+        "deletedFailed": "No se pudo eliminar la impresora",
+        "deletedError": "Ocurrió un error al eliminar la impresora",
+        "yes": "Sí",
+        "no": "No"
     },
-  "userManagement": {
-    "title": "Administración de usuarios",
-    "subtitle": "Administra los usuarios del sistema y sus roles",
-    "addUser": "Agregar usuario",
-    "totalUsers": "Usuarios totales",
-    "admins": "Admins",
-    "staff": "Personal",
-    "kitchenManager": "Cocina/Gerente",
-    "searchPlaceholder": "Buscar usuarios...",
-    "noUsersTitle": "No se encontraron usuarios",
-    "noUsersFirst": "Comienza agregando tu primer usuario.",
-    "noUsersTry": "Intenta ajustar tu búsqueda o filtro de roles.",
-    "table": {
-      "user": "Usuario",
-      "role": "Rol",
-      "email": "Correo electrónico",
-      "actions": "Acciones"
+    "userManagement": {
+        "title": "Administración de usuarios",
+        "subtitle": "Administra los usuarios del sistema y sus roles",
+        "addUser": "Agregar usuario",
+        "totalUsers": "Usuarios totales",
+        "admins": "Admins",
+        "staff": "Personal",
+        "kitchenManager": "Cocina/Gerente",
+        "searchPlaceholder": "Buscar usuarios...",
+        "noUsersTitle": "No se encontraron usuarios",
+        "noUsersFirst": "Comienza agregando tu primer usuario.",
+        "noUsersTry": "Intenta ajustar tu búsqueda o filtro de roles.",
+        "table": {
+            "user": "Usuario",
+            "role": "Rol",
+            "email": "Correo electrónico",
+            "actions": "Acciones"
+        },
+        "modal": {
+            "addNew": "Agregar nuevo usuario",
+            "edit": "Editar usuario",
+            "username": "Nombre de usuario",
+            "password": "Contraseña",
+            "newPassword": "Nueva contraseña",
+            "fullName": "Nombre completo",
+            "email": "Correo electrónico",
+            "role": "Rol",
+            "cancel": "Cancelar",
+            "add": "Agregar usuario",
+            "update": "Actualizar usuario"
+        },
+        "roles": {
+            "all": "Todos",
+            "admin": "Admin",
+            "staff": "Personal",
+            "kitchen": "Cocina",
+            "manager": "Gerente"
+        },
+        "validation": {
+            "emailRequired": "El correo es obligatorio",
+            "emailInvalid": "Por favor ingresa una dirección de correo válida",
+            "usernameRequired": "Por favor ingresa un nombre de usuario",
+            "nameRequired": "Por favor ingresa un nombre",
+            "passwordRequired": "Por favor ingresa una contraseña"
+        },
+        "messages": {
+            "fetchFailed": "Error al obtener usuarios",
+            "addFailed": "Error al agregar usuario",
+            "updateFailed": "Error al actualizar usuario",
+            "deleteFailed": "Error al eliminar usuario",
+            "usernameTaken": "Nombre de usuario ya en uso",
+            "added": "Usuario agregado correctamente",
+            "updated": "Usuario actualizado correctamente",
+            "deleted": "Usuario eliminado correctamente"
+        },
+        "deleteConfirmTitle": "Eliminar usuario",
+        "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar este usuario?",
+        "yes": "Sí",
+        "no": "No"
     },
-    "modal": {
-      "addNew": "Agregar nuevo usuario",
-      "edit": "Editar usuario",
-      "username": "Nombre de usuario",
-      "password": "Contraseña",
-      "newPassword": "Nueva contraseña",
-      "fullName": "Nombre completo",
-      "email": "Correo electrónico",
-      "role": "Rol",
-      "cancel": "Cancelar",
-      "add": "Agregar usuario",
-      "update": "Actualizar usuario"
-    },
-    "roles": {
-      "all": "Todos",
-      "admin": "Admin",
-      "staff": "Personal",
-      "kitchen": "Cocina",
-      "manager": "Gerente"
-    },
-    "validation": {
-      "emailRequired": "El correo es obligatorio",
-      "emailInvalid": "Por favor ingresa una dirección de correo válida",
-      "usernameRequired": "Por favor ingresa un nombre de usuario",
-      "nameRequired": "Por favor ingresa un nombre",
-      "passwordRequired": "Por favor ingresa una contraseña"
-    },
-    "messages": {
-      "fetchFailed": "Error al obtener usuarios",
-      "addFailed": "Error al agregar usuario",
-      "updateFailed": "Error al actualizar usuario",
-      "deleteFailed": "Error al eliminar usuario",
-      "usernameTaken": "Nombre de usuario ya en uso",
-      "added": "Usuario agregado correctamente",
-      "updated": "Usuario actualizado correctamente",
-      "deleted": "Usuario eliminado correctamente"
-    },
-    "deleteConfirmTitle": "Eliminar usuario",
-    "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar este usuario?",
-    "yes": "Sí",
-    "no": "No"
-  },
-  "reports": {
-    "title": "Análisis e Informes",
-    "subtitle": "Información completa sobre el rendimiento de pedidos y tendencias",
-    "totalOrders": "Total de Pedidos",
-    "delivered": "Delivered/Completed",
-    "avgDeliveryTime": "Tiempo Promedio de Entrega",
-    "inProgress": "En Progreso",
-    "successRate": "Tasa de Éxito",
-    "minutes": "minutos",
-    "topOrderedItems": "Artículos Más Pedidos",
-    "topOrderedMenus": "Menús Más Pedidos",
-    "orderDetails": "Detalles del Pedido",
-    "orderId": "ID del Pedido",
-    "customer": "Cliente",
-    "items": "Artículos",
-    "status": "Estado",
-    "time": "Hora",
-    "noOrdersFound": "No se encontraron pedidos",
-    "noOrdersSubtitle": "Intenta ajustar tu rango de fechas o selección de período.",
-    "showingOrders": "Mostrando los primeros 20 pedidos de {{total}} pedidos totales",
-    "statuses": {
-      "completed": "Completado",
-      "delivered": "Entregado",
-      "sentToKitchen": "Enviado a Cocina",
-      "outForDelivery": "En Camino",
-      "cancelled": "Cancelado",
-      "readyForDelivery": "Listo para Entrega"
-    },
-    "errors": {
-      "fetchFailed": "Error al obtener análisis"
-    },
-    "components": {
-      "statusDistribution": {
-        "title": "Distribución de Estado de Pedidos",
-        "noOrders": "No hay pedidos en el período seleccionado"
-      },
-      "hourlyDistribution": {
-        "title": "Distribución Horaria de Pedidos",
-        "noOrders": "No hay pedidos en el período seleccionado"
-      },
-      "dateRangeSelector": {
-        "reportPeriod": "Período del Informe",
-        "periods": {
-          "today": "Hoy",
-          "week": "Semana",
-          "month": "Mes",
-          "custom": "Personalizado"
+    "reports": {
+        "title": "Análisis e Informes",
+        "subtitle": "Información completa sobre el rendimiento de pedidos y tendencias",
+        "totalOrders": "Total de Pedidos",
+        "delivered": "Delivered/Completed",
+        "avgDeliveryTime": "Tiempo Promedio de Entrega",
+        "inProgress": "En Progreso",
+        "successRate": "Tasa de Éxito",
+        "minutes": "minutos",
+        "topOrderedItems": "Artículos Más Pedidos",
+        "topOrderedMenus": "Menús Más Pedidos",
+        "orderDetails": "Detalles del Pedido",
+        "orderId": "ID del Pedido",
+        "customer": "Cliente",
+        "items": "Artículos",
+        "status": "Estado",
+        "time": "Hora",
+        "noOrdersFound": "No se encontraron pedidos",
+        "noOrdersSubtitle": "Intenta ajustar tu rango de fechas o selección de período.",
+        "showingOrders": "Mostrando los primeros 20 pedidos de {{total}} pedidos totales",
+        "statuses": {
+            "completed": "Completado",
+            "delivered": "Entregado",
+            "sentToKitchen": "Enviado a Cocina",
+            "outForDelivery": "En Camino",
+            "cancelled": "Cancelado",
+            "readyForDelivery": "Listo para Entrega"
+        },
+        "errors": {
+            "fetchFailed": "Error al obtener análisis"
+        },
+        "components": {
+            "statusDistribution": {
+                "title": "Distribución de Estado de Pedidos",
+                "noOrders": "No hay pedidos en el período seleccionado"
+            },
+            "hourlyDistribution": {
+                "title": "Distribución Horaria de Pedidos",
+                "noOrders": "No hay pedidos en el período seleccionado"
+            },
+            "dateRangeSelector": {
+                "reportPeriod": "Período del Informe",
+                "periods": {
+                    "today": "Hoy",
+                    "week": "Semana",
+                    "month": "Mes",
+                    "custom": "Personalizado"
+                }
+            },
+            "topItems": {
+                "noItems": "No se ordenaron artículos en el período seleccionado"
+            }
         }
-      },
-      "topItems": {
-        "noItems": "No se ordenaron artículos en el período seleccionado"
-      }
+    },
+    "login": {
+        "welcomeBack": "Bienvenido de Nuevo",
+        "signInSubtitle": "Inicia sesión en tu cuenta para continuar",
+        "username": "Nombre de Usuario",
+        "password": "Contraseña",
+        "usernamePlaceholder": "Ingresa tu nombre de usuario",
+        "passwordPlaceholder": "Ingresa tu contraseña",
+        "signingIn": "Iniciando sesión...",
+        "signIn": "Iniciar Sesión",
+        "restaurantInterior": "Interior del Restaurante",
+        "restaurantLogo": "Logo del Restaurante"
+    },
+    "manageOrders": {
+        "title": "Administrar Pedidos",
+        "subtitle": "Ver y administrar todos los pedidos con opciones de filtrado avanzadas",
+        "searchOrders": "Buscar Pedidos",
+        "searchPlaceholder": "Buscar por número de pedido...",
+        "filterByDate": "Filtrar por Fecha",
+        "deliveryPerson": "Repartidor",
+        "paymentStatus": "Estado de Pago",
+        "allDeliveryPersons": "Todos los Repartidores",
+        "allPaymentStatuses": "Todos los Estados de Pago",
+        "clearAllFilters": "Limpiar Todos los Filtros",
+        "bulkPayment": "Pago Masivo",
+        "showingOrders": "Mostrando {{filtered}} de {{total}} pedidos",
+        "lastUpdated": "Última actualización: {{time}}",
+        "noOrdersMatch": "No hay pedidos que coincidan con tus filtros",
+        "noOrdersFound": "No se encontraron pedidos",
+        "table": {
+            "orderNumber": "Pedido #",
+            "customer": "Cliente",
+            "orderType": "Tipo de Pedido",
+            "paymentStatus": "Estado de Pago",
+            "deliveryPerson": "Repartidor",
+            "total": "Total",
+            "created": "Creado",
+            "actions": "Acciones"
+        },
+        "actions": {
+            "viewOrder": "Ver Pedido",
+            "printOrder": "Imprimir Pedido",
+            "processPayment": "Procesar Pago"
+        },
+        "statuses": {
+            "notAssigned": "No asignado",
+            "nA": "N/A"
+        }
+    },
+    "orderDetailsModal": {
+        "title": "Artículos del Pedido - K{{orderId}}",
+        "created": "Creado: {{date}}",
+        "customer": "Cliente",
+        "deliveryAddress": "Dirección de Entrega",
+        "orderType": "Tipo de Pedido",
+        "paymentStatus": "Estado de Pago",
+        "deliveryPerson": "Repartidor",
+        "items": "Artículos",
+        "quantity": "Cant",
+        "price": "Precio",
+        "total": "Total",
+        "subtotal": "Subtotal",
+        "tax": "Impuesto",
+        "deliveryFee": "Tarifa de Entrega",
+        "grandTotal": "Total General",
+        "close": "Cerrar",
+        "customerInformation": "Información del Cliente",
+        "name": "Nombre",
+        "phone": "Teléfono",
+        "address": "Dirección",
+        "orderInformation": "Información del Pedido",
+        "status": "Estado",
+        "updated": "Actualizado",
+        "paymentInformation": "Información de Pago",
+        "totalAmount": "Cantidad Total",
+        "deliveryInformation": "Información de Entrega",
+        "vehicleType": "Tipo de Vehículo",
+        "assignedAt": "Asignado el",
+        "deliveredAt": "Entregado el",
+        "orderItems": "Artículos del Pedido",
+        "addOns": "Complementos:",
+        "each": "cada uno",
+        "noItemsFound": "No se encontraron artículos",
+        "orderNotes": "Notas del Pedido",
+        "notRecorded": "No registrado",
+        "notAssignedYet": "Aún no asignado"
+    },
+    "bulkPaymentModal": {
+        "title": "Procesamiento de Pagos Masivos",
+        "subtitle": "Procesar pagos para múltiples pedidos entregados por repartidor",
+        "selectDeliveryPerson": "Seleccionar Repartidor",
+        "chooseDeliveryPerson": "Elige un repartidor...",
+        "pleaseSelectDeliveryPerson": "Por favor selecciona un repartidor",
+        "allDeliveryPersons": "Todos los Repartidores",
+        "paymentMethod": "Método de Pago",
+        "amount": "Cantidad",
+        "addPayment": "Agregar",
+        "removePayment": "Eliminar",
+        "totalAmount": "Cantidad Total",
+        "processPayments": "Procesar Pago Masivo",
+        "cancel": "Cancelar",
+        "processing": "Procesando...",
+        "success": "Pagos procesados correctamente",
+        "error": "Error al procesar pagos",
+        "allPayments": "Todos los Pagos:",
+        "pending": "PENDIENTE",
+        "readyToProcess": "Listo para procesar pago",
+        "ordersSummary": "Resumen de Pedidos",
+        "deliveryPerson": "Repartidor",
+        "ordersCount": "Cantidad de Pedidos",
+        "totalAmountDue": "Cantidad Total Debida",
+        "orders": "pedidos",
+        "paymentMethods": "Métodos de Pago",
+        "total": "Total: €{{paid}} / €{{total}}",
+        "cash": "Efectivo",
+        "card": "Tarjeta",
+        "add": "Agregar"
+    },
+    "individualPaymentModal": {
+        "title": "Procesar Pago",
+        "subtitle": "Completar el pago para este pedido",
+        "orderDetails": "Detalles del Pedido",
+        "orderId": "ID del Pedido",
+        "customer": "Cliente",
+        "totalAmount": "Cantidad Total",
+        "remainingAmount": "Cantidad Restante",
+        "deliveryPerson": "Repartidor",
+        "paymentMethods": "Métodos de Pago",
+        "total": "Total: €{{paid}} / €{{total}}",
+        "paymentMethod": "Método de Pago",
+        "cash": "Efectivo",
+        "card": "Tarjeta",
+        "amount": "Cantidad",
+        "addPayment": "Agregar",
+        "removePayment": "Eliminar",
+        "processPayment": "Procesar Pago",
+        "cancel": "Cancelar",
+        "processing": "Procesando...",
+        "allPayments": "Todos los Pagos:",
+        "pending": "PENDIENTE",
+        "readyToProcess": "Listo para procesar pago",
+        "noDeliveryPersonAssigned": "No hay repartidor asignado",
+        "pleaseAddPaymentMethod": "Por favor agrega al menos un método de pago",
+        "errors": {
+            "enterValidAmount": "Por favor ingresa una cantidad válida",
+            "noOrderSelected": "No hay pedido seleccionado",
+            "totalExceedsOrder": "El pago total no puede exceder el total del pedido",
+            "addPaymentMethod": "Por favor agrega al menos un método de pago",
+            "updateFailed": "Error al actualizar el pago. Por favor intenta de nuevo.",
+            "processingError": "Ocurrió un error al procesar el pago. Por favor intenta de nuevo.",
+            "selectDeliveryPerson": "Por favor selecciona un repartidor primero",
+            "totalExceedsRemaining": "El pago total no puede exceder la cantidad restante",
+            "noOrdersFound": "No se encontraron pedidos para este repartidor",
+            "bulkProcessingError": "Ocurrió un error al procesar el pago masivo. Por favor intenta de nuevo."
+        },
+        "success": {
+            "paymentCompleted": "Pago completado exitosamente: {{paymentString}}",
+            "partialPayment": "Pago parcial registrado: {{paymentString}}. Restante: €{{remaining}}",
+            "bulkPaymentSuccess": "Pago masivo procesado exitosamente para {{count}} pedidos: {{paymentString}}",
+            "bulkPaymentPartial": "Pago procesado para {{successCount}} de {{totalCount}} pedidos"
+        }
+    },
+    "deliveryManagement": {
+        "title": "Gestión de Entregas",
+        "subtitle": "Gestionar personal de entrega y su información de vehículos",
+        "deliveryPersonnel": "Personal de Entrega",
+        "addAndManageStaff": "Agregar y gestionar personal de entrega",
+        "addDeliveryPerson": "Agregar Repartidor",
+        "deliveryPersonnelCount": "Personal de Entrega",
+        "bikes": "Bicicletas",
+        "motorcycles": "Motocicletas",
+        "cars": "Autos",
+        "scooters": "Scooters",
+        "searchDeliveryPersonnel": "Buscar personal de entrega...",
+        "all": "Todos",
+        "bike": "Bicicleta",
+        "motorcycle": "Motocicleta",
+        "car": "Auto",
+        "scooter": "Scooter",
+        "deliveryPersonnelTable": "Personal de Entrega ({{count}})",
+        "getStartedMessage": "Comienza agregando tu primer repartidor.",
+        "adjustFiltersMessage": "Intenta ajustar tu búsqueda o filtro de vehículo.",
+        "noDeliveryPersonnelFound": "No se encontró personal de entrega",
+        "deliveryPerson": "Repartidor",
+        "vehicle": "Vehículo",
+        "contact": "Contacto",
+        "license": "Licencia",
+        "totalAssigned": "Total Asignados",
+        "totalDelivered": "Total Entregados",
+        "totalCancelled": "Total Cancelados",
+        "avgDeliveryTime": "Tiempo Promedio de Entrega",
+        "actions": "Acciones",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "deliveryPersonnelLabel": "Personal de Entrega",
+        "minutes": "min",
+        "errors": {
+            "fetchFailed": "Error al obtener personal de entrega",
+            "enterName": "Por favor ingresa un nombre",
+            "enterLicenseNumber": "Por favor ingresa un número de licencia",
+            "emailRequired": "El email es requerido",
+            "validEmail": "Por favor ingresa una dirección de email válida",
+            "phoneRequired": "El número de teléfono es requerido",
+            "validPhone": "Por favor ingresa un número de teléfono válido",
+            "phoneMinDigits": "El número de teléfono debe tener al menos 10 dígitos",
+            "phoneMaxDigits": "El número de teléfono no puede exceder 15 dígitos",
+            "emailExists": "El email ya existe",
+            "updateFailed": "Error al actualizar repartidor",
+            "addFailed": "Error al agregar repartidor",
+            "deleteConfirm": "¿Estás seguro de que quieres eliminar este repartidor?",
+            "fetchStatsFailed": "Error al obtener estadísticas del repartidor",
+            "cannotDeleteWithOrders": "No se puede eliminar repartidor con {{count}} pedidos asignados",
+            "deleteFailed": "Error al eliminar repartidor"
+        },
+        "success": {
+            "updated": "Repartidor actualizado exitosamente",
+            "added": "Repartidor agregado exitosamente",
+            "deleted": "Repartidor eliminado exitosamente"
+        }
+    },
+    "deliveryPersonModal": {
+        "editTitle": "Editar Repartidor",
+        "addTitle": "Agregar Nuevo Repartidor",
+        "fullName": "Nombre Completo *",
+        "fullNamePlaceholder": "Ingresa nombre completo",
+        "email": "Email *",
+        "emailPlaceholder": "Ingresa dirección de email",
+        "phoneNumber": "Número de Teléfono",
+        "phoneNumberPlaceholder": "Ingresa número de teléfono",
+        "licenseNumber": "Número de Licencia *",
+        "licenseNumberPlaceholder": "Ingresa número de licencia",
+        "vehicleType": "Tipo de Vehículo",
+        "selectVehicleType": "Selecciona tipo de vehículo",
+        "cancel": "Cancelar",
+        "updateDeliveryPerson": "Actualizar Repartidor",
+        "addDeliveryPerson": "Agregar Repartidor"
+    },
+    "deliveryPersonInput": {
+        "selectDeliveryPerson": "Seleccionar Repartidor",
+        "chooseDeliveryPerson": "Elige un repartidor...",
+        "quickAssign": "Asignación Rápida"
+    },
+    "deliveryView": {
+        "title": "Gestión de Entregas",
+        "subtitle": "Asignar y rastrear entregas de pedidos",
+        "readyForDeliveryOrders": "Pedidos Listos para Entrega",
+        "noOrdersReady": "No hay pedidos listos para entrega",
+        "delivered": "Entregado",
+        "stats": {
+            "readyForDelivery": "Listo para Entrega",
+            "outForDelivery": "En Camino",
+            "deliveredToday": "Entregado Hoy",
+            "activeDrivers": "Conductores Activos"
+        },
+        "descriptions": {
+            "ordersReadyToAssign": "Pedidos listos para ser asignados para entrega",
+            "allOrdersInKitchenOrAssigned": "Todos los pedidos están en cocina o ya asignados para entrega.",
+            "ordersCurrentlyBeingDelivered": "Pedidos siendo entregados actualmente"
+        },
+        "table": {
+            "orderId": "ID del Pedido",
+            "customer": "Cliente",
+            "contact": "Contacto",
+            "address": "Dirección",
+            "items": "Artículos",
+            "readySince": "Listo Desde",
+            "driver": "Conductor",
+            "actions": "Acciones",
+            "outForDelivery": "En Camino"
+        },
+        "messages": {
+            "pleaseEnterDeliveryPersonName": "Por favor ingresa el nombre del repartidor",
+            "failedToAssignDeliveryPerson": "Error al asignar repartidor",
+            "failedToAssignDelivery": "Error al asignar entrega. Por favor intenta de nuevo.",
+            "failedToMarkAsDelivered": "Error al marcar como entregado",
+            "orderMarkedAsDelivered": "Pedido marcado como entregado",
+            "failedToMarkAsDeliveredRetry": "Error al marcar como entregado. Por favor intenta de nuevo."
+        }
+    },
+    "kitchenView": {
+        "title": "Gestión de Cocina",
+        "subtitle": "Monitorear y gestionar pedidos en preparación",
+        "stats": {
+            "ordersInKitchen": "Pedidos en Cocina",
+            "highPriority": "Alta Prioridad",
+            "avgPrepTime": "Tiempo Promedio de Prep",
+            "avgPrepTimeValue": "~25 min"
+        },
+        "table": {
+            "priority": "Prioridad",
+            "orderId": "ID del Pedido",
+            "customer": "Cliente",
+            "items": "Artículos",
+            "timeInKitchen": "Tiempo en Cocina",
+            "actions": "Acciones",
+            "kitchenOrders": "Pedidos de Cocina",
+            "noOrdersMatch": "No hay pedidos que coincidan con tu búsqueda"
+        },
+        "priority": {
+            "high": "Alta",
+            "medium": "Media",
+            "low": "Baja"
+        },
+        "actions": {
+            "viewOrderDetails": "Ver Detalles del Pedido",
+            "markAsReady": "Marcar como Listo"
+        },
+        "addOns": "Complementos:",
+        "timeFormat": {
+            "hours": "h",
+            "minutes": "m"
+        },
+        "messages": {
+            "orderMarkedAsReady": "Pedido marcado como listo",
+            "orderMarkedAsCompleted": "Pedido marcado como completado",
+            "failedToUpdateOrder": "Error al actualizar el pedido"
+        }
+    },
+    "filterControls": {
+        "searchPlaceholder": "Buscar pedidos...",
+        "clearFilters": "Limpiar Filtros"
+    },
+    "orderTable": {
+        "noDataFound": "No se encontraron datos"
     }
-  },
-  "login": {
-    "welcomeBack": "Bienvenido de Nuevo",
-    "signInSubtitle": "Inicia sesión en tu cuenta para continuar",
-    "username": "Nombre de Usuario",
-    "password": "Contraseña",
-    "usernamePlaceholder": "Ingresa tu nombre de usuario",
-    "passwordPlaceholder": "Ingresa tu contraseña",
-    "signingIn": "Iniciando sesión...",
-    "signIn": "Iniciar Sesión",
-    "restaurantInterior": "Interior del Restaurante",
-    "restaurantLogo": "Logo del Restaurante"
-  },
-  "manageOrders": {
-    "title": "Administrar Pedidos",
-    "subtitle": "Ver y administrar todos los pedidos con opciones de filtrado avanzadas",
-    "searchOrders": "Buscar Pedidos",
-    "searchPlaceholder": "Buscar por número de pedido...",
-    "filterByDate": "Filtrar por Fecha",
-    "deliveryPerson": "Repartidor",
-    "paymentStatus": "Estado de Pago",
-    "allDeliveryPersons": "Todos los Repartidores",
-    "allPaymentStatuses": "Todos los Estados de Pago",
-    "clearAllFilters": "Limpiar Todos los Filtros",
-    "bulkPayment": "Pago Masivo",
-    "showingOrders": "Mostrando {{filtered}} de {{total}} pedidos",
-    "lastUpdated": "Última actualización: {{time}}",
-    "noOrdersMatch": "No hay pedidos que coincidan con tus filtros",
-    "noOrdersFound": "No se encontraron pedidos",
-    "table": {
-      "orderNumber": "Pedido #",
-      "customer": "Cliente",
-      "orderType": "Tipo de Pedido",
-      "paymentStatus": "Estado de Pago",
-      "deliveryPerson": "Repartidor",
-      "total": "Total",
-      "created": "Creado",
-      "actions": "Acciones"
-    },
-    "actions": {
-      "viewOrder": "Ver Pedido",
-      "printOrder": "Imprimir Pedido",
-      "processPayment": "Procesar Pago"
-    },
-    "statuses": {
-      "notAssigned": "No asignado",
-      "nA": "N/A"
-    }
-  },
-  "orderDetailsModal": {
-    "title": "Artículos del Pedido - K{{orderId}}",
-    "created": "Creado: {{date}}",
-    "customer": "Cliente",
-    "deliveryAddress": "Dirección de Entrega",
-    "orderType": "Tipo de Pedido",
-    "paymentStatus": "Estado de Pago",
-    "deliveryPerson": "Repartidor",
-    "items": "Artículos",
-    "quantity": "Cant",
-    "price": "Precio",
-    "total": "Total",
-    "subtotal": "Subtotal",
-    "tax": "Impuesto",
-    "deliveryFee": "Tarifa de Entrega",
-    "grandTotal": "Total General",
-    "close": "Cerrar",
-    "customerInformation": "Información del Cliente",
-    "name": "Nombre",
-    "phone": "Teléfono",
-    "address": "Dirección",
-    "orderInformation": "Información del Pedido",
-    "status": "Estado",
-    "updated": "Actualizado",
-    "paymentInformation": "Información de Pago",
-    "totalAmount": "Cantidad Total",
-    "deliveryInformation": "Información de Entrega",
-    "vehicleType": "Tipo de Vehículo",
-    "assignedAt": "Asignado el",
-    "deliveredAt": "Entregado el",
-    "orderItems": "Artículos del Pedido",
-    "addOns": "Complementos:",
-    "each": "cada uno",
-    "noItemsFound": "No se encontraron artículos",
-    "orderNotes": "Notas del Pedido",
-    "notRecorded": "No registrado",
-    "notAssignedYet": "Aún no asignado"
-  },
-  "bulkPaymentModal": {
-    "title": "Procesamiento de Pagos Masivos",
-    "subtitle": "Procesar pagos para múltiples pedidos entregados por repartidor",
-    "selectDeliveryPerson": "Seleccionar Repartidor",
-    "chooseDeliveryPerson": "Elige un repartidor...",
-    "pleaseSelectDeliveryPerson": "Por favor selecciona un repartidor",
-    "allDeliveryPersons": "Todos los Repartidores",
-    "paymentMethod": "Método de Pago",
-    "amount": "Cantidad",
-    "addPayment": "Agregar",
-    "removePayment": "Eliminar",
-    "totalAmount": "Cantidad Total",
-    "processPayments": "Procesar Pago Masivo",
-    "cancel": "Cancelar",
-    "processing": "Procesando...",
-    "success": "Pagos procesados correctamente",
-    "error": "Error al procesar pagos",
-    "allPayments": "Todos los Pagos:",
-    "pending": "PENDIENTE",
-    "readyToProcess": "Listo para procesar pago",
-    "ordersSummary": "Resumen de Pedidos",
-    "deliveryPerson": "Repartidor",
-    "ordersCount": "Cantidad de Pedidos",
-    "totalAmountDue": "Cantidad Total Debida",
-    "orders": "pedidos",
-    "paymentMethods": "Métodos de Pago",
-    "total": "Total: €{{paid}} / €{{total}}",
-    "cash": "Efectivo",
-    "card": "Tarjeta",
-    "add": "Agregar"
-  },
-  "individualPaymentModal": {
-    "title": "Procesar Pago",
-    "subtitle": "Completar el pago para este pedido",
-    "orderDetails": "Detalles del Pedido",
-    "orderId": "ID del Pedido",
-    "customer": "Cliente",
-    "totalAmount": "Cantidad Total",
-    "remainingAmount": "Cantidad Restante",
-    "deliveryPerson": "Repartidor",
-    "paymentMethods": "Métodos de Pago",
-    "total": "Total: €{{paid}} / €{{total}}",
-    "paymentMethod": "Método de Pago",
-    "cash": "Efectivo",
-    "card": "Tarjeta",
-    "amount": "Cantidad",
-    "addPayment": "Agregar",
-    "removePayment": "Eliminar",
-    "processPayment": "Procesar Pago",
-    "cancel": "Cancelar",
-    "processing": "Procesando...",
-    "allPayments": "Todos los Pagos:",
-    "pending": "PENDIENTE",
-    "readyToProcess": "Listo para procesar pago",
-    "noDeliveryPersonAssigned": "No hay repartidor asignado",
-    "pleaseAddPaymentMethod": "Por favor agrega al menos un método de pago",
-    "errors": {
-      "enterValidAmount": "Por favor ingresa una cantidad válida",
-      "noOrderSelected": "No hay pedido seleccionado",
-      "totalExceedsOrder": "El pago total no puede exceder el total del pedido",
-      "addPaymentMethod": "Por favor agrega al menos un método de pago",
-      "updateFailed": "Error al actualizar el pago. Por favor intenta de nuevo.",
-      "processingError": "Ocurrió un error al procesar el pago. Por favor intenta de nuevo.",
-      "selectDeliveryPerson": "Por favor selecciona un repartidor primero",
-      "totalExceedsRemaining": "El pago total no puede exceder la cantidad restante",
-      "noOrdersFound": "No se encontraron pedidos para este repartidor",
-      "bulkProcessingError": "Ocurrió un error al procesar el pago masivo. Por favor intenta de nuevo."
-    },
-    "success": {
-      "paymentCompleted": "Pago completado exitosamente: {{paymentString}}",
-      "partialPayment": "Pago parcial registrado: {{paymentString}}. Restante: €{{remaining}}",
-      "bulkPaymentSuccess": "Pago masivo procesado exitosamente para {{count}} pedidos: {{paymentString}}",
-      "bulkPaymentPartial": "Pago procesado para {{successCount}} de {{totalCount}} pedidos"
-    }
-  },
-  "deliveryManagement": {
-    "title": "Gestión de Entregas",
-    "subtitle": "Gestionar personal de entrega y su información de vehículos",
-    "deliveryPersonnel": "Personal de Entrega",
-    "addAndManageStaff": "Agregar y gestionar personal de entrega",
-    "addDeliveryPerson": "Agregar Repartidor",
-    "deliveryPersonnelCount": "Personal de Entrega",
-    "bikes": "Bicicletas",
-    "motorcycles": "Motocicletas",
-    "cars": "Autos",
-    "scooters": "Scooters",
-    "searchDeliveryPersonnel": "Buscar personal de entrega...",
-    "all": "Todos",
-    "bike": "Bicicleta",
-    "motorcycle": "Motocicleta",
-    "car": "Auto",
-    "scooter": "Scooter",
-    "deliveryPersonnelTable": "Personal de Entrega ({{count}})",
-    "getStartedMessage": "Comienza agregando tu primer repartidor.",
-    "adjustFiltersMessage": "Intenta ajustar tu búsqueda o filtro de vehículo.",
-    "noDeliveryPersonnelFound": "No se encontró personal de entrega",
-    "deliveryPerson": "Repartidor",
-    "vehicle": "Vehículo",
-    "contact": "Contacto",
-    "license": "Licencia",
-    "totalAssigned": "Total Asignados",
-    "totalDelivered": "Total Entregados",
-    "totalCancelled": "Total Cancelados",
-    "avgDeliveryTime": "Tiempo Promedio de Entrega",
-    "actions": "Acciones",
-    "edit": "Editar",
-    "delete": "Eliminar",
-    "deliveryPersonnelLabel": "Personal de Entrega",
-    "minutes": "min",
-    "errors": {
-      "fetchFailed": "Error al obtener personal de entrega",
-      "enterName": "Por favor ingresa un nombre",
-      "enterLicenseNumber": "Por favor ingresa un número de licencia",
-      "emailRequired": "El email es requerido",
-      "validEmail": "Por favor ingresa una dirección de email válida",
-      "phoneRequired": "El número de teléfono es requerido",
-      "validPhone": "Por favor ingresa un número de teléfono válido",
-      "phoneMinDigits": "El número de teléfono debe tener al menos 10 dígitos",
-      "phoneMaxDigits": "El número de teléfono no puede exceder 15 dígitos",
-      "emailExists": "El email ya existe",
-      "updateFailed": "Error al actualizar repartidor",
-      "addFailed": "Error al agregar repartidor",
-      "deleteConfirm": "¿Estás seguro de que quieres eliminar este repartidor?",
-      "fetchStatsFailed": "Error al obtener estadísticas del repartidor",
-      "cannotDeleteWithOrders": "No se puede eliminar repartidor con {{count}} pedidos asignados",
-      "deleteFailed": "Error al eliminar repartidor"
-    },
-    "success": {
-      "updated": "Repartidor actualizado exitosamente",
-      "added": "Repartidor agregado exitosamente",
-      "deleted": "Repartidor eliminado exitosamente"
-    }
-  },
-  "deliveryPersonModal": {
-    "editTitle": "Editar Repartidor",
-    "addTitle": "Agregar Nuevo Repartidor",
-    "fullName": "Nombre Completo *",
-    "fullNamePlaceholder": "Ingresa nombre completo",
-    "email": "Email *",
-    "emailPlaceholder": "Ingresa dirección de email",
-    "phoneNumber": "Número de Teléfono",
-    "phoneNumberPlaceholder": "Ingresa número de teléfono",
-    "licenseNumber": "Número de Licencia *",
-    "licenseNumberPlaceholder": "Ingresa número de licencia",
-    "vehicleType": "Tipo de Vehículo",
-    "selectVehicleType": "Selecciona tipo de vehículo",
-    "cancel": "Cancelar",
-    "updateDeliveryPerson": "Actualizar Repartidor",
-    "addDeliveryPerson": "Agregar Repartidor"
-  },
-  "deliveryPersonInput": {
-    "selectDeliveryPerson": "Seleccionar Repartidor",
-    "chooseDeliveryPerson": "Elige un repartidor...",
-    "quickAssign": "Asignación Rápida"
-  },
-  "deliveryView": {
-    "title": "Gestión de Entregas",
-    "subtitle": "Asignar y rastrear entregas de pedidos",
-    "readyForDeliveryOrders": "Pedidos Listos para Entrega",
-    "noOrdersReady": "No hay pedidos listos para entrega",
-    "delivered": "Entregado",
-    "stats": {
-      "readyForDelivery": "Listo para Entrega",
-      "outForDelivery": "En Camino",
-      "deliveredToday": "Entregado Hoy",
-      "activeDrivers": "Conductores Activos"
-    },
-    "descriptions": {
-      "ordersReadyToAssign": "Pedidos listos para ser asignados para entrega",
-      "allOrdersInKitchenOrAssigned": "Todos los pedidos están en cocina o ya asignados para entrega.",
-      "ordersCurrentlyBeingDelivered": "Pedidos siendo entregados actualmente"
-    },
-    "table": {
-      "orderId": "ID del Pedido",
-      "customer": "Cliente",
-      "contact": "Contacto",
-      "address": "Dirección",
-      "items": "Artículos",
-      "readySince": "Listo Desde",
-      "driver": "Conductor",
-      "actions": "Acciones",
-      "outForDelivery": "En Camino"
-    },
-    "messages": {
-      "pleaseEnterDeliveryPersonName": "Por favor ingresa el nombre del repartidor",
-      "failedToAssignDeliveryPerson": "Error al asignar repartidor",
-      "failedToAssignDelivery": "Error al asignar entrega. Por favor intenta de nuevo.",
-      "failedToMarkAsDelivered": "Error al marcar como entregado",
-      "orderMarkedAsDelivered": "Pedido marcado como entregado",
-      "failedToMarkAsDeliveredRetry": "Error al marcar como entregado. Por favor intenta de nuevo."
-    }
-  },
-  "kitchenView": {
-    "title": "Gestión de Cocina",
-    "subtitle": "Monitorear y gestionar pedidos en preparación",
-    "stats": {
-      "ordersInKitchen": "Pedidos en Cocina",
-      "highPriority": "Alta Prioridad",
-      "avgPrepTime": "Tiempo Promedio de Prep",
-      "avgPrepTimeValue": "~25 min"
-    },
-    "table": {
-      "priority": "Prioridad",
-      "orderId": "ID del Pedido",
-      "customer": "Cliente",
-      "items": "Artículos",
-      "timeInKitchen": "Tiempo en Cocina",
-      "actions": "Acciones",
-      "kitchenOrders": "Pedidos de Cocina",
-      "noOrdersMatch": "No hay pedidos que coincidan con tu búsqueda"
-    },
-    "priority": {
-      "high": "Alta",
-      "medium": "Media",
-      "low": "Baja"
-    },
-    "actions": {
-      "viewOrderDetails": "Ver Detalles del Pedido",
-      "markAsReady": "Marcar como Listo"
-    },
-    "addOns": "Complementos:",
-    "timeFormat": {
-      "hours": "h",
-      "minutes": "m"
-    },
-    "messages": {
-      "orderMarkedAsReady": "Pedido marcado como listo",
-      "orderMarkedAsCompleted": "Pedido marcado como completado",
-      "failedToUpdateOrder": "Error al actualizar el pedido"
-    }
-  },
-  "filterControls": {
-    "searchPlaceholder": "Buscar pedidos...",
-    "clearFilters": "Limpiar Filtros"
-  },
-  "orderTable": {
-    "noDataFound": "No se encontraron datos"
-  }
 }

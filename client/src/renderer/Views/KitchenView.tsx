@@ -19,6 +19,7 @@ import Header from "../components/shared/Header.order";
 import { OrderTable } from "../components/shared/OrderTable";
 import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
+import { useConfigurations } from "../contexts/configurationContext";
 
 export const KitchenView = () => {
   const { t } = useTranslation();
@@ -26,6 +27,7 @@ export const KitchenView = () => {
   const {orders,filter,setFilter,refreshOrdersCallback}=useOrderManagementContext();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
+  const {configurations}= useConfigurations();
   useEffect(() => {
     setFilter({
       selectedDate: null,
@@ -115,17 +117,15 @@ export const KitchenView = () => {
       },
     ];
   }, [orders, t]);
-
-  const hasKitchenOrders = orders.some(
-    (o) => o.status.toLowerCase() === "sent to kitchen"
-  );
   const getPriorityLabel = (diffMinutes: number) => {
-    if (diffMinutes > 120)
+    const mediumPriority = configurations.mediumKitchenPriorityTime || 60;
+    const highPriority = configurations.highKitchenPriorityTime || 120;
+    if (diffMinutes > highPriority)
       return {
         label: t("kitchenView.priority.high"),
         color: "bg-red-100 text-red-800",
       };
-    if (diffMinutes > 60)
+    if (diffMinutes > mediumPriority)
       return {
         label: t("kitchenView.priority.medium"),
         color: "bg-orange-100 text-orange-800",
