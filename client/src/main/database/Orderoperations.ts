@@ -412,7 +412,7 @@ export class OrderDatabaseOperations {
                 query.whereIn("status", filter.selectedStatus);
             }
             if (filter.selectedDeliveryPerson){
-                query.where("deliveryPersonName", filter.selectedDeliveryPerson);
+                query.where("deliveryPersonId", filter.selectedDeliveryPerson);
             }
             // Filter by payment status if specified
             if (
