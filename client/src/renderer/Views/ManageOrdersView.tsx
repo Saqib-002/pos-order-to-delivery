@@ -51,6 +51,7 @@ export const ManageOrdersView = () => {
       limit: 0,
       startDateRange: null,
       endDateRange: null,
+      selectedDeliveryPerson: "",
     });
   }, []);
 
@@ -77,53 +78,7 @@ export const ManageOrdersView = () => {
     return persons;
   }, [orders]);
 
-  // Get unique payment statuses from orders
-  const paymentStatuses = useMemo(() => {
-    const statuses = orders.map((order) => {
-      const { orderTotal } = calculateOrderTotal(order.items || []);
-      const paymentStatus = calculatePaymentStatus(
-        order.paymentType || "",
-        orderTotal
-      );
-      return paymentStatus.status;
-    });
-    return [...new Set(statuses)];
-  }, [orders]);
-
-  // Additional local filters for UI-only filtering (delivery person, payment status)
-  const [localFilters, setLocalFilters] = useState({
-    selectedDeliveryPerson: "",
-    selectedStatus: [] as string[],
-  });
-
-  const filteredOrders = useMemo(() => {
-    const filtered = orders.filter((order) => {
-      // Filter by delivery person (local filter)
-      if (localFilters.selectedDeliveryPerson) {
-        if (
-          !order.deliveryPerson ||
-          order.deliveryPerson.id !== localFilters.selectedDeliveryPerson
-        ) {
-          return false;
-        }
-      }
-
-      // Filter by payment status (local filter)
-      if (localFilters.selectedStatus.length > 0) {
-        const { orderTotal } = calculateOrderTotal(order.items || []);
-        const paymentStatus = calculatePaymentStatus(
-          order.paymentType || "",
-          orderTotal
-        );
-        if (!localFilters.selectedStatus.includes(paymentStatus.status)) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-    return filtered;
-  }, [orders, localFilters]);
+  const paymentStatuses = ['PARTIAL', 'UNPAID', 'PAID'];
 
   const clearFilters = () => {
     setFilter({
@@ -135,10 +90,8 @@ export const ManageOrdersView = () => {
       limit: 0,
       startDateRange: null,
       endDateRange: null,
-    });
-    setLocalFilters({
       selectedDeliveryPerson: "",
-      selectedStatus: [],
+
     });
   };
 
@@ -291,7 +244,7 @@ export const ManageOrdersView = () => {
       </tr>
     );
   };
-
+  console.log(orders);
   return (
     <div className="p-4 flex flex-col">
       {/* Header */}
@@ -371,12 +324,13 @@ export const ManageOrdersView = () => {
                     label: person.name,
                   })),
                 ]}
-                value={localFilters.selectedDeliveryPerson}
-                onChange={(value) =>
-                  setLocalFilters((prev) => ({
+                value={filter.selectedDeliveryPerson}
+                onChange={(value) =>{
+                  setFilter((prev) => ({
                     ...prev,
                     selectedDeliveryPerson: value,
                   }))
+                }
                 }
                 placeholder={t("manageOrders.allDeliveryPersons")}
                 className="w-full"
@@ -396,11 +350,11 @@ export const ManageOrdersView = () => {
                     label: status.charAt(0).toUpperCase() + status.slice(1),
                   })),
                 ]}
-                value={localFilters.selectedStatus[0] || ""}
+                value={filter.selectedPaymentStatus[0] || ""}
                 onChange={(value) =>
-                  setLocalFilters((prev) => ({
+                  setFilter((prev) => ({
                     ...prev,
-                    selectedStatus: value ? [value] : [],
+                    selectedPaymentStatus: value ? [value] : [],
                   }))
                 }
                 placeholder={t("manageOrders.allPaymentStatuses")}
@@ -431,7 +385,7 @@ export const ManageOrdersView = () => {
         <div className="mb-4 flex justify-between items-center">
           <p className="text-sm text-gray-600">
             {t("manageOrders.showingOrders", {
-              filtered: filteredOrders.length,
+              filtered: orders.length,
               total: orders.length,
             })}
           </p>
@@ -445,7 +399,7 @@ export const ManageOrdersView = () => {
         {/* Orders Table */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <OrderTable
-            data={filteredOrders}
+            data={orders}
             columns={columns}
             renderRow={renderOrderRow}
             emptyStateIcon={
@@ -454,8 +408,8 @@ export const ManageOrdersView = () => {
             emptyStateTitle={
               filter.searchTerm ||
                 filter.selectedDate ||
-                localFilters.selectedDeliveryPerson ||
-                localFilters.selectedStatus.length > 0
+                filter.selectedDeliveryPerson ||
+                filter.selectedStatus.length > 0
                 ? t("manageOrders.noOrdersMatch")
                 : t("manageOrders.noOrdersFound")
             }

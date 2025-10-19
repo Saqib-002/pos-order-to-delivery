@@ -64,6 +64,7 @@ export interface Order {
   status: string;
   deliveryPerson?: DeliveryPerson;
   assignedAt?: string;
+  paymentStatus?: string;
   readyAt?: string;
   cancelAt?: string;
   deliveredAt?: string;
@@ -76,6 +77,7 @@ export interface FilterType {
   selectedDate: Date | null;
   selectedStatus: string[];
   selectedPaymentStatus: string[];
+  selectedDeliveryPerson: string;
   page: number;
   limit: number;
   startDateRange: Date | null;

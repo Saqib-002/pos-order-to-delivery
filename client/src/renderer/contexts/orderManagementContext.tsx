@@ -6,17 +6,18 @@ import { useEffect, useState } from "react";
 import { StringToComplements } from "../utils/order";
 
 const useOrderManagementInternal = (auth: AuthState) => {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [filter, setFilter] = useState<FilterType>({
-    searchTerm: "",
-    selectedDate: null,
-    selectedStatus: ["all"],
-    selectedPaymentStatus: [],
-    page: 0,
-    limit: 0,
-    startDateRange: null,
-    endDateRange: null,
-  });
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [filter, setFilter] = useState<FilterType>({
+        searchTerm: "",
+        selectedDate: null,
+        selectedStatus: ["all"],
+        selectedPaymentStatus: [],
+        selectedDeliveryPerson: "",
+        page:0,
+        limit:0,
+        startDateRange: null,
+        endDateRange: null,
+    });
 
   const convertOrderItems = (orders: Order[]): Order[] => {
     return orders.map((order) => ({
