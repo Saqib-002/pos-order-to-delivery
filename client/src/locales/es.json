@@ -15,6 +15,8 @@
         "companyAddressPlaceholder": "Ingrese la dirección de la empresa",
         "vatNumber": "Número de IVA",
         "vatNumberPlaceholder": "Ingrese el número de IVA",
+        "orderPrefix": "prefijo de orden",
+        "orderPrefixPlaceholder": "K",
         "kitchenPriorityLabel": "Tiempo de prioridad en la cocina (en minutos)",
         "lowKitchenPriorityTime": "Bajo",
         "mediumKitchenPriorityTime": "Medio",

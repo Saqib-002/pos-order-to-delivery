@@ -12,6 +12,7 @@ export async function up(knex) {
     table.integer('mediumKitchenPriorityTime')
     table.integer('highKitchenPriorityTime')
     table.string('vatNumber');
+    table.string('orderPrefix');
   });
 };
 

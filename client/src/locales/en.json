@@ -14,6 +14,8 @@
     "companyAddressPlaceholder": "Enter company Address",
     "vatNumber": "VAT Number",
     "vatNumberPlaceholder": "Enter VAT number",
+    "orderPrefix":"Order Prefix",
+    "orderPrefixPlaceholder": "K",
     "kitchenPriorityLabel": "Kitchen Priority Time (in minutes)",
     "lowKitchenPriorityTime": "Low",
     "mediumKitchenPriorityTime": "Medium",

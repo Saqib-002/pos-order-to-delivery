@@ -93,32 +93,49 @@ const ConfigurationsTab = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column - Form Fields */}
           <div className="flex-1 flex flex-col gap-6">
-            <div className="flex flex-col gap-2 w-48">
-              <label className="text-sm font-medium text-gray-700">
-                {t("configurations.languageLabel")}
-              </label>
-              <CustomSelect
-                options={[
-                  {
-                    value: "en",
-                    label: t("configurations.languageOptions.en"),
-                  },
-                  {
-                    value: "es",
-                    label: t("configurations.languageOptions.es"),
-                  },
-                ]}
-                value={language || "en"}
-                onChange={(val) => {
-                  const lang = val as "en" | "es";
-                  i18n.changeLanguage(lang);
-                  setLanguage(lang);
-                  localStorage.setItem('language', lang);
-                }}
-                className="w-full"
-                portalClassName="language-select-portal"
-                placeholder={t("configurations.languageLabel")}
-              />
+            <div>
+              <CustomInput
+              type="text"
+              value={configurations.orderPrefix}
+              onChange={(e) =>
+                setConfigurations({
+                  ...configurations,
+                  orderPrefix: e.target.value,
+                })
+              }
+              label={t("configurations.orderPrefix")}
+              name="orderPrefix"
+              placeholder={t("configurations.orderPrefixPlaceholder")}
+              required={true}
+              inputClasses="bg-white"
+            />
+              <div className="flex flex-col gap-2 w-48">
+                <label className="text-sm font-medium text-gray-700">
+                  {t("configurations.languageLabel")}
+                </label>
+                <CustomSelect
+                  options={[
+                    {
+                      value: "en",
+                      label: t("configurations.languageOptions.en"),
+                    },
+                    {
+                      value: "es",
+                      label: t("configurations.languageOptions.es"),
+                    },
+                  ]}
+                  value={language || "en"}
+                  onChange={(val) => {
+                    const lang = val as "en" | "es";
+                    i18n.changeLanguage(lang);
+                    setLanguage(lang);
+                    localStorage.setItem('language', lang);
+                  }}
+                  className="w-full"
+                  portalClassName="language-select-portal"
+                  placeholder={t("configurations.languageLabel")}
+                />
+              </div>
             </div>
             <CustomInput
               type="text"
