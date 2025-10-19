@@ -41,6 +41,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const [notes, setNotes] = useState("");
   const [customCustomerName, setCustomCustomerName] = useState("");
   const [customCustomerPhone, setCustomCustomerPhone] = useState("");
+  const [customCustomerAddress, setCustomCustomerAddress] = useState("");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isPaymentOptionModalOpen, setIsPaymentOptionModalOpen] =
     useState(false);
@@ -59,14 +60,23 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     setCustomerSearch(order?.customer?.name || "");
     setOrderType(order?.orderType || "pickup");
     setNotes(order?.notes || "");
-    setCustomCustomerName("");
-    setCustomCustomerPhone("");
     setSearchResults([]);
-    setSelectedCustomer(order?.customer?.name ? order.customer : null);
     setIsSearching(false);
     setShowSearchResults(false);
     setIsCustomerModalOpen(false);
-  }, []);
+
+    if (order?.customer?.name) {
+      setSelectedCustomer(order.customer);
+      setCustomCustomerName("");
+      setCustomCustomerPhone("");
+      setCustomCustomerAddress("");
+    } else {
+      setSelectedCustomer(null);
+      setCustomCustomerName("");
+      setCustomCustomerPhone("");
+      setCustomCustomerAddress("");
+    }
+  }, [order]);
 
   const { orderTotal, nonMenuItems, groups } = calculateOrderTotal(orderItems);
 
@@ -209,10 +219,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     if (
       orderType === "delivery" &&
       !selectedCustomer &&
-      (!customCustomerName.trim() || !customCustomerPhone.trim())
+      (!customCustomerName.trim() ||
+        !customCustomerPhone.trim() ||
+        !customCustomerAddress.trim())
     ) {
       toast.error(
-        "Please select a customer or enter customer details for delivery orders"
+        "Please select a customer or enter customer details including address for delivery orders"
       );
       return;
     }
@@ -222,6 +234,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       customCustomerName.trim() ||
       (orderType === "dine-in" ? "Dine-in Customer" : "Walk-in Customer");
     const customerPhone = selectedCustomer?.phone || customCustomerPhone.trim();
+    const customerAddress =
+      selectedCustomer?.address || customCustomerAddress.trim();
 
     const orderData = {
       customerName,
@@ -231,15 +245,18 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       customerComments: selectedCustomer?.comments || "",
       customerAddress:
         orderType === "delivery"
-          ? selectedCustomer?.address || ""
+          ? customerAddress
           : orderType === "dine-in"
             ? "Dine-in"
             : "In-store",
       orderType,
       paymentType:
         orderType === "delivery" ? "pending" : paymentData.paymentType,
-      status: "sent to kitchen",
-      notes: notes || `Order total: €${orderTotal.toFixed(2)}`,
+      status:
+        order?.status === "pending"
+          ? "sent to kitchen"
+          : order?.status || "sent to kitchen",
+      notes: notes || "",
     };
     onProcessOrder(orderData);
     setIsPaymentModalOpen(false);
@@ -292,7 +309,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 value={customerSearch}
                 onChange={(e) => {
                   setCustomerSearch(e.target.value);
-                  // Clear custom fields when user starts typing in search
                   if (e.target.value.trim() && !selectedCustomer) {
                     setCustomCustomerName("");
                     setCustomCustomerPhone("");
@@ -398,15 +414,17 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
 
                   {/* Address formatted properly - only show if customer has address */}
                   {selectedCustomer.address &&
-                    selectedCustomer.address.trim() &&
-                    formatAddress(selectedCustomer.address) && (
+                    selectedCustomer.address.trim() && (
                       <div className="">
                         <div className="text-sm font-semibold text-gray-700 mb-2 flex items-center space-x-2">
                           <LocationFilledIcon className="text-indigo-600 size-4" />
                           <span>Address</span>
                         </div>
                         <div className="text-gray-800 text-sm leading-relaxed">
-                          {formatAddress(selectedCustomer.address)}
+                          {selectedCustomer.address &&
+                          selectedCustomer.address.includes("|")
+                            ? formatAddress(selectedCustomer.address)
+                            : selectedCustomer.address}
                         </div>
                       </div>
                     )}
@@ -452,7 +470,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     value={customCustomerPhone}
                     onChange={(e) => {
                       setCustomCustomerPhone(e.target.value);
-                      // Clear customer search when user starts typing custom phone
                       if (e.target.value.trim() && !selectedCustomer) {
                         setCustomerSearch("");
                       }
@@ -464,9 +481,32 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     otherClasses="w-full"
                   />
                 </div>
+
+                {/* Address field - only show for delivery orders */}
+                {orderType === "delivery" && (
+                  <div className="mt-4">
+                    <CustomInput
+                      label="Delivery Address"
+                      placeholder="Enter delivery address..."
+                      value={customCustomerAddress}
+                      onChange={(e) => {
+                        setCustomCustomerAddress(e.target.value);
+                        if (e.target.value.trim() && !selectedCustomer) {
+                          setCustomerSearch("");
+                        }
+                      }}
+                      required={orderType === "delivery"}
+                      name="custom-customer-address"
+                      type="text"
+                      inputClasses="py-3 px-4 text-lg"
+                      otherClasses="w-full"
+                    />
+                  </div>
+                )}
+
                 <div className="mt-3 text-sm text-gray-600">
                   {orderType === "delivery"
-                    ? "Customer details are required for delivery orders"
+                    ? "Customer details including address are required for delivery orders"
                     : "Enter customer details to personalize the order (optional)"}
                 </div>
               </div>
@@ -543,21 +583,26 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           </div>
 
           {/* Delivery Address Info (only for delivery) */}
-          {orderType === "delivery" && selectedCustomer && (
-            <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl flex items-start gap-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <LocationFilledIcon className="size-5 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <div className="text-base font-bold text-blue-800 mb-3">
-                  Delivery Address
+          {orderType === "delivery" &&
+            selectedCustomer &&
+            selectedCustomer.address && (
+              <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl flex items-start gap-4">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <LocationFilledIcon className="size-5 text-blue-600" />
                 </div>
-                <div className="text-blue-700 text-sm leading-relaxed">
-                  {formatAddress(selectedCustomer.address)}
+                <div className="flex-1">
+                  <div className="text-base font-bold text-blue-800 mb-3">
+                    Delivery Address
+                  </div>
+                  <div className="text-blue-700 text-sm leading-relaxed">
+                    {selectedCustomer.address &&
+                    selectedCustomer.address.includes("|")
+                      ? formatAddress(selectedCustomer.address)
+                      : selectedCustomer.address}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Payment Status Info (only for delivery) */}
           {orderType === "delivery" && (

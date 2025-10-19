@@ -31,7 +31,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
   const [selectedBulkDeliveryPerson, setSelectedBulkDeliveryPerson] =
     useState("");
   const [bulkPaymentMethods, setBulkPaymentMethods] = useState<
-    Array<{ type: string; amount: number }>
+    Array<{ type: string; amount: number; customerGiven?: number }>
   >([]);
   const [bulkCurrentAmount, setBulkCurrentAmount] = useState("");
   const [bulkPaymentMethod, setBulkPaymentMethod] = useState<"cash" | "card">(
@@ -123,11 +123,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
       (sum, method) => sum + method.amount,
       0
     );
-
-    if (totalPaid + amount > totalAmount) {
-      toast.error(t("individualPaymentModal.errors.totalExceedsRemaining"));
-      return;
-    }
+    const actualAmount = Math.min(amount, totalAmount - totalPaid);
 
     const existingMethodIndex = bulkPaymentMethods.findIndex(
       (method) => method.type === bulkPaymentMethod
@@ -135,12 +131,18 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
 
     if (existingMethodIndex !== -1) {
       const updatedMethods = [...bulkPaymentMethods];
-      updatedMethods[existingMethodIndex].amount += amount;
+      updatedMethods[existingMethodIndex].amount += actualAmount;
+      updatedMethods[existingMethodIndex].customerGiven =
+        (updatedMethods[existingMethodIndex].customerGiven || 0) + amount;
       setBulkPaymentMethods(updatedMethods);
     } else {
       setBulkPaymentMethods([
         ...bulkPaymentMethods,
-        { type: bulkPaymentMethod, amount: amount },
+        {
+          type: bulkPaymentMethod,
+          amount: actualAmount,
+          customerGiven: amount,
+        },
       ]);
     }
 
@@ -252,12 +254,21 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
         const totalPaymentString = bulkPaymentMethods
           .map((method) => `${method.type}:${method.amount}`)
           .join(", ");
-        toast.success(
-          t("individualPaymentModal.success.bulkPaymentSuccess", {
-            count: successCount,
-            paymentString: totalPaymentString,
-          })
-        );
+
+        const changeAmount = Math.max(0, totalCustomerGiven - totalAmount);
+
+        if (changeAmount > 0) {
+          toast.success(
+            `Bulk payment completed: ${totalPaymentString} (Change: €${changeAmount.toFixed(2)})`
+          );
+        } else {
+          toast.success(
+            t("individualPaymentModal.success.bulkPaymentSuccess", {
+              count: successCount,
+              paymentString: totalPaymentString,
+            })
+          );
+        }
         handleClose();
         refreshOrdersCallback();
       } else {
@@ -283,6 +294,20 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
   };
 
   if (!isOpen) return null;
+
+  const totalAmount = selectedBulkDeliveryPerson
+    ? getBulkPaymentTotal(selectedBulkDeliveryPerson)
+    : 0;
+  const totalPaid = bulkPaymentMethods.reduce(
+    (sum, method) => sum + method.amount,
+    0
+  );
+  const totalCustomerGiven = bulkPaymentMethods.reduce(
+    (sum, method) => sum + (method.customerGiven || 0),
+    0
+  );
+  const remainingAmount = totalAmount - totalPaid;
+  const changeAmount = Math.max(0, totalCustomerGiven - totalAmount);
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -399,15 +424,45 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center py-2">
+                <div className="flex justify-between items-center py-2 border-b border-gray-200">
                   <span className="text-sm font-medium text-gray-600">
                     {t("bulkPaymentModal.totalAmountDue")}
                   </span>
                   <span className="text-lg font-bold text-purple-600">
-                    €
-                    {getBulkPaymentTotal(selectedBulkDeliveryPerson).toFixed(2)}
+                    €{totalAmount.toFixed(2)}
                   </span>
                 </div>
+
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-sm font-semibold text-gray-600">
+                    {t("bulkPaymentModal.remainingAmount")}
+                  </span>
+                  <span className="text-lg font-bold text-orange-600">
+                    €{remainingAmount.toFixed(2)}
+                  </span>
+                </div>
+
+                {totalCustomerGiven > 0 && (
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-sm font-semibold text-gray-600">
+                      {t("bulkPaymentModal.amountTendered")}:
+                    </span>
+                    <span className="text-lg font-bold text-blue-700">
+                      €{totalCustomerGiven.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+
+                {changeAmount > 0 && (
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-sm font-semibold text-gray-600">
+                      {t("bulkPaymentModal.changeToReturn")}:
+                    </span>
+                    <span className="text-lg font-bold text-red-600">
+                      €{changeAmount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -434,12 +489,8 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                 </label>
                 <div className="text-sm text-gray-500">
                   {t("bulkPaymentModal.total", {
-                    paid: bulkPaymentMethods
-                      .reduce((sum, method) => sum + method.amount, 0)
-                      .toFixed(2),
-                    total: getBulkPaymentTotal(
-                      selectedBulkDeliveryPerson
-                    ).toFixed(2),
+                    paid: totalPaid.toFixed(2),
+                    total: totalAmount.toFixed(2),
                   })}
                 </div>
               </div>

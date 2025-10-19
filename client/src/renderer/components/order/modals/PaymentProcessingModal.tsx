@@ -18,6 +18,7 @@ interface PaymentProcessingModalProps {
 interface PaymentMethod {
   type: "cash" | "card";
   amount: number;
+  customerGiven?: number;
 }
 
 const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
@@ -34,6 +35,16 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
   const remainingAmount =
     totalAmount -
     paymentMethods.reduce((sum, method) => sum + method.amount, 0);
+
+  const totalPaid = paymentMethods.reduce(
+    (sum, method) => sum + method.amount,
+    0
+  );
+  const totalCustomerGiven = paymentMethods.reduce(
+    (sum, method) => sum + (method.customerGiven || 0),
+    0
+  );
+  const changeAmount = Math.max(0, totalCustomerGiven - totalAmount);
 
   useEffect(() => {
     if (isOpen && existingPaymentType && existingPaymentType !== "pending") {
@@ -64,10 +75,8 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
       toast.error("Please enter a valid amount");
       return;
     }
-    if (currentAmount > remainingAmount) {
-      toast.error("Amount cannot exceed remaining balance");
-      return;
-    }
+
+    const actualAmount = Math.min(currentAmount, remainingAmount);
 
     const existingMethodIndex = paymentMethods.findIndex(
       (method) => method.type === selectedType
@@ -75,12 +84,19 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
 
     if (existingMethodIndex !== -1) {
       const updatedMethods = [...paymentMethods];
-      updatedMethods[existingMethodIndex].amount += currentAmount;
+      updatedMethods[existingMethodIndex].amount += actualAmount;
+      updatedMethods[existingMethodIndex].customerGiven =
+        (updatedMethods[existingMethodIndex].customerGiven || 0) +
+        currentAmount;
       setPaymentMethods(updatedMethods);
     } else {
       setPaymentMethods([
         ...paymentMethods,
-        { type: selectedType, amount: currentAmount },
+        {
+          type: selectedType,
+          amount: actualAmount,
+          customerGiven: currentAmount,
+        },
       ]);
     }
 
@@ -101,14 +117,13 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
       .map((method) => `${method.type}:${method.amount}`)
       .join(", ");
 
-    const totalPaid = paymentMethods.reduce(
-      (sum, method) => sum + method.amount,
-      0
-    );
-
     if (remainingAmount > 0.01) {
       toast.success(
         `Partial payment processed: ${paymentTypeString} (Remaining: €${remainingAmount.toFixed(2)})`
+      );
+    } else if (changeAmount > 0) {
+      toast.success(
+        `Payment processed: ${paymentTypeString} (Change: €${changeAmount.toFixed(2)})`
       );
     } else {
       toast.success(`Payment processed: ${paymentTypeString}`);
@@ -133,9 +148,7 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
             </div>
             <div>
               <h2 className="text-xl font-bold">Payment Processing</h2>
-              <p className="text-indigo-100 text-sm">
-                Select payment methods
-              </p>
+              <p className="text-indigo-100 text-sm">Select payment methods</p>
             </div>
           </div>
           <button
@@ -162,10 +175,7 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
               <div className="flex justify-between items-center mt-2">
                 <span className="text-sm text-gray-600">Already Paid:</span>
                 <span className="text-lg font-semibold text-green-600">
-                  €
-                  {paymentMethods
-                    .reduce((sum, method) => sum + method.amount, 0)
-                    .toFixed(2)}
+                  €{totalPaid.toFixed(2)}
                 </span>
               </div>
             )}
@@ -177,6 +187,26 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
                 €{remainingAmount.toFixed(2)}
               </span>
             </div>
+            {totalCustomerGiven > 0 && (
+              <div className="flex justify-between items-center mt-2">
+                <span className="text-sm font-normal text-gray-600">
+                  Amount Tendered:
+                </span>
+                <span className="text-lg font-bold text-blue-700">
+                  €{totalCustomerGiven.toFixed(2)}
+                </span>
+              </div>
+            )}
+            {changeAmount > 0 && (
+              <div className="flex justify-between items-center mt-2">
+                <span className="text-sm font-normal text-gray-600">
+                  Change to Return:
+                </span>
+                <span className="text-lg font-bold text-red-600">
+                  €{changeAmount.toFixed(2)}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Payment Method Selection */}
@@ -185,10 +215,11 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
             <div className="flex gap-3">
               <button
                 onClick={() => setSelectedType("cash")}
-                className={`flex-1 p-4 rounded-lg border-2 transition-colors touch-manipulation ${selectedType === "cash"
-                  ? "border-green-400 bg-green-50 text-green-800"
-                  : "border-gray-200 hover:border-green-300"
-                  }`}
+                className={`flex-1 p-4 rounded-lg border-2 transition-colors touch-manipulation ${
+                  selectedType === "cash"
+                    ? "border-green-400 bg-green-50 text-green-800"
+                    : "border-gray-200 hover:border-green-300"
+                }`}
               >
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-2xl">💵</span>
@@ -197,10 +228,11 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
               </button>
               <button
                 onClick={() => setSelectedType("card")}
-                className={`flex-1 p-4 rounded-lg border-2 transition-colors touch-manipulation ${selectedType === "card"
-                  ? "border-blue-400 bg-blue-50 text-blue-800"
-                  : "border-gray-200 hover:border-blue-300"
-                  }`}
+                className={`flex-1 p-4 rounded-lg border-2 transition-colors touch-manipulation ${
+                  selectedType === "card"
+                    ? "border-blue-400 bg-blue-50 text-blue-800"
+                    : "border-gray-200 hover:border-blue-300"
+                }`}
               >
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-2xl">💳</span>
@@ -212,15 +244,32 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
 
           {/* Amount Input */}
           <div className="space-y-3">
-            <CustomInput label="Amount" onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAddPayment();
+            <CustomInput
+              label="Amount"
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddPayment();
+                }
+              }}
+              value={currentAmount || ""}
+              onChange={(e) =>
+                setCurrentAmount(parseFloat(e.target.value) || 0)
               }
-            }} value={currentAmount || ""} max={remainingAmount} onChange={(e) => setCurrentAmount(parseFloat(e.target.value) || 0)} type="number" step="0.01" min="0" required placeholder="0.00" name="price" inputClasses="py-3 px-4 text-xl text-center font-semibold focus:!ring-1" />
+              type="number"
+              step="0.01"
+              min="0"
+              required
+              placeholder="0.00"
+              name="price"
+              inputClasses="py-3 px-4 text-xl text-center font-semibold focus:!ring-1"
+            />
             <CustomButton
               onClick={handleAddPayment}
-              type="button" label="Add Payment" className="w-full py-3 px-4 text-lg" />
+              type="button"
+              label="Add Payment"
+              className="w-full py-3 px-4 text-lg"
+            />
           </div>
 
           {/* Payment Methods List */}
@@ -262,8 +311,20 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
         {/* Footer - Fixed */}
         <div className="p-6 border-t border-gray-200 flex-shrink-0">
           <div className="flex gap-3">
-            <CustomButton onClick={onClose} type="button" label="Cancel" className="w-full py-3 px-4 text-lg" variant="secondary" />
-            <CustomButton onClick={handleProcessPayment} type="button" label="Process Payment" className="w-full py-3 px-4 text-lg" disabled={paymentMethods.length === 0} />
+            <CustomButton
+              onClick={onClose}
+              type="button"
+              label="Cancel"
+              className="w-full py-3 px-4 text-lg"
+              variant="secondary"
+            />
+            <CustomButton
+              onClick={handleProcessPayment}
+              type="button"
+              label="Process Payment"
+              className="w-full py-3 px-4 text-lg"
+              disabled={paymentMethods.length === 0}
+            />
           </div>
         </div>
       </div>

@@ -307,7 +307,14 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 </h3>
                 <div className="text-sm text-gray-600 space-y-1">
                   <div className="flex justify-between">
-                    <span>Base Price</span>
+                    <span>
+                      Item Price (
+                      {calculateTaxPercentage(
+                        item.productPrice,
+                        item.productTax
+                      )}
+                      % tax included)
+                    </span>
                     <span>
                       €{(item.productPrice + item.productTax).toFixed(2)}
                     </span>
@@ -401,12 +408,27 @@ const OrderCart: React.FC<OrderCartProps> = ({
         {/* Menu Groups */}
         {groups.map((group) => {
           const sectionQuantity = group.items[0]?.quantity || 1;
-          const sectionSubtotal = group.basePrice * sectionQuantity;
-          const sectionTaxTotal = group.taxPerUnit * sectionQuantity;
-          const sectionSupplementTotal =
-            group.supplementTotal * sectionQuantity;
-          const sectionTotal =
-            sectionSubtotal + sectionTaxTotal + sectionSupplementTotal;
+          const menuGroupPrice =
+            (group.basePrice + group.taxPerUnit + group.supplementTotal) *
+            sectionQuantity;
+          const variantsAndComplementsTotal = group.items.reduce(
+            (itemTotal, item) => {
+              const complementsTotal = Array.isArray(item.complements)
+                ? item.complements.reduce(
+                    (sum, complement) => sum + complement.price,
+                    0
+                  )
+                : 0;
+
+              return (
+                itemTotal +
+                ((item.variantPrice || 0) + complementsTotal) * item.quantity
+              );
+            },
+            0
+          );
+
+          const sectionTotal = menuGroupPrice + variantsAndComplementsTotal;
           return (
             <div
               key={group.key}
@@ -438,21 +460,19 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 {/* Price Breakdown */}
                 <div className="text-sm text-gray-600 space-y-1 mb-3">
                   <div className="flex justify-between">
-                    <span>Menu Price</span>
-                    <span>€{group.basePrice.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
                     <span>
-                      Menu Tax (
+                      Menu Price (
                       {calculateTaxPercentage(
                         group.basePrice,
                         group.taxPerUnit
                       )}
-                      %)
+                      % tax included)
                     </span>
-                    <span>€{group.taxPerUnit.toFixed(2)}</span>
+                    <span>
+                      €{(group.basePrice + group.taxPerUnit).toFixed(2)}
+                    </span>
                   </div>
-                  {group.supplementTotal > 0 && (
+                  {group.supplementTotal > 0.01 && (
                     <div className="flex justify-between">
                       <span>Supplements</span>
                       <span>€{group.supplementTotal.toFixed(2)}</span>
@@ -505,11 +525,11 @@ const OrderCart: React.FC<OrderCartProps> = ({
                             <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
                               {item.menuPageName}
                             </span>
-                            {item.supplement && Number(item.supplement) > 0 && (
+                            {item.supplement && Number(item.supplement) > 0 ? (
                               <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
                                 +€{item.supplement.toFixed(2)}
                               </span>
-                            )}
+                            ) : null}
                           </div>
                         </div>
                         <div className="text-sm text-gray-600 space-y-1">
@@ -523,7 +543,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                           </div> */}
                           <div className="flex justify-between">
                             <span>Variant: {item.variantName}</span>
-                            {/* <span>€{item.variantPrice.toFixed(2)}</span> */}
+                            <span>€{item.variantPrice.toFixed(2)}</span>
                           </div>
                         </div>
                         {item.complements.length > 0 && (
@@ -538,7 +558,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                                   className="flex justify-between"
                                 >
                                   <span>• {complement.itemName}</span>
-                                  {/* <span>€{complement.price.toFixed(2)}</span> */}
+                                  <span>€{complement.price.toFixed(2)}</span>
                                 </li>
                               ))}
                             </ul>

@@ -26,7 +26,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [paymentMethods, setPaymentMethods] = useState<
-    Array<{ type: string; amount: number }>
+    Array<{ type: string; amount: number; customerGiven?: number }>
   >([]);
   const [currentAmount, setCurrentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
@@ -82,10 +82,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
       0
     );
 
-    if (totalPaid + amount > orderTotal) {
-      toast.error(t("individualPaymentModal.errors.totalExceedsOrder"));
-      return;
-    }
+    const actualAmount = Math.min(amount, orderTotal - totalPaid);
 
     const existingMethodIndex = paymentMethods.findIndex(
       (method) => method.type === paymentMethod
@@ -93,12 +90,14 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
 
     if (existingMethodIndex !== -1) {
       const updatedMethods = [...paymentMethods];
-      updatedMethods[existingMethodIndex].amount += amount;
+      updatedMethods[existingMethodIndex].amount += actualAmount;
+      updatedMethods[existingMethodIndex].customerGiven =
+        (updatedMethods[existingMethodIndex].customerGiven || 0) + amount;
       setPaymentMethods(updatedMethods);
     } else {
       setPaymentMethods([
         ...paymentMethods,
-        { type: paymentMethod, amount: amount },
+        { type: paymentMethod, amount: actualAmount, customerGiven: amount },
       ]);
     }
 
@@ -139,12 +138,20 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
 
       const success = await updateOrder(token, order.id, updateData);
       if (success) {
+        const changeAmount = Math.max(0, totalCustomerGiven - orderTotal);
+
         if (totalPaid >= orderTotal) {
-          toast.success(
-            t("individualPaymentModal.success.paymentCompleted", {
-              paymentString: paymentTypeString,
-            })
-          );
+          if (changeAmount > 0) {
+            toast.success(
+              `Payment completed: ${paymentTypeString} (Change: €${changeAmount.toFixed(2)})`
+            );
+          } else {
+            toast.success(
+              t("individualPaymentModal.success.paymentCompleted", {
+                paymentString: paymentTypeString,
+              })
+            );
+          }
         } else {
           toast.success(
             t("individualPaymentModal.success.partialPayment", {
@@ -171,7 +178,6 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
     onClose();
   };
 
-  // Initialize payment methods when modal opens
   React.useEffect(() => {
     if (isOpen && order) {
       const existingPayments = parseExistingPayments(order.paymentType || "");
@@ -180,6 +186,18 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
   }, [isOpen, order]);
 
   if (!isOpen || !order) return null;
+
+  const { orderTotal } = calculateOrderTotal(order.items || []);
+  const totalPaid = paymentMethods.reduce(
+    (sum, method) => sum + method.amount,
+    0
+  );
+  const totalCustomerGiven = paymentMethods.reduce(
+    (sum, method) => sum + (method.customerGiven || 0),
+    0
+  );
+  const remainingAmount = orderTotal - totalPaid;
+  const changeAmount = Math.max(0, totalCustomerGiven - orderTotal);
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -268,8 +286,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                   {t("individualPaymentModal.totalAmount")}
                 </span>
                 <span className="text-lg font-bold text-green-600">
-                  €
-                  {calculateOrderTotal(order.items || []).orderTotal.toFixed(2)}
+                  €{orderTotal.toFixed(2)}
                 </span>
               </div>
 
@@ -278,16 +295,31 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                   {t("individualPaymentModal.remainingAmount")}
                 </span>
                 <span className="text-lg font-bold text-orange-600">
-                  €
-                  {(
-                    calculateOrderTotal(order.items || []).orderTotal -
-                    paymentMethods.reduce(
-                      (sum, method) => sum + method.amount,
-                      0
-                    )
-                  ).toFixed(2)}
+                  €{remainingAmount.toFixed(2)}
                 </span>
               </div>
+
+              {totalCustomerGiven > 0 && (
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-sm font-normal text-gray-600">
+                    {t("individualPaymentModal.amountTendered")}:
+                  </span>
+                  <span className="text-lg font-bold text-blue-700">
+                    €{totalCustomerGiven.toFixed(2)}
+                  </span>
+                </div>
+              )}
+
+              {changeAmount > 0 && (
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-sm font-normal text-gray-600">
+                    {t("individualPaymentModal.changeToReturn")}:
+                  </span>
+                  <span className="text-lg font-bold text-red-600">
+                    €{changeAmount.toFixed(2)}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

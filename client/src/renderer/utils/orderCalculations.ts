@@ -80,9 +80,26 @@ export const calculateOrderTotal = (
 
   const menuTotal = Object.values(menuGroups).reduce((total, group) => {
     const qty = group.items[0]?.quantity || 1;
-    const menuGroupTotal =
+    const menuGroupPrice =
       (group.basePrice + group.taxPerUnit + group.supplementTotal) * qty;
-    return total + menuGroupTotal;
+    const variantsAndComplementsTotal = group.items.reduce(
+      (itemTotal, item) => {
+        const complementsTotal = Array.isArray(item.complements)
+          ? item.complements.reduce(
+              (sum, complement) => sum + complement.price,
+              0
+            )
+          : 0;
+
+        return (
+          itemTotal +
+          ((item.variantPrice || 0) + complementsTotal) * item.quantity
+        );
+      },
+      0
+    );
+
+    return total + menuGroupPrice + variantsAndComplementsTotal;
   }, 0);
 
   return {

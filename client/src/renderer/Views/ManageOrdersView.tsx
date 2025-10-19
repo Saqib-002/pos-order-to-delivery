@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Order } from "@/types/order";
+import { DeliveryPerson } from "@/types/delivery";
 import CustomInput from "../components/shared/CustomInput";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import { calculateOrderTotal } from "../utils/orderCalculations";
@@ -14,6 +15,7 @@ import { OrderTable } from "../components/shared/OrderTable";
 import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
 import BulkPaymentModal from "../components/order/modals/BulkPaymentModal";
 import IndividualPaymentModal from "../components/order/modals/IndividualPaymentModal";
+import { toast } from "react-toastify";
 
 // ICONS
 import SearchIcon from "../assets/icons/search.svg?react";
@@ -29,9 +31,10 @@ import { useConfigurations } from "../contexts/configurationContext";
 export const ManageOrdersView = () => {
   const { t } = useTranslation();
   const {
-    auth: { token }
+    auth: { token },
   } = useAuth();
-  const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagementContext();
+  const { orders, filter, setFilter, refreshOrdersCallback } =
+    useOrderManagementContext();
   const { configurations } = useConfigurations();
   useEffect(() => {
     if (!filter.selectedDate) {
@@ -41,6 +44,11 @@ export const ManageOrdersView = () => {
       }));
     }
   }, [filter.selectedDate, setFilter]);
+
+  // Fetch delivery persons on component mount
+  useEffect(() => {
+    fetchDeliveryPersons();
+  }, []);
   useEffect(() => {
     setFilter({
       searchTerm: "",
@@ -62,23 +70,28 @@ export const ManageOrdersView = () => {
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
 
   const [isBulkPaymentModalOpen, setIsBulkPaymentModalOpen] = useState(false);
+  const [deliveryPersons, setDeliveryPersons] = useState<DeliveryPerson[]>([]);
+  const [loadingDeliveryPersons, setLoadingDeliveryPersons] = useState(false);
 
-  // Get unique delivery persons from orders
-  const deliveryPersons = useMemo(() => {
-    const persons = orders
-      .filter((order) => order.deliveryPerson)
-      .map((order) => ({
-        id: order.deliveryPerson!.id || "",
-        name: order.deliveryPerson!.name || "",
-      }))
-      .filter(
-        (person, index, self) =>
-          index === self.findIndex((p) => p.id === person.id)
-      );
-    return persons;
-  }, [orders]);
+  // Fetch delivery persons from database
+  const fetchDeliveryPersons = async () => {
+    try {
+      setLoadingDeliveryPersons(true);
+      const res = await (window as any).electronAPI.getDeliveryPersons(token);
+      if (!res.status) {
+        toast.error(t("deliveryManagement.errors.fetchFailed"));
+        return;
+      }
+      setDeliveryPersons(res.data);
+    } catch (error) {
+      console.error("Error fetching delivery persons:", error);
+      toast.error(t("deliveryManagement.errors.fetchFailed"));
+    } finally {
+      setLoadingDeliveryPersons(false);
+    }
+  };
 
-  const paymentStatuses = ['PARTIAL', 'UNPAID', 'PAID'];
+  const paymentStatuses = ["PARTIAL", "UNPAID", "PAID"];
 
   const clearFilters = () => {
     setFilter({
@@ -91,7 +104,6 @@ export const ManageOrdersView = () => {
       startDateRange: null,
       endDateRange: null,
       selectedDeliveryPerson: "",
-
     });
   };
 
@@ -143,7 +155,8 @@ export const ManageOrdersView = () => {
     return (
       <tr key={order.id} className="hover:bg-gray-50 transition-colors">
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
-          {configurations.orderPrefix || "K"}{order.orderId}
+          {configurations.orderPrefix || "K"}
+          {order.orderId}
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-sm font-medium text-black">
@@ -325,15 +338,19 @@ export const ManageOrdersView = () => {
                   })),
                 ]}
                 value={filter.selectedDeliveryPerson}
-                onChange={(value) =>{
+                onChange={(value) => {
                   setFilter((prev) => ({
                     ...prev,
                     selectedDeliveryPerson: value,
-                  }))
+                  }));
+                }}
+                placeholder={
+                  loadingDeliveryPersons
+                    ? "Loading..."
+                    : t("manageOrders.allDeliveryPersons")
                 }
-                }
-                placeholder={t("manageOrders.allDeliveryPersons")}
                 className="w-full"
+                disabled={loadingDeliveryPersons}
               />
             </div>
 
@@ -407,9 +424,9 @@ export const ManageOrdersView = () => {
             }
             emptyStateTitle={
               filter.searchTerm ||
-                filter.selectedDate ||
-                filter.selectedDeliveryPerson ||
-                filter.selectedStatus.length > 0
+              filter.selectedDate ||
+              filter.selectedDeliveryPerson ||
+              filter.selectedStatus.length > 0
                 ? t("manageOrders.noOrdersMatch")
                 : t("manageOrders.noOrdersFound")
             }
