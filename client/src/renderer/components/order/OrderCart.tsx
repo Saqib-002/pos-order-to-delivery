@@ -8,6 +8,7 @@ import { CrossIcon, DeleteIcon, EditIcon, PrinterIcon } from "@/renderer/assets/
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import { generateItemsReceiptHTML, generateReceiptHTML, groupItemsByPrinter } from "@/renderer/utils/printer";
 import { useAuth } from "@/renderer/contexts/AuthContext";
+import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
 
 interface OrderCartProps {
   orderId: string;
@@ -56,11 +57,12 @@ const OrderCart: React.FC<OrderCartProps> = ({
       const printerName = printer.split("|")[0];
       const printerIsMain = printer.split("|")[1];
       let receiptHTML = "";
+      const {status}= calculatePaymentStatus(order?.paymentType || "",orderTotal);
       if (printerIsMain === "true") {
-        receiptHTML = generateReceiptHTML(items,configurations, order!.orderId,user!.role);
+        receiptHTML = generateReceiptHTML(items,configurations, order!.orderId,order?.orderType,user!.role,status);
       }
       else{
-        receiptHTML = generateItemsReceiptHTML(items,configurations, order,user!.role);
+        receiptHTML = generateItemsReceiptHTML(items,configurations, order,user!.role,status);
       }
       if(!receiptHTML){
         continue;

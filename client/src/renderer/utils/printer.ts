@@ -50,7 +50,9 @@ export const generateReceiptHTML = (
   items: OrderItem[],
   configurations: any,
   orderId: string,
-  userRole: string
+  orderType: string | undefined,
+  userRole: string,
+  status: string
 ): string => {
   const { nonMenuItems, groups, orderTotal } = calculateOrderTotal(items);
   const now = new Date();
@@ -137,7 +139,8 @@ export const generateReceiptHTML = (
         </div>
         <div class="order-info left">
             <p><span class="bold">Date:</span> ${dateTimeStr}</p>
-            <p><span class="bold">Order:</span> K${orderId}</p>
+            <p><span class="bold">Order:</span> K${orderId}(${orderType?.toUpperCase() || "N/A"})</p>
+            <p><span class="bold">Payment:</span> ${status}</p>
             <p><span class="bold">Served By:</span> ${userRole}</p>
             <div class="line"></div>
         </div>
@@ -291,7 +294,8 @@ export const generateItemsReceiptHTML = (
   items: OrderItem[],
   configurations: any,
   order: any,
-  userRole: string
+  userRole: string,
+  status: string
 ): string => {
   const { nonMenuItems, groups } = calculateOrderTotal(items);
   const now = new Date();
@@ -337,6 +341,7 @@ export const generateItemsReceiptHTML = (
             <h1 class="bold">K${order.orderId}</h1>
             <h1 class="bold">${order.orderType ? order.orderType.toUpperCase() : "N/A"}</h1>
             <p>${dateTimeStr}</p>
+            <p>${status}</p>
         </div>
         <div class="line"></div>
         <div>
