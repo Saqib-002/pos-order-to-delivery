@@ -18,12 +18,14 @@ import { FilterControls } from "../components/shared/FilterControl.order";
 import { updateOrder } from "../utils/order";
 import { formatAddress } from "../utils/utils";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
+import { useConfigurations } from "../contexts/configurationContext";
 
 export const DeliveryView = () => {
   const { t } = useTranslation();
   const { auth } = useAuth();
   const { token } = auth;
-  const {orders,filter,setFilter,refreshOrdersCallback}=useOrderManagementContext();
+  const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagementContext();
+  const { configurations } = useConfigurations();
   useEffect(() => {
     if (!filter.selectedDate) {
       setFilter({
@@ -56,6 +58,10 @@ export const DeliveryView = () => {
       searchTerm: "",
       selectedStatus: ["ready for delivery", "out for delivery"],
       selectedPaymentStatus: [],
+      page: 0,
+      limit: 0,
+      startDateRange: null,
+      endDateRange: null,
     });
   }, []);
 
@@ -170,7 +176,7 @@ export const DeliveryView = () => {
         className="hover:bg-gray-50 transition-colors duration-150"
       >
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-sm font-medium text-black">K{order.orderId}</div>
+          <div className="text-sm font-medium text-black">{configurations.orderPrefix || "K"}{order.orderId}</div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-sm font-medium text-black">
@@ -232,7 +238,7 @@ export const DeliveryView = () => {
       className="hover:bg-gray-50 transition-colors duration-150"
     >
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-medium text-black">#{order.orderId}</div>
+        <div className="text-sm font-medium text-black">{configurations.orderPrefix || "K"}{order.orderId}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm font-medium text-black">
@@ -332,8 +338,8 @@ export const DeliveryView = () => {
                     {readyOrders.length > 0
                       ? t("deliveryView.descriptions.ordersReadyToAssign")
                       : t(
-                          "deliveryView.descriptions.allOrdersInKitchenOrAssigned"
-                        )}
+                        "deliveryView.descriptions.allOrdersInKitchenOrAssigned"
+                      )}
                   </p>
                 </div>
                 <FilterControls filter={filter} setFilter={setFilter} />

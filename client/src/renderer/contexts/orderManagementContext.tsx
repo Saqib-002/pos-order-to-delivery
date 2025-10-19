@@ -11,6 +11,10 @@ const useOrderManagementInternal = (auth: AuthState) => {
         selectedDate: null,
         selectedStatus: ["all"],
         selectedPaymentStatus: [],
+        page:0,
+        limit:0,
+        startDateRange: null,
+        endDateRange: null,
     });
 
     const refreshOrdersCallback = async () => {

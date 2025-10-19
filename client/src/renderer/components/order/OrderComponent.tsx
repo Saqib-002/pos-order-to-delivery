@@ -9,6 +9,7 @@ import { useAuth } from "@/renderer/contexts/AuthContext";
 import { calculateOrderTotal } from "@/renderer/utils/orderCalculations";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
+import { useConfigurations } from "@/renderer/contexts/configurationContext";
 
 const OrderComponent = () => {
   const {
@@ -21,6 +22,7 @@ const OrderComponent = () => {
     setOrder,
   } = useOrder();
   const {orders,refreshOrdersCallback}=useOrderManagementContext();
+  const {configurations}=useConfigurations();
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
   const {
     auth: { token },
@@ -80,7 +82,7 @@ const OrderComponent = () => {
       ) : (
         <>
           {orders.length > 0 ? (
-            <div className="h-[calc(100vh-9rem)] overflow-y-auto">
+            <div className="h-[calc(100vh-3.9rem)] overflow-y-auto">
               {orders.map((order) => {
                 const { orderTotal } = order.items
                   ? calculateOrderTotal(order.items)
@@ -155,7 +157,7 @@ const OrderComponent = () => {
                       {/* Order Number and Total */}
                       <div className="flex items-center justify-between gap-3 w-full">
                         <h3 className="font-semibold text-black text-xl">
-                          K{order.orderId}
+                          {configurations.orderPrefix || "K"}{order.orderId}
                         </h3>
                         <div className="text-xl font-bold text-black">
                           €{orderTotal.toFixed(2)}

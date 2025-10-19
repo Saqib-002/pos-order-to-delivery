@@ -76,6 +76,10 @@ export interface FilterType {
   selectedDate: Date | null;
   selectedStatus: string[];
   selectedPaymentStatus: string[];
+  page: number;
+  limit: number;
+  startDateRange: Date | null;
+  endDateRange: Date | null;
 }
 export interface PrinterType {
   id?: string;

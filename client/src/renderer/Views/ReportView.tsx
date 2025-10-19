@@ -17,12 +17,15 @@ import {
 } from "../assets/Svg";
 import { StatsCard } from "../components/shared/StatsCard.order";
 import { OrderTable } from "../components/shared/OrderTable";
+import { useConfigurations } from "../contexts/configurationContext";
 
 export const ReportView = () => {
   const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const { configurations } = useConfigurations();
+
   const [dateRange, setDateRange] = useState<string>("today");
   const [analytics, setAnalytics] = useState<AnalyticsType | null>(null);
   const {
@@ -99,7 +102,7 @@ export const ReportView = () => {
       className="hover:bg-gray-50 transition-colors duration-150"
     >
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-medium text-black">#{order.orderId}</div>
+        <div className="text-sm font-medium text-black">{configurations.orderPrefix || "K"}{order.orderId}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-black">{order.customer.name}</div>

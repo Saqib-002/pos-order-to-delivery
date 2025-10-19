@@ -23,17 +23,21 @@ import { useConfigurations } from "../contexts/configurationContext";
 
 export const KitchenView = () => {
   const { t } = useTranslation();
-  const { auth:{token} } = useAuth();
-  const {orders,filter,setFilter,refreshOrdersCallback}=useOrderManagementContext();
+  const { auth: { token } } = useAuth();
+  const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagementContext();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
-  const {configurations}= useConfigurations();
+  const { configurations } = useConfigurations();
   useEffect(() => {
     setFilter({
       selectedDate: null,
       searchTerm: "",
       selectedStatus: ["sent to kitchen"],
       selectedPaymentStatus: [],
+      page: 0,
+      limit: 0,
+      startDateRange: null,
+      endDateRange: null,
     });
   }, [token, setFilter]);
 
@@ -165,7 +169,7 @@ export const KitchenView = () => {
           </span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
-          K{order.orderId}
+          {configurations.orderPrefix || "K"}{order.orderId}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
           {order.customer.name}

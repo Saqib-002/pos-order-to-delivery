@@ -93,7 +93,7 @@ const ConfigurationsTab = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column - Form Fields */}
           <div className="flex-1 flex flex-col gap-6">
-            <div>
+            <div className="flex gap-4">
               <CustomInput
               type="text"
               value={configurations.orderPrefix}

@@ -24,6 +24,7 @@ import ThunderIcon from "../assets/icons/thunder.svg?react";
 import DeliveredIcon from "../assets/icons/delivered.svg?react";
 import { Euro } from "@/renderer/assets/Svg";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
+import { useConfigurations } from "../contexts/configurationContext";
 
 export const ManageOrdersView = () => {
   const { t } = useTranslation();
@@ -31,6 +32,7 @@ export const ManageOrdersView = () => {
     auth: { token }
   } = useAuth();
   const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagementContext();
+  const { configurations } = useConfigurations();
   useEffect(() => {
     if (!filter.selectedDate) {
       setFilter((prev) => ({
@@ -45,6 +47,10 @@ export const ManageOrdersView = () => {
       selectedDate: null,
       selectedStatus: [],
       selectedPaymentStatus: [],
+      page: 0,
+      limit: 0,
+      startDateRange: null,
+      endDateRange: null,
     });
   }, []);
 
@@ -125,6 +131,10 @@ export const ManageOrdersView = () => {
       selectedDate: new Date(),
       selectedStatus: ["all"],
       selectedPaymentStatus: [],
+      page: 0,
+      limit: 0,
+      startDateRange: null,
+      endDateRange: null,
     });
     setLocalFilters({
       selectedDeliveryPerson: "",
@@ -180,7 +190,7 @@ export const ManageOrdersView = () => {
     return (
       <tr key={order.id} className="hover:bg-gray-50 transition-colors">
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
-          K{order.orderId}
+          {configurations.orderPrefix || "K"}{order.orderId}
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-sm font-medium text-black">

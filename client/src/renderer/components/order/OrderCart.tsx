@@ -9,6 +9,7 @@ import { useOrder } from "@/renderer/contexts/OrderContext";
 import { generateItemsReceiptHTML, generateReceiptHTML, groupItemsByPrinter } from "@/renderer/utils/printer";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
+import { useConfigurations } from "@/renderer/contexts/configurationContext";
 
 interface OrderCartProps {
   orderId: string;
@@ -28,28 +29,29 @@ const OrderCart: React.FC<OrderCartProps> = ({
   onProcessOrder
 }) => {
   const { orderTotal, nonMenuItems, groups } = calculateOrderTotal(orderItems);
-  const { setSelectedMenu, setSelectedProduct, setEditingGroup, setEditingProduct,order, setMode } = useOrder();
+  const { setSelectedMenu, setSelectedProduct, setEditingGroup, setEditingProduct, order, setMode } = useOrder();
   const confirm = useConfirm();
-  const {auth:{user,token}}=useAuth();
+  const { configurations } = useConfigurations();
+  const { auth: { user, token } } = useAuth();
   const handlePrint = async () => {
     const printerGroups = groupItemsByPrinter(orderItems);
-    if(!Object.keys(printerGroups).length){
+    if (!Object.keys(printerGroups).length) {
       toast.warn("No printers attached");
       return;
     }
-    let configurations={
-      name:"Point of Sale",
-      address:"street 123",
-      logo:"",
-      id:""
+    let configurations = {
+      name: "Point of Sale",
+      address: "street 123",
+      logo: "",
+      id: ""
     }
-    let res=await (window as any).electronAPI.getConfigurations(token);
-    if(!res.status){
+    let res = await (window as any).electronAPI.getConfigurations(token);
+    if (!res.status) {
       toast.error("Error getting configurations");
       return;
     }
-    if(res.data){
-      configurations=res.data;
+    if (res.data) {
+      configurations = res.data;
     }
 
     toast.info("Printing customer receipt...");
@@ -57,14 +59,14 @@ const OrderCart: React.FC<OrderCartProps> = ({
       const printerName = printer.split("|")[0];
       const printerIsMain = printer.split("|")[1];
       let receiptHTML = "";
-      const {status}= calculatePaymentStatus(order?.paymentType || "",orderTotal);
+      const { status } = calculatePaymentStatus(order?.paymentType || "", orderTotal);
       if (printerIsMain === "true") {
-        receiptHTML = generateReceiptHTML(items,configurations, order!.orderId,order?.orderType,user!.role,status);
+        receiptHTML = generateReceiptHTML(items, configurations, order!.orderId, order?.orderType, user!.role, status);
       }
-      else{
-        receiptHTML = generateItemsReceiptHTML(items,configurations, order,user!.role,status);
+      else {
+        receiptHTML = generateItemsReceiptHTML(items, configurations, order, user!.role, status);
       }
-      if(!receiptHTML){
+      if (!receiptHTML) {
         continue;
       }
       const res = await (window as any).electronAPI.printToPrinter(token, printerName, { html: receiptHTML });
@@ -142,7 +144,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       toast.error(`Error getting menu`);
       return;
     }
-    if(!res.data){
+    if (!res.data) {
       toast.error(`Menu have been deleted`);
       return;
     }
@@ -205,7 +207,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     return (
       <div className="text-center text-gray-500 py-8 p-4 h-[calc(100vh-9rem)]">
         <div className="text-4xl mb-2">🛒</div>
-        <p className="text-lg font-medium">Your Order</p>
+        <p className="text-lg font-medium">Your Order{configurations?.orderPrefix}{order?.orderId}</p>
         <p className="text-sm">
           Select items from the menu to add to your order
         </p>
@@ -216,9 +218,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
     <div className="h-[calc(100vh-5.2rem)] flex flex-col overflow-y-auto">
       {/* Header */}
       <div className="flex justify-between items-center p-4 pb-2">
-        <h2 className="text-lg font-semibold text-gray-800">Your Order</h2>
+        <h2 className="text-lg font-semibold text-gray-800">Your Order {configurations?.orderPrefix || "K"}{order?.orderId}</h2>
         <div className="flex items-center gap-1">
-            <CustomButton type="button" onClick={handlePrint} title="Print Options" Icon={<PrinterIcon className="size-5" />} className="!px-2" variant="transparent" />
+          <CustomButton type="button" onClick={handlePrint} title="Print Options" Icon={<PrinterIcon className="size-5" />} className="!px-2" variant="transparent" />
           <CustomButton type="button" onClick={handleClearOrder} title="Save Order" Icon={<DeleteIcon className="size-5" />} className="!px-2 text-red-600 hover:text-red-700" variant="transparent" />
         </div>
       </div>

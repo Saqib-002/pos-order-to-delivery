@@ -25,6 +25,10 @@ const OrderComponentHeader = () => {
       selectedDate: localMidnight,
       selectedStatus: [],
       selectedPaymentStatus: [],
+      page: 0,
+      limit: 0,
+      startDateRange: null,
+      endDateRange: null,
     });
   }, []);
   const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
