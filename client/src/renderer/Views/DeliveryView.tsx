@@ -62,6 +62,7 @@ export const DeliveryView = () => {
       limit: 0,
       startDateRange: null,
       endDateRange: null,
+      selectedDeliveryPerson: "",
     });
   }, []);
 

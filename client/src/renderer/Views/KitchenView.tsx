@@ -38,6 +38,7 @@ export const KitchenView = () => {
       limit: 0,
       startDateRange: null,
       endDateRange: null,
+      selectedDeliveryPerson: "",
     });
   }, [token, setFilter]);
 

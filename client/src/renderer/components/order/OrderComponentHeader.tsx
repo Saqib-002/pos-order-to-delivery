@@ -29,6 +29,7 @@ const OrderComponentHeader = () => {
       limit: 0,
       startDateRange: null,
       endDateRange: null,
+      selectedDeliveryPerson: "",
     });
   }, []);
   const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
