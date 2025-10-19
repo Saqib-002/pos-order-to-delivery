@@ -1,12 +1,24 @@
 import { OrderItem } from "@/types/order";
 import React from "react";
 import { toast } from "react-toastify";
-import { calculateOrderTotal, calculateTaxPercentage } from "@/renderer/utils/orderCalculations";
+import {
+  calculateOrderTotal,
+  calculateTaxPercentage,
+} from "@/renderer/utils/orderCalculations";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import CustomButton from "../ui/CustomButton";
-import { CrossIcon, DeleteIcon, EditIcon, PrinterIcon } from "@/renderer/assets/Svg";
+import {
+  CrossIcon,
+  DeleteIcon,
+  EditIcon,
+  PrinterIcon,
+} from "@/renderer/assets/Svg";
 import { useOrder } from "@/renderer/contexts/OrderContext";
-import { generateItemsReceiptHTML, generateReceiptHTML, groupItemsByPrinter } from "@/renderer/utils/printer";
+import {
+  generateItemsReceiptHTML,
+  generateReceiptHTML,
+  groupItemsByPrinter,
+} from "@/renderer/utils/printer";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
@@ -26,13 +38,22 @@ const OrderCart: React.FC<OrderCartProps> = ({
   onRemoveItem,
   onUpdateQuantity,
   onClearOrder,
-  onProcessOrder
+  onProcessOrder,
 }) => {
   const { orderTotal, nonMenuItems, groups } = calculateOrderTotal(orderItems);
-  const { setSelectedMenu, setSelectedProduct, setEditingGroup, setEditingProduct, order, setMode } = useOrder();
+  const {
+    setSelectedMenu,
+    setSelectedProduct,
+    setEditingGroup,
+    setEditingProduct,
+    order,
+    setMode,
+  } = useOrder();
   const confirm = useConfirm();
   const { configurations } = useConfigurations();
-  const { auth: { user, token } } = useAuth();
+  const {
+    auth: { user, token },
+  } = useAuth();
   const handlePrint = async () => {
     const printerGroups = groupItemsByPrinter(orderItems);
     if (!Object.keys(printerGroups).length) {
@@ -43,8 +64,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
       name: "Point of Sale",
       address: "street 123",
       logo: "",
-      id: ""
-    }
+      id: "",
+    };
     let res = await (window as any).electronAPI.getConfigurations(token);
     if (!res.status) {
       toast.error("Error getting configurations");
@@ -59,17 +80,36 @@ const OrderCart: React.FC<OrderCartProps> = ({
       const printerName = printer.split("|")[0];
       const printerIsMain = printer.split("|")[1];
       let receiptHTML = "";
-      const { status } = calculatePaymentStatus(order?.paymentType || "", orderTotal);
+      const { status } = calculatePaymentStatus(
+        order?.paymentType || "",
+        orderTotal
+      );
       if (printerIsMain === "true") {
-        receiptHTML = generateReceiptHTML(items, configurations, order!.orderId, order?.orderType, user!.role, status);
-      }
-      else {
-        receiptHTML = generateItemsReceiptHTML(items, configurations, order, user!.role, status);
+        receiptHTML = generateReceiptHTML(
+          items,
+          configurations,
+          order!.orderId,
+          order?.orderType,
+          user!.role,
+          status
+        );
+      } else {
+        receiptHTML = generateItemsReceiptHTML(
+          items,
+          configurations,
+          order,
+          user!.role,
+          status
+        );
       }
       if (!receiptHTML) {
         continue;
       }
-      const res = await (window as any).electronAPI.printToPrinter(token, printerName, { html: receiptHTML });
+      const res = await (window as any).electronAPI.printToPrinter(
+        token,
+        printerName,
+        { html: receiptHTML }
+      );
       if (!res.status) {
         if (res.error === "Printer not found") {
           toast.error(`Printer "${printerName}" not found`);
@@ -105,7 +145,10 @@ const OrderCart: React.FC<OrderCartProps> = ({
     onRemoveItem(itemId);
   };
   const handleEditItem = async (item: any) => {
-    const res = await (window as any).electronAPI.getProductById(token, item.productId);
+    const res = await (window as any).electronAPI.getProductById(
+      token,
+      item.productId
+    );
     if (!res.status) {
       toast.error(`Error getting product`);
       return;
@@ -113,7 +156,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     setMode("product");
     setEditingProduct(item);
     setSelectedProduct(res.data);
-  }
+  };
   const handleRemoveGroup = async (group: any) => {
     const ok = await confirm({
       title: "Remove Menu",
@@ -139,7 +182,10 @@ const OrderCart: React.FC<OrderCartProps> = ({
     group.items.forEach((item: any) => onRemoveItem(item.id));
   };
   const handleEditGroup = async (group: any) => {
-    const res = await (window as any).electronAPI.getMenuById(token, group.menuId);
+    const res = await (window as any).electronAPI.getMenuById(
+      token,
+      group.menuId
+    );
     if (!res.status) {
       toast.error(`Error getting menu`);
       return;
@@ -152,7 +198,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     setEditingGroup(group);
     setSelectedMenu(res.data);
     setSelectedProduct(null);
-  }
+  };
   const handleUpdateGroupQuantity = async (group: any, quantity: number) => {
     const res = await (window as any).electronAPI.updateMenuQuantity(
       token,
@@ -171,7 +217,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
   const handleClearOrder = async () => {
     const ok = await confirm({
       title: "Clear Order",
-      message: "Are you sure you want to clear the entire order? This action cannot be undone.",
+      message:
+        "Are you sure you want to clear the entire order? This action cannot be undone.",
       type: "danger",
       confirmText: "Clear Order",
       cancelText: "Cancel",
@@ -207,7 +254,10 @@ const OrderCart: React.FC<OrderCartProps> = ({
     return (
       <div className="text-center text-gray-500 py-8 p-4 h-[calc(100vh-9rem)]">
         <div className="text-4xl mb-2">🛒</div>
-        <p className="text-lg font-medium">Your Order{configurations?.orderPrefix}{order?.orderId}</p>
+        <p className="text-lg font-medium">
+          Your Order{configurations?.orderPrefix}
+          {order?.orderId}
+        </p>
         <p className="text-sm">
           Select items from the menu to add to your order
         </p>
@@ -218,10 +268,27 @@ const OrderCart: React.FC<OrderCartProps> = ({
     <div className="h-[calc(100vh-5.2rem)] flex flex-col overflow-y-auto">
       {/* Header */}
       <div className="flex justify-between items-center p-4 pb-2">
-        <h2 className="text-lg font-semibold text-gray-800">Your Order {configurations?.orderPrefix || "K"}{order?.orderId}</h2>
+        <h2 className="text-lg font-semibold text-gray-800">
+          Your Order {configurations?.orderPrefix || "K"}
+          {order?.orderId}
+        </h2>
         <div className="flex items-center gap-1">
-          <CustomButton type="button" onClick={handlePrint} title="Print Options" Icon={<PrinterIcon className="size-5" />} className="!px-2" variant="transparent" />
-          <CustomButton type="button" onClick={handleClearOrder} title="Save Order" Icon={<DeleteIcon className="size-5" />} className="!px-2 text-red-600 hover:text-red-700" variant="transparent" />
+          <CustomButton
+            type="button"
+            onClick={handlePrint}
+            title="Print Options"
+            Icon={<PrinterIcon className="size-5" />}
+            className="!px-2"
+            variant="transparent"
+          />
+          <CustomButton
+            type="button"
+            onClick={handleClearOrder}
+            title="Save Order"
+            Icon={<DeleteIcon className="size-5" />}
+            className="!px-2 text-red-600 hover:text-red-700"
+            variant="transparent"
+          />
         </div>
       </div>
 
@@ -241,7 +308,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 <div className="text-sm text-gray-600 space-y-1">
                   <div className="flex justify-between">
                     <span>Base Price</span>
-                    <span>€{(item.productPrice + item.productTax).toFixed(2)}</span>
+                    <span>
+                      €{(item.productPrice + item.productTax).toFixed(2)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Variant: {item.variantName}</span>
@@ -265,12 +334,22 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 )}
               </div>
               <div className="ml-2 flex gap-2">
-                <CustomButton type="button" onClick={() =>
-                  handleEditItem(item)
-                } variant="transparent" Icon={<EditIcon className="size-4" />} className="!p-0" />
-                <CustomButton type="button" onClick={() =>
-                  handleRemoveItem(item.id || "", item.productName)
-                } className="!p-0 text-sm text-red-500 hover:text-red-700" variant="transparent" label="✕" />
+                <CustomButton
+                  type="button"
+                  onClick={() => handleEditItem(item)}
+                  variant="transparent"
+                  Icon={<EditIcon className="size-4" />}
+                  className="!p-0"
+                />
+                <CustomButton
+                  type="button"
+                  onClick={() =>
+                    handleRemoveItem(item.id || "", item.productName)
+                  }
+                  className="!p-0 text-sm text-red-500 hover:text-red-700"
+                  variant="transparent"
+                  label="✕"
+                />
               </div>
             </div>
 
@@ -300,7 +379,20 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 </button>
               </div>
               <span className="font-semibold text-gray-800">
-                €{(item.totalPrice * item.quantity).toFixed(2)}
+                €
+                {(
+                  (item.productPrice +
+                    item.productTax -
+                    item.productDiscount +
+                    item.variantPrice +
+                    (Array.isArray(item.complements) 
+                      ? item.complements.reduce(
+                          (sum, complement) => sum + complement.price,
+                          0
+                        )
+                      : 0)) *
+                  item.quantity
+                ).toFixed(2)}
               </span>
             </div>
           </div>
@@ -326,16 +418,20 @@ const OrderCart: React.FC<OrderCartProps> = ({
                     From {group.menuName} - {group.secondaryId}
                   </h3>
                   <div className="flex gap-2">
-                    <CustomButton type="button" onClick={() =>
-                      handleEditGroup(
-                        group
-                      )
-                    } variant="transparent" Icon={<EditIcon className="size-4" />} className="!p-0" />
-                    <CustomButton type="button" onClick={() =>
-                      handleRemoveGroup(
-                        group
-                      )
-                    } className="!p-1 !rounded-full !text-sm ml-2 bg-red-500 text-white hover:!text-gray-100 hover:bg-red-700" variant="transparent" Icon={<CrossIcon className="size-4" />} />
+                    <CustomButton
+                      type="button"
+                      onClick={() => handleEditGroup(group)}
+                      variant="transparent"
+                      Icon={<EditIcon className="size-4" />}
+                      className="!p-0"
+                    />
+                    <CustomButton
+                      type="button"
+                      onClick={() => handleRemoveGroup(group)}
+                      className="!p-1 !rounded-full !text-sm ml-2 bg-red-500 text-white hover:!text-gray-100 hover:bg-red-700"
+                      variant="transparent"
+                      Icon={<CrossIcon className="size-4" />}
+                    />
                   </div>
                 </div>
 
@@ -461,11 +557,14 @@ const OrderCart: React.FC<OrderCartProps> = ({
       <div className="border-t border-gray-200 px-4">
         <div className="flex justify-between text-lg font-semibold mb-4">
           <span>Total:</span>
-          <span className="text-indigo-600">
-            €{orderTotal.toFixed(2)}
-          </span>
+          <span className="text-indigo-600">€{orderTotal.toFixed(2)}</span>
         </div>
-        <CustomButton label="Process Order" type="button" className="w-full" onClick={onProcessOrder} />
+        <CustomButton
+          label="Process Order"
+          type="button"
+          className="w-full"
+          onClick={onProcessOrder}
+        />
       </div>
     </div>
   );
