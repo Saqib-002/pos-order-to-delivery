@@ -30,7 +30,7 @@ export async function loginUser(_: any, { username, userPassword }: { username: 
     sessions[token] = { 
       userId: decoded.userId, 
       role: decoded.role, 
-      expires: Date.now() + 10000 
+      expires: Date.now() + 5 * 60 * 60 * 1000 
     };
     
     return { token, user,status:true };

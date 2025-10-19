@@ -129,6 +129,7 @@ export const generateReceiptHTML = (
         <div class="center">
             <h2 class="bold">${configurations.name}</h2>
             <p>${configurations.address}</p>
+            ${configurations.vatNumber ? `<p>${configurations.vatNumber}</p>` : ""}
         </div>
         <div class="line"></div>
         <div class="order-info center">
@@ -333,7 +334,7 @@ export const generateItemsReceiptHTML = (
         </head>
         <body>
         <div class="order-info center">
-            <h1 class="bold">K${order.id}</h1>
+            <h1 class="bold">K${order.orderId}</h1>
             <h1 class="bold">${order.orderType ? order.orderType.toUpperCase() : "N/A"}</h1>
             <p>${dateTimeStr}</p>
         </div>
