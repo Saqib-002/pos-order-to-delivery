@@ -900,9 +900,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           KITCHEN PRIORITY
                         </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {/* <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           MULTIPLE
-                        </th>
+                        </th> */}
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           ACTIONS
                         </th>
@@ -997,7 +997,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                               maxHeight="max-h-36"
                             />
                           </td>
-                          <td className="px-4 py-2">
+                          {/* <td className="px-4 py-2">
                             <CustomSelect
                               options={multipleOptions}
                               value={association.multiple}
@@ -1016,7 +1016,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                               className="w-20"
                               maxHeight="max-h-36"
                             />
-                          </td>
+                          </td> */}
                           <td className="px-4 py-2">
                             <button
                               type="button"
