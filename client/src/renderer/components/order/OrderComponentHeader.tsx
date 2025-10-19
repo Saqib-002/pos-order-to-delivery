@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useOrder } from "@/renderer/contexts/OrderContext";
+import { useEffect, useContext } from "react";
+import { OrderContext } from "@/renderer/contexts/OrderContext";
 import { FilterType } from "@/types/order";
 import { ChevronLeftIcon } from "@/renderer/assets/Svg";
 import CustomButton from "../ui/CustomButton";
@@ -7,8 +7,19 @@ import { CustomSelect } from "../ui/CustomSelect";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
 
 const OrderComponentHeader = () => {
-  const { clearOrder, orderItems } = useOrder();
-  const { refreshOrdersCallback, filter, setFilter } = useOrderManagementContext();
+  const orderContext = useContext(OrderContext);
+  const { refreshOrdersCallback, filter, setFilter } =
+    useOrderManagementContext();
+
+  if (!orderContext) {
+    return (
+      <div className="p-4 bg-white border-b border-gray-200">
+        <div className="text-center text-gray-500">Loading...</div>
+      </div>
+    );
+  }
+
+  const { clearOrder, orderItems } = orderContext;
 
   useEffect(() => {
     const now = new Date();

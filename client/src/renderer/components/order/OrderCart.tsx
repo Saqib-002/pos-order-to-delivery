@@ -385,7 +385,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                     item.productTax -
                     item.productDiscount +
                     item.variantPrice +
-                    (Array.isArray(item.complements) 
+                    (Array.isArray(item.complements)
                       ? item.complements.reduce(
                           (sum, complement) => sum + complement.price,
                           0

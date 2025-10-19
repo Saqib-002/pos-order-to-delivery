@@ -1,6 +1,8 @@
+import { calculateOrderTotal } from "../../renderer/utils/orderCalculations.js";
 import { db } from "./index.js";
 import { FilterType, Order, OrderItem } from "@/types/order.js";
 import { randomUUID } from "crypto";
+import { calculatePaymentStatus } from "../../renderer/utils/paymentStatus.js";
 
 export class OrderDatabaseOperations {
     static async saveOrder(item: any): Promise<any> {
@@ -409,9 +411,7 @@ export class OrderDatabaseOperations {
             ) {
                 query.whereIn("status", filter.selectedStatus);
             }
-
             // Filter by payment status if specified
-            console.log(filter.selectedPaymentStatus);
             if (
                 filter.selectedPaymentStatus.length > 0 &&
                 filter.selectedPaymentStatus[0] !== "all"
@@ -419,54 +419,87 @@ export class OrderDatabaseOperations {
                 const paymentStatusesArray = filter.selectedPaymentStatus
                     .map((s) => `'${s}'`)
                     .join(",");
-                console.log(paymentStatusesArray);
-                const amountPattern = `'^[0-9]+(\\\\.[0-9]+)?$'`; // Escaped for SQL string
-                query.whereRaw(`
-                      CASE
-                        WHEN (
-                          CASE
+                const amountPattern = "^[0-9]+(\\.[0-9]*)?$"; // JS string for binding
+                const sql = `
+                CASE
+                    WHEN (
+                        CASE
                             WHEN "paymentType" IS NULL OR "paymentType" = ''
                             THEN 0
                             ELSE COALESCE(
-                              (SELECT SUM(CAST(TRIM(split_part(elem, ':', 2)) AS NUMERIC))
-                               FROM unnest(string_to_array("paymentType", ',')) AS elem
-                               WHERE TRIM(split_part(elem, ':', 2)) ~ ${amountPattern}),
-                              0
-                            )
-                          END
-                        ) <= 0 THEN 'UNPAID'
-                        WHEN ABS(
-                          COALESCE(
-                            (SELECT SUM((COALESCE("oi"."productPrice", 0) + COALESCE("oi"."productTax", 0)) * "oi"."quantity")
-                             FROM "order_items" "oi"
-                             WHERE "oi"."orderId" = "orders"."id"
-                            ),
-                            0
-                          ) -
-                          (
-                            CASE
-                              WHEN "paymentType" IS NULL OR "paymentType" = ''
-                              THEN 0
-                              ELSE COALESCE(
                                 (SELECT SUM(CAST(TRIM(split_part(elem, ':', 2)) AS NUMERIC))
                                  FROM unnest(string_to_array("paymentType", ',')) AS elem
-                                 WHERE TRIM(split_part(elem, ':', 2)) ~ ${amountPattern}),
+                                 WHERE TRIM(split_part(elem, ':', 2)) ~ ?),
                                 0
-                              )
+                            )
+                        END
+                    ) <= 0 THEN 'UNPAID'
+                    WHEN ABS(
+                        (
+                            COALESCE(
+                                (SELECT SUM(
+                                    (COALESCE("oi"."productPrice", 0) + 
+                                     COALESCE("oi"."productTax", 0) - 
+                                     COALESCE("oi"."productDiscount", 0) + 
+                                     COALESCE("oi"."variantPrice", 0) +
+                                     COALESCE(
+                                         CASE 
+                                           WHEN "oi"."complements" IS NOT NULL AND "oi"."complements" LIKE '[%' THEN
+                                             (SELECT COALESCE(SUM(CAST((elem->>'price') AS NUMERIC)), 0)
+                                              FROM jsonb_array_elements("oi"."complements"::jsonb) AS elem)
+                                           ELSE 0 
+                                         END,
+                                         0
+                                     )
+                                    ) * COALESCE("oi"."quantity", 0)
+                                ) FROM "order_items" "oi"
+                                WHERE "oi"."orderId" = "orders"."id" AND "oi"."menuId" IS NULL
+                                ), 0
+                            ) +
+                            COALESCE(
+                                (SELECT SUM( (g.base_price + g.tax_per_unit + g.supplement_total) * g.qty )
+                                 FROM (
+                                     SELECT 
+                                         MIN(COALESCE("oi2"."menuPrice", 0)) AS base_price,
+                                         MIN(COALESCE("oi2"."menuTax", 0)) AS tax_per_unit,
+                                         SUM(COALESCE("oi2"."supplement", 0)) AS supplement_total,
+                                         MIN(COALESCE("oi2"."quantity", 0)) AS qty
+                                     FROM "order_items" "oi2"
+                                     WHERE "oi2"."orderId" = "orders"."id" AND "oi2"."menuId" IS NOT NULL
+                                     GROUP BY "oi2"."menuId", COALESCE("oi2"."menuSecondaryId", 0)
+                                 ) g
+                                ), 0
+                            )
+                        ) -
+                        (
+                            CASE
+                                WHEN "paymentType" IS NULL OR "paymentType" = ''
+                                THEN 0
+                                ELSE COALESCE(
+                                    (SELECT SUM(CAST(TRIM(split_part(elem, ':', 2)) AS NUMERIC))
+                                     FROM unnest(string_to_array("paymentType", ',')) AS elem
+                                     WHERE TRIM(split_part(elem, ':', 2)) ~ ?),
+                                    0
+                                )
                             END
-                          )
-                        ) = 0.07 THEN 'PAID'
-                        ELSE 'PARTIAL'
-                      END = ANY(ARRAY[${paymentStatusesArray}])
-                    `);
+                        )
+                    ) <= 0.01 THEN 'PAID'
+                    ELSE 'PARTIAL'
+                END = ANY(ARRAY[${paymentStatusesArray}])
+            `;
+                query.whereRaw(sql, [amountPattern, amountPattern]);
             }
             const orders = await query;
-
             const newOrders = [];
             for (const order of orders) {
                 const items = await db("order_items").where(
                     "orderId",
                     order.id
+                );
+                const totalAmount = calculateOrderTotal(items).orderTotal;
+                const paymentStatusResult = calculatePaymentStatus(
+                    order.paymentType,
+                    totalAmount
                 );
                 const newOrder = {
                     customer: {
@@ -496,6 +529,7 @@ export class OrderDatabaseOperations {
                         vehicleType: order.deliveryPersonVehicleType,
                         licenseNo: order.deliveryPersonLicenseNo,
                     },
+                    paymentStatus: paymentStatusResult.status,
                     items: items.map((item) => ({
                         ...item,
                         printers: item.printers.split("="),

@@ -64,6 +64,7 @@ export interface Order {
   status: string;
   deliveryPerson?: DeliveryPerson;
   assignedAt?: string;
+  paymentStatus?: string;
   readyAt?: string;
   cancelAt?: string;
   deliveredAt?: string;
