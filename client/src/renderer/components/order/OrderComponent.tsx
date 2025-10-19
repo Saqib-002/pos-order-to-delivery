@@ -21,8 +21,8 @@ const OrderComponent = () => {
     order,
     setOrder,
   } = useOrder();
-  const {orders,refreshOrdersCallback}=useOrderManagementContext();
-  const {configurations}=useConfigurations();
+  const { orders, refreshOrdersCallback } = useOrderManagementContext();
+  const { configurations } = useConfigurations();
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
   const {
     auth: { token },
@@ -157,7 +157,8 @@ const OrderComponent = () => {
                       {/* Order Number and Total */}
                       <div className="flex items-center justify-between gap-3 w-full">
                         <h3 className="font-semibold text-black text-xl">
-                          {configurations.orderPrefix || "K"}{order.orderId}
+                          {configurations.orderPrefix || "K"}
+                          {order.orderId}
                         </h3>
                         <div className="text-xl font-bold text-black">
                           €{orderTotal.toFixed(2)}

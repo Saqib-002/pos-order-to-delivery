@@ -482,6 +482,7 @@ export class OrderDatabaseOperations {
           items: items.map((item) => ({
             ...item,
             printers: item.printers.split("="),
+            complements: item.complements ? JSON.parse(item.complements) : [],
           })),
         };
         newOrders.push(newOrder);
