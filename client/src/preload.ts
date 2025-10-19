@@ -60,7 +60,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
     updateVariant: (token: string, variantData: any, variantItems: any) =>
         ipcRenderer.invoke("update-variant", token, variantData, variantItems),
     getAssociatedProductsByVariantId: (token: string, variantId: string) =>
-        ipcRenderer.invoke("get-associated-products-by-variant-id", token, variantId),
+        ipcRenderer.invoke(
+            "get-associated-products-by-variant-id",
+            token,
+            variantId
+        ),
 
     // groups
     createGroup: (token: string, groupData: any, groupItems: any) =>
@@ -117,8 +121,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
     getProductById: (token: string, productId: string) =>
         ipcRenderer.invoke("get-product-by-id", token, productId),
     getAssociatedMenuPagesByProductId: (token: string, productId: string) =>
-        ipcRenderer.invoke("get-associated-menu-pages-by-product-id", token, productId),
-    
+        ipcRenderer.invoke(
+            "get-associated-menu-pages-by-product-id",
+            token,
+            productId
+        ),
 
     // customer operations
     createCustomer: (token: string, customer: any) =>
@@ -219,6 +226,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.invoke("update-user", token, userData),
     deleteUser: (token: string, userId: string) =>
         ipcRenderer.invoke("delete-user", token, userId),
+    onTokenExpired: (callback: (event: Electron.IpcRendererEvent) => void) =>
+        ipcRenderer.on("token-expired", callback),
+    removeTokenExpiredListener: (
+        callback: (event: Electron.IpcRendererEvent) => void
+    ) => ipcRenderer.removeListener("token-expired", callback),
 
     // delivery operations
     createDeliveryPerson: (token: string, deliveryPersonData: any) =>
@@ -319,8 +331,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.invoke("get-all-printers", token),
     getProductPrinters: (token: string, productId: string) =>
         ipcRenderer.invoke("get-product-printers", token, productId),
-    printToPrinter: (token: string, printerName: string, printData: { html: string; options?: any }) =>
-    ipcRenderer.invoke("print-to-printer", token, printerName, printData),
+    printToPrinter: (
+        token: string,
+        printerName: string,
+        printData: { html: string; options?: any }
+    ) => ipcRenderer.invoke("print-to-printer", token, printerName, printData),
 
     // configurations
     createConfigurations: (token: string, configData: any) =>

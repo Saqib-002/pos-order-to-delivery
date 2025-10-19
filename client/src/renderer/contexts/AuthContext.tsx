@@ -6,6 +6,7 @@ interface AuthContextType {
     auth: AuthState;
     login: (username: string, password: string) => Promise<Boolean>;
     logout: () => Promise<void>;
+    setAuth: React.Dispatch<React.SetStateAction<AuthState>>;
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -44,7 +45,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
             await (window as any).electronAPI.logoutUser(auth.token);
             setAuth({ token: null, user: null });
-            toast.success("Logged out successfully");
         } catch (error) {
             throw error;
         }
@@ -52,7 +52,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const value: AuthContextType = {
         auth,
         login,
-        logout
+        logout,
+        setAuth
     };
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

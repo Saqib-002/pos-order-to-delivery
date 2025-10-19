@@ -1,6 +1,5 @@
 import { UserDatabaseOperations } from '../database/userOperations.js';
 import jwt from 'jsonwebtoken';
-import Logger from 'electron-log';
 import { User } from '@/types/user';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -15,7 +14,6 @@ export async function registerUser(_: any,token:string, userData: Omit<User, 'id
       data:result
     };
   } catch (error) {
-    Logger.error('Error registering user:', error);
     return {
       status:false,
       error:(error as Error).message
@@ -32,12 +30,11 @@ export async function loginUser(_: any, { username, userPassword }: { username: 
     sessions[token] = { 
       userId: decoded.userId, 
       role: decoded.role, 
-      expires: Date.now() + 3600000 
+      expires: Date.now() + 10000 
     };
     
     return { token, user,status:true };
   } catch (error) {
-    Logger.error('Error logging in:', error);
     return { token: '', user: {} as Omit<User, 'password'|'syncAt'>,status:false};
   }
 }
@@ -61,7 +58,6 @@ export async function getUsers(_: any, token: string): Promise<{status:boolean;e
       data: res
     }
   } catch (error) {
-    Logger.error('Error fetching users:', error);
     return {
       status: false,
       error: 'Failed to fetch users',
@@ -86,7 +82,6 @@ export async function updateUser(_: any, token: string, userData: Partial<User> 
       data: result
     }
   } catch (error) {
-    Logger.error('Error updating user:', error);
     return {
       status: false,
       error: (error as Error).message,
@@ -107,7 +102,6 @@ export async function deleteUser(_: any, token: string, userId: string): Promise
     await UserDatabaseOperations.deleteUser(userId);
     return { status: true };
   } catch (error) {
-    Logger.error('Error deleting user:', error);
     return {
       status: false,
       error: 'Failed to delete user',
@@ -115,7 +109,7 @@ export async function deleteUser(_: any, token: string, userId: string): Promise
   }
 }
 
-export function verifyToken(_:any,token: string): { userId: string; role: string } {
+export function verifyToken(event:any,token: string): { userId: string; role: string } {
   try {
     const session = sessions[token];
     if (!session || session.expires < Date.now()) {
@@ -123,8 +117,11 @@ export function verifyToken(_:any,token: string): { userId: string; role: string
     }
     return { userId: session.userId, role: session.role };
   } catch (error) {
-    Logger.error('Error verifying token:', error);
-    throw new Error('Invalid or expired token');
+    const errorMessage = error instanceof Error ? error.message.toLowerCase() : '';
+    if (errorMessage.includes('expired') || errorMessage.includes('invalid token')) {
+      event.sender.send('token-expired');
+    }
+    throw error;
   }
 }
 

@@ -1,5 +1,5 @@
 import { VIEWS } from "@/constants";
-import { JSX, useEffect, useState } from "react";
+import { JSX, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { AccessDenied } from "./components/shared/AccessDenied";
 import { Navigation } from "./components/shared/Navigation";
@@ -26,9 +26,20 @@ interface ViewConfig {
 
 const App: React.FC = () => {
   const [view, setView] = useState<string>(VIEWS.LOGIN);
-  const { auth, logout } = useAuth();
+  const { auth, logout, setAuth } = useAuth();
   const { setLanguage } = useConfigurations();
 
+  const handleLogout = useCallback(async (showToast = true) => {
+    try {
+      await logout();
+      setView(VIEWS.LOGIN);
+      if (showToast){
+        toast.success("Logged out successfully");
+      }
+    } catch (error) {
+      toast.error("Failed to log out");
+    }
+  }, [logout]);
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language');
     if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'es')) {
@@ -36,17 +47,27 @@ const App: React.FC = () => {
       setLanguage(savedLanguage as 'en' | 'es');
     }
   }, [])
+  useEffect(() => {
+    const handleTokenExpired = async () => {
+      if(!auth.token) return;
+      try {
+        await handleLogout(false);
+        toast.info("Session expired. Please log in again.");
+      } catch (error) {
+        setView(VIEWS.LOGIN);
+      }
+      setAuth({ token: null, user: null });
+    };
+
+    (window as any).electronAPI.onTokenExpired(handleTokenExpired);
+    return () => {
+      (window as any).electronAPI.removeTokenExpiredListener(handleTokenExpired);
+    };
+  }, [handleLogout]);
   const handleLogin = () => {
     setView(VIEWS.ORDER);
   };
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setView(VIEWS.LOGIN);
-    } catch (error) {
-      toast.error("Failed to log out");
-    }
-  };
+  
 
   const viewConfig: Record<string, ViewConfig> = {
     [VIEWS.ORDER]: {

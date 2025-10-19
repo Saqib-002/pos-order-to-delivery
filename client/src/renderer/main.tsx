@@ -8,7 +8,8 @@ import { ConfigurationsProvider } from './contexts/configurationContext';
 import '../i18n';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+  // <React.StrictMode>
+  <>
     <AuthProvider>
       <ConfirmProvider>
         <ConfigurationsProvider>
@@ -17,5 +18,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       </ConfirmProvider>
     </AuthProvider>
     <ToastContainer position='bottom-right' autoClose={3000} />
-  </React.StrictMode>
+  </>
+  // </React.StrictMode>
 );
