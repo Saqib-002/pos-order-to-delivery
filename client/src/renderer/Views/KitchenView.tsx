@@ -18,14 +18,12 @@ import { updateOrder, StringToComplements } from "../utils/order";
 import Header from "../components/shared/Header.order";
 import { OrderTable } from "../components/shared/OrderTable";
 import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
-import { useOrderManagement } from "../hooks/useOrderManagement";
+import { useOrderManagementContext } from "../contexts/orderManagementContext";
 
 export const KitchenView = () => {
   const { t } = useTranslation();
-  const { auth } = useAuth();
-  const { token } = auth;
-  const { orders, filter, setFilter, refreshOrdersCallback } =
-    useOrderManagement(auth);
+  const { auth:{token} } = useAuth();
+  const {orders,filter,setFilter,refreshOrdersCallback}=useOrderManagementContext();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
   useEffect(() => {

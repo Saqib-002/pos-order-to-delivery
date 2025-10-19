@@ -1,9 +1,10 @@
+import React, { createContext, useContext, ReactNode } from "react";
 import { FilterType, Order } from "@/types/order";
 import { AuthState } from "@/types/user";
-import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { useEffect, useState } from "react";
 
-export const useOrderManagement = (auth: AuthState) => {
+const useOrderManagementInternal = (auth: AuthState) => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [filter, setFilter] = useState<FilterType>({
         searchTerm: "",
@@ -35,4 +36,38 @@ export const useOrderManagement = (auth: AuthState) => {
     }, [auth.token, filter]);
 
     return { orders, setOrders, filter, setFilter, refreshOrdersCallback };
+};
+
+interface OrderContextType {
+    orders: Order[];
+    setOrders: (orders: Order[]) => void;
+    filter: FilterType;
+    setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
+    refreshOrdersCallback: () => Promise<void>;
+}
+
+const OrderContext = createContext<OrderContextType | undefined>(undefined);
+
+export const OrderManagementProvider = ({ 
+    children, 
+    auth 
+}: { 
+    children: ReactNode; 
+    auth: AuthState; 
+}) => {
+    const contextValue = useOrderManagementInternal(auth);
+
+    return (
+        <OrderContext.Provider value={contextValue}>
+            {children}
+        </OrderContext.Provider>
+    );
+};
+
+export const useOrderManagementContext = (): OrderContextType => {
+    const context = useContext(OrderContext);
+    if (context === undefined) {
+        throw new Error("useOrderContext must be used within an OrderProvider");
+    }
+    return context;
 };

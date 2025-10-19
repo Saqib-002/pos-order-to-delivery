@@ -1,48 +1,16 @@
-import { FilterType, Order } from "@/types/order";
 import OrderComponent from "../components/order/OrderComponent";
 import OrderMenu from "../components/order/OrderMenu";
 import OrderComponentHeader from "../components/order/OrderComponentHeader";
 import { OrderProvider } from "../contexts/OrderContext";
-import { useEffect } from "react";
-import { useOrderManagement } from "../hooks/useOrderManagement";
-import { useAuth } from "../contexts/AuthContext";
 
 export const OrderView = () => {
-  const now = new Date();
-  const localMidnight = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    5,
-    0,
-    0
-  );
-  const { auth } = useAuth();
-  const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagement(
-      auth
-    );
-  useEffect(() => {
-    setFilter({
-      searchTerm: "",
-      selectedDate: localMidnight,
-      selectedStatus: [],
-      selectedPaymentStatus: [],
-    });
-  }, []);
   return (
     <OrderProvider>
       <div className="grid grid-cols-12 h-full">
         <div className="col-span-3 border-r border-gray-300 flex flex-col">
-          <OrderComponentHeader
-            refreshOrdersCallback={refreshOrdersCallback}
-            filter={filter}
-            setFilter={setFilter}
-          />
+          <OrderComponentHeader />
           <div className="h-[1px] bg-gray-400"></div>
-          <OrderComponent
-            orders={orders}
-            refreshOrdersCallback={refreshOrdersCallback}
-          />
+          <OrderComponent />
         </div>
         <div className="col-span-9 flex flex-col overflow-y-auto">
           <OrderMenu />

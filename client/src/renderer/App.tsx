@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import { AccessDenied } from "./components/shared/AccessDenied";
 import { Navigation } from "./components/shared/Navigation";
 import { PageNotFound } from "./components/shared/PageNotFound";
-import { useOrderManagement } from "./hooks/useOrderManagement";
 import { DeliveryManagement } from "./Views/DeliveryManagement";
 import { DeliveryView } from "./Views/DeliveryView";
 import { KitchenView } from "./Views/KitchenView";
@@ -16,6 +15,7 @@ import { ReportView } from "./Views/ReportView";
 import { UserManagement } from "./Views/UserManagement";
 import { useAuth } from "./contexts/AuthContext";
 import Configurations from "./Views/Configurations";
+import { OrderManagementProvider } from "./contexts/orderManagementContext";
 
 interface ViewConfig {
   component: JSX.Element;
@@ -25,10 +25,6 @@ interface ViewConfig {
 const App: React.FC = () => {
   const [view, setView] = useState<string>(VIEWS.LOGIN);
   const { auth, logout } = useAuth();
-
-  const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagement(
-    auth
-  );
   const handleLogin = () => {
     setView(VIEWS.ORDER);
   };
@@ -83,9 +79,9 @@ const App: React.FC = () => {
       ),
       roles: ["admin"],
     },
-    [VIEWS.CONFIGURATIONS]:{
-      component:(
-        <Configurations/>
+    [VIEWS.CONFIGURATIONS]: {
+      component: (
+        <Configurations />
       )
     }
   };
@@ -118,7 +114,11 @@ const App: React.FC = () => {
         userRole={auth.user?.role}
         onLogout={handleLogout}
       />
-      <div className="ml-16 h-screen overflow-y-auto">{renderView()}</div>
+      <div className="ml-16 h-screen overflow-y-auto">
+        <OrderManagementProvider auth={auth}>
+          {renderView()}
+        </OrderManagementProvider>
+      </div>
     </div>
   );
 };

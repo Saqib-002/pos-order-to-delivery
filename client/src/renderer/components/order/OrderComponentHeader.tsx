@@ -1,25 +1,37 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import { FilterType } from "@/types/order";
 import { ChevronLeftIcon } from "@/renderer/assets/Svg";
 import CustomButton from "../ui/CustomButton";
 import { CustomSelect } from "../ui/CustomSelect";
+import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
 
-const OrderComponentHeader = ({
-  refreshOrdersCallback,
-  filter,
-  setFilter,
-}: {
-  refreshOrdersCallback: () => void;
-  filter: FilterType;
-  setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
-}) => {
+const OrderComponentHeader = () => {
   const { clearOrder, orderItems } = useOrder();
+  const { refreshOrdersCallback, filter, setFilter } = useOrderManagementContext();
+
+  useEffect(() => {
+    const now = new Date();
+    const localMidnight = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      5,
+      0,
+      0
+    );
+    setFilter({
+      searchTerm: "",
+      selectedDate: localMidnight,
+      selectedStatus: [],
+      selectedPaymentStatus: [],
+    });
+  }, []);
   const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedDate = event.target.value
       ? new Date(event.target.value)
       : null;
-    setFilter((prev) => ({
+    setFilter((prev: FilterType) => ({
       ...prev,
       selectedDate,
     }));

@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { Order, FilterType } from "@/types/order";
+import { useState, useMemo, useEffect } from "react";
+import { Order } from "@/types/order";
 import CustomInput from "../components/shared/CustomInput";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import { calculateOrderTotal } from "../utils/orderCalculations";
@@ -7,8 +7,6 @@ import {
   calculatePaymentStatus,
   getPaymentStatusStyle,
 } from "../utils/paymentStatus";
-import { updateOrder } from "../utils/order";
-import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
@@ -25,17 +23,14 @@ import DocumentIcon from "../assets/icons/document.svg?react";
 import ThunderIcon from "../assets/icons/thunder.svg?react";
 import DeliveredIcon from "../assets/icons/delivered.svg?react";
 import { Euro } from "@/renderer/assets/Svg";
-import { useOrderManagement } from "../hooks/useOrderManagement";
+import { useOrderManagementContext } from "../contexts/orderManagementContext";
 
 export const ManageOrdersView = () => {
   const { t } = useTranslation();
   const {
-      auth
-    } = useAuth();
-    const { token } = auth;
-    const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagement(
-      auth
-    );
+    auth: { token }
+  } = useAuth();
+  const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagementContext();
   useEffect(() => {
     if (!filter.selectedDate) {
       setFilter((prev) => ({
@@ -448,9 +443,9 @@ export const ManageOrdersView = () => {
             }
             emptyStateTitle={
               filter.searchTerm ||
-              filter.selectedDate ||
-              localFilters.selectedDeliveryPerson ||
-              localFilters.selectedStatus.length > 0
+                filter.selectedDate ||
+                localFilters.selectedDeliveryPerson ||
+                localFilters.selectedStatus.length > 0
                 ? t("manageOrders.noOrdersMatch")
                 : t("manageOrders.noOrdersFound")
             }

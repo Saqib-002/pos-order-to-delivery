@@ -8,16 +8,9 @@ import { StringToComplements, updateOrder } from "@/renderer/utils/order";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { calculateOrderTotal } from "@/renderer/utils/orderCalculations";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
+import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
 
-interface OrderComponentProps {
-  orders: Order[];
-  refreshOrdersCallback: () => void;
-}
-
-const OrderComponent = ({
-  orders,
-  refreshOrdersCallback,
-}: OrderComponentProps) => {
+const OrderComponent = () => {
   const {
     orderItems,
     removeFromOrder,
@@ -27,6 +20,7 @@ const OrderComponent = ({
     order,
     setOrder,
   } = useOrder();
+  const {orders,refreshOrdersCallback}=useOrderManagementContext();
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
   const {
     auth: { token },

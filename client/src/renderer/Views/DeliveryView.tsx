@@ -1,4 +1,4 @@
-import { DeliveryPerson, FilterType, Order } from "@/types/order";
+import { DeliveryPerson, Order } from "@/types/order";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
@@ -17,20 +17,19 @@ import Header from "../components/shared/Header.order";
 import { FilterControls } from "../components/shared/FilterControl.order";
 import { updateOrder } from "../utils/order";
 import { formatAddress } from "../utils/utils";
-import { useOrderManagement } from "../hooks/useOrderManagement";
+import { useOrderManagementContext } from "../contexts/orderManagementContext";
 
 export const DeliveryView = () => {
   const { t } = useTranslation();
   const { auth } = useAuth();
   const { token } = auth;
-  const { orders, filter, setFilter, refreshOrdersCallback } =
-    useOrderManagement(auth);
+  const {orders,filter,setFilter,refreshOrdersCallback}=useOrderManagementContext();
   useEffect(() => {
     if (!filter.selectedDate) {
-      setFilter((prev) => ({
-        ...prev,
+      setFilter({
+        ...filter,
         selectedDate: new Date(),
-      }));
+      });
     }
   }, [filter.selectedDate, setFilter]);
   const [deliveryPerson, setDeliveryPerson] = useState<DeliveryPerson | null>(
