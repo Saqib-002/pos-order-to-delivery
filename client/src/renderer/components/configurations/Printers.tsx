@@ -9,7 +9,7 @@ import {
   EditIcon,
   EyeIcon,
   PrinterIcon,
-} from "@/renderer/assets/Svg";
+} from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { toast } from "react-toastify";

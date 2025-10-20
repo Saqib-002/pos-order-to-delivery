@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { navItems } from "@/constants";
 import { NavItem } from "@/types/view";
-import { DoubleBackArrowIcon } from "@/renderer/assets/Svg";
+import { DoubleBackArrowIcon } from "@/renderer/public/Svg";
 import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
@@ -69,7 +69,7 @@ export const Navigation = ({
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           {isOpen && (
             <div className="flex items-center gap-2">
-              <img crossOrigin="anonymous" src={configurations.logo ? configurations.logo : "./assets/logo.png"} alt="Logo" className="size-6" />
+              <img crossOrigin="anonymous" src={configurations.logo ? configurations.logo : "./logo.png"} alt="Logo" className="size-6" />
               <h1 className="text-lg font-bold text-gray-800">
                 {configurations.name ? configurations.name : "Delivery System"}
               </h1>

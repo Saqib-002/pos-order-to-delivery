@@ -1,4 +1,4 @@
-import { CrossIcon, DocumentIcon, EditIcon } from "@/renderer/assets/Svg";
+import { CrossIcon, DocumentIcon, EditIcon } from "@/renderer/public/Svg";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";

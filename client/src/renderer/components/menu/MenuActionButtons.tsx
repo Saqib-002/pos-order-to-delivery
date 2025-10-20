@@ -1,5 +1,5 @@
 import React from "react";
-import AddIcon from "../../assets/icons/add.svg?react";
+import AddIcon from "../../public/icons/add.svg?react";
 import { ActionButtonsProps } from "@/types/Menu";
 import CustomButton from "../ui/CustomButton";
 

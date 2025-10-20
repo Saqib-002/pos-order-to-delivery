@@ -4,14 +4,14 @@ import { CustomSelect } from "../../ui/CustomSelect";
 import { getGroups, getVariants } from "@/renderer/utils/menu";
 import { Variant } from "../VariantView";
 import { Group } from "../GroupView";
-import CrossIcon from "../../../assets/icons/cross.svg?react";
-import AddIcon from "../../../assets/icons/add.svg?react";
-import CheckMark from "../../../assets/icons/mark.svg?react";
+import CrossIcon from "../../../public/icons/cross.svg?react";
+import AddIcon from "../../../public/icons/add.svg?react";
+import CheckMark from "../../../public/icons/mark.svg?react";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { Product } from "@/types/Menu";
 import { fetchPrinters } from "@/renderer/utils/printer";
-import { ImgIcon } from "@/renderer/assets/Svg";
+import { ImgIcon } from "@/renderer/public/Svg";
 
 interface ProductModalProps {
   isOpen: boolean;

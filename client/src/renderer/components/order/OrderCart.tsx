@@ -12,7 +12,7 @@ import {
   DeleteIcon,
   EditIcon,
   PrinterIcon,
-} from "@/renderer/assets/Svg";
+} from "@/renderer/public/Svg";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import {
   generateItemsReceiptHTML,

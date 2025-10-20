@@ -1,6 +1,8 @@
 import { db } from './index.js';
 import { User } from '@/types/user.js';
 import  jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // In-memory session store
 const sessions: { [token: string]: { userId: string; role: string; expires: number } } = {};

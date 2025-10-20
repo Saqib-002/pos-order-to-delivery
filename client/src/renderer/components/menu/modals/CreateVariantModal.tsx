@@ -9,7 +9,7 @@ import {
   DocumentIcon,
   ImgIcon,
   NoProductIcon,
-} from "@/renderer/assets/Svg";
+} from "@/renderer/public/Svg";
 import { fetchAssociatedProductsByVariantId } from "@/renderer/utils/menu";
 
 interface Variant {

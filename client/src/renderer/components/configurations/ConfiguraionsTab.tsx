@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { useTranslation } from "react-i18next";
-import { ImgIcon } from "@/renderer/assets/Svg";
+import { ImgIcon } from "@/renderer/public/Svg";
 
 const ConfigurationsTab = () => {
   const [configurationsId, setConfigurationsId] = useState<string>("");

@@ -1,6 +1,6 @@
 import { useState, ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { CheckIcon, CrossIcon, ExclamationIcon, InfoIcon } from "../assets/Svg";
+import { CheckIcon, CrossIcon, ExclamationIcon, InfoIcon } from "../public/Svg";
 import CustomButton from "../components/ui/CustomButton";
 import { ConfirmOptions } from "@/types/confirm";
 import { ConfirmContext } from "../hooks/useConfirm";

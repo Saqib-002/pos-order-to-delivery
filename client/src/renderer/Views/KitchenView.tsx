@@ -4,14 +4,14 @@ import { useTranslation } from "react-i18next";
 import { FilterControls } from "../components/shared/FilterControl.order";
 import { Order } from "@/types/order";
 import { StatsCard } from "../components/shared/StatsCard.order";
-import SentToKitchenIcon from "../assets/icons/sent-to-kitchen.svg?react";
+import SentToKitchenIcon from "../public/icons/sent-to-kitchen.svg?react";
 
 // ICONS
-import TotalOrdersIcon from "../assets/icons/total-orders.svg?react";
-import HighPriorityIcon from "../assets/icons/high-priority.svg?react";
-import ThunderIcon from "../assets/icons/thunder.svg?react";
-import MarkIcon from "../assets/icons/mark.svg?react";
-import EyeIcon from "../assets/icons/eye.svg?react";
+import TotalOrdersIcon from "../public/icons/total-orders.svg?react";
+import HighPriorityIcon from "../public/icons/high-priority.svg?react";
+import ThunderIcon from "../public/icons/thunder.svg?react";
+import MarkIcon from "../public/icons/mark.svg?react";
+import EyeIcon from "../public/icons/eye.svg?react";
 
 import { useAuth } from "../contexts/AuthContext";
 import { updateOrder, StringToComplements } from "../utils/order";

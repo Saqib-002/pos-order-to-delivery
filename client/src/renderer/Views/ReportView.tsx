@@ -14,7 +14,7 @@ import {
   ClipboardIcon,
   ClockIcon,
   LightningBoltIcon,
-} from "../assets/Svg";
+} from "../public/Svg";
 import { StatsCard } from "../components/shared/StatsCard.order";
 import { OrderTable } from "../components/shared/OrderTable";
 import { useConfigurations } from "../contexts/configurationContext";

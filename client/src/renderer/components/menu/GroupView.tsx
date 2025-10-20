@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { UnifiedCard } from "../ui/UnifiedCard";
 import { CreateGroupModal } from "./modals/CreateGroupModal";
-import AddIcon from "../../assets/icons/add.svg?react";
+import AddIcon from "../../public/icons/add.svg?react";
 import { getGroups } from "@/renderer/utils/menu";
 import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";

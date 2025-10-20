@@ -3,7 +3,7 @@ import { UnifiedCard } from "../ui/UnifiedCard";
 import { CreateVariantModal } from "./modals/CreateVariantModal";
 import { VariantItem } from "@/types/Variants";
 import { toast } from "react-toastify";
-import AddIcon from "../../assets/icons/add.svg?react";
+import AddIcon from "../../public/icons/add.svg?react";
 import {
   fetchAssociatedProductsByVariantId,
   getVariants,

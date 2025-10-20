@@ -1,6 +1,6 @@
 import { FilterType } from "@/types/order";
 import { useTranslation } from "react-i18next";
-import SearchIcon from "../../assets/icons/search.svg?react";
+import SearchIcon from "../../public/icons/search.svg?react";
 interface FilterControlsProps {
   filter: FilterType;
   setFilter: React.Dispatch<React.SetStateAction<FilterType>>;

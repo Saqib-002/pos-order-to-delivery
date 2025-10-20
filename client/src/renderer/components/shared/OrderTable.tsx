@@ -2,7 +2,7 @@ import { JSX } from "react";
 import { useTranslation } from "react-i18next";
 
 // ICONS
-import DeliveredIcon from "../../assets/icons/delivered.svg?react";
+import DeliveredIcon from "../../public/icons/delivered.svg?react";
 
 export const OrderTable = <T,>({
   data,

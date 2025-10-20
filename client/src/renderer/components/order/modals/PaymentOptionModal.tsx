@@ -3,7 +3,7 @@ import {
   CrossIcon,
   OutlineCreditCardIcon,
   ClockIcon,
-} from "@/renderer/assets/Svg";
+} from "@/renderer/public/Svg";
 import CustomButton from "../../ui/CustomButton";
 
 interface PaymentOptionModalProps {

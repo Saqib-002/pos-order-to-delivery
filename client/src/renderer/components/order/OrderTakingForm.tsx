@@ -14,7 +14,7 @@ import {
   CheckIcon,
   ClockIcon,
   CrossIcon,
-} from "@/renderer/assets/Svg";
+} from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
 
 interface OrderTakingFormProps {

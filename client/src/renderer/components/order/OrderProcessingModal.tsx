@@ -17,7 +17,7 @@ import {
   LocationFilledIcon,
   LocationIcon,
   SearchIcon,
-} from "@/renderer/assets/Svg";
+} from "@/renderer/public/Svg";
 import CustomInput from "../shared/CustomInput";
 import CustomButton from "../ui/CustomButton";
 

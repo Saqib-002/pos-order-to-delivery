@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
-import EditIcon from "../../assets/icons/edit.svg?react";
-import DeleteIcon from "../../assets/icons/delete.svg?react";
+import EditIcon from "../../public/icons/edit.svg?react";
+import DeleteIcon from "../../public/icons/delete.svg?react";
 
 interface BaseCardData {
   id: string;
@@ -225,7 +225,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
         {['product', 'menu'].includes(type) &&
           <img
             crossOrigin="anonymous"
-            src={data.imgUrl || '../../assets/pizza.jpg'}
+            src={data.imgUrl || '../../public/pizza.jpg'}
             alt={`${data.name || 'Product'} image`}
             className="w-full h-34 object-cover rounded-md"
           />

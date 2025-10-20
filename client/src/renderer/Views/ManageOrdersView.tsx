@@ -18,13 +18,13 @@ import IndividualPaymentModal from "../components/order/modals/IndividualPayment
 import { toast } from "react-toastify";
 
 // ICONS
-import SearchIcon from "../assets/icons/search.svg?react";
-import PersonIcon from "../assets/icons/person.svg?react";
-import EyeIcon from "../assets/icons/eye.svg?react";
-import DocumentIcon from "../assets/icons/document.svg?react";
-import ThunderIcon from "../assets/icons/thunder.svg?react";
-import DeliveredIcon from "../assets/icons/delivered.svg?react";
-import { Euro } from "@/renderer/assets/Svg";
+import SearchIcon from "../public/icons/search.svg?react";
+import PersonIcon from "../public/icons/person.svg?react";
+import EyeIcon from "../public/icons/eye.svg?react";
+import DocumentIcon from "../public/icons/document.svg?react";
+import ThunderIcon from "../public/icons/thunder.svg?react";
+import DeliveredIcon from "../public/icons/delivered.svg?react";
+import { Euro } from "@/renderer/public/Svg";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 

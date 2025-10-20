@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { debounce } from "lodash";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { Customer } from "@/types/order";
-import { AddIcon } from "@/renderer/assets/Svg";
+import { AddIcon } from "@/renderer/public/Svg";
 import { formatAddress } from "@/renderer/utils/utils";
 
 interface CustomerModalProps {

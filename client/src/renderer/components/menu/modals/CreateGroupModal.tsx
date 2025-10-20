@@ -9,7 +9,7 @@ import {
   DocumentIcon,
   ImgIcon,
   NoProductIcon,
-} from "@/renderer/assets/Svg";
+} from "@/renderer/public/Svg";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 
 interface Group {

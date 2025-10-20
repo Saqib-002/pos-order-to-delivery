@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { CustomSelect } from "../../ui/CustomSelect";
 import { DeliveryPerson } from "@/types/delivery";
 import CustomButton from "../../ui/CustomButton";
-import { CrossIcon } from "@/renderer/assets/Svg";
+import { CrossIcon } from "@/renderer/public/Svg";
 import CustomInput from "../../shared/CustomInput";
 
 interface DeliveryPersonModalProps {

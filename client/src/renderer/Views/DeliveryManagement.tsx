@@ -6,7 +6,7 @@ import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
 import { OrderTable } from "../components/shared/OrderTable";
 import { DeliveryPersonModal } from "../components/delivery/modals/DeliveryPersonModal";
-import DeliveredIcon from "../assets/icons/delivered.svg?react";
+import DeliveredIcon from "../public/icons/delivered.svg?react";
 import CustomButton from "../components/ui/CustomButton";
 import {
   AddIcon,
@@ -17,7 +17,7 @@ import {
   LocationIcon,
   MotorcycleIcon,
   SearchIcon,
-} from "../assets/Svg";
+} from "../public/Svg";
 import { StatsCard } from "../components/shared/StatsCard.order";
 import CustomInput from "../components/shared/CustomInput";
 

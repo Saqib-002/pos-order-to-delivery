@@ -16,7 +16,7 @@ import { useAuth } from "@/renderer/contexts/AuthContext";
 import MenuOrderTakingForm from "./MenuOrderTakingForm";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import { UnifiedCard } from "@/renderer/components/ui/UnifiedCard";
-import { DocumentIcon } from "@/renderer/assets/Svg";
+import { DocumentIcon } from "@/renderer/public/Svg";
 
 const OrderMenu = () => {
   const [categories, setCategories] = useState<Category[] | null>(null);

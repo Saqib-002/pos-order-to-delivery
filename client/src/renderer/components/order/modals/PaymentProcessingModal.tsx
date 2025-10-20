@@ -1,4 +1,4 @@
-import { CrossIcon, OutlineCreditCardIcon } from "@/renderer/assets/Svg";
+import { CrossIcon, OutlineCreditCardIcon } from "@/renderer/public/Svg";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import CustomInput from "../../shared/CustomInput";

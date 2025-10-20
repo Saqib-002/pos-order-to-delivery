@@ -1,7 +1,7 @@
 import { useEffect, useContext } from "react";
 import { OrderContext } from "@/renderer/contexts/OrderContext";
 import { FilterType } from "@/types/order";
-import { ChevronLeftIcon } from "@/renderer/assets/Svg";
+import { ChevronLeftIcon } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
 import { CustomSelect } from "../ui/CustomSelect";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";

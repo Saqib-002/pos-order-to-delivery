@@ -7,11 +7,11 @@ import { OrderTable } from "../components/shared/OrderTable";
 import { StatsCard } from "../components/shared/StatsCard.order";
 
 // ICONS
-import CircleCheckIcon from "../assets/icons/circle-check.svg?react";
-import ThunderIcon from "../assets/icons/thunder.svg?react";
-import MarkIcon from "../assets/icons/mark.svg?react";
-import GroupIcon from "../assets/icons/group.svg?react";
-import DeliveredIcon from "../assets/icons/delivered.svg?react";
+import CircleCheckIcon from "../public/icons/circle-check.svg?react";
+import ThunderIcon from "../public/icons/thunder.svg?react";
+import MarkIcon from "../public/icons/mark.svg?react";
+import GroupIcon from "../public/icons/group.svg?react";
+import DeliveredIcon from "../public/icons/delivered.svg?react";
 import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
 import { FilterControls } from "../components/shared/FilterControl.order";

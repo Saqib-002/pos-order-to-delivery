@@ -13,7 +13,7 @@ import {
   OfficeBuilding,
   SearchIcon,
   ShieldCheck,
-} from "../assets/Svg";
+} from "../public/Svg";
 import CustomButton from "../components/ui/CustomButton";
 import { StatsCard } from "../components/shared/StatsCard.order";
 import CustomInput from "../components/shared/CustomInput";

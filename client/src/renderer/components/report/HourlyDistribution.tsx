@@ -10,7 +10,7 @@ import {
   Title,
   Legend,
 } from "chart.js";
-import { AnalyticsIcon } from "@/renderer/assets/Svg";
+import { AnalyticsIcon } from "@/renderer/public/Svg";
 import { useTranslation } from "react-i18next";
 ChartJS.register(
   LinearScale,

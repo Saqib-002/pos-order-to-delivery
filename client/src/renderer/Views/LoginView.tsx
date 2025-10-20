@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -36,7 +35,7 @@ export const LoginView: React.FC<{
           <div className="text-center mb-8">
             <div className="lg:hidden mb-6">
               <img
-                src="./assets/logo.png"
+                src="./logo.png"
                 alt={t("login.restaurantLogo")}
                 className="w-16 h-16 mx-auto"
               />

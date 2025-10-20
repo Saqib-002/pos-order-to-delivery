@@ -7,8 +7,8 @@ import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import CustomInput from "../../shared/CustomInput";
 import { CustomSelect } from "../../ui/CustomSelect";
-import PersonIcon from "../../../assets/icons/person.svg?react";
-import ThunderIcon from "../../../assets/icons/thunder.svg?react";
+import PersonIcon from "../../../public/icons/person.svg?react";
+import ThunderIcon from "../../../public/icons/thunder.svg?react";
 
 interface BulkPaymentModalProps {
   isOpen: boolean;

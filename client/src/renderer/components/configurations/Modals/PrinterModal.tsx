@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { CustomSelect } from "../../ui/CustomSelect";
 import CustomButton from "../../ui/CustomButton";
-import { CrossIcon } from "@/renderer/assets/Svg";
+import { CrossIcon } from "@/renderer/public/Svg";
 import CustomInput from "../../shared/CustomInput";
 import { toast } from "react-toastify";
 
