@@ -225,7 +225,7 @@ export const ManageOrdersView = () => {
               <DocumentIcon className="w-4 h-4" />
             </button>
 
-            {/* Process Payment Button - Only show for UNPAID or PARTIAL orders */}
+            {/* Process Payment Button - Only show for UNPAID or PARTIAL orders with remaining amount > 0 */}
             {(() => {
               const { orderTotal } = calculateOrderTotal(order.items || []);
               const paymentStatus = calculatePaymentStatus(
@@ -236,8 +236,9 @@ export const ManageOrdersView = () => {
               const isPaymentAllowed =
                 order.status === "complete" || order.status === "delivered";
               const hasUnpaidAmount =
-                paymentStatus.status === "UNPAID" ||
-                paymentStatus.status === "PARTIAL";
+                (paymentStatus.status === "UNPAID" ||
+                  paymentStatus.status === "PARTIAL") &&
+                paymentStatus.remainingAmount > 0;
 
               if (isPaymentAllowed && hasUnpaidAmount) {
                 return (

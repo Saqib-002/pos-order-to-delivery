@@ -53,7 +53,9 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
         return { type: type.trim(), amount: numericAmount };
       });
 
-      return payments;
+      return payments.filter(
+        (payment) => payment.type.toLowerCase() !== "pending"
+      );
     } catch (error) {
       console.error(
         "Error parsing existing payment string:",
