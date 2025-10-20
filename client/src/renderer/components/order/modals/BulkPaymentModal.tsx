@@ -57,7 +57,9 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
         return { type: type.trim(), amount: numericAmount };
       });
 
-      return payments;
+      return payments.filter(
+        (payment) => payment.type.toLowerCase() !== "pending"
+      );
     } catch (error) {
       console.error(
         "Error parsing existing payment string:",
@@ -78,7 +80,6 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
         return false;
       }
 
-      // Only include orders that are delivered and have unpaid/partial payments
       const { orderTotal } = calculateOrderTotal(order.items || []);
       const paymentStatus = calculatePaymentStatus(
         order.paymentType || "",
@@ -88,12 +89,12 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
       return (
         order.status === "delivered" &&
         (paymentStatus.status === "UNPAID" ||
-          paymentStatus.status === "PARTIAL")
+          paymentStatus.status === "PARTIAL") &&
+        paymentStatus.remainingAmount > 0
       );
     });
   };
 
-  // Calculate total amount for bulk payment
   const getBulkPaymentTotal = (deliveryPersonId: string) => {
     const ordersForDelivery = getOrdersForDeliveryPerson(deliveryPersonId);
     return ordersForDelivery.reduce((total, order) => {
