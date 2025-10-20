@@ -3,6 +3,7 @@ import { createWindow } from "./window.js";
 import { registerIpcHandlers } from "./ipcHandlers.js";
 import { initDatabase,closeDatabase } from "./database/index.js";
 import Logger from "electron-log";
+import path from "path";
 app.whenReady().then(async () => {
     try {
         // Initialize the database
@@ -10,17 +11,18 @@ app.whenReady().then(async () => {
 
         // Register all IPC handlers
         registerIpcHandlers();
-
+        const iconPath = path.join(app.getAppPath(), 'logo.png');
         // Create the main window
-        createWindow();
+        createWindow(iconPath);
     } catch (error) {
         Logger.error("Application initialization failed:", error);
         app.quit();
     }
-
+    
     app.on("activate", () => {
         if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow();
+            const iconPath = path.join(app.getAppPath(), 'logo.png');
+            createWindow(iconPath);
         }
     });
 });

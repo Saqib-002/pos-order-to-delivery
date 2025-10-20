@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export function createWindow() {
+export function createWindow(iconPath: string) {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
@@ -16,7 +16,9 @@ export function createWindow() {
       nodeIntegration: false,
       sandbox: true,
     },
+    icon: iconPath,
   });
+  win.maximize();
 
   if (isDev) {
     win.loadURL('http://localhost:5173');

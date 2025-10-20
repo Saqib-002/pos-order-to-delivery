@@ -6,7 +6,7 @@
 !include "WordFunc.nsh" ; Optional: For string functions like StrLen (already used)
 !addplugindir /x86-unicode "${BUILD_RESOURCES_DIR}" ; Auto-embeds/loads InetC.dll from build/x86-unicode
 ; --- 2. Configuration ---
-!define VALIDATION_URL "http://localhost:3001/api/validate-key"
+!define VALIDATION_URL "http://localhost:3000/api/verify-license"
 ; --- 3. Page Variables ---
 Var InstallKey
 Var hKeyInput ; Handle for the text input box
@@ -52,7 +52,7 @@ Function LicenseKeyPageLeave
     IntCmp $R0 0 ShowErrorKeyMissing
   
     ; 3. HTTP POST validation (Plugin auto-loaded; POST data first, /TOSTACK for response on stack)
-    inetc::post "key=$InstallKey" /CAPTION "Validating..." /TOSTACK "${VALIDATION_URL}" "" /END
+    inetc::get /CAPTION "Validating..." /TOSTACK "${VALIDATION_URL}?key=$InstallKey" "" /END
     Pop $R2 ; Response body (e.g., JSON from API)
     Pop $R1 ; Result ("OK" or error string)
   
