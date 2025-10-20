@@ -54,6 +54,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from /uploads with cache headers (1 day for images)
 app.use(
@@ -92,6 +93,26 @@ app.use((err: any, req: any, res: any, next: any) => {
   res.status(500).json({ error: err.message });
 });
 
+app.post('/api/validate-key', (req, res) => {
+    const { key } = req.body;
+
+    // 1. Log the key for debugging (optional)
+    console.log(`Validation request received for key: ${key}`);
+
+    // 2. Perform your actual validation logic here:
+    //    - Check against a database of valid/used keys.
+    //    - Check key format, expiration, etc.
+    const isValid = (key && key.length >= 6); // Simplified: key exists and is at least 6 chars (no prefix)
+    console.log(`Key validation result: ${isValid}`);
+
+    if (isValid) {
+        // Send a 200 OK response on success
+        res.status(200).json({ success: true, message: 'Key validated successfully.' });
+    } else {
+        // Send a 403 Forbidden response on failure
+        res.status(403).json({ success: false, message: 'Invalid or expired activation key.' });
+    }
+});
 app.listen(PORT, () => {
   console.log(`Local CDN Server running on http://localhost:${PORT}`);
 });
