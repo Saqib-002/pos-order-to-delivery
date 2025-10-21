@@ -29,7 +29,7 @@ const knexConfig = {
   production: {
     client: 'pg',
     connection: {
-      host: process.env.PG_HOST || 'localhost',
+      host: process.env.PG_HOST || 'localhost1',
       port: process.env.PG_PORT || 5432,
       database: process.env.PG_DATABASE || 'restaurant_pos',
       user: process.env.PG_USER || 'pos_admin',
