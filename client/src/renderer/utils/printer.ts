@@ -6,7 +6,6 @@ import {
     calculateTaxPercentage,
 } from "./orderCalculations";
 
-
 export const fetchConnectedPrinters = async (
     token: string | null,
     setPrinters: React.Dispatch<React.SetStateAction<any>>

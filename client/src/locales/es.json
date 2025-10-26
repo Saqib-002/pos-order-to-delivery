@@ -1186,5 +1186,39 @@
     "previousPage": "Página Anterior",
     "nextPage": "Página Siguiente",
     "loadingMenuPages": "Cargando páginas del menú..."
+  },
+  "orderUtils": {
+    "orderDeleted": "El pedido #{{orderId}} ha sido eliminado",
+    "newOrderReceived": "Nuevo pedido #{{orderId}} recibido",
+    "orderStatusChanged": "El pedido #{{orderId}} cambió de estado a: {{status}}",
+    "orderSynchronized": "El pedido #{{orderId}} sincronizado",
+    "unrecognizedChangeType": "Tipo de cambio no reconocido, actualizando pedidos",
+    "errorFetchingOrders": "Error al obtener pedidos"
+  },
+  "menuUtils": {
+    "unableToGetVariants": "No se pudieron obtener las variantes",
+    "unableToGetGroups": "No se pudieron obtener los grupos",
+    "unableToGetCategories": "No se pudieron obtener las categorías",
+    "failedToFetchCategories": "Error al obtener las categorías",
+    "unableToGetSubcategories": "No se pudieron obtener las subcategorías",
+    "failedToFetchSubcategories": "Error al obtener las subcategorías",
+    "unableToGetProducts": "No se pudieron obtener los productos",
+    "failedToFetchProducts": "Error al obtener los productos",
+    "unableToGetMenus": "No se pudieron obtener los menús",
+    "failedToFetchMenus": "Error al obtener los menús",
+    "failedToFetchAssociatedProducts": "Error al obtener los productos asociados"
+  },
+  "reportUtils": {
+    "orders": "Pedidos"
+  },
+  "paymentStatusUtils": {
+    "invalidPaymentAmount": "Cantidad de pago inválida: {{amount}}",
+    "errorParsingPaymentString": "Error al analizar la cadena de pago:",
+    "statuses": {
+      "paid": "Pagado",
+      "unpaid": "Sin Pagar",
+      "partial": "Pago Parcial",
+      "pending": "Pendiente"
+    }
   }
 }
