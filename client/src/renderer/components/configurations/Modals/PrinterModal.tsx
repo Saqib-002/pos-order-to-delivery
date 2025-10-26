@@ -128,7 +128,7 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-white rounded-t-2xl">
+        <div className="bg-black px-8 py-6 text-white rounded-t-2xl">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-bold">
               {mode === "view"
@@ -195,7 +195,7 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
                 variant="primary"
                 onClick={onClose}
                 label="Close"
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-105"
+                className="bg-black hover:scale-105"
               />
             ) : (
               <>
@@ -210,7 +210,7 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
                   type="submit"
                   variant="primary"
                   label={mode === "edit" ? "Update Printer" : "Add Printer"}
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-105"
+                  className="bg-black hover:scale-105"
                 />
               </>
             )}

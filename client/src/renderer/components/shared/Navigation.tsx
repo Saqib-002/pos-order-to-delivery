@@ -57,7 +57,7 @@ export const Navigation = ({
       {/* Sidebar */}
       <div
         className={`fixed top-0 left-0 h-full bg-white shadow-lg z-50 transition-all duration-300 ${
-          isOpen ? "w-64" : "w-16"
+          isOpen ? "w-64" : "w-15"
         }`}
       >
         {/* Header */}
@@ -91,7 +91,7 @@ export const Navigation = ({
             roles && roles.includes(userRole!.toLowerCase()) ? (
               <button
                 key={view}
-                className={`w-full flex items-center gap-3 p-3 text-left transition-colors duration-200 ${
+                className={`w-full flex items-center gap-3 px-2 py-2 text-left transition-colors duration-200 ${
                   currentView === view
                     ? "bg-indigo-600 text-white"
                     : "text-gray-700 hover:bg-gray-100"
