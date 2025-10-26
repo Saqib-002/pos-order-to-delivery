@@ -1,13 +1,10 @@
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { useEffect, useState } from "react";
-import AddressModal from "./AddressModal";
-import { Tooltip } from "react-tooltip";
 import { toast } from "react-toastify";
 import { debounce } from "lodash";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { Customer } from "@/types/order";
-import { AddIcon } from "@/renderer/public/Svg";
 import { formatAddress } from "@/renderer/utils/utils";
 
 interface CustomerModalProps {
@@ -19,14 +16,12 @@ const CustomerModal = ({
   setIsOpen,
   onCustomerCreated,
 }: CustomerModalProps) => {
-  const [address, setAddress] = useState("");
-  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [phone, setPhone] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
-  const {auth:{token}}=useAuth();
+  const { auth: { token } } = useAuth();
   const fetchCustomers = debounce(async (phone: string) => {
     if (!phone || phone.length < 3) {
       setCustomers([]);
@@ -72,10 +67,8 @@ const CustomerModal = ({
     }, 200);
   };
   const handleCustomerSelect = (customer: Customer) => {
-    fetchCustomers.cancel();
     setIsSelected(true);
     setPhone(customer.phone);
-    setAddress(customer.address || "");
     setShowDropdown(false);
     const form = document.querySelector("form");
     if (form) {
@@ -87,6 +80,22 @@ const CustomerModal = ({
         customer.email || "";
       (form.querySelector("[name='comments']") as HTMLTextAreaElement).value =
         customer.comments || "";
+
+      if (customer.address) {
+        const addressObj = customer.address.split("|").reduce((obj: Record<string, string>, pair: string) => {
+          const [key, value] = pair.split("=");
+          obj[key] = value;
+          return obj;
+        }, {});
+        (form.querySelector("[name='address']") as HTMLTextAreaElement).value =
+          addressObj.address || "";
+        (form.querySelector("[name='postal']") as HTMLTextAreaElement).value =
+          addressObj.postal || "";
+        (form.querySelector("[name='city']") as HTMLTextAreaElement).value =
+          addressObj.city || "";
+        (form.querySelector("[name='province']") as HTMLTextAreaElement).value =
+          addressObj.province || "";
+      }
       setIsEditing(true);
     }
   };
@@ -95,8 +104,24 @@ const CustomerModal = ({
     e.preventDefault();
     // Handle form submission here, e.g., add customer to order
     const formData = new FormData(e.target as HTMLFormElement);
-    const customer = Object.fromEntries(formData.entries());
-    customer.address = address;
+    const data = Object.fromEntries(formData.entries());
+    const addressObj = {
+      address: data.address as string,
+      postal: data.postal as string,
+      city: data.city as string,
+      province: data.province as string,
+    }
+    const addressString = Object.entries(addressObj)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("|");
+    const customer: Customer = {
+      name: data.name as string,
+      phone: data.phone as string,
+      address: addressString,
+      cif: data.cif as string,
+      email: data.email as string,
+      comments: data.comments as string,
+    }
     let res;
     if (!isEditing) {
       res = await (window as any).electronAPI.createCustomer(token, customer);
@@ -115,7 +140,7 @@ const CustomerModal = ({
     }
 
     // Call the callback with the created customer data
-    if (onCustomerCreated && !isEditing) {
+    if (onCustomerCreated) {
       const createdCustomer: Customer = {
         id: res.data.id,
         name: customer.name as string,
@@ -134,12 +159,6 @@ const CustomerModal = ({
   };
   return (
     <>
-      {isAddressModalOpen && (
-        <AddressModal
-          setIsOpen={setIsAddressModalOpen}
-          setAddress={setAddress}
-        />
-      )}
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full mx-4">
           <div className="flex justify-between items-center mb-4">
@@ -162,7 +181,7 @@ const CustomerModal = ({
                 label="Phone"
                 placeholder="+1 (555) 123-4567"
                 required
-                otherClasses="mb-4"
+                otherClasses="mb-2"
                 value={phone}
                 onChange={handlePhoneChange}
                 onBlur={handlePhoneBlur}
@@ -195,14 +214,14 @@ const CustomerModal = ({
                 label="Name"
                 placeholder="John Doe"
                 required
-                otherClasses="mb-4 col-span-2"
+                otherClasses="mb-2 col-span-2"
               />
               <CustomInput
                 type="text"
                 name="cif"
                 label="CIF/DNI"
                 placeholder="12345678Z"
-                otherClasses="mb-4 col-span-1"
+                otherClasses="mb-2 col-span-1"
               />
             </div>
             <CustomInput
@@ -210,9 +229,9 @@ const CustomerModal = ({
               name="email"
               label="Email"
               placeholder="zOg2Q@example.com"
-              otherClasses="mb-4"
+              otherClasses="mb-2"
             />
-            <div className="mb-4">
+            <div className="mb-2">
               <label
                 htmlFor="comments"
                 className="block text-sm font-medium text-gray-700 mb-2"
@@ -227,33 +246,32 @@ const CustomerModal = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:outline-none focus:ring-indigo-500 focus:border-transparent resize-none"
               ></textarea>
             </div>
-            <div className="mb-4">
-              <label
-                htmlFor="address"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Address
-              </label>
-              {address ? (
-                <>
-                  <Tooltip id="address-tooltip" place="bottom" />
-                  <p
-                    className="text-gray-800 whitespace-nowrap truncate max-w-full w-max"
-                    data-tooltip-id="address-tooltip"
-                    data-tooltip-content={formatAddress(address)}
-                  >
-                    {formatAddress(address)}
-                  </p>
-                </>
-              ) : (
-                <CustomButton
-                  Icon={<AddIcon className="size-6" />}
-                  onClick={() => setIsAddressModalOpen(true)}
-                  type="button"
-                  label="Add Address"
-                  variant="transparent"
-                />
-              )}
+            <div className="grid grid-cols-2 gap-y-2 gap-x-4 mb-4">
+              <CustomInput
+                type="text"
+                name="address"
+                label="Address"
+                placeholder="Address"
+              />
+
+              <CustomInput
+                type="text"
+                name="postal"
+                label="Postal Code"
+                placeholder="Postal Code"
+              />
+              <CustomInput
+                type="text"
+                name="city"
+                label="City"
+                placeholder="City"
+              />
+              <CustomInput
+                type="text"
+                name="province"
+                label="Province"
+                placeholder="Province"
+              />
             </div>
             <div className="flex justify-end space-x-3">
               <CustomButton
