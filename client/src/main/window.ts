@@ -19,11 +19,12 @@ export function createWindow(iconPath: string) {
     icon: iconPath,
   });
   win.maximize();
-
+  
   if (isDev) {
     win.loadURL('http://localhost:5173');
     win.webContents.openDevTools();
   } else {
+    win.setMenu(null);
     win.loadFile(path.join(__dirname, '../../dist/index.html'));
   }
 
