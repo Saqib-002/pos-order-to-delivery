@@ -1184,5 +1184,39 @@
     "previousPage": "Previous Page",
     "nextPage": "Next Page",
     "loadingMenuPages": "Loading menu pages..."
+  },
+  "orderUtils": {
+    "orderDeleted": "Order #{{orderId}} has been deleted",
+    "newOrderReceived": "New order #{{orderId}} received",
+    "orderStatusChanged": "Order #{{orderId}} status changed to: {{status}}",
+    "orderSynchronized": "Order #{{orderId}} synchronized",
+    "unrecognizedChangeType": "Unrecognized change type, refreshing orders",
+    "errorFetchingOrders": "Error fetching orders"
+  },
+  "menuUtils": {
+    "unableToGetVariants": "Unable to get variants",
+    "unableToGetGroups": "Unable to get groups",
+    "unableToGetCategories": "Unable to get categories",
+    "failedToFetchCategories": "Failed to fetch categories",
+    "unableToGetSubcategories": "Unable to get subcategories",
+    "failedToFetchSubcategories": "Failed to fetch subcategories",
+    "unableToGetProducts": "Unable to get products",
+    "failedToFetchProducts": "Failed to fetch products",
+    "unableToGetMenus": "Unable to get menus",
+    "failedToFetchMenus": "Failed to fetch menus",
+    "failedToFetchAssociatedProducts": "Failed to fetch associated products"
+  },
+  "reportUtils": {
+    "orders": "Orders"
+  },
+  "paymentStatusUtils": {
+    "invalidPaymentAmount": "Invalid payment amount: {{amount}}",
+    "errorParsingPaymentString": "Error parsing payment string:",
+    "statuses": {
+      "paid": "Paid",
+      "unpaid": "Unpaid",
+      "partial": "Partial Payment",
+      "pending": "Pending"
+    }
   }
 }
