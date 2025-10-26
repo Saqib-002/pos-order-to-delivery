@@ -7,6 +7,7 @@ import CustomButton from "../../ui/CustomButton";
 import CustomInput from "../../shared/CustomInput";
 import { ImgIcon } from "@/renderer/public/Svg";
 import { Menu, MenuPage, MenuPageAssociation } from "@/types/menuPages";
+import { useTranslation } from "react-i18next";
 
 interface MenuModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
   editingMenu,
   token,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     subcategoryId: "",
@@ -81,7 +83,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
     try {
       const res = await (window as any).electronAPI.getAllSubcategories(token);
       if (!res.status) {
-        toast.error("Unable to get subcategories");
+        toast.error(t("menuComponents.modals.menuModal.errors.failedToFetch"));
         return;
       }
 
@@ -91,7 +93,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
       }));
       setSubcategories(subcategoryOptions);
     } catch (error) {
-      toast.error("Failed to fetch subcategories");
+      toast.error(t("menuComponents.modals.menuModal.errors.failedToFetch"));
     }
   };
 
@@ -100,7 +102,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
     try {
       const res = await (window as any).electronAPI.getMenuPages(token);
       if (!res.status) {
-        toast.error("Unable to get menu pages");
+        toast.error(t("menuComponents.modals.menuModal.errors.failedToFetch"));
         return;
       }
       setMenuPages(res.data);
@@ -121,14 +123,14 @@ export const MenuModal: React.FC<MenuModalProps> = ({
       if (pageOptions.length === 0) {
         pageOptions.push({
           value: "",
-          label: "No menu pages available to add",
+          label: t("menuComponents.modals.menuModal.noMenuPagesAvailable"),
           disabled: true,
         });
       }
 
       setAvailableMenuPages(pageOptions);
     } catch (error) {
-      toast.error("Failed to fetch menu pages");
+      toast.error(t("menuComponents.modals.menuModal.errors.failedToFetch"));
     }
   };
 
@@ -326,7 +328,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
 
   const handleAddPageAssociation = () => {
     if (!newPageAssociation.menuPageId) {
-      toast.error("Please select a menu page");
+      toast.error(t("menuComponents.modals.menuModal.errors.selectMenuPage"));
       return;
     }
 
@@ -334,7 +336,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
       (option) => option.value === newPageAssociation.menuPageId
     );
     if (!selectedOption || selectedOption.disabled) {
-      toast.error("No menu pages available to add");
+      toast.error(
+        t("menuComponents.modals.menuModal.errors.noMenuPagesAvailable")
+      );
       return;
     }
 
@@ -342,7 +346,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
       (page) => page.id === newPageAssociation.menuPageId
     );
     if (!selectedPage) {
-      toast.error("Selected menu page not found");
+      toast.error(t("menuComponents.modals.menuModal.errors.menuPageNotFound"));
       return;
     }
 
@@ -353,7 +357,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
     );
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
-      toast.error("Please fix the validation errors before adding the page");
+      toast.error(
+        t("menuComponents.modals.menuModal.errors.fixValidationErrors")
+      );
       return;
     }
 
@@ -391,22 +397,28 @@ export const MenuModal: React.FC<MenuModalProps> = ({
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      toast.error("Please enter a menu name");
+      toast.error(t("menuComponents.modals.menuModal.errors.nameRequired"));
       return;
     }
 
     if (!formData.subcategoryId) {
-      toast.error("Please select a subcategory");
+      toast.error(
+        t("menuComponents.modals.menuModal.errors.subcategoryRequired")
+      );
       return;
     }
 
     if (formData.description && formData.description.length > 150) {
-      toast.error("Description must be 150 characters or less");
+      toast.error(
+        t("menuComponents.modals.menuModal.errors.descriptionTooLong")
+      );
       return;
     }
 
     if (menuPageAssociations.length === 0) {
-      toast.error("Please add at least one menu page to the menu");
+      toast.error(
+        t("menuComponents.modals.menuModal.errors.addMenuPageRequired")
+      );
       return;
     }
 
@@ -419,7 +431,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
           menuPageAssociations
         );
         if (!res.status) {
-          toast.error("Failed to update menu");
+          toast.error(
+            t("menuComponents.modals.menuModal.errors.failedToUpdate")
+          );
           return;
         }
       } else {
@@ -429,17 +443,21 @@ export const MenuModal: React.FC<MenuModalProps> = ({
           menuPageAssociations
         );
         if (!res.status) {
-          toast.error("Failed to create menu");
+          toast.error(
+            t("menuComponents.modals.menuModal.errors.failedToCreate")
+          );
           return;
         }
       }
 
       toast.success(
-        editingMenu ? "Menu updated successfully" : "Menu created successfully"
+        editingMenu
+          ? t("menuComponents.modals.menuModal.success.updated")
+          : t("menuComponents.modals.menuModal.success.created")
       );
       onSuccess();
     } catch (error) {
-      toast.error("Failed to save menu");
+      toast.error(t("menuComponents.modals.menuModal.errors.failedToSave"));
     }
   };
 
@@ -462,20 +480,22 @@ export const MenuModal: React.FC<MenuModalProps> = ({
   };
 
   const handleEliminate = async () => {
-    if (window.confirm("Are you sure you want to delete this menu?")) {
+    if (window.confirm(t("menuComponents.modals.menuModal.confirmDelete"))) {
       try {
         const res = await (window as any).electronAPI.deleteMenu(
           token,
           editingMenu!.id
         );
         if (!res.status) {
-          toast.error("Failed to delete menu");
+          toast.error(
+            t("menuComponents.modals.menuModal.errors.failedToDelete")
+          );
           return;
         }
-        toast.success("Menu deleted successfully");
+        toast.success(t("menuComponents.modals.menuModal.success.deleted"));
         onSuccess();
       } catch (error) {
-        toast.error("Failed to delete menu");
+        toast.error(t("menuComponents.modals.menuModal.errors.failedToDelete"));
       }
     }
   };
@@ -510,7 +530,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
           {/* Modal Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-black uppercase">
-              {editingMenu ? "EDIT MENU" : "CREATE MENU"}
+              {editingMenu
+                ? t("menuComponents.modals.menuModal.editTitle")
+                : t("menuComponents.modals.menuModal.title")}
             </h2>
             <button
               onClick={onClose}
@@ -524,15 +546,17 @@ export const MenuModal: React.FC<MenuModalProps> = ({
             {/* Basic Information Section */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-black mb-4">
-                BASIC INFORMATION
+                {t("menuComponents.modals.menuModal.basicInformation")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <CustomInput
-                  label="NAME"
+                  label={t("menuComponents.modals.menuModal.menuName")}
                   name="name"
                   type="text"
                   required
-                  placeholder="Enter menu name"
+                  placeholder={t(
+                    "menuComponents.modals.menuModal.enterMenuName"
+                  )}
                   value={formData.name}
                   onChange={handleInputChange}
                   inputClasses="focus:ring-orange-500"
@@ -540,13 +564,15 @@ export const MenuModal: React.FC<MenuModalProps> = ({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ASSOCIATED SUBCATEGORY
+                    {t("menuComponents.modals.menuModal.subcategory")}
                   </label>
                   <CustomSelect
                     options={subcategories}
                     value={formData.subcategoryId}
                     onChange={handleSubcategorySelect}
-                    placeholder="Select subcategory"
+                    placeholder={t(
+                      "menuComponents.modals.menuModal.selectSubcategory"
+                    )}
                     className="w-full"
                   />
                 </div>
@@ -554,14 +580,16 @@ export const MenuModal: React.FC<MenuModalProps> = ({
 
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  DESCRIPTION
+                  {t("menuComponents.modals.menuModal.description")}
                 </label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Write a description (Max 150 characters)"
+                  placeholder={t(
+                    "menuComponents.modals.menuModal.writeDescription"
+                  )}
                   rows={3}
                   maxLength={150}
                 />
@@ -573,7 +601,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
             {/* Menu Image Upload */}
             <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                MENU IMAGE
+                {t("menuComponents.modals.menuModal.image")}
               </label>
               <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-orange-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-[150px] flex items-center justify-center">
                 <input
@@ -604,13 +632,15 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                       </button>
                     </div>
                     <span className="text-xs text-gray-500 text-center">
-                      Click to change
+                      {t("menuComponents.modals.menuModal.clickToChange")}
                     </span>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center text-gray-500">
                     <ImgIcon className="size-12 mb-2" />
-                    <p className="text-sm font-medium">Upload menu image</p>
+                    <p className="text-sm font-medium">
+                      {t("menuComponents.modals.menuModal.uploadImage")}
+                    </p>
                     <p className="text-xs">PNG, JPG up to 2MB</p>
                   </div>
                 )}
@@ -619,15 +649,15 @@ export const MenuModal: React.FC<MenuModalProps> = ({
             {/* Financial Details Section */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-black mb-4">
-                FINANCIAL DETAILS
+                {t("menuComponents.modals.menuModal.financialDetails")}
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <CustomInput
-                  label="PRICE"
+                  label={t("menuComponents.modals.menuModal.price")}
                   name="price"
                   type="number"
                   required
-                  placeholder="Enter price"
+                  placeholder={t("menuComponents.modals.menuModal.enterPrice")}
                   value={formData.price}
                   onChange={handleInputChange}
                   min="0"
@@ -636,7 +666,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   preLabel="€"
                 />
                 <CustomInput
-                  label="PRIORITY"
+                  label={t("menuComponents.modals.menuModal.priority")}
                   name="priority"
                   type="number"
                   required
@@ -646,7 +676,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   inputClasses="focus:ring-orange-500"
                 />
                 <CustomInput
-                  label="TAX"
+                  label={t("menuComponents.modals.menuModal.tax")}
                   name="tax"
                   type="number"
                   required
@@ -660,7 +690,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   secLabelClasses="right-3 top-2"
                 />
                 <CustomInput
-                  label="DISCOUNT"
+                  label={t("menuComponents.modals.menuModal.discount")}
                   name="discount"
                   type="number"
                   required
@@ -677,13 +707,13 @@ export const MenuModal: React.FC<MenuModalProps> = ({
             {/* Price Breakdown Section */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-black mb-4">
-                PRICE BREAKDOWN
+                {t("menuComponents.modals.menuModal.priceBreakdown")}
               </h3>
               <div className="p-4 bg-gray-50 rounded-lg border border-gray-300">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">
-                      Subtotal:
+                      {t("menuComponents.modals.menuModal.subtotal")}:
                     </span>
                     <span className="text-sm font-semibold text-black">
                       €{calculatePriceBreakdown().subtotal.toFixed(2)}
@@ -691,7 +721,8 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">
-                      Tax ({formData.tax || 0}%):
+                      {t("menuComponents.modals.menuModal.tax")} (
+                      {formData.tax || 0}%):
                     </span>
                     <span className="text-sm font-semibold text-black">
                       €{calculatePriceBreakdown().taxAmount.toFixed(2)}
@@ -700,7 +731,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   {formData.discount > 0 && (
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700">
-                        Discount:
+                        {t("menuComponents.modals.menuModal.discount")}:
                       </span>
                       <span className="text-sm font-semibold text-red-600">
                         -€{calculatePriceBreakdown().discount.toFixed(2)}
@@ -710,7 +741,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   <div className="border-t border-gray-300 pt-2">
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-semibold text-black">
-                        Total:
+                        {t("menuComponents.modals.menuModal.total")}:
                       </span>
                       <span className="text-lg font-bold text-green-600">
                         €{calculatePriceBreakdown().total.toFixed(2)}
@@ -724,7 +755,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
             {/* Visual Attributes Section */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-black mb-4">
-                VISUAL ATTRIBUTES
+                {t("menuComponents.modals.menuModal.visualAttributes")}
               </h3>
               <div className="flex items-center gap-4">
                 <label className="flex items-center">
@@ -736,7 +767,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
                   />
                   <span className="ml-2 text-sm font-medium text-gray-700">
-                    OUTSTANDING
+                    {t("menuComponents.modals.menuModal.outstanding")}
                   </span>
                 </label>
               </div>
@@ -745,24 +776,25 @@ export const MenuModal: React.FC<MenuModalProps> = ({
             {/* Add Pages Section */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-black mb-4">
-                ADD PAGES
+                {t("menuComponents.modals.menuModal.addPages")}
               </h3>
               <div className="flex items-end gap-4 mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <label className="text-sm font-medium text-gray-700">
-                      SELECT MENU PAGE
+                      {t("menuComponents.modals.menuModal.selectMenuPage")}
                     </label>
                     {newPageAssociation.menuPageId &&
                       selectedPageProductCount > 0 && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          Products: {selectedPageProductCount}
+                          {t("menuComponents.modals.menuModal.products")}:{" "}
+                          {selectedPageProductCount}
                         </span>
                       )}
                     {newPageAssociation.menuPageId &&
                       selectedPageProductCount === 0 && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          Products: 0
+                          {t("menuComponents.modals.menuModal.products")}: 0
                         </span>
                       )}
                   </div>
@@ -773,8 +805,10 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     placeholder={
                       availableMenuPages.length === 1 &&
                       availableMenuPages[0].disabled
-                        ? "No menu pages available"
-                        : "Select a menu page"
+                        ? t(
+                            "menuComponents.modals.menuModal.noMenuPagesAvailable"
+                          )
+                        : t("menuComponents.modals.menuModal.selectMenuPage")
                     }
                     className="w-full"
                     maxHeight="max-h-36"
@@ -786,7 +820,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                 </div>
                 <div className="w-24">
                   <CustomInput
-                    label="MINIMUM"
+                    label={t("menuComponents.modals.menuModal.minimum")}
                     name="minimum"
                     type="number"
                     value={newPageAssociation.minimum}
@@ -804,7 +838,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                 </div>
                 <div className="w-24">
                   <CustomInput
-                    label="MAXIMUM"
+                    label={t("menuComponents.modals.menuModal.maximum")}
                     name="maximum"
                     type="number"
                     value={newPageAssociation.maximum}
@@ -821,7 +855,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   )}
                 </div>
                 <CustomInput
-                  label="PRIORITY"
+                  label={t("menuComponents.modals.menuModal.priority")}
                   name="priority"
                   type="number"
                   value={newPageAssociation.priority}
@@ -833,7 +867,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
 
                 <div className="w-32">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    KITCHEN PRIORITY
+                    {t("menuComponents.modals.menuModal.kitchenPriority")}
                   </label>
                   <CustomSelect
                     options={kitchenPriorityOptions}
@@ -844,7 +878,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                         kitchenPriority: value,
                       }))
                     }
-                    placeholder="Select priority"
+                    placeholder={t(
+                      "menuComponents.modals.menuModal.selectPriority"
+                    )}
                     className="w-full"
                     maxHeight="max-h-36"
                   />
@@ -872,7 +908,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                 <div className="flex justify-end">
                   <CustomButton
                     type="button"
-                    label="Add"
+                    label={t("menuComponents.modals.menuModal.add")}
                     variant="orange"
                     onClick={handleAddPageAssociation}
                   />
@@ -886,25 +922,25 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          PAGE
+                          {t("menuComponents.modals.menuModal.page")}
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          MINIMUM
+                          {t("menuComponents.modals.menuModal.minimum")}
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          MAXIMUM
+                          {t("menuComponents.modals.menuModal.maximum")}
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          PRIORITY
+                          {t("menuComponents.modals.menuModal.priority")}
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          KITCHEN PRIORITY
+                          {t("menuComponents.modals.menuModal.kitchenPriority")}
                         </th>
                         {/* <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           MULTIPLE
                         </th> */}
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          ACTIONS
+                          {t("menuComponents.modals.menuModal.actions")}
                         </th>
                       </tr>
                     </thead>
@@ -1039,10 +1075,18 @@ export const MenuModal: React.FC<MenuModalProps> = ({
             {/* Action Buttons */}
             <div className="flex items-center justify-between pt-6 border-t border-gray-200">
               <div className="flex items-center gap-4">
-                <CustomButton type="submit" label="Keep" variant="yellow" />
+                <CustomButton
+                  type="submit"
+                  label={
+                    editingMenu
+                      ? t("menuComponents.modals.menuModal.update")
+                      : t("menuComponents.modals.menuModal.create")
+                  }
+                  variant="yellow"
+                />
                 <CustomButton
                   type="button"
-                  label="Close"
+                  label={t("menuComponents.modals.menuModal.cancel")}
                   variant="secondary"
                   onClick={onClose}
                 />
@@ -1051,7 +1095,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
               {editingMenu && (
                 <CustomButton
                   type="button"
-                  label="Eliminate"
+                  label={t("menuComponents.modals.menuModal.eliminate")}
                   variant="red"
                   onClick={handleEliminate}
                 />

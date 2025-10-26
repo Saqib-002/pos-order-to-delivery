@@ -11,6 +11,7 @@ import {
   NoProductIcon,
 } from "@/renderer/public/Svg";
 import { fetchAssociatedProductsByVariantId } from "@/renderer/utils/menu";
+import { useTranslation } from "react-i18next";
 
 interface Variant {
   id: string;
@@ -47,6 +48,7 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
   token,
   editingVariant,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     color: "red",
@@ -101,7 +103,9 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
   }, [editingVariant, isOpen]);
   const addVariant = () => {
     if (!newVariantName.trim()) {
-      toast.error("Please enter a variant name");
+      toast.error(
+        t("menuComponents.modals.createVariantModal.errors.nameRequired")
+      );
       return;
     }
 
@@ -146,7 +150,9 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
     e.preventDefault();
 
     if (variants.length === 0) {
-      toast.error("Please add at least one variant");
+      toast.error(
+        t("menuComponents.modals.createVariantModal.errors.itemNameRequired")
+      );
       return;
     }
     setIsSubmitting(true);
@@ -167,18 +173,26 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
       }
       if (!res.status) {
         toast.error(
-          editingVariant ? "Failed to edit variant" : "Failed to save variant"
+          editingVariant
+            ? t(
+                "menuComponents.modals.createVariantModal.errors.failedToUpdate"
+              )
+            : t(
+                "menuComponents.modals.createVariantModal.errors.failedToCreate"
+              )
         );
         return;
       }
       toast.success(
         editingVariant
-          ? "Variant updated successfully"
-          : "Variant created successfully"
+          ? t("menuComponents.modals.createVariantModal.success.updated")
+          : t("menuComponents.modals.createVariantModal.success.created")
       );
       onSuccess();
     } catch (error) {
-      toast.error("Failed to save variant");
+      toast.error(
+        t("menuComponents.modals.createVariantModal.errors.failedToCreate")
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -196,22 +210,26 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-semibold text-black px-6 py-4 border-b border-gray-200">
-          {editingVariant ? "EDIT VARIANT" : "CREATE VARIANT"}
+          {editingVariant
+            ? t("menuComponents.modals.createVariantModal.editTitle")
+            : t("menuComponents.modals.createVariantModal.title")}
         </h2>
 
         <form onSubmit={handleSubmit} className="p-6">
           <CustomInput
-            label="VARIANT GROUP NAME (OPTIONAL)"
+            label={t("menuComponents.modals.createVariantModal.variantName")}
             type="text"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Variant group name"
+            placeholder={t(
+              "menuComponents.modals.createVariantModal.enterVariantName"
+            )}
             name="name"
             otherClasses="mb-4"
           />
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              COLOR
+              {t("menuComponents.modals.createVariantModal.color")}
             </label>
             <div className="grid grid-cols-9 gap-2">
               {colorOptions.map((option) => (
@@ -235,12 +253,14 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
 
           <div className="mb-6 flex items-center gap-2">
             <CustomInput
-              label="VARIANT NAME"
+              label={t("menuComponents.modals.createVariantModal.itemName")}
               type="text"
               name="variantName"
               value={newVariantName}
               onChange={(e) => setNewVariantName(e.target.value)}
-              placeholder="Variant name"
+              placeholder={t(
+                "menuComponents.modals.createVariantModal.enterItemName"
+              )}
               onKeyPress={(e: any) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -251,9 +271,9 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
             />
             <CustomButton
               type="button"
-              label="ADD"
+              label={t("menuComponents.modals.createVariantModal.addItem")}
               onClick={addVariant}
-              className="self-end"
+              className="self-end min-w-42"
               variant="orange"
             />
           </div>
@@ -268,14 +288,18 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
                     {/* Name Input - Full width flex */}
                     <div className="flex-1">
                       <CustomInput
-                        label="NAME"
+                        label={t(
+                          "menuComponents.modals.createVariantModal.name"
+                        )}
                         type="text"
                         name="variantName"
                         value={variant.name}
                         onChange={(e) =>
                           updateVariant(variant.id, "name", e.target.value)
                         }
-                        placeholder="Variant name"
+                        placeholder={t(
+                          "menuComponents.modals.createVariantModal.enterItemName"
+                        )}
                         otherClasses="w-full"
                       />
                     </div>
@@ -284,7 +308,9 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
                     <div className="w-24 flex-shrink-0">
                       <CustomInput
                         type="number"
-                        label="PRIORITY"
+                        label={t(
+                          "menuComponents.modals.createVariantModal.priority"
+                        )}
                         name="priority"
                         value={variant.priority}
                         onChange={(e) =>
@@ -294,7 +320,9 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
                             parseInt(e.target.value) || 0
                           )
                         }
-                        placeholder="Priority"
+                        placeholder={t(
+                          "menuComponents.modals.createVariantModal.enterPriority"
+                        )}
                         otherClasses="w-full"
                         min="0"
                       />
@@ -303,7 +331,7 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
                     {/* Image Upload - Compact fixed width */}
                     <div className="w-32 flex-shrink-0">
                       <label className="block text-xs font-medium text-gray-700 mb-2">
-                        IMAGE
+                        {t("menuComponents.modals.createVariantModal.image")}
                       </label>
                       <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-1 hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100  flex items-center justify-center touch-manipulation">
                         <input
@@ -379,7 +407,9 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
                 className="cursor-pointer text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
               >
                 <DocumentIcon className="size-4" />
-                See associated products
+                {t(
+                  "menuComponents.modals.createVariantModal.seeAssociatedProducts"
+                )}
               </button>
             </div>
           )}
@@ -388,13 +418,17 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
           <div className="flex justify-end gap-3">
             <CustomButton
               type="button"
-              label="Cancel"
+              label={t("menuComponents.modals.createVariantModal.cancel")}
               onClick={onClose}
               variant="secondary"
             />
             <CustomButton
               type="submit"
-              label="Keep"
+              label={
+                editingVariant
+                  ? t("menuComponents.modals.createVariantModal.update")
+                  : t("menuComponents.modals.createVariantModal.create")
+              }
               isLoading={isSubmitting}
               disabled={isSubmitting}
               variant="yellow"
@@ -408,7 +442,9 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-semibold text-black">
-                  Associated Products
+                  {t(
+                    "menuComponents.modals.createVariantModal.associatedProducts"
+                  )}
                 </h3>
                 <button
                   onClick={() => setShowAssociatedProducts(false)}
@@ -445,7 +481,9 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
               {associatedProducts && associatedProducts.length === 0 && (
                 <div className="text-center py-8">
                   <NoProductIcon className="size-12 text-gray-400 mb-4 mx-auto" />
-                  <p className="text-gray-500">No associated products found</p>
+                  <p className="text-gray-500">
+                    {t("menuComponents.modals.createVariantModal.noProducts")}
+                  </p>
                 </div>
               )}
             </div>
@@ -453,7 +491,7 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
               <CustomButton
                 type="button"
-                label="Close"
+                label={t("menuComponents.modals.createVariantModal.close")}
                 onClick={() => setShowAssociatedProducts(false)}
                 variant="secondary"
               />

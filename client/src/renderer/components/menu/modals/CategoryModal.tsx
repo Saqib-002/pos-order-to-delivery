@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { CrossIcon, ImgIcon } from "@/renderer/public/Svg"; // Import icons
+import { useTranslation } from "react-i18next";
 
 interface Category {
   id: string;
@@ -29,6 +30,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   token,
   editingCategory,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     color: "red",
@@ -60,7 +62,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       colorMap[color] || "border-gray-500 ring-2 ring-gray-500 ring-opacity-50"
     );
   };
-  console.log(editingCategory)
+  console.log(editingCategory);
   useEffect(() => {
     if (editingCategory) {
       setFormData({
@@ -101,7 +103,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      toast.error("Please enter a category name");
+      toast.error(t("menuComponents.modals.categoryModal.errors.nameRequired"));
       return;
     }
 
@@ -130,19 +132,19 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       if (!res.status) {
         toast.error(
           editingCategory
-            ? "Failed to edit category"
-            : "Failed to save category"
+            ? t("menuComponents.modals.categoryModal.errors.failedToEdit")
+            : t("menuComponents.modals.categoryModal.errors.failedToSave")
         );
         return;
       }
       toast.success(
         editingCategory
-          ? "Category updated successfully"
-          : "Category created successfully"
+          ? t("menuComponents.modals.categoryModal.success.updated")
+          : t("menuComponents.modals.categoryModal.success.created")
       );
       onSuccess();
     } catch (error) {
-      toast.error("Failed to save category");
+      toast.error(t("menuComponents.modals.categoryModal.errors.failedToSave"));
     } finally {
       setIsSubmitting(false);
     }
@@ -155,7 +157,9 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       <div className="bg-white rounded-lg shadow-xl max-w-xl w-full mx-4">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-black">
-            {editingCategory ? "Edit Category" : "Create New Category"}
+            {editingCategory
+              ? t("menuComponents.modals.categoryModal.editTitle")
+              : t("menuComponents.modals.categoryModal.title")}
           </h2>
         </div>
 
@@ -163,7 +167,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
           {/* Wrap name and image in a flex container */}
           <div className="flex items-start gap-4 mb-4">
             <CustomInput
-              label="Category Name"
+              label={t("menuComponents.modals.categoryModal.categoryName")}
               name="categoryName"
               type="text"
               value={formData.name} // Add value prop
@@ -171,14 +175,16 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                 setFormData({ ...formData, name: e.target.value })
               }
               required
-              placeholder="Enter category name"
+              placeholder={t(
+                "menuComponents.modals.categoryModal.enterCategoryName"
+              )}
               otherClasses="flex-1" // Use flex-1
             />
 
             {/* Image Upload */}
             <div className="w-32 flex-shrink-0">
               <label className="block text-xs font-medium text-gray-700 mb-2">
-                IMAGE
+                {t("menuComponents.modals.categoryModal.image")}
               </label>
               <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-1 hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100  flex items-center justify-center touch-manipulation">
                 <input
@@ -221,7 +227,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
           <div className="mb-6">
             {/* ... (color picker code remains the same) ... */}
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Color
+              {t("menuComponents.modals.categoryModal.color")}
             </label>
             <div className="grid grid-cols-5 gap-y-8">
               {colorOptions.map((option) => (
@@ -250,12 +256,16 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
             <CustomButton
               type="button"
               onClick={onClose}
-              label="Cancel"
+              label={t("menuComponents.modals.categoryModal.cancel")}
               variant="secondary"
             />
             <CustomButton
               type="submit"
-              label={editingCategory ? "Update" : "Create"}
+              label={
+                editingCategory
+                  ? t("menuComponents.modals.categoryModal.update")
+                  : t("menuComponents.modals.categoryModal.create")
+              }
               isLoading={isSubmitting}
               disabled={isSubmitting}
             />

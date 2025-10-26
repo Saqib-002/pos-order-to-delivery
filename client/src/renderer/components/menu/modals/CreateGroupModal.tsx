@@ -11,6 +11,7 @@ import {
   NoProductIcon,
 } from "@/renderer/public/Svg";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
+import { useTranslation } from "react-i18next";
 
 interface Group {
   id: string;
@@ -49,6 +50,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   editingGroup,
   token,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     color: "red",
@@ -73,13 +75,17 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         window as any
       ).electronAPI.getAttachProductsByGroupId(token, editingGroup!.id);
       if (!response.status) {
-        toast.error("Failed to fetch associated products");
+        toast.error(
+          t("menuComponents.modals.createGroupModal.errors.failedToFetch")
+        );
         return;
       } else {
         setAssociatedProducts(response.data);
       }
     } catch (error) {
-      toast.error("Failed to fetch associated products");
+      toast.error(
+        t("menuComponents.modals.createGroupModal.errors.failedToFetch")
+      );
     }
   };
   // Get color classes for selection ring
@@ -131,7 +137,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
   const addComplement = () => {
     if (!newComplement.name.trim()) {
-      toast.error("Please enter a complement name");
+      toast.error(
+        t("menuComponents.modals.createGroupModal.errors.itemNameRequired")
+      );
       return;
     }
 
@@ -171,11 +179,15 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      toast.error("Please enter a group name");
+      toast.error(
+        t("menuComponents.modals.createGroupModal.errors.nameRequired")
+      );
       return;
     }
     if (complements.length === 0) {
-      toast.error("Please add at least one complement");
+      toast.error(
+        t("menuComponents.modals.createGroupModal.errors.itemNameRequired")
+      );
       return;
     }
 
@@ -199,18 +211,22 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       }
       if (!res.status) {
         toast.error(
-          editingGroup ? "Failed to edit group" : "Failed to save group"
+          editingGroup
+            ? t("menuComponents.modals.createGroupModal.errors.failedToUpdate")
+            : t("menuComponents.modals.createGroupModal.errors.failedToCreate")
         );
         return;
       }
       toast.success(
         editingGroup
-          ? "Group updated successfully"
-          : "Group created successfully"
+          ? t("menuComponents.modals.createGroupModal.success.updated")
+          : t("menuComponents.modals.createGroupModal.success.created")
       );
       onSuccess();
     } catch (error) {
-      toast.error("Failed to save group");
+      toast.error(
+        t("menuComponents.modals.createGroupModal.errors.failedToCreate")
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -218,24 +234,27 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
   const handleDeleteGroup = async (id: string, name: string) => {
     const ok = await confirm({
-      title: "Delete Group",
-      message: `Are you sure you want to delete this "${editingGroup?.name}" with ${complements.length} items? This group is attached to ${associatedProducts ? associatedProducts.length : 0} products. They will be detached!`,
+      title: t("menuComponents.modals.createGroupModal.deleteTitle"),
+      message: `${t("menuComponents.modals.createGroupModal.deleteMessage")} "${editingGroup?.name}" with ${complements.length} items? This group is attached to ${associatedProducts ? associatedProducts.length : 0} products. They will be detached!`,
       itemName: name,
       type: "danger",
-      confirmText: "Delete Group",
-      cancelText: "Cancel",
-      specialNote:
-        "If you delete this group you can no longer edit this group in any attached order!",
+      confirmText: t("menuComponents.modals.createGroupModal.deleteConfirm"),
+      cancelText: t("menuComponents.modals.createGroupModal.cancel"),
+      specialNote: t("menuComponents.modals.createGroupModal.specialNote"),
     });
     if (!ok) return;
     await (window as any).electronAPI
       .deleteGroup(token, id)
       .then((res: any) => {
         if (!res.status) {
-          toast.error("Failed to delete group");
+          toast.error(
+            t("menuComponents.modals.createGroupModal.errors.failedToDelete")
+          );
           return;
         }
-        toast.success("Group deleted successfully");
+        toast.success(
+          t("menuComponents.modals.createGroupModal.success.deleted")
+        );
         onSuccess();
       });
   };
@@ -267,22 +286,26 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-semibold text-black px-6 py-4 border-b border-gray-200">
-          {editingGroup ? "EDIT PLUGIN GROUP" : "CREATE PLUGIN GROUP"}
+          {editingGroup
+            ? t("menuComponents.modals.createGroupModal.editTitle")
+            : t("menuComponents.modals.createGroupModal.title")}
         </h2>
 
         <form onSubmit={handleSubmit} className="p-6">
           <CustomInput
-            label="GROUP NAME *"
+            label={t("menuComponents.modals.createGroupModal.groupName")}
             name="name"
             type="text"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Enter group name"
+            placeholder={t(
+              "menuComponents.modals.createGroupModal.enterGroupName"
+            )}
             required
           />
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              COLOR
+              {t("menuComponents.modals.createGroupModal.color")}
             </label>
             <div className="grid grid-cols-9 gap-2">
               {colorOptions.map((option) => (
@@ -310,22 +333,26 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           {/* Add New Complement Section */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-black mb-4">
-              Add New Complement
+              {t("menuComponents.modals.createGroupModal.addNewComplement")}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <CustomInput
-                label="COMPLEMENT NAME *"
+                label={t(
+                  "menuComponents.modals.createGroupModal.complementName"
+                )}
                 name="complement-name"
                 type="text"
                 value={newComplement.name}
                 onChange={(e) =>
                   setNewComplement({ ...newComplement, name: e.target.value })
                 }
-                placeholder="Enter complement name"
+                placeholder={t(
+                  "menuComponents.modals.createGroupModal.enterComplementName"
+                )}
               />
 
               <CustomInput
-                label="PRICE *"
+                label={t("menuComponents.modals.createGroupModal.price")}
                 name="price"
                 type="number"
                 step="0.01"
@@ -344,7 +371,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               />
 
               <CustomInput
-                label="PRIORITY"
+                label={t("menuComponents.modals.createGroupModal.priority")}
                 name="priority"
                 type="number"
                 min="0"
@@ -364,7 +391,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 type="button"
                 onClick={addComplement}
                 variant="orange"
-                label="ADD"
+                label={t("menuComponents.modals.createGroupModal.add")}
               />
             </div>
           </div>
@@ -373,26 +400,28 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           {complements.length > 0 && (
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-black mb-4">
-                Complements
+                {t("menuComponents.modals.createGroupModal.complements")}
               </h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Complement Name
+                        {t(
+                          "menuComponents.modals.createGroupModal.complementName"
+                        )}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Price
+                        {t("menuComponents.modals.createGroupModal.price")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Priority
+                        {t("menuComponents.modals.createGroupModal.priority")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Image
+                        {t("menuComponents.modals.createGroupModal.image")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
+                        {t("menuComponents.modals.createGroupModal.actions")}
                       </th>
                     </tr>
                   </thead>
@@ -412,7 +441,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                                 e.target.value
                               )
                             }
-                            placeholder="Enter complement name"
+                            placeholder={t(
+                              "menuComponents.modals.createGroupModal.enterComplementName"
+                            )}
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -526,7 +557,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 className="cursor-pointer text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
               >
                 <DocumentIcon className="size-4" />
-                See associated products
+                {t(
+                  "menuComponents.modals.createGroupModal.seeAssociatedProducts"
+                )}
               </button>
             </div>
           )}
@@ -542,7 +575,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                   handleDeleteGroup(editingGroup.id, editingGroup.name)
                 }
                 variant="transparent"
-                label="ELIMINATE"
+                label={t("menuComponents.modals.createGroupModal.eliminate")}
                 className="text-red-500 hover:text-red-700"
               />
             )}
@@ -552,13 +585,17 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 type="button"
                 onClick={onClose}
                 variant="secondary"
-                label="CANCEL"
+                label={t("menuComponents.modals.createGroupModal.cancel")}
               />
               <CustomButton
                 type="submit"
                 disabled={isSubmitting}
                 variant="yellow"
-                label="KEEP"
+                label={
+                  editingGroup
+                    ? t("menuComponents.modals.createGroupModal.update")
+                    : t("menuComponents.modals.createGroupModal.create")
+                }
                 isLoading={isSubmitting}
               />
             </div>
@@ -573,7 +610,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-semibold text-black">
-                  Associated Products
+                  {t(
+                    "menuComponents.modals.createGroupModal.associatedProducts"
+                  )}
                 </h3>
                 <button
                   onClick={() => setShowAssociatedProducts(false)}
@@ -610,7 +649,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               {associatedProducts && associatedProducts.length === 0 && (
                 <div className="text-center py-8">
                   <NoProductIcon className="size-12 text-gray-400 mb-4 mx-auto" />
-                  <p className="text-gray-500">No associated products found</p>
+                  <p className="text-gray-500">
+                    {t("menuComponents.modals.createGroupModal.noProducts")}
+                  </p>
                 </div>
               )}
             </div>
@@ -618,7 +659,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
               <CustomButton
                 type="button"
-                label="Close"
+                label={t("menuComponents.modals.createGroupModal.close")}
                 onClick={() => setShowAssociatedProducts(false)}
                 variant="secondary"
               />

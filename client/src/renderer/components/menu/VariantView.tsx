@@ -11,6 +11,7 @@ import {
 import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
+import { useTranslation } from "react-i18next";
 
 export interface Variant {
   id: string;
@@ -28,6 +29,7 @@ export const VariantView = () => {
   const {
     auth: { token },
   } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     getVariants(token, setVariants);
@@ -51,13 +53,14 @@ export const VariantView = () => {
     );
     if (!res?.status) return;
     const ok = await confirm({
-      title: "Delete Variant",
-      message: `Are you sure you want to delete "${variant.name !== "" ? variant.name : variant.items.map((i) => i.name).join("-")}" with "${variant.items.length} variants"? This variant is attached to ${res.data.length} products. They will be detached!`,
+      title: t("menuComponents.common.delete"),
+      message: `${t("menuComponents.common.delete")} "${variant.name !== "" ? variant.name : variant.items.map((i) => i.name).join("-")}" with "${variant.items.length} variants"? This variant is attached to ${res.data.length} products. They will be detached!`,
       type: "danger",
-      confirmText: "Delete Variant",
-      cancelText: "Cancel",
-      specialNote:
-        "If you delete this variant you can no longer edit this variant in any attached order!",
+      confirmText: t("menuComponents.common.delete"),
+      cancelText: t("menuComponents.common.cancel"),
+      specialNote: t(
+        "menuComponents.messages.specialNotes.variantDeleteWarning"
+      ),
       itemName: variant.name,
     });
     if (!ok) return;
@@ -66,7 +69,7 @@ export const VariantView = () => {
       variant.id
     );
     if (!delRes.status) {
-      toast.error("Unable to delete variant");
+      toast.error(t("menuComponents.messages.errors.failedToDelete"));
       return;
     }
     getVariants(token, setVariants);
@@ -84,7 +87,7 @@ export const VariantView = () => {
       <div className="flex flex-wrap gap-4 items-center">
         <CustomButton
           onClick={handleCreateVariant}
-          label="Create Variant"
+          label={t("menuComponents.variants.addVariant")}
           variant="orange"
           type="button"
           Icon={<AddIcon className="size-5" />}
@@ -92,14 +95,16 @@ export const VariantView = () => {
       </div>
 
       <div className="">
-        <h2 className="text-xl font-semibold text-black">Variants</h2>
+        <h2 className="text-xl font-semibold text-black">
+          {t("menuComponents.variants.title")}
+        </h2>
       </div>
 
       {/* Variants Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {!variants.length && (
           <div className="text-center">
-            <p>No variants found. Please create one.</p>
+            <p>{t("menuComponents.variants.noVariants")}</p>
           </div>
         )}
         {variants.map((variant) => (

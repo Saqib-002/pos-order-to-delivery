@@ -8,15 +8,16 @@ import { MenuActionButtons } from "./MenuActionButtons";
 import { MenuBreadcrumb } from "./MenuBreadCrumb";
 import { MenuContentSections } from "./MenuContentSections";
 
+import { Category, Subcategory, Product } from "@/types/Menu";
 import {
-  Category,
-  Subcategory,
-  Product,
-} from "@/types/Menu";
-import { fetchCategories, fetchProducts, fetchSubcategories } from "@/renderer/utils/menu";
+  fetchCategories,
+  fetchProducts,
+  fetchSubcategories,
+} from "@/renderer/utils/menu";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { toast } from "react-toastify";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
+import { useTranslation } from "react-i18next";
 
 type NavigationLevel = "categories" | "subcategories" | "products";
 
@@ -25,8 +26,11 @@ export const MenuComponent = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const { auth: { token } } = useAuth();
+  const {
+    auth: { token },
+  } = useAuth();
   const confirm = useConfirm();
+  const { t } = useTranslation();
 
   // State for modals
   const [modals, setModals] = useState({
@@ -49,8 +53,6 @@ export const MenuComponent = () => {
     selectedCategory: null as Category | null,
     selectedSubcategory: null as Subcategory | null,
   });
-
-
 
   // Initialize data
   useEffect(() => {
@@ -113,7 +115,7 @@ export const MenuComponent = () => {
   const handleCategoryDelete = async (catId: string) => {
     const res = await (window as any).electronAPI.deleteCategory(token, catId);
     if (!res.status) {
-      toast.error("Unable to delete category");
+      toast.error(t("menuComponents.messages.errors.failedToDelete"));
       return;
     }
     fetchCategories(token, setCategories);
@@ -122,16 +124,24 @@ export const MenuComponent = () => {
   const handleSubcategorySuccess = () => {
     closeModal("subcategory");
     if (navigation.selectedCategory) {
-      fetchSubcategories(navigation.selectedCategory.id, token, setSubcategories);
+      fetchSubcategories(
+        navigation.selectedCategory.id,
+        token,
+        setSubcategories
+      );
     }
   };
   const handleSubCategoryDelete = async (id: string) => {
     const res = await (window as any).electronAPI.deleteSubcategory(token, id);
     if (!res.status) {
-      toast.error("Unable to delete category");
+      toast.error(t("menuComponents.messages.errors.failedToDelete"));
       return;
     }
-    fetchSubcategories(navigation.selectedCategory!.id, token, setSubcategories);
+    fetchSubcategories(
+      navigation.selectedCategory!.id,
+      token,
+      setSubcategories
+    );
   };
 
   const handleProductSuccess = () => {
@@ -145,24 +155,31 @@ export const MenuComponent = () => {
 
   // Delete handler
   const handleDeleteProduct = async (product: Product) => {
-    const menuRes=await (window as any).electronAPI.getAssociatedMenuPagesByProductId(token,product.id);
-    if(!menuRes.status){
-      toast.error("Unable to delete product");
+    const menuRes = await (
+      window as any
+    ).electronAPI.getAssociatedMenuPagesByProductId(token, product.id);
+    if (!menuRes.status) {
+      toast.error(t("menuComponents.messages.errors.failedToDelete"));
       return;
     }
     const ok = await confirm({
-      title: 'Delete Product',
-      message: `Are you sure you want to delete "${product.name}"? ${menuRes.data.length} menu pages are attached`,
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-      type: 'danger',
-      specialNote:"If you delete this product you can no longer edit this product in order!",
-      itemName: product.name
-    })
+      title: t("menuComponents.common.delete"),
+      message: `${t("menuComponents.common.delete")} "${product.name}"? ${menuRes.data.length} menu pages are attached`,
+      confirmText: t("menuComponents.common.delete"),
+      cancelText: t("menuComponents.common.cancel"),
+      type: "danger",
+      specialNote: t(
+        "menuComponents.messages.specialNotes.productDeleteWarning"
+      ),
+      itemName: product.name,
+    });
     if (!ok) return;
-    const res=await (window as any).electronAPI.deleteProduct(token, product.id);
+    const res = await (window as any).electronAPI.deleteProduct(
+      token,
+      product.id
+    );
     if (!res.status) {
-      toast.error("Unable to delete product");
+      toast.error(t("menuComponents.messages.errors.failedToDelete"));
       return;
     }
     fetchProducts(token, setProducts);
@@ -237,7 +254,9 @@ export const MenuComponent = () => {
         product={editing.product}
         categories={categories}
         subcategories={subcategories}
-        onFetchSubcategories={(id) => fetchSubcategories(id, token, setSubcategories)}
+        onFetchSubcategories={(id) =>
+          fetchSubcategories(id, token, setSubcategories)
+        }
         onClearSubcategories={() => setSubcategories([])}
       />
 
