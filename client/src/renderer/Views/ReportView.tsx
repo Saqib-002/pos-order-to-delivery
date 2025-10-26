@@ -1,7 +1,12 @@
 import { AnalyticsType } from "@/types/report";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { useTranslation } from "react-i18next";
+import {
+  translateOrderStatus,
+  getOrderStatusStyle,
+  translatePaymentStatus,
+  getPaymentStatusStyle,
+} from "../utils/orderStatus";
 import { DateRangeSelector } from "../components/report/DateRangeSelector";
 import { HourlyDistribution } from "../components/report/HourlyDistribution";
 import { StatusDistribution } from "../components/report/StatusDistribution";
@@ -18,6 +23,7 @@ import {
 import { StatsCard } from "../components/shared/StatsCard.order";
 import { OrderTable } from "../components/shared/OrderTable";
 import { useConfigurations } from "../contexts/configurationContext";
+import { useTranslation } from "react-i18next";
 
 export const ReportView = () => {
   const { t } = useTranslation();
@@ -79,30 +85,16 @@ export const ReportView = () => {
     }
   };
 
-  const getTranslatedStatus = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "delivered":
-        return t("reports.statuses.delivered");
-      case "sent to kitchen":
-        return t("reports.statuses.sentToKitchen");
-      case "out for delivery":
-        return t("reports.statuses.outForDelivery");
-      case "cancelled":
-        return t("reports.statuses.cancelled");
-      case "ready for delivery":
-        return t("reports.statuses.readyForDelivery");
-      default:
-        return status;
-    }
-  };
-
   const renderOrderRow = (order: any) => (
     <tr
       key={order.orderId}
       className="hover:bg-gray-50 transition-colors duration-150"
     >
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-medium text-black">{configurations.orderPrefix || "K"}{order.orderId}</div>
+        <div className="text-sm font-medium text-black">
+          {configurations.orderPrefix || "K"}
+          {order.orderId}
+        </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-black">{order.customer.name}</div>
@@ -120,9 +112,9 @@ export const ReportView = () => {
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusStyles(order.status)}`}
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getOrderStatusStyle(order.status)}`}
         >
-          {getTranslatedStatus(order.status)}
+          {translateOrderStatus(order.status)}
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">

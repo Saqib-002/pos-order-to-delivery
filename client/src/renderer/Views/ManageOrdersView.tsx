@@ -4,10 +4,13 @@ import { DeliveryPerson } from "@/types/delivery";
 import CustomInput from "../components/shared/CustomInput";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import { calculateOrderTotal } from "../utils/orderCalculations";
+import { calculatePaymentStatus } from "../utils/paymentStatus";
 import {
-  calculatePaymentStatus,
+  translateOrderStatus,
+  getOrderStatusStyle,
+  translatePaymentStatus,
   getPaymentStatusStyle,
-} from "../utils/paymentStatus";
+} from "../utils/orderStatus";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
@@ -16,7 +19,15 @@ import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
 import BulkPaymentModal from "../components/order/modals/BulkPaymentModal";
 import IndividualPaymentModal from "../components/order/modals/IndividualPaymentModal";
 import { toast } from "react-toastify";
-import { DeliveredIcon, DocumentIcon, Euro, EyeIcon, LightningBoltIcon, PersonIcon, SearchIcon } from "@/renderer/public/Svg";
+import {
+  DeliveredIcon,
+  DocumentIcon,
+  Euro,
+  EyeIcon,
+  LightningBoltIcon,
+  PersonIcon,
+  SearchIcon,
+} from "@/renderer/public/Svg";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 
@@ -129,6 +140,7 @@ export const ManageOrdersView = () => {
     t("manageOrders.table.orderNumber"),
     t("manageOrders.table.customer"),
     t("manageOrders.table.orderType"),
+    t("manageOrders.table.status"),
     t("manageOrders.table.paymentStatus"),
     t("manageOrders.table.deliveryPerson"),
     t("manageOrders.table.total"),
@@ -160,12 +172,19 @@ export const ManageOrdersView = () => {
             {order.orderType?.toUpperCase() || t("manageOrders.statuses.nA")}
           </span>
         </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+          <span
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getOrderStatusStyle(order.status || "")}`}
+          >
+            {translateOrderStatus(order.status || "")}
+          </span>
+        </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="flex flex-col gap-1">
             <span
               className={`inline-flex w-fit px-2 py-1 text-xs font-semibold rounded-full border ${getPaymentStatusStyle(paymentStatus.status)}`}
             >
-              {paymentStatus.status}
+              {translatePaymentStatus(paymentStatus.status)}
             </span>
             {paymentStatus.status === "PARTIAL" && (
               <span className="text-xs text-yellow-700">

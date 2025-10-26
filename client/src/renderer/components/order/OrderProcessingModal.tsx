@@ -8,6 +8,7 @@ import { useAuth } from "@/renderer/contexts/AuthContext";
 import { calculateOrderTotal } from "@/renderer/utils/orderCalculations";
 import { formatAddress } from "@/renderer/utils/utils";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
+import { useTranslation } from "react-i18next";
 import {
   AddIcon,
   CashIcon,
@@ -34,6 +35,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   order,
   onProcessOrder,
 }) => {
+  const { t } = useTranslation();
   const [customerSearch, setCustomerSearch] = useState("");
   const [orderType, setOrderType] = useState<"pickup" | "delivery" | "dine-in">(
     "pickup"
@@ -155,9 +157,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const handleProcessOrder = () => {
     if (orderType === "delivery" && !selectedCustomer) {
       if (!customCustomerName.trim() || !customCustomerPhone.trim()) {
-        toast.error(
-          "Please enter customer name and phone number for delivery orders"
-        );
+        toast.error(t("orderProcessingModal.errors.customerNamePhoneRequired"));
         return;
       }
     }
@@ -167,9 +167,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       selectedCustomer &&
       !selectedCustomer.address.trim()
     ) {
-      toast.error(
-        "Selected customer has no address. Please select a different customer or change to pickup."
-      );
+      toast.error(t("orderProcessingModal.errors.customerNoAddress"));
       return;
     }
 
@@ -179,9 +177,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     );
 
     if (currentPaymentStatus.status === "PAID") {
-      toast.info(
-        "Order is already paid. Processing with existing payment information."
-      );
+      toast.info(t("orderProcessingModal.errors.orderAlreadyPaid"));
       handlePaymentConfirm({
         paymentType: order?.paymentType || "paid",
         totalAmount: orderTotal,
@@ -223,16 +219,16 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         !customCustomerPhone.trim() ||
         !customCustomerAddress.trim())
     ) {
-      toast.error(
-        "Please select a customer or enter customer details including address for delivery orders"
-      );
+      toast.error(t("orderProcessingModal.errors.customerDetailsRequired"));
       return;
     }
 
     const customerName =
       selectedCustomer?.name ||
       customCustomerName.trim() ||
-      (orderType === "dine-in" ? "Dine-in Customer" : "Walk-in Customer");
+      (orderType === "dine-in"
+        ? t("orderProcessingModal.defaultCustomers.dineInCustomer")
+        : t("orderProcessingModal.defaultCustomers.walkInCustomer"));
     const customerPhone = selectedCustomer?.phone || customCustomerPhone.trim();
     const customerAddress =
       selectedCustomer?.address || customCustomerAddress.trim();
@@ -247,8 +243,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         orderType === "delivery"
           ? customerAddress
           : orderType === "dine-in"
-            ? "Dine-in"
-            : "In-store",
+            ? t("orderProcessingModal.defaultCustomers.dineIn")
+            : t("orderProcessingModal.defaultCustomers.inStore"),
       orderType,
       paymentType:
         orderType === "delivery" ? "pending" : paymentData.paymentType,
@@ -273,8 +269,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               </div>
             </div>
             <div>
-              <h2 className="text-2xl font-bold">Process Order</h2>
-              <p className="text-indigo-100 text-sm">Complete order details</p>
+              <h2 className="text-2xl font-bold">
+                {t("orderProcessingModal.title")}
+              </h2>
+              <p className="text-indigo-100 text-sm">
+                {t("orderProcessingModal.subtitle")}
+              </p>
             </div>
           </div>
           <button
@@ -297,15 +297,23 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 </div>
               </div>
               <h3 className="text-xl font-bold text-black">
-                Customer Search {orderType === "delivery" ? "*" : "(Optional)"}
+                {orderType === "delivery"
+                  ? t("orderProcessingModal.customerSearch.titleRequired")
+                  : t("orderProcessingModal.customerSearch.titleOptional")}
               </h3>
             </div>
 
             {/* Search Input */}
             <div className="flex gap-6 relative">
               <CustomInput
-                label={`Search Customer ${orderType === "delivery" ? "*" : "(Optional)"}`}
-                placeholder="Type customer name or phone to search..."
+                label={
+                  orderType === "delivery"
+                    ? t("orderProcessingModal.customerSearch.titleRequired")
+                    : t("orderProcessingModal.customerSearch.titleOptional")
+                }
+                placeholder={t(
+                  "orderProcessingModal.customerSearch.placeholder"
+                )}
                 value={customerSearch}
                 onChange={(e) => {
                   setCustomerSearch(e.target.value);
@@ -329,7 +337,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 otherClasses="flex-1"
               />
               <CustomButton
-                label="Add New"
+                label={t("orderProcessingModal.customerSearch.addNew")}
                 type="button"
                 variant="green"
                 onClick={() => setIsCustomerModalOpen(true)}
@@ -373,12 +381,16 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     <div className="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                       ✓
                     </div>
-                    <span>Selected Customer</span>
+                    <span>
+                      {t(
+                        "orderProcessingModal.customerSearch.selectedCustomer"
+                      )}
+                    </span>
                   </h4>
                   <CustomButton
                     type="button"
                     onClick={clearCustomerSelection}
-                    label="Change"
+                    label={t("orderProcessingModal.customerSearch.change")}
                     variant="transparent"
                     className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 touch-manipulation !py-1 !px-3"
                   />
@@ -387,14 +399,16 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   {/* Name, Phone, Email in one row */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-600">Name:</span>
+                      <span className="font-semibold text-gray-600">
+                        {t("orderProcessingModal.customerSearch.name")}
+                      </span>
                       <span className="text-black font-medium">
                         {selectedCustomer.name}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-gray-600">
-                        Phone:
+                        {t("orderProcessingModal.customerSearch.phone")}
                       </span>
                       <span className="text-black font-medium">
                         {selectedCustomer.phone}
@@ -403,7 +417,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     {selectedCustomer.email && (
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-gray-600">
-                          Email:
+                          {t("orderProcessingModal.customerSearch.email")}
                         </span>
                         <span className="text-black font-medium">
                           {selectedCustomer.email}
@@ -418,7 +432,9 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                       <div className="">
                         <div className="text-sm font-semibold text-gray-700 mb-2 flex items-center space-x-2">
                           <LocationFilledIcon className="text-indigo-600 size-4" />
-                          <span>Address</span>
+                          <span>
+                            {t("orderProcessingModal.customerSearch.address")}
+                          </span>
                         </div>
                         <div className="text-gray-800 text-sm leading-relaxed">
                           {selectedCustomer.address &&
@@ -442,14 +458,19 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     </div>
                   </div>
                   <h4 className="text-lg font-bold text-black">
-                    Customer Details{" "}
-                    {orderType === "delivery" ? "*" : "(Optional)"}
+                    {orderType === "delivery"
+                      ? t("orderProcessingModal.customerDetails.titleRequired")
+                      : t("orderProcessingModal.customerDetails.titleOptional")}
                   </h4>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CustomInput
-                    label="Customer Name"
-                    placeholder="Enter customer name..."
+                    label={t(
+                      "orderProcessingModal.customerDetails.customerName"
+                    )}
+                    placeholder={t(
+                      "orderProcessingModal.customerDetails.enterCustomerName"
+                    )}
                     value={customCustomerName}
                     onChange={(e) => {
                       setCustomCustomerName(e.target.value);
@@ -465,8 +486,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     otherClasses="w-full"
                   />
                   <CustomInput
-                    label="Phone Number"
-                    placeholder="Enter phone number..."
+                    label={t(
+                      "orderProcessingModal.customerDetails.phoneNumber"
+                    )}
+                    placeholder={t(
+                      "orderProcessingModal.customerDetails.enterPhoneNumber"
+                    )}
                     value={customCustomerPhone}
                     onChange={(e) => {
                       setCustomCustomerPhone(e.target.value);
@@ -486,8 +511,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 {orderType === "delivery" && (
                   <div className="mt-4">
                     <CustomInput
-                      label="Delivery Address"
-                      placeholder="Enter delivery address..."
+                      label={t(
+                        "orderProcessingModal.customerDetails.deliveryAddress"
+                      )}
+                      placeholder={t(
+                        "orderProcessingModal.customerDetails.enterDeliveryAddress"
+                      )}
                       value={customCustomerAddress}
                       onChange={(e) => {
                         setCustomCustomerAddress(e.target.value);
@@ -506,8 +535,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
 
                 <div className="mt-3 text-sm text-gray-600">
                   {orderType === "delivery"
-                    ? "Customer details including address are required for delivery orders"
-                    : "Enter customer details to personalize the order (optional)"}
+                    ? t(
+                        "orderProcessingModal.customerDetails.descriptionRequired"
+                      )
+                    : t(
+                        "orderProcessingModal.customerDetails.descriptionOptional"
+                      )}
                 </div>
               </div>
             )}
@@ -519,7 +552,9 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
                 <div className="w-3 h-2 bg-orange-600"></div>
               </div>
-              <h3 className="text-xl font-bold text-black">Order Type</h3>
+              <h3 className="text-xl font-bold text-black">
+                {t("orderProcessingModal.orderType.title")}
+              </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <CustomButton
@@ -534,9 +569,11 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 label={
                   <>
                     <div className="text-3xl mb-3">🏪</div>
-                    <div className="font-semibold text-base">Pickup</div>
+                    <div className="font-semibold text-base">
+                      {t("orderProcessingModal.orderType.pickup.title")}
+                    </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      Customer pickup
+                      {t("orderProcessingModal.orderType.pickup.description")}
                     </div>
                   </>
                 }
@@ -553,9 +590,11 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 label={
                   <>
                     <div className="text-3xl mb-3">🚚</div>
-                    <div className="font-semibold text-base">Delivery</div>
+                    <div className="font-semibold text-base">
+                      {t("orderProcessingModal.orderType.delivery.title")}
+                    </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      Home delivery
+                      {t("orderProcessingModal.orderType.delivery.description")}
                     </div>
                   </>
                 }
@@ -572,9 +611,11 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 label={
                   <>
                     <div className="text-3xl mb-3">🍽️</div>
-                    <div className="font-semibold text-base">Dine In</div>
+                    <div className="font-semibold text-base">
+                      {t("orderProcessingModal.orderType.dineIn.title")}
+                    </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      In restaurant
+                      {t("orderProcessingModal.orderType.dineIn.description")}
                     </div>
                   </>
                 }
@@ -592,7 +633,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 </div>
                 <div className="flex-1">
                   <div className="text-base font-bold text-blue-800 mb-3">
-                    Delivery Address
+                    {t("orderProcessingModal.deliveryAddress.title")}
                   </div>
                   <div className="text-blue-700 text-sm leading-relaxed">
                     {selectedCustomer.address &&
@@ -612,10 +653,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               </div>
               <div className="flex-1">
                 <div className="text-base font-bold text-yellow-800 mb-3">
-                  Payment Status
+                  {t("orderProcessingModal.paymentStatus.title")}
                 </div>
                 <div className="text-yellow-700 text-sm leading-relaxed">
-                  Payment will be collected upon delivery (Cash on Delivery)
+                  {t("orderProcessingModal.paymentStatus.description")}
                 </div>
               </div>
             </div>
@@ -627,14 +668,16 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                 <DocumentIcon className="text-purple-600 size-5" />
               </div>
-              <h3 className="text-xl font-bold text-black">Order Notes</h3>
+              <h3 className="text-xl font-bold text-black">
+                {t("orderProcessingModal.orderNotes.title")}
+              </h3>
             </div>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:outline-none text-lg touch-manipulation resize-none"
               rows={3}
-              placeholder="Any special instructions or notes..."
+              placeholder={t("orderProcessingModal.orderNotes.placeholder")}
             />
           </div>
 
@@ -644,7 +687,9 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
                 <div className="w-3 h-2 bg-indigo-600"></div>
               </div>
-              <h3 className="text-xl font-bold text-black">Order Summary</h3>
+              <h3 className="text-xl font-bold text-black">
+                {t("orderProcessingModal.orderSummary.title")}
+              </h3>
             </div>
             <div className="space-y-4">
               {/* Non-Menu Items */}
@@ -658,11 +703,14 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                       {item.quantity}x {item.productName}
                     </div>
                     <div className="text-sm text-gray-600 mt-1">
-                      Variant: {item.variantName}
+                      {t("orderProcessingModal.orderSummary.variant")}{" "}
+                      {item.variantName}
                     </div>
                     {item.complements.length > 0 && (
                       <div className="text-xs text-gray-500 mt-2 flex flex-wrap gap-1">
-                        <span className="font-medium">Add-ons:</span>
+                        <span className="font-medium">
+                          {t("orderProcessingModal.orderSummary.addOns")}
+                        </span>
                         {item.complements.map((c, index) => (
                           <span
                             key={index}
@@ -755,13 +803,20 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                               </div>
                               <div className="text-sm text-gray-600">
                                 <div className="flex justify-between">
-                                  <span>Variant: {item.variantName}</span>
+                                  <span>
+                                    {t(
+                                      "orderProcessingModal.orderSummary.variant"
+                                    )}{" "}
+                                    {item.variantName}
+                                  </span>
                                 </div>
                               </div>
                               {item.complements.length > 0 && (
                                 <div className="mt-2">
                                   <p className="text-xs text-gray-500 font-medium">
-                                    Add-ons:
+                                    {t(
+                                      "orderProcessingModal.orderSummary.addOns"
+                                    )}
                                   </p>
                                   <div className="text-xs text-gray-600 flex flex-wrap gap-1 mt-1">
                                     {item.complements.map(
@@ -787,7 +842,9 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               })}
               <div className="border-t-2 border-indigo-200 pt-6 mt-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-black">Total:</span>
+                  <span className="text-2xl font-bold text-black">
+                    {t("orderProcessingModal.orderSummary.total")}
+                  </span>
                   <span className="text-3xl font-bold text-indigo-600 px-6 py-3">
                     €{orderTotal.toFixed(2)}
                   </span>
@@ -803,7 +860,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             type="button"
             onClick={onClose}
             variant="secondary"
-            label="Cancel"
+            label={t("orderProcessingModal.buttons.cancel")}
             className="flex-1 text-lg"
           />
           <CustomButton
@@ -815,7 +872,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 <CheckIcon className="size-3 text-indigo-600" />
               </span>
             }
-            label="Proceed Order"
+            label={t("orderProcessingModal.buttons.proceedOrder")}
           />
         </div>
       </div>

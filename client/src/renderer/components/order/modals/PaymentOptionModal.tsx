@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   CrossIcon,
   OutlineCreditCardIcon,
@@ -23,6 +24,8 @@ const PaymentOptionModal: React.FC<PaymentOptionModalProps> = ({
   totalAmount,
   orderType,
 }) => {
+  const { t } = useTranslation();
+
   if (!isOpen) return null;
 
   return (
@@ -35,9 +38,13 @@ const PaymentOptionModal: React.FC<PaymentOptionModalProps> = ({
               <OutlineCreditCardIcon className="size-6" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Payment Option</h2>
+              <h2 className="text-xl font-bold">
+                {t("paymentOptionModal.title")}
+              </h2>
               <p className="text-indigo-100 text-sm">
-                {orderType === "pickup" ? "Pickup Order" : "Dine-in Order"}
+                {orderType === "pickup"
+                  ? t("paymentOptionModal.pickupOrder")
+                  : t("paymentOptionModal.dineInOrder")}
               </p>
             </div>
           </div>
@@ -56,7 +63,7 @@ const PaymentOptionModal: React.FC<PaymentOptionModalProps> = ({
               €{totalAmount.toFixed(2)}
             </div>
             <p className="text-gray-600">
-              Choose how you would like to handle payment for this order
+              {t("paymentOptionModal.choosePaymentMethod")}
             </p>
           </div>
 
@@ -72,9 +79,11 @@ const PaymentOptionModal: React.FC<PaymentOptionModalProps> = ({
                   <OutlineCreditCardIcon className="w-6 h-6 text-indigo-600" />
                 </div>
                 <div className="flex-1 text-left">
-                  <h3 className="font-semibold text-black">Pay Now</h3>
+                  <h3 className="font-semibold text-black">
+                    {t("paymentOptionModal.payNow.title")}
+                  </h3>
                   <p className="text-sm text-gray-600">
-                    Process payment immediately and send to kitchen
+                    {t("paymentOptionModal.payNow.description")}
                   </p>
                 </div>
                 <div className="text-indigo-600">
@@ -105,9 +114,11 @@ const PaymentOptionModal: React.FC<PaymentOptionModalProps> = ({
                   <ClockIcon className="w-6 h-6 text-gray-600" />
                 </div>
                 <div className="flex-1 text-left">
-                  <h3 className="font-semibold text-black">Pay Later</h3>
+                  <h3 className="font-semibold text-black">
+                    {t("paymentOptionModal.payLater.title")}
+                  </h3>
                   <p className="text-sm text-gray-600">
-                    Send to kitchen now, collect payment later
+                    {t("paymentOptionModal.payLater.description")}
                   </p>
                 </div>
                 <div className="text-gray-600">
@@ -136,7 +147,7 @@ const PaymentOptionModal: React.FC<PaymentOptionModalProps> = ({
             type="button"
             onClick={onClose}
             variant="secondary"
-            label="Cancel"
+            label={t("paymentOptionModal.cancel")}
             className="w-full py-3 px-4 text-lg"
           />
         </div>
