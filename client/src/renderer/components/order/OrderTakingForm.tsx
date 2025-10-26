@@ -99,7 +99,6 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       }
       setGroups(groupsRes.data);
 
-      console.log("Variant items data:", res.data);
       if (res.data.length > 0) {
         if (editingProduct) {
           const variant = res.data.find(
@@ -165,6 +164,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
   };
 
   const canProceed = () => {
+    if(variantItems?.length==0) return true;
     if (!selectedVariant) return false;
 
     if (addOnPages && addOnPages.length > 0) {
@@ -213,8 +213,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       );
       return;
     }
-
-    if (!selectedVariant) {
+    if ((!selectedVariant) && variantItems!.length > 0) {
       toast.error("Please select a variant");
       return;
     }
@@ -330,11 +329,11 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
     // regular product
     const existingItem = findExactProductMatch(
       selectedProduct!.id,
-      selectedVariant.id,
+      selectedVariant?.id || "",
       complements
     );
 
-    if (existingItem && !editingProduct) {
+    if (existingItem && !editingProduct && selectedVariant) {
       // update quantity of existing item
       const newQuantity = quantity;
 
@@ -366,9 +365,9 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       productDiscount: selectedProduct?.discount || 0,
       productPrice: calculateBaseProductPrice(selectedProduct),
       productTax: calculateProductTaxAmount(selectedProduct),
-      variantId: selectedVariant.id,
-      variantName: selectedVariant.name || `Variant ${selectedVariant.id}`,
-      variantPrice: selectedVariant.price || 0,
+      variantId: selectedVariant?.id,
+      variantName: selectedVariant?.name || `Variant ${selectedVariant?.id}`,
+      variantPrice: selectedVariant?.price || 0,
       printers: selectedProduct?.printerIds,
       complements,
       quantity,

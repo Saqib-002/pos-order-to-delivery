@@ -543,18 +543,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
       toast.error("Please select a subcategory.");
       return;
     }
-    if (!Object.keys(variantPrices).length) {
-      toast.error("Please add at least one variant.");
-      return;
-    }
 
     const validAddonPages = addonPages.filter(
       (page) => page.selectedGroup && page.selectedGroup.trim() !== ""
     );
-    if (validAddonPages.length === 0) {
-      toast.error("Please add at least one addon page with a selected group.");
-      return;
-    }
 
     // Validate complement limits for all pages
     for (const page of validAddonPages) {

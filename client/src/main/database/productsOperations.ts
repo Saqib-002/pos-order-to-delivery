@@ -51,7 +51,9 @@ export class ProductsDatabaseOperations {
                     updatedAt: now,
                 });
             }
-            await trx("products_groups").insert(newAddonPages);
+            if (newAddonPages.length > 0) {
+                await trx("products_groups").insert(newAddonPages);
+            }
             if (printerIds.length > 0) {
                 await trx("printers_products").insert(
                     printerIds.map((printerId) => ({
@@ -181,7 +183,9 @@ export class ProductsDatabaseOperations {
                     updatedAt: now,
                 });
             }
-            await trx("products_groups").insert(newAddonPages);
+            if (newAddonPages.length > 0) {
+                await trx("products_groups").insert(newAddonPages);
+            }
             await trx("printers_products")
                 .where("productId", productData.id)
                 .delete();
@@ -229,7 +233,9 @@ export class ProductsDatabaseOperations {
             const uploadUrl = process.env.CDN_URL;
             return variants.map((variant: any) => ({
                 ...variant,
-                imgUrl: variant.imgUrl ? `${uploadUrl}/uploads/${variant.imgUrl}` : null
+                imgUrl: variant.imgUrl
+                    ? `${uploadUrl}/uploads/${variant.imgUrl}`
+                    : null,
             }));
         } catch (error) {
             throw error;
