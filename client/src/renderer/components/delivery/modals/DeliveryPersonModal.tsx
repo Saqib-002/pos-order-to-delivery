@@ -46,7 +46,7 @@ export const DeliveryPersonModal: React.FC<DeliveryPersonModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-white rounded-t-2xl">
+        <div className="bg-black px-8 py-6 text-white rounded-t-2xl">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-bold">
               {isEditing
@@ -82,7 +82,7 @@ export const DeliveryPersonModal: React.FC<DeliveryPersonModalProps> = ({
               placeholder={t("deliveryPersonModal.emailPlaceholder")}
               value={deliveryPerson.email || ""}
               onChange={(e) => handleEmailChange(e.target.value)}
-              inputClasses={`py-3 px-4 ${emailError ? "border-red-300 focus:!ring-1 focus:ring-red-600 focus:border-red-600" : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"}`}
+              inputClasses={`py-3 px-4 ${emailError ? "border-red-300 focus:!ring-1 focus:ring-red-600 focus:border-red-600" : "border-gray-300 focus:ring-black focus:border-black"}`}
               error={emailError}
             />
             <CustomInput
@@ -92,7 +92,7 @@ export const DeliveryPersonModal: React.FC<DeliveryPersonModalProps> = ({
               placeholder={t("deliveryPersonModal.phoneNumberPlaceholder")}
               value={(deliveryPerson as any).phone || ""}
               onChange={(e) => handlePhoneChange(e.target.value)}
-              inputClasses={`py-3 px-4 ${phoneError ? "border-red-300 focus:!ring-1 focus:ring-red-600 focus:border-red-600" : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"}`}
+              inputClasses={`py-3 px-4 ${phoneError ? "border-red-300 focus:!ring-1 focus:ring-red-600 focus:border-red-600" : "border-gray-300 focus:ring-black focus:border-black"}`}
               error={phoneError}
             />
             <CustomInput
@@ -143,7 +143,7 @@ export const DeliveryPersonModal: React.FC<DeliveryPersonModalProps> = ({
                   ? t("deliveryPersonModal.updateDeliveryPerson")
                   : t("deliveryPersonModal.addDeliveryPerson")
               }
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-105"
+              className="bg-black hover:scale-105"
             />
           </div>
         </form>

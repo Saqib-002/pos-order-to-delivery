@@ -53,8 +53,18 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     footerMb: "gap-2",
     hasDelete: true,
     getBody: () => null,
-    getLeft: (data) => ({ text: `${data.itemCount || 0} Subcategories`, className: "text-xs text-white opacity-90" }),
-    getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Category</span>],
+    getLeft: (data) => ({
+      text: `${data.itemCount || 0} Subcategories`,
+      className: "text-xs text-white opacity-90",
+    }),
+    getRight: () => [
+      <span
+        key="label"
+        className="text-xs px-2 py-1 rounded-full border border-gray-300"
+      >
+        Category
+      </span>,
+    ],
   },
   subcategory: {
     padding: "p-3",
@@ -73,7 +83,14 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
       ),
       className: "text-sm text-white opacity-90 flex flex-col gap-0.5",
     }),
-    getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Subcategory</span>],
+    getRight: () => [
+      <span
+        key="label"
+        className="text-xs px-2 py-1 rounded-full border border-gray-300"
+      >
+        Subcategory
+      </span>,
+    ],
   },
   product: {
     padding: "p-2",
@@ -82,8 +99,15 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     headerMb: "mb-0",
     footerMb: "mb-2",
     hasDelete: true,
-    getBody: (data) => <p className="text-xs text-white opacity-90 mb-2 line-clamp-2">{data.description}</p>,
-    getLeft: (data) => ({ text: `$${Number(data.price || 0).toFixed(2)}`, className: "text-lg font-semibold text-white" }),
+    getBody: (data) => (
+      <p className="text-xs text-white opacity-90 mb-2 line-clamp-2">
+        {data.description}
+      </p>
+    ),
+    getLeft: (data) => ({
+      text: `€${Number(data.price || 0).toFixed(2)}`,
+      className: "text-lg font-semibold text-white",
+    }),
     getRight: (data) => [
       <span
         key="avail"
@@ -91,7 +115,12 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
       >
         {data.isAvailable ? "Available" : "Unavailable"}
       </span>,
-      <span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Product</span>,
+      <span
+        key="label"
+        className="text-xs px-2 py-1 rounded-full border border-gray-300"
+      >
+        Product
+      </span>,
     ],
   },
   group: {
@@ -102,8 +131,18 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     footerMb: "",
     hasDelete: false,
     getBody: () => null,
-    getLeft: (data) => ({ text: `${data.itemCount || 0} items`, className: "text-sm text-white opacity-90" }),
-    getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Group</span>],
+    getLeft: (data) => ({
+      text: `${data.itemCount || 0} items`,
+      className: "text-sm text-white opacity-90",
+    }),
+    getRight: () => [
+      <span
+        key="label"
+        className="text-xs px-2 py-1 rounded-full border border-gray-300"
+      >
+        Group
+      </span>,
+    ],
   },
   variant: {
     padding: "p-3",
@@ -113,9 +152,23 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     footerMb: "",
     hasDelete: true,
     getBody: (data) =>
-      data.groupName ? <p className="text-xs opacity-75 mb-2 truncate">Group: {data.groupName}</p> : null,
-    getLeft: (data) => ({ text: `${data.variantCount || 0} variants`, className: "text-sm text-white opacity-90" }),
-    getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Variant</span>],
+      data.groupName ? (
+        <p className="text-xs opacity-75 mb-2 truncate">
+          Group: {data.groupName}
+        </p>
+      ) : null,
+    getLeft: (data) => ({
+      text: `${data.variantCount || 0} variants`,
+      className: "text-sm text-white opacity-90",
+    }),
+    getRight: () => [
+      <span
+        key="label"
+        className="text-xs px-2 py-1 rounded-full border border-gray-300"
+      >
+        Variant
+      </span>,
+    ],
   },
   menuPage: {
     padding: "p-2",
@@ -124,9 +177,23 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     headerMb: "mb-0",
     footerMb: "",
     hasDelete: true,
-    getBody: (data) => <p className="text-xs text-white opacity-90 mb-0 line-clamp-2">{data.description}</p>,
-    getLeft: (data) => ({ text: `${data.itemCount || 0} products`, className: "text-sm text-white opacity-90" }),
-    getRight: () => [<span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Menu Page</span>],
+    getBody: (data) => (
+      <p className="text-xs text-white opacity-90 mb-0 line-clamp-2">
+        {data.description}
+      </p>
+    ),
+    getLeft: (data) => ({
+      text: `${data.itemCount || 0} products`,
+      className: "text-sm text-white opacity-90",
+    }),
+    getRight: () => [
+      <span
+        key="label"
+        className="text-xs px-2 py-1 rounded-full border border-gray-300"
+      >
+        Menu Page
+      </span>,
+    ],
   },
   menu: {
     padding: "p-2",
@@ -135,8 +202,15 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     headerMb: "mb-0",
     footerMb: "mb-2",
     hasDelete: true,
-    getBody: (data) => <p className="text-xs text-white opacity-90 mb-0 line-clamp-2">{data.description}</p>,
-    getLeft: (data) => ({ text: `€${Number(data.price || 0).toFixed(2)}`, className: "text-lg font-semibold text-white" }),
+    getBody: (data) => (
+      <p className="text-xs text-white opacity-90 mb-0 line-clamp-2">
+        {data.description}
+      </p>
+    ),
+    getLeft: (data) => ({
+      text: `€${Number(data.price || 0).toFixed(2)}`,
+      className: "text-lg font-semibold text-white",
+    }),
     getRight: (data) => [
       <span
         key="avail"
@@ -144,7 +218,12 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
       >
         {data.isAvailable ? "Available" : "Unavailable"}
       </span>,
-      <span key="label" className="text-xs px-2 py-1 rounded-full border border-gray-300">Menu</span>,
+      <span
+        key="label"
+        className="text-xs px-2 py-1 rounded-full border border-gray-300"
+      >
+        Menu
+      </span>,
     ],
   },
 };

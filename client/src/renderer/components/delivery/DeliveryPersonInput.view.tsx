@@ -64,7 +64,7 @@ export const DeliveryPersonInput: React.FC<{
         <button
           onClick={onAssign}
           disabled={disabled}
-          className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-6 py-3 bg-black disabled:bg-gray-400 text-white font-medium rounded-lg transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
         >
           <AddIcon className="size-5" />
           {t("deliveryPersonInput.quickAssign")}
