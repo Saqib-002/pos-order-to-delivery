@@ -178,6 +178,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
           })
         );
         setSelectedAddonPage(groupRes.data[0]?.pageNo);
+      };
+      getVariantAndGroups();
+      if (product.imgUrl) {
+        setImagePreview(product.imgUrl);
+      }
+      const getPrinters=async()=>{
         const printerRes = await (window as any).electronAPI.getProductPrinters(
           token,
           product.id
@@ -187,11 +193,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
         } else {
           toast.error("Unable to get product's printers");
         }
-      };
-      getVariantAndGroups();
-      if (product.imgUrl) {
-        setImagePreview(product.imgUrl);
       }
+      getPrinters();
     } else {
       setFormData({
         name: "",

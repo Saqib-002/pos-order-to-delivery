@@ -110,6 +110,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
         printerName,
         { html: receiptHTML }
       );
+      console.log(res);
       if (!res.status) {
         if (res.error === "Printer not found") {
           toast.error(`Printer "${printerName}" not found`);
