@@ -393,6 +393,7 @@
       "orderNumber": "Pedido #",
       "customer": "Cliente",
       "orderType": "Tipo de Pedido",
+      "status": "Estado",
       "paymentStatus": "Estado de Pago",
       "deliveryPerson": "Repartidor",
       "total": "Total",
@@ -1220,5 +1221,107 @@
       "partial": "Pago Parcial",
       "pending": "Pendiente"
     }
+  },
+  "orderProcessingModal": {
+    "title": "Procesar Pedido",
+    "subtitle": "Completar detalles del pedido",
+    "customerSearch": {
+      "title": "Búsqueda de Cliente",
+      "titleOptional": "Búsqueda de Cliente (Opcional)",
+      "titleRequired": "Búsqueda de Cliente *",
+      "placeholder": "Escriba el nombre o teléfono del cliente para buscar...",
+      "addNew": "Agregar Nuevo",
+      "selectedCustomer": "Cliente Seleccionado",
+      "change": "Cambiar",
+      "name": "Nombre:",
+      "phone": "Teléfono:",
+      "email": "Correo:",
+      "address": "Dirección"
+    },
+    "customerDetails": {
+      "title": "Detalles del Cliente",
+      "titleOptional": "Detalles del Cliente (Opcional)",
+      "titleRequired": "Detalles del Cliente *",
+      "customerName": "Nombre del Cliente",
+      "enterCustomerName": "Ingrese el nombre del cliente...",
+      "phoneNumber": "Número de Teléfono",
+      "enterPhoneNumber": "Ingrese el número de teléfono...",
+      "deliveryAddress": "Dirección de Entrega",
+      "enterDeliveryAddress": "Ingrese la dirección de entrega...",
+      "descriptionOptional": "Ingrese los detalles del cliente para personalizar el pedido (opcional)",
+      "descriptionRequired": "Los detalles del cliente incluyendo la dirección son requeridos para pedidos de entrega"
+    },
+    "orderType": {
+      "title": "Tipo de Pedido",
+      "pickup": {
+        "title": "Recogida",
+        "description": "Recogida por el cliente"
+      },
+      "delivery": {
+        "title": "Entrega",
+        "description": "Entrega a domicilio"
+      },
+      "dineIn": {
+        "title": "Comer en el Local",
+        "description": "En el restaurante"
+      }
+    },
+    "deliveryAddress": {
+      "title": "Dirección de Entrega"
+    },
+    "paymentStatus": {
+      "title": "Estado del Pago",
+      "description": "El pago se cobrará al momento de la entrega (Pago contra entrega)"
+    },
+    "orderNotes": {
+      "title": "Notas del Pedido",
+      "placeholder": "Cualquier instrucción especial o nota..."
+    },
+    "orderSummary": {
+      "title": "Resumen del Pedido",
+      "variant": "Variante:",
+      "addOns": "Complementos:",
+      "total": "Total:"
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "proceedOrder": "Procesar Pedido"
+    },
+    "errors": {
+      "customerNamePhoneRequired": "Por favor ingrese el nombre y número de teléfono del cliente para pedidos de entrega",
+      "customerNoAddress": "El cliente seleccionado no tiene dirección. Por favor seleccione un cliente diferente o cambie a recogida.",
+      "customerDetailsRequired": "Por favor seleccione un cliente o ingrese los detalles del cliente incluyendo la dirección para pedidos de entrega",
+      "orderAlreadyPaid": "El pedido ya está pagado. Procesando con la información de pago existente."
+    },
+    "defaultCustomers": {
+      "dineInCustomer": "Cliente de Comedor",
+      "walkInCustomer": "Cliente de Pasada",
+      "dineIn": "Comedor",
+      "inStore": "En Tienda"
+    }
+  },
+  "paymentOptionModal": {
+    "title": "Opción de Pago",
+    "pickupOrder": "Pedido para Recoger",
+    "dineInOrder": "Pedido para Comer en el Local",
+    "choosePaymentMethod": "Elija cómo desea manejar el pago para este pedido",
+    "payNow": {
+      "title": "Pagar Ahora",
+      "description": "Procesar el pago inmediatamente y enviar a cocina"
+    },
+    "payLater": {
+      "title": "Pagar Después",
+      "description": "Enviar a cocina ahora, cobrar el pago después"
+    },
+    "cancel": "Cancelar"
+  },
+  "orderStatuses": {
+    "pending": "Pendiente",
+    "sentToKitchen": "Enviado a Cocina",
+    "readyForDelivery": "Listo para Entrega",
+    "outForDelivery": "En Camino",
+    "completed": "Completado",
+    "delivered": "Entregado",
+    "cancelled": "Cancelado"
   }
 }

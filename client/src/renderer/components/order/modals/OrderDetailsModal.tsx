@@ -7,6 +7,7 @@ import {
   getPaymentStatusStyle,
 } from "../../../utils/paymentStatus";
 import { formatAddress } from "../../../utils/utils";
+import { translateOrderStatus } from "@/renderer/utils/orderStatus";
 import { useTranslation } from "react-i18next";
 
 const parseComplements = (complements: any) => {
@@ -120,7 +121,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     <p className="text-sm font-medium text-gray-600">
                       {t("orderDetailsModal.status")}
                     </p>
-                    <p className="text-black">{order.status}</p>
+                    <p className="text-black">
+                      {translateOrderStatus(order.status || "")}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">

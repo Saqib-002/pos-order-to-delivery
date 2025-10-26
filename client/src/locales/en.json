@@ -391,6 +391,7 @@
       "orderNumber": "Order #",
       "customer": "Customer",
       "orderType": "Order Type",
+      "status": "Status",
       "paymentStatus": "Payment Status",
       "deliveryPerson": "Delivery Person",
       "total": "Total",
@@ -1218,5 +1219,107 @@
       "partial": "Partial Payment",
       "pending": "Pending"
     }
+  },
+  "orderProcessingModal": {
+    "title": "Process Order",
+    "subtitle": "Complete order details",
+    "customerSearch": {
+      "title": "Customer Search",
+      "titleOptional": "Customer Search (Optional)",
+      "titleRequired": "Customer Search *",
+      "placeholder": "Type customer name or phone to search...",
+      "addNew": "Add New",
+      "selectedCustomer": "Selected Customer",
+      "change": "Change",
+      "name": "Name:",
+      "phone": "Phone:",
+      "email": "Email:",
+      "address": "Address"
+    },
+    "customerDetails": {
+      "title": "Customer Details",
+      "titleOptional": "Customer Details (Optional)",
+      "titleRequired": "Customer Details *",
+      "customerName": "Customer Name",
+      "enterCustomerName": "Enter customer name...",
+      "phoneNumber": "Phone Number",
+      "enterPhoneNumber": "Enter phone number...",
+      "deliveryAddress": "Delivery Address",
+      "enterDeliveryAddress": "Enter delivery address...",
+      "descriptionOptional": "Enter customer details to personalize the order (optional)",
+      "descriptionRequired": "Customer details including address are required for delivery orders"
+    },
+    "orderType": {
+      "title": "Order Type",
+      "pickup": {
+        "title": "Pickup",
+        "description": "Customer pickup"
+      },
+      "delivery": {
+        "title": "Delivery",
+        "description": "Home delivery"
+      },
+      "dineIn": {
+        "title": "Dine In",
+        "description": "In restaurant"
+      }
+    },
+    "deliveryAddress": {
+      "title": "Delivery Address"
+    },
+    "paymentStatus": {
+      "title": "Payment Status",
+      "description": "Payment will be collected upon delivery (Cash on Delivery)"
+    },
+    "orderNotes": {
+      "title": "Order Notes",
+      "placeholder": "Any special instructions or notes..."
+    },
+    "orderSummary": {
+      "title": "Order Summary",
+      "variant": "Variant:",
+      "addOns": "Add-ons:",
+      "total": "Total:"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "proceedOrder": "Proceed Order"
+    },
+    "errors": {
+      "customerNamePhoneRequired": "Please enter customer name and phone number for delivery orders",
+      "customerNoAddress": "Selected customer has no address. Please select a different customer or change to pickup.",
+      "customerDetailsRequired": "Please select a customer or enter customer details including address for delivery orders",
+      "orderAlreadyPaid": "Order is already paid. Processing with existing payment information."
+    },
+    "defaultCustomers": {
+      "dineInCustomer": "Dine-in Customer",
+      "walkInCustomer": "Walk-in Customer",
+      "dineIn": "Dine-in",
+      "inStore": "In-store"
+    }
+  },
+  "paymentOptionModal": {
+    "title": "Payment Option",
+    "pickupOrder": "Pickup Order",
+    "dineInOrder": "Dine-in Order",
+    "choosePaymentMethod": "Choose how you would like to handle payment for this order",
+    "payNow": {
+      "title": "Pay Now",
+      "description": "Process payment immediately and send to kitchen"
+    },
+    "payLater": {
+      "title": "Pay Later",
+      "description": "Send to kitchen now, collect payment later"
+    },
+    "cancel": "Cancel"
+  },
+  "orderStatuses": {
+    "pending": "Pending",
+    "sentToKitchen": "Sent to Kitchen",
+    "readyForDelivery": "Ready for Delivery",
+    "outForDelivery": "Out for Delivery",
+    "completed": "Completed",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled"
   }
 }

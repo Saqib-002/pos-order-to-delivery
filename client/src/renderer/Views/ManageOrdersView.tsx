@@ -8,6 +8,10 @@ import {
   calculatePaymentStatus,
   getPaymentStatusStyle,
 } from "../utils/paymentStatus";
+import {
+  translateOrderStatus,
+  getOrderStatusStyle,
+} from "../utils/orderStatus";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
@@ -16,7 +20,15 @@ import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
 import BulkPaymentModal from "../components/order/modals/BulkPaymentModal";
 import IndividualPaymentModal from "../components/order/modals/IndividualPaymentModal";
 import { toast } from "react-toastify";
-import { DeliveredIcon, DocumentIcon, Euro, EyeIcon, LightningBoltIcon, PersonIcon, SearchIcon } from "@/renderer/public/Svg";
+import {
+  DeliveredIcon,
+  DocumentIcon,
+  Euro,
+  EyeIcon,
+  LightningBoltIcon,
+  PersonIcon,
+  SearchIcon,
+} from "@/renderer/public/Svg";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 
@@ -129,6 +141,7 @@ export const ManageOrdersView = () => {
     t("manageOrders.table.orderNumber"),
     t("manageOrders.table.customer"),
     t("manageOrders.table.orderType"),
+    t("manageOrders.table.status"),
     t("manageOrders.table.paymentStatus"),
     t("manageOrders.table.deliveryPerson"),
     t("manageOrders.table.total"),
@@ -158,6 +171,13 @@ export const ManageOrdersView = () => {
         <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
             {order.orderType?.toUpperCase() || t("manageOrders.statuses.nA")}
+          </span>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+          <span
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getOrderStatusStyle(order.status || "")}`}
+          >
+            {translateOrderStatus(order.status || "")}
           </span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
