@@ -5,8 +5,10 @@ import { ChevronLeftIcon } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
 import { CustomSelect } from "../ui/CustomSelect";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
+import { useTranslation } from "react-i18next";
 
 const OrderComponentHeader = () => {
+  const { t } = useTranslation();
   const orderContext = useContext(OrderContext);
   const { refreshOrdersCallback, filter, setFilter } =
     useOrderManagementContext();
@@ -14,7 +16,7 @@ const OrderComponentHeader = () => {
   if (!orderContext) {
     return (
       <div className="p-4 bg-white border-b border-gray-200">
-        <div className="text-center text-gray-500">Loading...</div>
+        <div className="text-center text-gray-500">{t("common.loading")}</div>
       </div>
     );
   }
@@ -83,17 +85,38 @@ const OrderComponentHeader = () => {
   };
 
   const combinedFilterOptions = [
-    { value: "all", label: "All Orders" },
-    { value: "status:pending", label: "📋 Pending" },
-    { value: "status:sent to kitchen", label: "👨‍🍳 Sent to Kitchen" },
-    { value: "status:ready for delivery", label: "✅ Ready for Delivery" },
-    { value: "status:out for delivery", label: "🚚 Out for Delivery" },
-    { value: "status:completed", label: "✅ Completed" },
-    { value: "status:delivered", label: "📦 Delivered" },
-    { value: "status:cancelled", label: "❌ Cancelled" },
-    { value: "payment:PAID", label: "💚 Paid" },
-    { value: "payment:UNPAID", label: "🔴 Unpaid" },
-    { value: "payment:PARTIAL", label: "🟡 Partial Payment" },
+    { value: "all", label: t("orderManagement.filters.allOrders") },
+    { value: "status:pending", label: t("orderManagement.filters.pending") },
+    {
+      value: "status:sent to kitchen",
+      label: t("orderManagement.filters.sentToKitchen"),
+    },
+    {
+      value: "status:ready for delivery",
+      label: t("orderManagement.filters.readyForDelivery"),
+    },
+    {
+      value: "status:out for delivery",
+      label: t("orderManagement.filters.outForDelivery"),
+    },
+    {
+      value: "status:completed",
+      label: t("orderManagement.filters.completed"),
+    },
+    {
+      value: "status:delivered",
+      label: t("orderManagement.filters.delivered"),
+    },
+    {
+      value: "status:cancelled",
+      label: t("orderManagement.filters.cancelled"),
+    },
+    { value: "payment:PAID", label: t("orderManagement.filters.paid") },
+    { value: "payment:UNPAID", label: t("orderManagement.filters.unpaid") },
+    {
+      value: "payment:PARTIAL",
+      label: t("orderManagement.filters.partialPayment"),
+    },
   ];
 
   const getCurrentFilterValue = () => {
@@ -144,7 +167,7 @@ const OrderComponentHeader = () => {
               options={combinedFilterOptions}
               value={getCurrentFilterValue()}
               onChange={handleCombinedFilterChange}
-              placeholder="Filter Orders"
+              placeholder={t("orderManagement.filters.filterOrders")}
               className="text-sm"
             />
           </div>

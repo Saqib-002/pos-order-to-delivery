@@ -16,6 +16,7 @@ import {
   CrossIcon,
 } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
+import { useTranslation } from "react-i18next";
 
 interface OrderTakingFormProps {
   token: string | null;
@@ -32,6 +33,7 @@ interface AddonPage {
 }
 
 const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
+  const { t } = useTranslation();
   const {
     orderItems,
     addToOrder,
@@ -67,7 +69,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         selectedProduct?.id
       );
       if (!res.status) {
-        toast.error("Unable to get product's variants");
+        toast.error(t("orderTakingForm.errors.unableToGetVariants"));
         return;
       }
       setVariantItems(res.data);
@@ -77,7 +79,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         window as any
       ).electronAPI.getAddOnPagesByProductId(token, selectedProduct?.id);
       if (!groupRes.status) {
-        toast.error("Unable to get product's addon pages");
+        toast.error(t("orderTakingForm.errors.unableToGetAddonPages"));
         return;
       }
       setAddonPages(
@@ -94,7 +96,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       // Get all groups
       const groupsRes = await (window as any).electronAPI.getGroups(token);
       if (!groupsRes.status) {
-        toast.error("Unable to get groups");
+        toast.error(t("orderTakingForm.errors.unableToGetGroups"));
         return;
       }
       setGroups(groupsRes.data);
@@ -112,7 +114,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         }
       }
     } catch (error) {
-      toast.error("Error loading product data");
+      toast.error(t("orderTakingForm.errors.errorLoadingProductData"));
     } finally {
       setIsLoading(false);
     }
@@ -158,7 +160,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
           [groupId]: [...currentSelection, itemId],
         }));
       } else {
-        toast.warning(`Maximum ${maxComplements} items allowed for the group`);
+        toast.warning(t("orderTakingForm.warnings.maximumItemsAllowed", { maxComplements }));
       }
     }
   };
@@ -208,18 +210,16 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
   const handleAddToOrder = async () => {
     // Check if order is assigned to a delivery person
     if (order && order.deliveryPerson && order.deliveryPerson.id) {
-      toast.info(
-        "This order is assigned to a delivery person and cannot be edited."
-      );
+      toast.info(t("orderTakingForm.messages.orderAssignedToDeliveryPerson"));
       return;
     }
     if ((!selectedVariant) && variantItems!.length > 0) {
-      toast.error("Please select a variant");
+      toast.error(t("orderTakingForm.errors.pleaseSelectVariant"));
       return;
     }
 
     if (!canProceed()) {
-      toast.error("Please complete all required selections");
+      toast.error(t("orderTakingForm.errors.pleaseCompleteRequiredSelections"));
       return;
     }
 
@@ -289,7 +289,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
           }
         );
         if (!res.status) {
-          toast.error("Unable to update order");
+          toast.error(t("orderTakingForm.errors.unableToUpdateOrder"));
         }
         setEditingProduct(null);
         setSelectedProduct(null);
@@ -302,7 +302,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
           complements: newComplement,
         });
         if (!res.status) {
-          toast.error("Unable to save order");
+          toast.error(t("orderTakingForm.errors.unableToSaveOrder"));
           return;
         }
         addToProcessedMenuOrderItems({ ...orderItem, id: res.data.itemId });
@@ -315,13 +315,13 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
           { ...orderItem, complements: newComplement }
         );
         if (!res.status) {
-          toast.error("Unable to update order");
+          toast.error(t("orderTakingForm.errors.unableToUpdateOrder"));
           return;
         }
         addToProcessedMenuOrderItems({ ...orderItem, id: res.data.itemId });
         addToOrder({ ...orderItem, id: res.data.itemId });
       }
-      toast.success("Item added to order!");
+      toast.success(t("orderTakingForm.messages.itemAddedToOrder"));
       setSelectedProduct(null);
       return;
     }
@@ -344,14 +344,14 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       );
 
       if (!res.status) {
-        toast.error("Unable to update quantity");
+        toast.error(t("orderTakingForm.errors.unableToUpdateQuantity"));
         return;
       }
 
       // Update local state
       console.log(existingItem,newQuantity)
       updateQuantity(existingItem.id, newQuantity);
-      toast.success(`Quantity updated! Total: ${newQuantity}`);
+      toast.success(t("orderTakingForm.messages.quantityUpdated", { newQuantity }));
       setSelectedProduct(null);
       return;
     }
@@ -384,7 +384,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         }
       );
       if (!res.status) {
-        toast.error("Unable to update order");
+        toast.error(t("orderTakingForm.errors.unableToUpdateOrder"));
       }
       setEditingProduct(null);
       setSelectedProduct(null);
@@ -396,10 +396,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         ...orderItem,
         complements: newComplement,
       });
-      if (!res.status) {
-        toast.error("Unable to save order");
-        return;
-      }
+        if (!res.status) {
+          toast.error(t("orderTakingForm.errors.unableToSaveOrder"));
+          return;
+        }
       addToOrder({ ...orderItem, id: res.data.itemId });
       setOrder(res.data.order);
     } else {
@@ -408,13 +408,13 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         order!.id,
         { ...orderItem, complements: newComplement }
       );
-      if (!res.status) {
-        toast.error("Unable to update order");
-        return;
-      }
+        if (!res.status) {
+          toast.error(t("orderTakingForm.errors.unableToUpdateOrder"));
+          return;
+        }
       addToOrder({ ...orderItem, id: res.data.itemId });
     }
-    toast.success("Item added to order!");
+    toast.success(t("orderTakingForm.messages.itemAddedToOrder"));
     setSelectedProduct(null);
   };
 
@@ -429,10 +429,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
             </div>
             <div className="text-center">
               <h3 className="text-lg font-semibold text-black mb-1">
-                Loading Product Details
+                {t("orderTakingForm.loading.title")}
               </h3>
               <p className="text-sm text-gray-600">
-                Please wait while we fetch the customization options...
+                {t("orderTakingForm.loading.description")}
               </p>
             </div>
           </div>
@@ -451,7 +451,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
             </div>
             <div>
               <h2 className="text-2xl font-bold">{selectedProduct?.name}</h2>
-              <p className="text-indigo-100 text-sm">Customize your order</p>
+              <p className="text-indigo-100 text-sm">{t("orderTakingForm.customizeYourOrder")}</p>
             </div>
           </div>
           <button
@@ -472,10 +472,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                 <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
                   <div className="w-3 h-2 bg-indigo-600"></div>
                 </div>
-                <h3 className="text-xl font-bold text-black">Choose Variant</h3>
+                <h3 className="text-xl font-bold text-black">{t("orderTakingForm.chooseVariant")}</h3>
               </div>
               <p className="text-gray-600 ml-10">
-                Select your preferred variant for {selectedProduct?.name}
+                {t("orderTakingForm.selectPreferredVariant", { productName: selectedProduct?.name })}
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 ml-10">
                 {variantItems.map((item) => (
@@ -574,7 +574,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
             </div>
           ) : (
             <div className="text-center text-yellow-700 text-2xl">
-              Variants have been detached from product
+              {t("orderTakingForm.variantsDetached")}
             </div>
           )}
 
@@ -588,7 +588,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-black">
-                  Add Complements
+                  {t("orderTakingForm.addComplements")}
                 </h3>
               </div>
 
@@ -608,7 +608,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                         <span>{group.name}</span>
                       </h4>
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600">Selected:</span>
+                        <span className="text-sm text-gray-600">{t("orderTakingForm.selected")}:</span>
                         <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-semibold">
                           {selectedComplements[group.id]?.length || 0}
                         </span>
@@ -636,13 +636,13 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                           >
                             <CheckIcon className="size-2 text-white" />
                           </div>
-                          <span>Min: {page.minComplements}</span>
+                          <span>{t("orderTakingForm.min")}: {page.minComplements}</span>
                         </span>
                       )}
                       {page.maxComplements > 0 && (
                         <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex items-center space-x-1">
                           <span className="bg-blue-600 h-[2px] w-2"></span>
-                          <span>Max: {page.maxComplements}</span>
+                          <span>{t("orderTakingForm.max")}: {page.maxComplements}</span>
                         </span>
                       )}
                       {page.freeAddons > 0 && (
@@ -650,7 +650,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                           <div className="size-[14px] p-[2px] bg-green-600 flex items-center justify-center rounded-full">
                             <CheckIcon className="size-2 text-white" />
                           </div>
-                          <span>Free: {page.freeAddons}</span>
+                          <span>{t("orderTakingForm.free")}: {page.freeAddons}</span>
                         </span>
                       )}
                     </div>
@@ -755,7 +755,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
             </div>
           ) : (
             <div className="text-center text-yellow-700 text-2xl">
-              Complements have been detached from product
+              {t("orderTakingForm.complementsDetached")}
             </div>
           )}
           {mode === "product" && (
@@ -764,7 +764,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                   <ClockIcon className="size-4 text-purple-600" />
                 </div>
-                <h3 className="text-xl font-bold text-black">Quantity</h3>
+                <h3 className="text-xl font-bold text-black">{t("orderTakingForm.quantity")}</h3>
               </div>
               <div className="flex items-center space-x-6">
                 <button
@@ -796,19 +796,19 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
               <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
                 <CashIcon className="size-4 text-indigo-600" />
               </div>
-              <h3 className="text-xl font-bold text-black">Price Breakdown</h3>
+              <h3 className="text-xl font-bold text-black">{t("orderTakingForm.priceBreakdown")}</h3>
             </div>
 
             <div className="space-y-3">
               <div className="flex justify-between items-center py-2">
-                <span className="text-gray-700">Base Product:</span>
+                <span className="text-gray-700">{t("orderTakingForm.baseProduct")}:</span>
                 <span className="font-semibold text-black">
                   €{calculateBaseProductPrice(selectedProduct).toFixed(2)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center py-2 text-gray-600">
-                <span>Tax ({selectedProduct?.tax || 0}%):</span>
+                <span>{t("orderTakingForm.tax")} ({selectedProduct?.tax || 0}%):</span>
                 <span>
                   €{calculateProductTaxAmount(selectedProduct).toFixed(2)}
                 </span>
@@ -817,7 +817,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
               {selectedVariant && (
                 <div className="flex justify-between items-center py-2">
                   <span className="text-gray-700">
-                    Variant (
+                    {t("orderTakingForm.variant")} (
                     {selectedVariant.name || `Variant ${selectedVariant.id}`}):
                   </span>
                   <span className="font-semibold text-black">
@@ -852,7 +852,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
               <div className="border-t-2 border-indigo-200 pt-4 mt-4">
                 <div className="flex justify-between items-center">
                   <span className="text-xl font-bold text-indigo-600">
-                    Total (×{quantity}):
+                    {t("orderTakingForm.total")} (×{quantity}):
                   </span>
                   <span className="text-2xl font-bold text-indigo-600">
                     €{calculateTotalPrice().toFixed(2)}
@@ -868,14 +868,14 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
           <div className="flex space-x-4">
             <CustomButton
               type="button"
-              label="Cancel"
+              label={t("common.cancel")}
               onClick={() => setSelectedProduct(null)}
               className="flex-1 px-6 py-4"
               variant="secondary"
             />
             <CustomButton
               type="button"
-              label={`${editingProduct ? "Edit" : "Add to Order"}`}
+              label={`${editingProduct ? t("common.edit") : t("orderTakingForm.addToOrder")}`}
               onClick={handleAddToOrder}
               disabled={!canProceed()}
               variant={canProceed() ? "gradient" : "secondary"}

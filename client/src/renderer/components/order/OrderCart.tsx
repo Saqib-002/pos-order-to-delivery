@@ -22,6 +22,7 @@ import {
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
+import { useTranslation } from "react-i18next";
 
 interface OrderCartProps {
   orderId: string;
@@ -40,6 +41,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
   onClearOrder,
   onProcessOrder,
 }) => {
+  const { t } = useTranslation();
   const { orderTotal, nonMenuItems, groups } = calculateOrderTotal(orderItems);
   const {
     setSelectedMenu,
@@ -57,7 +59,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
   const handlePrint = async () => {
     const printerGroups = groupItemsByPrinter(orderItems);
     if (!Object.keys(printerGroups).length) {
-      toast.warn("No printers attached");
+      toast.warn(t("orderCart.warnings.noPrintersAttached"));
       return;
     }
     let configurations = {
@@ -68,14 +70,14 @@ const OrderCart: React.FC<OrderCartProps> = ({
     };
     let res = await (window as any).electronAPI.getConfigurations(token);
     if (!res.status) {
-      toast.error("Error getting configurations");
+      toast.error(t("orderCart.errors.errorGettingConfigurations"));
       return;
     }
     if (res.data) {
       configurations = res.data;
     }
 
-    toast.info("Printing customer receipt...");
+    toast.info(t("orderCart.messages.printingCustomerReceipt"));
     for (const [printer, items] of Object.entries(printerGroups)) {
       const printerName = printer.split("|")[0];
       const printerIsMain = printer.split("|")[1];
@@ -113,22 +115,22 @@ const OrderCart: React.FC<OrderCartProps> = ({
       console.log(res);
       if (!res.status) {
         if (res.error === "Printer not found") {
-          toast.error(`Printer "${printerName}" not found`);
+          toast.error(t("orderCart.errors.printerNotFound", { printerName }));
         } else {
-          toast.error("Error printing receipt");
+          toast.error(t("orderCart.errors.errorPrintingReceipt"));
         }
         return;
       }
     }
-    toast.success("Receipt printed successfully");
+    toast.success(t("orderCart.messages.receiptPrintedSuccessfully"));
   };
   const handleRemoveItem = async (itemId: string, itemName: string) => {
     const ok = await confirm({
-      title: "Remove Item",
-      message: "Are you sure you want to remove this item from your order?",
+      title: t("orderCart.confirmations.removeItem.title"),
+      message: t("orderCart.confirmations.removeItem.message"),
       type: "danger",
-      confirmText: "Remove Item",
-      cancelText: "Cancel",
+      confirmText: t("orderCart.confirmations.removeItem.confirmText"),
+      cancelText: t("common.cancel"),
       itemName: itemName,
     });
     if (!ok) {
@@ -140,7 +142,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       itemId
     );
     if (!res.status) {
-      toast.error(`Error removing item`);
+      toast.error(t("orderCart.errors.errorRemovingItem"));
       return;
     }
     onRemoveItem(itemId);
@@ -151,7 +153,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       item.productId
     );
     if (!res.status) {
-      toast.error(`Error getting product`);
+      toast.error(t("orderCart.errors.errorGettingProduct"));
       return;
     }
     setMode("product");
@@ -160,11 +162,11 @@ const OrderCart: React.FC<OrderCartProps> = ({
   };
   const handleRemoveGroup = async (group: any) => {
     const ok = await confirm({
-      title: "Remove Menu",
-      message: "Are you sure you want to remove this menu from your order?",
+      title: t("orderCart.confirmations.removeMenu.title"),
+      message: t("orderCart.confirmations.removeMenu.message"),
       type: "danger",
-      confirmText: "Clear Order",
-      cancelText: "Cancel",
+      confirmText: t("orderCart.confirmations.removeMenu.confirmText"),
+      cancelText: t("common.cancel"),
       itemName: group.menuName,
     });
     if (!ok) {
@@ -177,7 +179,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       group.secondaryId
     );
     if (!res.status) {
-      toast.error(`Error removing item`);
+      toast.error(t("orderCart.errors.errorRemovingItem"));
       return;
     }
     group.items.forEach((item: any) => onRemoveItem(item.id));
@@ -188,11 +190,11 @@ const OrderCart: React.FC<OrderCartProps> = ({
       group.menuId
     );
     if (!res.status) {
-      toast.error(`Error getting menu`);
+      toast.error(t("orderCart.errors.errorGettingMenu"));
       return;
     }
     if (!res.data) {
-      toast.error(`Menu have been deleted`);
+      toast.error(t("orderCart.errors.menuHaveBeenDeleted"));
       return;
     }
     setMode("menu");
@@ -209,7 +211,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       quantity
     );
     if (!res.status) {
-      toast.error(`Error updating quantity`);
+      toast.error(t("orderCart.errors.errorUpdatingQuantity"));
       return;
     }
     group.items.forEach((item: any) => onUpdateQuantity(item.id, quantity));
@@ -217,19 +219,18 @@ const OrderCart: React.FC<OrderCartProps> = ({
 
   const handleClearOrder = async () => {
     const ok = await confirm({
-      title: "Clear Order",
-      message:
-        "Are you sure you want to clear the entire order? This action cannot be undone.",
+      title: t("orderCart.confirmations.clearOrder.title"),
+      message: t("orderCart.confirmations.clearOrder.message"),
       type: "danger",
-      confirmText: "Clear Order",
-      cancelText: "Cancel",
+      confirmText: t("orderCart.confirmations.clearOrder.confirmText"),
+      cancelText: t("common.cancel"),
     });
     if (!ok) {
       return;
     }
     const res = await (window as any).electronAPI.deleteOrder(token, orderId);
     if (!res.status) {
-      toast.error(`Error clearing order`);
+      toast.error(t("orderCart.errors.errorClearingOrder"));
       return;
     }
     onClearOrder();
@@ -245,7 +246,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       quantity
     );
     if (!res.status) {
-      toast.error(`Error updating quantity`);
+      toast.error(t("orderCart.errors.errorUpdatingQuantity"));
       return;
     }
     onUpdateQuantity(itemId, quantity);
@@ -256,12 +257,11 @@ const OrderCart: React.FC<OrderCartProps> = ({
       <div className="text-center text-gray-500 py-8 p-4 h-[calc(100vh-9rem)]">
         <div className="text-4xl mb-2">🛒</div>
         <p className="text-lg font-medium">
-          Your Order{configurations?.orderPrefix}
+          {t("orderCart.yourOrder")}
+          {configurations?.orderPrefix}
           {order?.orderId}
         </p>
-        <p className="text-sm">
-          Select items from the menu to add to your order
-        </p>
+        <p className="text-sm">{t("orderCart.selectItemsFromMenu")}</p>
       </div>
     );
   }
@@ -270,14 +270,14 @@ const OrderCart: React.FC<OrderCartProps> = ({
       {/* Header */}
       <div className="flex justify-between items-center p-4 pb-2">
         <h2 className="text-lg font-semibold text-gray-800">
-          Your Order {configurations?.orderPrefix || "K"}
+          {t("orderCart.yourOrder")} {configurations?.orderPrefix || "K"}
           {order?.orderId}
         </h2>
         <div className="flex items-center gap-1">
           <CustomButton
             type="button"
             onClick={handlePrint}
-            title="Print Options"
+            title={t("orderCart.printOptions")}
             Icon={<PrinterIcon className="size-5" />}
             className="!px-2"
             variant="transparent"
@@ -285,7 +285,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
           <CustomButton
             type="button"
             onClick={handleClearOrder}
-            title="Save Order"
+            title={t("orderCart.clearOrder")}
             Icon={<DeleteIcon className="size-5" />}
             className="!px-2 text-red-600 hover:text-red-700"
             variant="transparent"
@@ -309,26 +309,32 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 <div className="text-sm text-gray-600 space-y-1">
                   <div className="flex justify-between">
                     <span>
-                      Item Price (
+                      {t("orderCart.itemPrice")} (
                       {calculateTaxPercentage(
                         item.productPrice,
                         item.productTax
                       )}
-                      % tax included)
+                      % {t("orderCart.taxIncluded")})
                     </span>
                     <span>
                       €{(item.productPrice + item.productTax).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    {item.variantId && (<><span>Variant: {item.variantName}</span>
-                      <span>€{item.variantPrice.toFixed(2)}</span></>)}
+                    {item.variantId && (
+                      <>
+                        <span>
+                          {t("orderCart.variant")}: {item.variantName}
+                        </span>
+                        <span>€{item.variantPrice.toFixed(2)}</span>
+                      </>
+                    )}
                   </div>
                 </div>
                 {item.complements.length > 0 && (
                   <div className="mt-2">
                     <p className="text-xs text-gray-500 font-medium">
-                      Add-ons:
+                      {t("orderCart.addOns")}:
                     </p>
                     <ul className="text-xs text-gray-600 space-y-1">
                       {item.complements.map((complement, index) => (
@@ -395,9 +401,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
                     item.variantPrice +
                     (Array.isArray(item.complements)
                       ? item.complements.reduce(
-                        (sum, complement) => sum + complement.price,
-                        0
-                      )
+                          (sum, complement) => sum + complement.price,
+                          0
+                        )
                       : 0)) *
                   item.quantity
                 ).toFixed(2)}
@@ -416,9 +422,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
             (itemTotal, item) => {
               const complementsTotal = Array.isArray(item.complements)
                 ? item.complements.reduce(
-                  (sum, complement) => sum + complement.price,
-                  0
-                )
+                    (sum, complement) => sum + complement.price,
+                    0
+                  )
                 : 0;
 
               return (
@@ -438,7 +444,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
               <div className="p-3 bg-gray-50 rounded-t-lg">
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="font-medium text-gray-800">
-                    From {group.menuName} - {group.secondaryId}
+                    {t("orderCart.from")} {group.menuName} - {group.secondaryId}
                   </h3>
                   <div className="flex gap-2">
                     <CustomButton
@@ -462,12 +468,12 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 <div className="text-sm text-gray-600 space-y-1 mb-3">
                   <div className="flex justify-between">
                     <span>
-                      Menu Price (
+                      {t("orderCart.menuPrice")} (
                       {calculateTaxPercentage(
                         group.basePrice,
                         group.taxPerUnit
                       )}
-                      % tax included)
+                      % {t("orderCart.taxIncluded")})
                     </span>
                     <span>
                       €{(group.basePrice + group.taxPerUnit).toFixed(2)}
@@ -475,12 +481,12 @@ const OrderCart: React.FC<OrderCartProps> = ({
                   </div>
                   {group.supplementTotal > 0.01 && (
                     <div className="flex justify-between">
-                      <span>Supplements</span>
+                      <span>{t("orderCart.supplements")}</span>
                       <span>€{group.supplementTotal.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span>Total</span>
+                    <span>{t("orderCart.total")}</span>
                     <span className="font-semibold text-gray-800">
                       €{sectionTotal.toFixed(2)}
                     </span>
@@ -543,14 +549,16 @@ const OrderCart: React.FC<OrderCartProps> = ({
                             <span>€{item.productTax.toFixed(2)}</span>
                           </div> */}
                           <div className="flex justify-between">
-                            <span>Variant: {item.variantName}</span>
+                            <span>
+                              {t("orderCart.variant")}: {item.variantName}
+                            </span>
                             <span>€{item.variantPrice.toFixed(2)}</span>
                           </div>
                         </div>
                         {item.complements.length > 0 && (
                           <div className="mt-2">
                             <p className="text-xs text-gray-500 font-medium">
-                              Add-ons:
+                              {t("orderCart.addOns")}:
                             </p>
                             <ul className="text-xs text-gray-600 space-y-1">
                               {item.complements.map((complement, index) => (
@@ -577,11 +585,11 @@ const OrderCart: React.FC<OrderCartProps> = ({
 
       <div className="border-t border-gray-200 px-4">
         <div className="flex justify-between text-lg font-semibold mb-4">
-          <span>Total:</span>
+          <span>{t("orderCart.total")}:</span>
           <span className="text-indigo-600">€{orderTotal.toFixed(2)}</span>
         </div>
         <CustomButton
-          label="Process Order"
+          label={t("orderCart.processOrder")}
           type="button"
           className="w-full"
           onClick={onProcessOrder}

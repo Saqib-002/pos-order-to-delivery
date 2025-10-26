@@ -1,5 +1,17 @@
 {
-  "greeting": "Hello!",
+  "common": {
+    "loading": "Loading...",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "add": "Add",
+    "create": "Create",
+    "update": "Update",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No"
+  },
   "welcome": "Welcome to our website.",
   "configurations": {
     "title": "Configurations",
@@ -178,6 +190,183 @@
     "signIn": "Sign In",
     "restaurantInterior": "Restaurant Interior",
     "restaurantLogo": "Restaurant Logo"
+  },
+  "orderManagement": {
+    "filters": {
+      "allOrders": "All Orders",
+      "pending": "📋 Pending",
+      "sentToKitchen": "👨‍🍳 Sent to Kitchen",
+      "readyForDelivery": "✅ Ready for Delivery",
+      "outForDelivery": "🚚 Out for Delivery",
+      "completed": "✅ Completed",
+      "delivered": "📦 Delivered",
+      "cancelled": "❌ Cancelled",
+      "paid": "💚 Paid",
+      "unpaid": "🔴 Unpaid",
+      "partialPayment": "🟡 Partial Payment",
+      "filterOrders": "Filter Orders"
+    }
+  },
+  "orderTakingForm": {
+    "loading": {
+      "title": "Loading Product Details",
+      "description": "Please wait while we fetch the customization options..."
+    },
+    "customizeYourOrder": "Customize your order",
+    "chooseVariant": "Choose Variant",
+    "selectPreferredVariant": "Select your preferred variant for {{productName}}",
+    "variantsDetached": "Variants have been detached from product",
+    "addComplements": "Add Complements",
+    "selected": "Selected",
+    "min": "Min",
+    "max": "Max",
+    "free": "Free",
+    "complementsDetached": "Complements have been detached from product",
+    "quantity": "Quantity",
+    "priceBreakdown": "Price Breakdown",
+    "baseProduct": "Base Product",
+    "tax": "Tax",
+    "variant": "Variant",
+    "total": "Total",
+    "addToOrder": "Add to Order",
+    "errors": {
+      "unableToGetVariants": "Unable to get product's variants",
+      "unableToGetAddonPages": "Unable to get product's addon pages",
+      "unableToGetGroups": "Unable to get groups",
+      "errorLoadingProductData": "Error loading product data",
+      "pleaseSelectVariant": "Please select a variant",
+      "pleaseCompleteRequiredSelections": "Please complete all required selections",
+      "unableToUpdateOrder": "Unable to update order",
+      "unableToSaveOrder": "Unable to save order",
+      "unableToUpdateQuantity": "Unable to update quantity"
+    },
+    "warnings": {
+      "maximumItemsAllowed": "Maximum {{maxComplements}} items allowed for the group"
+    },
+    "messages": {
+      "orderAssignedToDeliveryPerson": "This order is assigned to a delivery person and cannot be edited.",
+      "itemAddedToOrder": "Item added to order!",
+      "quantityUpdated": "Quantity updated! Total: {{newQuantity}}"
+    }
+  },
+  "orderCart": {
+    "yourOrder": "Your Order",
+    "selectItemsFromMenu": "Select items from the menu to add to your order",
+    "printOptions": "Print Options",
+    "clearOrder": "Clear Order",
+    "itemPrice": "Item Price",
+    "taxIncluded": "tax included",
+    "variant": "Variant",
+    "addOns": "Add-ons",
+    "from": "From",
+    "menuPrice": "Menu Price",
+    "supplements": "Supplements",
+    "total": "Total",
+    "processOrder": "Process Order",
+    "warnings": {
+      "noPrintersAttached": "No printers attached"
+    },
+    "errors": {
+      "errorGettingConfigurations": "Error getting configurations",
+      "printerNotFound": "Printer \"{{printerName}}\" not found",
+      "errorPrintingReceipt": "Error printing receipt",
+      "errorRemovingItem": "Error removing item",
+      "errorGettingProduct": "Error getting product",
+      "errorGettingMenu": "Error getting menu",
+      "menuHaveBeenDeleted": "Menu have been deleted",
+      "errorUpdatingQuantity": "Error updating quantity",
+      "errorClearingOrder": "Error clearing order"
+    },
+    "messages": {
+      "printingCustomerReceipt": "Printing customer receipt...",
+      "receiptPrintedSuccessfully": "Receipt printed successfully"
+    },
+    "confirmations": {
+      "removeItem": {
+        "title": "Remove Item",
+        "message": "Are you sure you want to remove this item from your order?",
+        "confirmText": "Remove Item"
+      },
+      "removeMenu": {
+        "title": "Remove Menu",
+        "message": "Are you sure you want to remove this menu from your order?",
+        "confirmText": "Clear Order"
+      },
+      "clearOrder": {
+        "title": "Clear Order",
+        "message": "Are you sure you want to clear the entire order? This action cannot be undone.",
+        "confirmText": "Clear Order"
+      }
+    }
+  },
+  "paymentProcessingModal": {
+    "title": "Payment Processing",
+    "subtitle": "Select payment methods",
+    "totalAmount": "Total Amount",
+    "alreadyPaid": "Already Paid",
+    "remaining": "Remaining",
+    "amountTendered": "Amount Tendered",
+    "changeToReturn": "Change to Return",
+    "paymentMethod": "Payment Method",
+    "cash": "Cash",
+    "card": "Card",
+    "amount": "Amount",
+    "addPayment": "Add Payment",
+    "addedPayments": "Added Payments",
+    "processPayment": "Process Payment",
+    "errors": {
+      "pleaseEnterValidAmount": "Please enter a valid amount",
+      "pleaseAddPaymentMethod": "Please add at least one payment method"
+    },
+    "messages": {
+      "partialPaymentProcessed": "Partial payment processed: {{paymentString}} (Remaining: €{{remaining}})",
+      "paymentProcessedWithChange": "Payment processed: {{paymentString}} (Change: €{{change}})",
+      "paymentProcessed": "Payment processed: {{paymentString}}"
+    }
+  },
+  "customerModal": {
+    "title": "Add Customer",
+    "phone": "Phone",
+    "name": "Name",
+    "cifDni": "CIF/DNI",
+    "email": "Email",
+    "comments": "Comments",
+    "address": "Address",
+    "postalCode": "Postal Code",
+    "city": "City",
+    "province": "Province",
+    "addCustomer": "Add Customer",
+    "errors": {
+      "customerAlreadyExists": "Customer already exists",
+      "failedToEditCustomer": "Failed to edit customer",
+      "failedToAddCustomer": "Failed to add customer"
+    }
+  },
+  "printerModal": {
+    "viewPrinter": "View Printer",
+    "editPrinter": "Edit Printer",
+    "addNewPrinter": "Add New Printer",
+    "displayName": "Display Name *",
+    "enterDisplayName": "Enter display name",
+    "mainPrinter": "Main Printer",
+    "printer": "Printer",
+    "selectPrinter": "Select printer",
+    "updatePrinter": "Update Printer",
+    "addPrinter": "Add Printer",
+    "errors": {
+      "pleaseSelectPrinter": "Please select a printer",
+      "pleaseEnterDisplayName": "Please enter display name",
+      "unableToAddPrinter": "Unable to add printer",
+      "unableToUpdatePrinter": "Unable to update printer",
+      "anErrorOccurred": "An error occurred"
+    },
+    "warnings": {
+      "printerAlreadyAdded": "This printer already added!"
+    },
+    "messages": {
+      "printerAddedSuccessfully": "Printer added successfully",
+      "printerUpdatedSuccessfully": "Printer updated successfully"
+    }
   },
   "manageOrders": {
     "title": "Manage Orders",

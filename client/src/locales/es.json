@@ -1,5 +1,17 @@
 {
-  "greeting": "¡Hola!",
+  "common": {
+    "loading": "Cargando...",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "add": "Agregar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "close": "Cerrar",
+    "yes": "Sí",
+    "no": "No"
+  },
   "welcome": "Bienvenido a nuestro sitio web.",
 
   "configurations": {
@@ -180,6 +192,183 @@
     "signIn": "Iniciar Sesión",
     "restaurantInterior": "Interior del Restaurante",
     "restaurantLogo": "Logo del Restaurante"
+  },
+  "orderManagement": {
+    "filters": {
+      "allOrders": "Todos los Pedidos",
+      "pending": "📋 Pendiente",
+      "sentToKitchen": "👨‍🍳 Enviado a Cocina",
+      "readyForDelivery": "✅ Listo para Entrega",
+      "outForDelivery": "🚚 En Camino",
+      "completed": "✅ Completado",
+      "delivered": "📦 Entregado",
+      "cancelled": "❌ Cancelado",
+      "paid": "💚 Pagado",
+      "unpaid": "🔴 No Pagado",
+      "partialPayment": "🟡 Pago Parcial",
+      "filterOrders": "Filtrar Pedidos"
+    }
+  },
+  "orderTakingForm": {
+    "loading": {
+      "title": "Cargando Detalles del Producto",
+      "description": "Por favor espera mientras obtenemos las opciones de personalización..."
+    },
+    "customizeYourOrder": "Personaliza tu pedido",
+    "chooseVariant": "Elegir Variante",
+    "selectPreferredVariant": "Selecciona tu variante preferida para {{productName}}",
+    "variantsDetached": "Las variantes han sido desvinculadas del producto",
+    "addComplements": "Agregar Complementos",
+    "selected": "Seleccionado",
+    "min": "Mín",
+    "max": "Máx",
+    "free": "Gratis",
+    "complementsDetached": "Los complementos han sido desvinculados del producto",
+    "quantity": "Cantidad",
+    "priceBreakdown": "Desglose de Precios",
+    "baseProduct": "Producto Base",
+    "tax": "Impuesto",
+    "variant": "Variante",
+    "total": "Total",
+    "addToOrder": "Agregar al Pedido",
+    "errors": {
+      "unableToGetVariants": "No se pudieron obtener las variantes del producto",
+      "unableToGetAddonPages": "No se pudieron obtener las páginas de complementos del producto",
+      "unableToGetGroups": "No se pudieron obtener los grupos",
+      "errorLoadingProductData": "Error al cargar los datos del producto",
+      "pleaseSelectVariant": "Por favor selecciona una variante",
+      "pleaseCompleteRequiredSelections": "Por favor completa todas las selecciones requeridas",
+      "unableToUpdateOrder": "No se pudo actualizar el pedido",
+      "unableToSaveOrder": "No se pudo guardar el pedido",
+      "unableToUpdateQuantity": "No se pudo actualizar la cantidad"
+    },
+    "warnings": {
+      "maximumItemsAllowed": "Máximo {{maxComplements}} elementos permitidos para el grupo"
+    },
+    "messages": {
+      "orderAssignedToDeliveryPerson": "Este pedido está asignado a un repartidor y no se puede editar.",
+      "itemAddedToOrder": "¡Artículo agregado al pedido!",
+      "quantityUpdated": "¡Cantidad actualizada! Total: {{newQuantity}}"
+    }
+  },
+  "orderCart": {
+    "yourOrder": "Tu Pedido",
+    "selectItemsFromMenu": "Selecciona artículos del menú para agregar a tu pedido",
+    "printOptions": "Opciones de Impresión",
+    "clearOrder": "Limpiar Pedido",
+    "itemPrice": "Precio del Artículo",
+    "taxIncluded": "impuesto incluido",
+    "variant": "Variante",
+    "addOns": "Complementos",
+    "from": "De",
+    "menuPrice": "Precio del Menú",
+    "supplements": "Suplementos",
+    "total": "Total",
+    "processOrder": "Procesar Pedido",
+    "warnings": {
+      "noPrintersAttached": "No hay impresoras conectadas"
+    },
+    "errors": {
+      "errorGettingConfigurations": "Error al obtener configuraciones",
+      "printerNotFound": "Impresora \"{{printerName}}\" no encontrada",
+      "errorPrintingReceipt": "Error al imprimir recibo",
+      "errorRemovingItem": "Error al eliminar artículo",
+      "errorGettingProduct": "Error al obtener producto",
+      "errorGettingMenu": "Error al obtener menú",
+      "menuHaveBeenDeleted": "El menú ha sido eliminado",
+      "errorUpdatingQuantity": "Error al actualizar cantidad",
+      "errorClearingOrder": "Error al limpiar pedido"
+    },
+    "messages": {
+      "printingCustomerReceipt": "Imprimiendo recibo del cliente...",
+      "receiptPrintedSuccessfully": "Recibo impreso exitosamente"
+    },
+    "confirmations": {
+      "removeItem": {
+        "title": "Eliminar Artículo",
+        "message": "¿Estás seguro de que quieres eliminar este artículo de tu pedido?",
+        "confirmText": "Eliminar Artículo"
+      },
+      "removeMenu": {
+        "title": "Eliminar Menú",
+        "message": "¿Estás seguro de que quieres eliminar este menú de tu pedido?",
+        "confirmText": "Limpiar Pedido"
+      },
+      "clearOrder": {
+        "title": "Limpiar Pedido",
+        "message": "¿Estás seguro de que quieres limpiar todo el pedido? Esta acción no se puede deshacer.",
+        "confirmText": "Limpiar Pedido"
+      }
+    }
+  },
+  "paymentProcessingModal": {
+    "title": "Procesamiento de Pago",
+    "subtitle": "Seleccionar métodos de pago",
+    "totalAmount": "Cantidad Total",
+    "alreadyPaid": "Ya Pagado",
+    "remaining": "Restante",
+    "amountTendered": "Cantidad Entregada",
+    "changeToReturn": "Cambio a Devolver",
+    "paymentMethod": "Método de Pago",
+    "cash": "Efectivo",
+    "card": "Tarjeta",
+    "amount": "Cantidad",
+    "addPayment": "Agregar Pago",
+    "addedPayments": "Pagos Agregados",
+    "processPayment": "Procesar Pago",
+    "errors": {
+      "pleaseEnterValidAmount": "Por favor ingresa una cantidad válida",
+      "pleaseAddPaymentMethod": "Por favor agrega al menos un método de pago"
+    },
+    "messages": {
+      "partialPaymentProcessed": "Pago parcial procesado: {{paymentString}} (Restante: €{{remaining}})",
+      "paymentProcessedWithChange": "Pago procesado: {{paymentString}} (Cambio: €{{change}})",
+      "paymentProcessed": "Pago procesado: {{paymentString}}"
+    }
+  },
+  "customerModal": {
+    "title": "Agregar Cliente",
+    "phone": "Teléfono",
+    "name": "Nombre",
+    "cifDni": "CIF/DNI",
+    "email": "Correo Electrónico",
+    "comments": "Comentarios",
+    "address": "Dirección",
+    "postalCode": "Código Postal",
+    "city": "Ciudad",
+    "province": "Provincia",
+    "addCustomer": "Agregar Cliente",
+    "errors": {
+      "customerAlreadyExists": "El cliente ya existe",
+      "failedToEditCustomer": "Error al editar cliente",
+      "failedToAddCustomer": "Error al agregar cliente"
+    }
+  },
+  "printerModal": {
+    "viewPrinter": "Ver Impresora",
+    "editPrinter": "Editar Impresora",
+    "addNewPrinter": "Agregar Nueva Impresora",
+    "displayName": "Nombre para Mostrar *",
+    "enterDisplayName": "Ingrese nombre para mostrar",
+    "mainPrinter": "Impresora Principal",
+    "printer": "Impresora",
+    "selectPrinter": "Seleccionar impresora",
+    "updatePrinter": "Actualizar Impresora",
+    "addPrinter": "Agregar Impresora",
+    "errors": {
+      "pleaseSelectPrinter": "Por favor selecciona una impresora",
+      "pleaseEnterDisplayName": "Por favor ingresa el nombre para mostrar",
+      "unableToAddPrinter": "No se pudo agregar la impresora",
+      "unableToUpdatePrinter": "No se pudo actualizar la impresora",
+      "anErrorOccurred": "Ocurrió un error"
+    },
+    "warnings": {
+      "printerAlreadyAdded": "¡Esta impresora ya está agregada!"
+    },
+    "messages": {
+      "printerAddedSuccessfully": "Impresora agregada exitosamente",
+      "printerUpdatedSuccessfully": "Impresora actualizada exitosamente"
+    }
   },
   "manageOrders": {
     "title": "Administrar Pedidos",

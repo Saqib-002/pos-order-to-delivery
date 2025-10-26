@@ -4,6 +4,7 @@ import CustomButton from "../../ui/CustomButton";
 import { CrossIcon } from "@/renderer/public/Svg";
 import CustomInput from "../../shared/CustomInput";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 interface PrinterModalProps {
   onClose: () => void;
@@ -22,6 +23,7 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
   token,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const [selectedPrinter, setSelectedPrinter] = useState({
     name: connectedPrinters.length > 0 ? connectedPrinters[0].name : "",
     isMain: false,
@@ -48,11 +50,11 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
     if (mode === "view") return;
 
     if (mode === "add" && !selectedPrinter.name) {
-      toast.error("Please select a printer");
+      toast.error(t("printerModal.errors.pleaseSelectPrinter"));
       return;
     }
     if (!selectedPrinter.displayName) {
-      toast.error("Please enter display name");
+      toast.error(t("printerModal.errors.pleaseEnterDisplayName"));
       return;
     }
 
@@ -77,23 +79,25 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
       }
       if (!res.status) {
         if (res.error?.includes("already exists")) {
-          toast.warn("This printer already added!");
+          toast.warn(t("printerModal.warnings.printerAlreadyAdded"));
           return;
         }
         const errorMsg =
-          mode === "add" ? "Unable to add printer" : "Unable to update printer";
+          mode === "add"
+            ? t("printerModal.errors.unableToAddPrinter")
+            : t("printerModal.errors.unableToUpdatePrinter");
         toast.error(errorMsg);
         return;
       }
       const successMsg =
         mode === "add"
-          ? "Printer added successfully"
-          : "Printer updated successfully";
+          ? t("printerModal.messages.printerAddedSuccessfully")
+          : t("printerModal.messages.printerUpdatedSuccessfully");
       toast.success(successMsg);
       onSuccess?.();
       onClose();
     } catch (error) {
-      toast.error("An error occurred");
+      toast.error(t("printerModal.errors.anErrorOccurred"));
     }
   };
 
@@ -109,7 +113,7 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
               name: value,
             });
           }}
-          placeholder="Select printer"
+          placeholder={t("printerModal.selectPrinter")}
           portalClassName="printer-dropdown-portal"
         />
       );
@@ -132,10 +136,10 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-bold">
               {mode === "view"
-                ? "View Printer"
+                ? t("printerModal.viewPrinter")
                 : mode === "edit"
-                  ? "Edit Printer"
-                  : "Add New Printer"}
+                  ? t("printerModal.editPrinter")
+                  : t("printerModal.addNewPrinter")}
             </h3>
             <CustomButton
               type="button"
@@ -149,10 +153,10 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
         <form onSubmit={onSubmit} className="p-8">
           <div className="flex flex-col gap-6">
             <CustomInput
-              label="Display Name *"
+              label={t("printerModal.displayName")}
               name="name"
               type="text"
-              placeholder="Enter display name"
+              placeholder={t("printerModal.enterDisplayName")}
               value={selectedPrinter.displayName}
               onChange={(e) => {
                 setSelectedPrinter({
@@ -178,12 +182,12 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
                   disabled={isViewMode}
                   className="size-4"
                 />
-                <span className="text-sm">Main Printer</span>
+                <span className="text-sm">{t("printerModal.mainPrinter")}</span>
               </label>
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Printer {isAddOrEditMode ? "*" : ""}
+                {t("printerModal.printer")} {isAddOrEditMode ? "*" : ""}
               </label>
               {renderPrinterField()}
             </div>
@@ -194,7 +198,7 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
                 type="button"
                 variant="primary"
                 onClick={onClose}
-                label="Close"
+                label={t("common.close")}
                 className="bg-black hover:scale-105"
               />
             ) : (
@@ -203,13 +207,17 @@ export const PrinterModal: React.FC<PrinterModalProps> = ({
                   type="button"
                   variant="secondary"
                   onClick={onClose}
-                  label="Cancel"
+                  label={t("common.cancel")}
                   className="hover:scale-105"
                 />
                 <CustomButton
                   type="submit"
                   variant="primary"
-                  label={mode === "edit" ? "Update Printer" : "Add Printer"}
+                  label={
+                    mode === "edit"
+                      ? t("printerModal.updatePrinter")
+                      : t("printerModal.addPrinter")
+                  }
                   className="bg-black hover:scale-105"
                 />
               </>

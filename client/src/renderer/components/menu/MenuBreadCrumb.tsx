@@ -1,5 +1,6 @@
 import { BreadcrumbProps } from "@/types/Menu";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export const MenuBreadcrumb: React.FC<BreadcrumbProps> = ({
   currentLevel,
@@ -8,6 +9,8 @@ export const MenuBreadcrumb: React.FC<BreadcrumbProps> = ({
   onBackToCategories,
   onBackToSubcategories,
 }) => {
+  const { t } = useTranslation();
+
   if (currentLevel === "categories") {
     return null;
   }
@@ -16,7 +19,7 @@ export const MenuBreadcrumb: React.FC<BreadcrumbProps> = ({
     <div className="flex justify-end">
       <nav className="flex items-center gap-2 text-sm text-gray-600">
         <BreadcrumbLink
-          label="Categories"
+          label={t("menuComponents.categories.title")}
           onClick={onBackToCategories}
           isClickable
         />

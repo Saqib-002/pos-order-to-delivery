@@ -6,6 +6,7 @@ import { debounce } from "lodash";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { Customer } from "@/types/order";
 import { formatAddress } from "@/renderer/utils/utils";
+import { useTranslation } from "react-i18next";
 
 interface CustomerModalProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -16,12 +17,15 @@ const CustomerModal = ({
   setIsOpen,
   onCustomerCreated,
 }: CustomerModalProps) => {
+  const { t } = useTranslation();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [phone, setPhone] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
-  const { auth: { token } } = useAuth();
+  const {
+    auth: { token },
+  } = useAuth();
   const fetchCustomers = debounce(async (phone: string) => {
     if (!phone || phone.length < 3) {
       setCustomers([]);
@@ -82,11 +86,13 @@ const CustomerModal = ({
         customer.comments || "";
 
       if (customer.address) {
-        const addressObj = customer.address.split("|").reduce((obj: Record<string, string>, pair: string) => {
-          const [key, value] = pair.split("=");
-          obj[key] = value;
-          return obj;
-        }, {});
+        const addressObj = customer.address
+          .split("|")
+          .reduce((obj: Record<string, string>, pair: string) => {
+            const [key, value] = pair.split("=");
+            obj[key] = value;
+            return obj;
+          }, {});
         (form.querySelector("[name='address']") as HTMLTextAreaElement).value =
           addressObj.address || "";
         (form.querySelector("[name='postal']") as HTMLTextAreaElement).value =
@@ -110,7 +116,7 @@ const CustomerModal = ({
       postal: data.postal as string,
       city: data.city as string,
       province: data.province as string,
-    }
+    };
     const addressString = Object.entries(addressObj)
       .map(([key, value]) => `${key}=${value}`)
       .join("|");
@@ -121,7 +127,7 @@ const CustomerModal = ({
       cif: data.cif as string,
       email: data.email as string,
       comments: data.comments as string,
-    }
+    };
     let res;
     if (!isEditing) {
       res = await (window as any).electronAPI.createCustomer(token, customer);
@@ -130,11 +136,13 @@ const CustomerModal = ({
     }
     if (!res.status) {
       if (res.error.includes("customers_phone_unique")) {
-        toast.error("Customer already exists");
+        toast.error(t("customerModal.errors.customerAlreadyExists"));
         return;
       }
       toast.error(
-        isEditing ? "Failed to edit customer" : "Failed to add customer"
+        isEditing
+          ? t("customerModal.errors.failedToEditCustomer")
+          : t("customerModal.errors.failedToAddCustomer")
       );
       return;
     }
@@ -163,7 +171,7 @@ const CustomerModal = ({
         <div className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full mx-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-indigo-500">
-              Add Customer
+              {t("customerModal.title")}
             </h2>
             <button
               type="button"
@@ -178,7 +186,7 @@ const CustomerModal = ({
               <CustomInput
                 type="tel"
                 name="phone"
-                label="Phone"
+                label={t("customerModal.phone")}
                 placeholder="+1 (555) 123-4567"
                 required
                 otherClasses="mb-2"
@@ -211,7 +219,7 @@ const CustomerModal = ({
               <CustomInput
                 type="text"
                 name="name"
-                label="Name"
+                label={t("customerModal.name")}
                 placeholder="John Doe"
                 required
                 otherClasses="mb-2 col-span-2"
@@ -219,7 +227,7 @@ const CustomerModal = ({
               <CustomInput
                 type="text"
                 name="cif"
-                label="CIF/DNI"
+                label={t("customerModal.cifDni")}
                 placeholder="12345678Z"
                 otherClasses="mb-2 col-span-1"
               />
@@ -227,7 +235,7 @@ const CustomerModal = ({
             <CustomInput
               type="email"
               name="email"
-              label="Email"
+              label={t("customerModal.email")}
               placeholder="zOg2Q@example.com"
               otherClasses="mb-2"
             />
@@ -236,7 +244,7 @@ const CustomerModal = ({
                 htmlFor="comments"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Comments
+                {t("customerModal.comments")}
               </label>
               <textarea
                 id="comments"
@@ -250,37 +258,40 @@ const CustomerModal = ({
               <CustomInput
                 type="text"
                 name="address"
-                label="Address"
+                label={t("customerModal.address")}
                 placeholder="Address"
               />
 
               <CustomInput
                 type="text"
                 name="postal"
-                label="Postal Code"
+                label={t("customerModal.postalCode")}
                 placeholder="Postal Code"
               />
               <CustomInput
                 type="text"
                 name="city"
-                label="City"
+                label={t("customerModal.city")}
                 placeholder="City"
               />
               <CustomInput
                 type="text"
                 name="province"
-                label="Province"
+                label={t("customerModal.province")}
                 placeholder="Province"
               />
             </div>
             <div className="flex justify-end space-x-3">
               <CustomButton
-                label="Cancel"
+                label={t("common.cancel")}
                 variant="secondary"
                 onClick={() => setIsOpen(false)}
                 type="button"
               />
-              <CustomButton label="Add Customer" type="submit" />
+              <CustomButton
+                label={t("customerModal.addCustomer")}
+                type="submit"
+              />
             </div>
           </form>
         </div>

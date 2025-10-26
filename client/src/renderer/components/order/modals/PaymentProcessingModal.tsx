@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
+import { useTranslation } from "react-i18next";
 
 interface PaymentProcessingModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
   totalAmount,
   existingPaymentType = "",
 }) => {
+  const { t } = useTranslation();
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [currentAmount, setCurrentAmount] = useState<number>(0);
   const [selectedType, setSelectedType] = useState<"cash" | "card">("cash");
@@ -72,7 +74,7 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
 
   const handleAddPayment = () => {
     if (currentAmount <= 0) {
-      toast.error("Please enter a valid amount");
+      toast.error(t("paymentProcessingModal.errors.pleaseEnterValidAmount"));
       return;
     }
 
@@ -109,7 +111,7 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
 
   const handleProcessPayment = () => {
     if (paymentMethods.length === 0) {
-      toast.error("Please add at least one payment method");
+      toast.error(t("paymentProcessingModal.errors.pleaseAddPaymentMethod"));
       return;
     }
 
@@ -119,14 +121,24 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
 
     if (remainingAmount > 0.01) {
       toast.success(
-        `Partial payment processed: ${paymentTypeString} (Remaining: €${remainingAmount.toFixed(2)})`
+        t("paymentProcessingModal.messages.partialPaymentProcessed", {
+          paymentString: paymentTypeString,
+          remaining: remainingAmount.toFixed(2),
+        })
       );
     } else if (changeAmount > 0) {
       toast.success(
-        `Payment processed: ${paymentTypeString} (Change: €${changeAmount.toFixed(2)})`
+        t("paymentProcessingModal.messages.paymentProcessedWithChange", {
+          paymentString: paymentTypeString,
+          change: changeAmount.toFixed(2),
+        })
       );
     } else {
-      toast.success(`Payment processed: ${paymentTypeString}`);
+      toast.success(
+        t("paymentProcessingModal.messages.paymentProcessed", {
+          paymentString: paymentTypeString,
+        })
+      );
     }
 
     onConfirm({
@@ -147,8 +159,12 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
               <OutlineCreditCardIcon className="size-6" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Payment Processing</h2>
-              <p className="text-indigo-100 text-sm">Select payment methods</p>
+              <h2 className="text-xl font-bold">
+                {t("paymentProcessingModal.title")}
+              </h2>
+              <p className="text-indigo-100 text-sm">
+                {t("paymentProcessingModal.subtitle")}
+              </p>
             </div>
           </div>
           <button
@@ -165,7 +181,7 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
           <div className="bg-gray-50 rounded-xl p-4">
             <div className="flex justify-between items-center">
               <span className="text-lg font-semibold text-gray-800">
-                Total Amount:
+                {t("paymentProcessingModal.totalAmount")}:
               </span>
               <span className="text-2xl font-bold text-indigo-600">
                 €{totalAmount.toFixed(2)}
@@ -173,14 +189,18 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
             </div>
             {paymentMethods.length > 0 && (
               <div className="flex justify-between items-center mt-2">
-                <span className="text-sm text-gray-600">Already Paid:</span>
+                <span className="text-sm text-gray-600">
+                  {t("paymentProcessingModal.alreadyPaid")}:
+                </span>
                 <span className="text-lg font-semibold text-green-600">
                   €{totalPaid.toFixed(2)}
                 </span>
               </div>
             )}
             <div className="flex justify-between items-center mt-2">
-              <span className="text-sm text-gray-600">Remaining:</span>
+              <span className="text-sm text-gray-600">
+                {t("paymentProcessingModal.remaining")}:
+              </span>
               <span
                 className={`text-lg font-semibold ${remainingAmount > 0.01 ? "text-red-600" : "text-green-600"}`}
               >
@@ -190,7 +210,7 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
             {totalCustomerGiven > 0 && (
               <div className="flex justify-between items-center mt-2">
                 <span className="text-sm font-normal text-gray-600">
-                  Amount Tendered:
+                  {t("paymentProcessingModal.amountTendered")}:
                 </span>
                 <span className="text-lg font-bold text-blue-700">
                   €{totalCustomerGiven.toFixed(2)}
@@ -200,7 +220,7 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
             {changeAmount > 0 && (
               <div className="flex justify-between items-center mt-2">
                 <span className="text-sm font-normal text-gray-600">
-                  Change to Return:
+                  {t("paymentProcessingModal.changeToReturn")}:
                 </span>
                 <span className="text-lg font-bold text-red-600">
                   €{changeAmount.toFixed(2)}
@@ -211,7 +231,9 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
 
           {/* Payment Method Selection */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-800">Payment Method</h3>
+            <h3 className="font-semibold text-gray-800">
+              {t("paymentProcessingModal.paymentMethod")}
+            </h3>
             <div className="flex gap-3">
               <button
                 onClick={() => setSelectedType("cash")}
@@ -223,7 +245,9 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
               >
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-2xl">💵</span>
-                  <span className="font-medium text-lg">Cash</span>
+                  <span className="font-medium text-lg">
+                    {t("paymentProcessingModal.cash")}
+                  </span>
                 </div>
               </button>
               <button
@@ -236,7 +260,9 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
               >
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-2xl">💳</span>
-                  <span className="font-medium text-lg">Card</span>
+                  <span className="font-medium text-lg">
+                    {t("paymentProcessingModal.card")}
+                  </span>
                 </div>
               </button>
             </div>
@@ -245,7 +271,7 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
           {/* Amount Input */}
           <div className="space-y-3">
             <CustomInput
-              label="Amount"
+              label={t("paymentProcessingModal.amount")}
               onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -267,7 +293,7 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
             <CustomButton
               onClick={handleAddPayment}
               type="button"
-              label="Add Payment"
+              label={t("paymentProcessingModal.addPayment")}
               className="w-full py-3 px-4 text-lg"
             />
           </div>
@@ -275,7 +301,9 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
           {/* Payment Methods List */}
           {paymentMethods.length > 0 && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-gray-800">Added Payments</h3>
+              <h3 className="font-semibold text-gray-800">
+                {t("paymentProcessingModal.addedPayments")}
+              </h3>
               <div className="space-y-2">
                 {paymentMethods.map((method, index) => (
                   <div
@@ -288,7 +316,9 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
                       </span>
                       <div>
                         <div className="font-medium text-gray-800 capitalize text-lg">
-                          {method.type}
+                          {method.type === "cash"
+                            ? t("paymentProcessingModal.cash")
+                            : t("paymentProcessingModal.card")}
                         </div>
                         <div className="text-sm text-gray-600">
                           €{method.amount.toFixed(2)}
@@ -314,14 +344,14 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
             <CustomButton
               onClick={onClose}
               type="button"
-              label="Cancel"
+              label={t("common.cancel")}
               className="w-full py-3 px-4 text-lg"
               variant="secondary"
             />
             <CustomButton
               onClick={handleProcessPayment}
               type="button"
-              label="Process Payment"
+              label={t("paymentProcessingModal.processPayment")}
               className="w-full py-3 px-4 text-lg"
               disabled={paymentMethods.length === 0}
             />
