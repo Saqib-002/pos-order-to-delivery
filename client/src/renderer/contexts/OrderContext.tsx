@@ -125,7 +125,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     return (
       orderItems.find((item) => {
         if (item.menuId || item.productId !== productId) return false;
-        if (item.variantId !== variantId) return false;
+        if (variantId && (item.variantId !== variantId)) return false;
 
         if (item.complements.length !== complements.length) return false;
         const itemComplements = item.complements.sort(
