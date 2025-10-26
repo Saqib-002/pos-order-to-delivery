@@ -5,6 +5,7 @@ import { CustomSelect } from "../../ui/CustomSelect";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { CrossIcon, ImgIcon } from "@/renderer/public/Svg"; // Import icons
+import { useTranslation } from "react-i18next";
 
 interface Category {
   id: string;
@@ -40,6 +41,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
   categories,
   token,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     color: "red",
@@ -77,7 +79,10 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
   const getCategoryOptions = () => {
     // ... (no change in this function)
     return [
-      { value: "", label: "Select a category" },
+      {
+        value: "",
+        label: t("menuComponents.modals.subcategoryModal.selectCategory"),
+      },
       ...categories.map((category) => ({
         value: category.id,
         label: category.name,
@@ -127,12 +132,16 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      toast.error("Please enter a subcategory name");
+      toast.error(
+        t("menuComponents.modals.subcategoryModal.errors.nameRequired")
+      );
       return;
     }
 
     if (!formData.categoryId) {
-      toast.error("Please select a category");
+      toast.error(
+        t("menuComponents.modals.subcategoryModal.errors.categoryRequired")
+      );
       return;
     }
 
@@ -156,19 +165,21 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
       if (!res.status) {
         toast.error(
           editingSubcategory
-            ? "Failed to edit subcategory"
-            : "Failed to save subcategory"
+            ? t("menuComponents.modals.subcategoryModal.errors.failedToEdit")
+            : t("menuComponents.modals.subcategoryModal.errors.failedToSave")
         );
         return;
       }
       toast.success(
         editingSubcategory
-          ? "Subcategory updated successfully"
-          : "Subcategory created successfully"
+          ? t("menuComponents.modals.subcategoryModal.success.updated")
+          : t("menuComponents.modals.subcategoryModal.success.created")
       );
       onSuccess();
     } catch (error) {
-      toast.error("Failed to save subcategory");
+      toast.error(
+        t("menuComponents.modals.subcategoryModal.errors.failedToSave")
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -181,7 +192,9 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
       <div className="bg-white rounded-lg shadow-xl max-w-xl w-full mx-4">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-black">
-            {editingSubcategory ? "Edit Subcategory" : "Create New Subcategory"}
+            {editingSubcategory
+              ? t("menuComponents.modals.subcategoryModal.editTitle")
+              : t("menuComponents.modals.subcategoryModal.title")}
           </h2>
         </div>
 
@@ -189,10 +202,14 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
           {/* Wrap name and image in a flex container */}
           <div className="flex items-start gap-4 mb-4">
             <CustomInput
-              label="Subcategory Name"
+              label={t(
+                "menuComponents.modals.subcategoryModal.subcategoryName"
+              )}
               name="name"
               type="text"
-              placeholder="Enter subcategory name"
+              placeholder={t(
+                "menuComponents.modals.subcategoryModal.enterSubcategoryName"
+              )}
               required
               value={formData.name}
               onChange={(e) =>
@@ -204,7 +221,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
             {/* Image Upload */}
             <div className="w-32 flex-shrink-0">
               <label className="block text-xs font-medium text-gray-700 mb-2">
-                IMAGE
+                {t("menuComponents.modals.subcategoryModal.image")}
               </label>
               <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-1 hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100  flex items-center justify-center touch-manipulation">
                 <input
@@ -247,7 +264,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
           <div className="mb-4">
             {/* ... (Parent Category select remains the same) ... */}
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Parent Category
+              {t("menuComponents.modals.subcategoryModal.parentCategory")}
             </label>
             <CustomSelect
               options={getCategoryOptions()}
@@ -255,7 +272,9 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
               onChange={(value: string) =>
                 setFormData({ ...formData, categoryId: value })
               }
-              placeholder="Select a category"
+              placeholder={t(
+                "menuComponents.modals.subcategoryModal.selectCategory"
+              )}
               portalClassName="subcategory-category-dropdown-portal"
             />
           </div>
@@ -263,7 +282,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
           <div className="mb-6">
             {/* ... (color picker code remains the same) ... */}
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Color
+              {t("menuComponents.modals.subcategoryModal.color")}
             </label>
             <div className="grid grid-cols-5 gap-y-8">
               {colorOptions.map((option) => (
@@ -291,12 +310,16 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
             <CustomButton
               type="button"
               onClick={onClose}
-              label="Cancel"
+              label={t("menuComponents.modals.subcategoryModal.cancel")}
               variant="secondary"
             />
             <CustomButton
               type="submit"
-              label={editingSubcategory ? "Update" : "Create"}
+              label={
+                editingSubcategory
+                  ? t("menuComponents.modals.subcategoryModal.update")
+                  : t("menuComponents.modals.subcategoryModal.create")
+              }
               isLoading={isSubmitting}
               disabled={isSubmitting}
             />

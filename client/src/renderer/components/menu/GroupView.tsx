@@ -4,6 +4,7 @@ import { CreateGroupModal } from "./modals/CreateGroupModal";
 import { getGroups } from "@/renderer/utils/menu";
 import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 export interface Group {
   id: string;
@@ -25,6 +26,7 @@ export const GroupView = () => {
   const {
     auth: { token },
   } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     getGroups(token, setGroups);
@@ -51,14 +53,14 @@ export const GroupView = () => {
       <div className="flex flex-wrap gap-4 items-center">
         <CustomButton
           type="button"
-          label="CREATE GROUP"
+          label={t("menuComponents.groups.addGroup")}
           variant="yellow"
           onClick={handleCreateGroup}
         />
       </div>
 
       <div className="">
-        <h2 className="text-xl font-semibold text-black">Groups</h2>
+        <h2 className="text-xl font-semibold text-black">{t("menuComponents.groups.title")}</h2>
       </div>
 
       {/* Groups Grid */}
@@ -66,7 +68,7 @@ export const GroupView = () => {
         {groups.length === 0 && (
           <div className="text-center col-span-full">
             <p className="text-lg text-gray-500">
-              No groups found. Add new groups
+              {t("menuComponents.groups.noGroups")}
             </p>
           </div>
         )}

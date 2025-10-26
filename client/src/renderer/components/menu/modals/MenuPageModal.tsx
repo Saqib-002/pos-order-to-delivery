@@ -4,6 +4,7 @@ import { CustomSelect } from "../../ui/CustomSelect";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { MenuPage, MenuPageProduct } from "@/types/menuPages";
+import { useTranslation } from "react-i18next";
 import { AddIcon, CrossIcon, DeleteIcon } from "@/renderer/public/Svg";
 
 interface MenuPageModalProps {
@@ -21,6 +22,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
   editingMenuPage,
   token,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -47,7 +49,9 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
     try {
       const res = await (window as any).electronAPI.getAllProducts(token);
       if (!res.status) {
-        toast.error("Unable to get products");
+        toast.error(
+          t("menuComponents.modals.menuPageModal.errors.failedToFetch")
+        );
         return;
       }
 
@@ -65,14 +69,16 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
       if (productOptions.length === 0) {
         productOptions.push({
           value: "",
-          label: "No products available to add",
+          label: t("menuComponents.modals.menuPageModal.noProductsAvailable"),
           disabled: true,
         });
       }
 
       setAvailableProducts(productOptions);
     } catch (error) {
-      toast.error("Failed to fetch products");
+      toast.error(
+        t("menuComponents.modals.menuPageModal.errors.failedToFetch")
+      );
     }
   };
 
@@ -157,7 +163,9 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
 
   const handleAddProduct = () => {
     if (!newProduct.name.trim()) {
-      toast.error("Please select a product");
+      toast.error(
+        t("menuComponents.modals.menuPageModal.errors.selectProduct")
+      );
       return;
     }
 
@@ -165,7 +173,9 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
       (opt) => opt.value === newProduct.name
     );
     if (!selectedOption || selectedOption.disabled) {
-      toast.error("No products available to add");
+      toast.error(
+        t("menuComponents.modals.menuPageModal.errors.noProductsAvailable")
+      );
       return;
     }
 
@@ -196,17 +206,21 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      toast.error("Please enter a page name");
+      toast.error(t("menuComponents.modals.menuPageModal.errors.nameRequired"));
       return;
     }
 
     if (formData.description && formData.description.length > 40) {
-      toast.error("Description must be 40 characters or less");
+      toast.error(
+        t("menuComponents.modals.menuPageModal.errors.descriptionTooLong")
+      );
       return;
     }
 
     if (products.length === 0) {
-      toast.error("Please add at least one product to the menu page");
+      toast.error(
+        t("menuComponents.modals.menuPageModal.errors.addProductRequired")
+      );
       return;
     }
 
@@ -219,7 +233,9 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
           products
         );
         if (!res.status) {
-          toast.error("Failed to update menu page");
+          toast.error(
+            t("menuComponents.modals.menuPageModal.errors.failedToUpdate")
+          );
           return;
         }
       } else {
@@ -229,36 +245,44 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
           products
         );
         if (!res.status) {
-          toast.error("Failed to create menu page");
+          toast.error(
+            t("menuComponents.modals.menuPageModal.errors.failedToCreate")
+          );
           return;
         }
       }
       toast.success(
         editingMenuPage
-          ? "Menu page updated successfully"
-          : "Menu page created successfully"
+          ? t("menuComponents.modals.menuPageModal.success.updated")
+          : t("menuComponents.modals.menuPageModal.success.created")
       );
       onSuccess();
     } catch (error) {
-      toast.error("Failed to save menu page");
+      toast.error(t("menuComponents.modals.menuPageModal.errors.failedToSave"));
     }
   };
 
   const handleEliminate = async () => {
-    if (window.confirm("Are you sure you want to delete this menu page?")) {
+    if (
+      window.confirm(t("menuComponents.modals.menuPageModal.confirmDelete"))
+    ) {
       try {
         const res = await (window as any).electronAPI.deleteMenuPage(
           token,
           editingMenuPage!.id
         );
         if (!res.status) {
-          toast.error("Failed to delete menu page");
+          toast.error(
+            t("menuComponents.modals.menuPageModal.errors.failedToDelete")
+          );
           return;
         }
-        toast.success("Menu page deleted successfully");
+        toast.success(t("menuComponents.modals.menuPageModal.success.deleted"));
         onSuccess();
       } catch (error) {
-        toast.error("Failed to delete menu page");
+        toast.error(
+          t("menuComponents.modals.menuPageModal.errors.failedToDelete")
+        );
       }
     }
   };
@@ -272,7 +296,9 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
           {/* Modal Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-black uppercase">
-              {editingMenuPage ? "EDIT MENU PAGE" : "CREATE MENU PAGE"}
+              {editingMenuPage
+                ? t("menuComponents.modals.menuPageModal.editTitle")
+                : t("menuComponents.modals.menuPageModal.title")}
             </h2>
             <button
               onClick={onClose}
@@ -286,21 +312,25 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
             {/* Page Details Section */}
             <div className="mb-6">
               <CustomInput
-                label="Page Name"
+                label={t("menuComponents.modals.menuPageModal.pageName")}
                 name="name"
                 type="text"
                 required
-                placeholder="Enter page name"
+                placeholder={t(
+                  "menuComponents.modals.menuPageModal.enterPageName"
+                )}
                 value={formData.name}
                 onChange={handleInputChange}
                 inputClasses="focus:ring-orange-500"
                 otherClasses="mb-4"
               />
               <CustomInput
-                label="Description"
+                label={t("menuComponents.modals.menuPageModal.description")}
                 name="description"
                 type="text"
-                placeholder="Brief description (maximum 40 characters)"
+                placeholder={t(
+                  "menuComponents.modals.menuPageModal.enterDescription"
+                )}
                 value={formData.description}
                 onChange={handleInputChange}
                 inputClasses="focus:ring-orange-500"
@@ -311,11 +341,13 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
 
             {/* Product Addition Section */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-black mb-4">PRODUCT</h3>
+              <h3 className="text-lg font-semibold text-black mb-4">
+                {t("menuComponents.modals.menuPageModal.products")}
+              </h3>
               <div className="flex items-end gap-4">
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    PRODUCT
+                    {t("menuComponents.modals.menuPageModal.product")}
                   </label>
                   <CustomSelect
                     options={availableProducts}
@@ -324,8 +356,10 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                     placeholder={
                       availableProducts.length === 1 &&
                       availableProducts[0].disabled
-                        ? "No products available"
-                        : "Select a product"
+                        ? t(
+                            "menuComponents.modals.menuPageModal.noProductsAvailable"
+                          )
+                        : t("menuComponents.modals.menuPageModal.selectProduct")
                     }
                     className="w-full"
                     disabled={
@@ -335,11 +369,13 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                   />
                 </div>
                 <CustomInput
-                  label="SUPPLEMENT"
+                  label={t("menuComponents.modals.menuPageModal.supplement")}
                   name="supplement"
                   type="number"
                   required
-                  placeholder="Brief description (maximum 40 characters)"
+                  placeholder={t(
+                    "menuComponents.modals.menuPageModal.enterSupplement"
+                  )}
                   value={newProduct.supplement}
                   onChange={handleNewProductChange}
                   inputClasses="focus:ring-orange-500 pl-8"
@@ -349,11 +385,13 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                   step="0.01"
                 />
                 <CustomInput
-                  label="PRIORITY"
+                  label={t("menuComponents.modals.menuPageModal.priority")}
                   name="priority"
                   type="number"
                   required
-                  placeholder="Brief description (maximum 40 characters)"
+                  placeholder={t(
+                    "menuComponents.modals.menuPageModal.enterPriority"
+                  )}
                   value={newProduct.priority}
                   onChange={handleNewProductChange}
                   inputClasses="focus:ring-orange-500"
@@ -363,7 +401,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                 <div className="flex justify-end">
                   <CustomButton
                     type="button"
-                    label="Add"
+                    label={t("menuComponents.modals.menuPageModal.add")}
                     variant="orange"
                     Icon={<AddIcon />}
                     onClick={handleAddProduct}
@@ -376,7 +414,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
             {products.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-black mb-4">
-                  PRODUCTS
+                  {t("menuComponents.modals.menuPageModal.products")}
                 </h3>
                 <div className="space-y-2">
                   {products.map((product) => (
@@ -394,7 +432,8 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                           € {Number(product.supplement).toFixed(2)}
                         </span>
                         <span className="text-sm text-gray-600">
-                          Priority: {product.priority}
+                          {t("menuComponents.modals.menuPageModal.priority")}:{" "}
+                          {product.priority}
                         </span>
                         <button
                           type="button"
@@ -413,10 +452,18 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
             {/* Action Buttons */}
             <div className="flex items-center justify-between pt-6 border-t border-gray-200">
               <div className="flex items-center gap-4">
-                <CustomButton type="submit" label="Keep" variant="yellow" />
+                <CustomButton
+                  type="submit"
+                  label={
+                    editingMenuPage
+                      ? t("menuComponents.modals.menuPageModal.update")
+                      : t("menuComponents.modals.menuPageModal.create")
+                  }
+                  variant="yellow"
+                />
                 <CustomButton
                   type="button"
-                  label="Close"
+                  label={t("menuComponents.modals.menuPageModal.cancel")}
                   variant="secondary"
                   onClick={onClose}
                 />
@@ -425,7 +472,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
               {editingMenuPage && (
                 <CustomButton
                   type="button"
-                  label="Eliminate"
+                  label={t("menuComponents.modals.menuPageModal.eliminate")}
                   variant="red"
                   onClick={handleEliminate}
                 />

@@ -7,6 +7,7 @@ import {
   SubcategorySectionProps,
   CategorySectionProps,
 } from "@/types/Menu";
+import { useTranslation } from "react-i18next";
 
 export const MenuContentSections: React.FC<ContentSectionProps> = ({
   currentLevel,
@@ -77,26 +78,29 @@ const CategorySection: React.FC<CategorySectionProps> = ({
   onCategoryClick,
   onEditCategory,
   onDeleteCategory,
-}) => (
-  <SectionWrapper title="Categories">
-    <ItemGrid>
-      {categories.length === 0 ? (
-        <EmptyState message="No categories found. Please create a category." />
-      ) : (
-        categories.map((category) => (
-          <UnifiedCard
-            key={category.id}
-            data={category}
-            type="category"
-            onDelete={() => onDeleteCategory(category.id)}
-            onEdit={() => onEditCategory(category)}
-            onClick={() => onCategoryClick(category)}
-          />
-        ))
-      )}
-    </ItemGrid>
-  </SectionWrapper>
-);
+}) => {
+  const { t } = useTranslation();
+  return (
+    <SectionWrapper title={t("menuComponents.categories.title")}>
+      <ItemGrid>
+        {categories.length === 0 ? (
+          <EmptyState message={t("menuComponents.categories.noCategories")} />
+        ) : (
+          categories.map((category) => (
+            <UnifiedCard
+              key={category.id}
+              data={category}
+              type="category"
+              onDelete={() => onDeleteCategory(category.id)}
+              onEdit={() => onEditCategory(category)}
+              onClick={() => onCategoryClick(category)}
+            />
+          ))
+        )}
+      </ItemGrid>
+    </SectionWrapper>
+  );
+};
 
 const SubcategorySection: React.FC<SubcategorySectionProps> = ({
   subcategories,
@@ -104,51 +108,57 @@ const SubcategorySection: React.FC<SubcategorySectionProps> = ({
   onSubcategoryClick,
   onEditSubcategory,
   onDeleteSubcategory,
-}) => (
-  <SectionWrapper title={`Subcategories in ${selectedCategory?.name}`}>
-    <ItemGrid>
-      {subcategories.length === 0 ? (
-        <EmptyState message="No subcategories found. Please create a subcategory." />
-      ) : (
-        subcategories.map((subcategory) => (
-          <UnifiedCard
-            key={subcategory.id}
-            data={subcategory}
-            type="subcategory"
-            onEdit={() => onEditSubcategory(subcategory)}
-            onClick={() => onSubcategoryClick(subcategory)}
-            onDelete={() => onDeleteSubcategory(subcategory.id)}
-          />
-        ))
-      )}
-    </ItemGrid>
-  </SectionWrapper>
-);
+}) => {
+  const { t } = useTranslation();
+  return (
+    <SectionWrapper title={`${t("menuComponents.subcategories.title")} in ${selectedCategory?.name}`}>
+      <ItemGrid>
+        {subcategories.length === 0 ? (
+          <EmptyState message={t("menuComponents.subcategories.noSubcategories")} />
+        ) : (
+          subcategories.map((subcategory) => (
+            <UnifiedCard
+              key={subcategory.id}
+              data={subcategory}
+              type="subcategory"
+              onEdit={() => onEditSubcategory(subcategory)}
+              onClick={() => onSubcategoryClick(subcategory)}
+              onDelete={() => onDeleteSubcategory(subcategory.id)}
+            />
+          ))
+        )}
+      </ItemGrid>
+    </SectionWrapper>
+  );
+};
 
 const ProductSection: React.FC<ProductSectionProps> = ({
   products,
   selectedSubcategory,
   onEditProduct,
   onDeleteProduct,
-}) => (
-  <SectionWrapper title={`Products in ${selectedSubcategory?.name}`}>
-    <ItemGrid>
-      {products.length === 0 ? (
-        <EmptyState message="No products found in this subcategory." />
-      ) : (
-        products.map((product) => (
-          <UnifiedCard
-            key={product.id}
-            data={product}
-            type="product"
-            onEdit={() => onEditProduct(product)}
-            onDelete={() => onDeleteProduct(product)}
-          />
-        ))
-      )}
-    </ItemGrid>
-  </SectionWrapper>
-);
+}) => {
+  const { t } = useTranslation();
+  return (
+    <SectionWrapper title={`${t("menuComponents.products.title")} in ${selectedSubcategory?.name}`}>
+      <ItemGrid>
+        {products.length === 0 ? (
+          <EmptyState message={t("menuComponents.products.noProducts")} />
+        ) : (
+          products.map((product) => (
+            <UnifiedCard
+              key={product.id}
+              data={product}
+              type="product"
+              onEdit={() => onEditProduct(product)}
+              onDelete={() => onDeleteProduct(product)}
+            />
+          ))
+        )}
+      </ItemGrid>
+    </SectionWrapper>
+  );
+};
 
 const SectionWrapper: React.FC<SectionWrapperProps> = ({ title, children }) => (
   <div>

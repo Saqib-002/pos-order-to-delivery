@@ -7,6 +7,7 @@ import { Menu, MenuPage } from "@/types/menuPages";
 import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
+import { useTranslation } from "react-i18next";
 import { DocumentIcon, NoMenuIcon } from "@/renderer/public/Svg";
 
 export const MenuStructureComponent = () => {
@@ -20,6 +21,7 @@ export const MenuStructureComponent = () => {
     auth: { token },
   } = useAuth();
   const confirm = useConfirm();
+  const { t } = useTranslation();
 
   // Fetch data from API
   useEffect(() => {
@@ -30,12 +32,12 @@ export const MenuStructureComponent = () => {
     try {
       const res = await (window as any).electronAPI.getMenuPages(token);
       if (!res.status) {
-        toast.error("Unable to get menu pages");
+        toast.error(t("menuComponents.messages.errors.failedToFetch"));
         return;
       }
       setMenuPages(res.data);
     } catch (error) {
-      toast.error("Failed to fetch menu pages");
+      toast.error(t("menuComponents.messages.errors.failedToFetch"));
     }
   };
 
@@ -43,12 +45,12 @@ export const MenuStructureComponent = () => {
     try {
       const res = await (window as any).electronAPI.getMenus(token);
       if (!res.status) {
-        toast.error("Unable to get menus");
+        toast.error(t("menuComponents.messages.errors.failedToFetch"));
         return;
       }
       setMenus(res.data);
     } catch (error) {
-      toast.error("Failed to fetch menus");
+      toast.error(t("menuComponents.messages.errors.failedToFetch"));
     }
   };
 
@@ -78,18 +80,19 @@ export const MenuStructureComponent = () => {
       menuPage.id
     );
     if (!res.status) {
-      toast.error("Unable to delete menu page");
+      toast.error(t("menuComponents.messages.errors.failedToDelete"));
       return;
     }
     const ok = await confirm({
-      title: "Delete Menu Page",
-      message: `Are you sure you want to delete "${menuPage.name}"? This menu page is attached to ${res.data.length} menus. They will be detached!`,
-      confirmText: "Delete",
-      cancelText: "Cancel",
+      title: t("menuComponents.common.delete"),
+      message: `${t("menuComponents.common.delete")} "${menuPage.name}"? This menu page is attached to ${res.data.length} menus. They will be detached!`,
+      confirmText: t("menuComponents.common.delete"),
+      cancelText: t("menuComponents.common.cancel"),
       type: "danger",
       itemName: menuPage.name,
-      specialNote:
-        "If you delete this menu page you can no longer edit this menu page in any attached order!",
+      specialNote: t(
+        "menuComponents.messages.specialNotes.menuPageDeleteWarning"
+      ),
     });
     if (!ok) return;
     try {
@@ -98,13 +101,13 @@ export const MenuStructureComponent = () => {
         menuPage.id
       );
       if (!res.status) {
-        toast.error("Failed to delete menu page");
+        toast.error(t("menuComponents.messages.errors.failedToDelete"));
         return;
       }
-      toast.success("Menu page deleted successfully");
+      toast.success(t("menuComponents.messages.success.menuPageDeleted"));
       fetchMenuPages(); // Refresh data
     } catch (error) {
-      toast.error("Failed to delete menu page");
+      toast.error(t("menuComponents.messages.errors.failedToDelete"));
     }
   };
 
@@ -148,13 +151,13 @@ export const MenuStructureComponent = () => {
         <CustomButton
           type="button"
           onClick={handleCreateMenuPage}
-          label="Create Menu Page"
+          label={t("menuComponents.menuPages.addMenuPage")}
           variant="orange"
         />
         <CustomButton
           type="button"
           onClick={handleCreateMenu}
-          label="Create Menu"
+          label={t("menuComponents.menus.addMenu")}
           variant="orange"
         />
       </div>
@@ -162,7 +165,9 @@ export const MenuStructureComponent = () => {
       {/* Menu Pages Section */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-lg font-semibold text-black">Menu pages</h2>
+          <h2 className="text-lg font-semibold text-black">
+            {t("menuComponents.menuPages.title")}
+          </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -188,10 +193,10 @@ export const MenuStructureComponent = () => {
                 <DocumentIcon className="size-10 text-gray-400"/>
               </div>
               <h3 className="text-lg font-medium text-black mb-0">
-                No Menu Pages
+                {t("menuComponents.menuPages.noMenuPages")}
               </h3>
               <p className="text-gray-500 mb-0">
-                Get started by creating your first menu page.
+                {t("menuComponents.menuPages.createFirst")}
               </p>
             </div>
           )}
@@ -201,7 +206,9 @@ export const MenuStructureComponent = () => {
       {/* Menus Section */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-lg font-semibold text-black">Menus</h2>
+          <h2 className="text-lg font-semibold text-black">
+            {t("menuComponents.menus.title")}
+          </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -229,9 +236,11 @@ export const MenuStructureComponent = () => {
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-0">
                 <NoMenuIcon className="text-gray-400 size-10"/>
               </div>
-              <h3 className="text-lg font-medium text-black mb-0">No Menus</h3>
+              <h3 className="text-lg font-medium text-black mb-0">
+                {t("menuComponents.menus.noMenus")}
+              </h3>
               <p className="text-gray-500 mb-0">
-                Get started by creating your first menu.
+                {t("menuComponents.menus.createFirst")}
               </p>
             </div>
           )}

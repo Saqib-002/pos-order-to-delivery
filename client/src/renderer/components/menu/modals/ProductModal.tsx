@@ -12,6 +12,7 @@ import CustomButton from "../../ui/CustomButton";
 import { Product } from "@/types/Menu";
 import { fetchPrinters } from "@/renderer/utils/printer";
 import { AddIcon, CheckIcon, CrossIcon, ImgIcon } from "@/renderer/public/Svg";
+import { useTranslation } from "react-i18next";
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
   onClearSubcategories,
   token,
 }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<
     "general" | "variants" | "printers"
   >("general");
@@ -136,7 +138,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
           product.id
         );
         if (!res.status) {
-          toast.error("Unable to get product's variant");
+          toast.error(
+            t("menuComponents.modals.productModal.errors.unableToGetVariant")
+          );
           return;
         }
         const newPrices = res.data.reduce((obj: any, item: any) => {
@@ -148,7 +152,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
           window as any
         ).electronAPI.getAddOnPagesByProductId(token, product.id);
         if (!groupRes.status) {
-          toast.error("Unable to get product's addon pages");
+          toast.error(
+            t("menuComponents.modals.productModal.errors.unableToGetAddons")
+          );
           return;
         }
         if (groupRes.data.length === 0) {
@@ -191,7 +197,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
         if (printerRes.status) {
           setSelectedPrinterIds(printerRes.data.map((p: any) => p.printerId));
         } else {
-          toast.error("Unable to get product's printers");
+          toast.error(
+            t("menuComponents.modals.productModal.errors.unableToGetPrinters")
+          );
         }
       }
       getPrinters();
@@ -235,7 +243,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
   // Get category options for CustomSelect
   const getCategoryOptions = () => {
     return [
-      { value: "", label: "Select category" },
+      {
+        value: "",
+        label: t("menuComponents.modals.productModal.selectCategory"),
+      },
       ...categories.map((category) => ({
         value: category.id,
         label: category.name,
@@ -246,7 +257,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
   // Get subcategory options for CustomSelect
   const getSubcategoryOptions = () => {
     return [
-      { value: "", label: "Select subcategory" },
+      {
+        value: "",
+        label: t("menuComponents.modals.productModal.selectSubcategory"),
+      },
       ...subcategories.map((subcategory) => ({
         value: subcategory.id,
         label: subcategory.name,
@@ -533,17 +547,21 @@ const ProductModal: React.FC<ProductModalProps> = ({
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      toast.error("Product name is required.");
+      toast.error(t("menuComponents.modals.productModal.errors.nameRequired"));
       return;
     }
 
     if (!formData.categoryId) {
-      toast.error("Please select a category.");
+      toast.error(
+        t("menuComponents.modals.productModal.errors.categoryRequired")
+      );
       return;
     }
 
     if (!formData.subcategoryId) {
-      toast.error("Please select a subcategory.");
+      toast.error(
+        t("menuComponents.modals.productModal.errors.subcategoryRequired")
+      );
       return;
     }
 
@@ -593,15 +611,19 @@ const ProductModal: React.FC<ProductModalProps> = ({
         );
       }
       if (!res.status) {
-        toast.error(`Failed to ${product ? "update" : "create"} product.`);
+        toast.error(
+          `Failed to ${product ? t("menuComponents.modals.productModal.errors.failedToUpdate") : t("menuComponents.modals.productModal.errors.failedToCreate")}`
+        );
         return;
       }
       toast.success(
-        `Product "${formData.name}" ${product ? "updated" : "created"} successfully!`
+        `Product "${formData.name}" ${product ? t("menuComponents.modals.productModal.success.updated") : t("menuComponents.modals.productModal.success.created")}`
       );
       onSuccess();
     } catch (error) {
-      toast.error(`Failed to ${product ? "update" : "create"} product.`);
+      toast.error(
+        `Failed to ${product ? t("menuComponents.modals.productModal.errors.failedToUpdate") : t("menuComponents.modals.productModal.errors.failedToCreate")}`
+      );
       console.error(
         `Failed to ${product ? "update" : "create"} product:`,
         error
@@ -639,7 +661,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-black">
-              {product ? "EDIT PRODUCT" : "CREATE PRODUCT"}
+              {product
+                ? t("menuComponents.modals.productModal.editTitle")
+                : t("menuComponents.modals.productModal.title")}
             </h2>
             <button
               onClick={onClose}
@@ -653,9 +677,18 @@ const ProductModal: React.FC<ProductModalProps> = ({
         <div className="px-6 py-2 border-b border-gray-200">
           <div className="flex space-x-8">
             {[
-              { id: "general", label: "GENERAL" },
-              { id: "variants", label: "VARIANTS AND ADD-ONS" },
-              { id: "printers", label: "PRINTERS" },
+              {
+                id: "general",
+                label: t("menuComponents.modals.productModal.tabs.general"),
+              },
+              {
+                id: "variants",
+                label: t("menuComponents.modals.productModal.tabs.variants"),
+              },
+              {
+                id: "printers",
+                label: t("menuComponents.modals.productModal.tabs.printers"),
+              },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -679,11 +712,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
               {/* Product Status */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-black">
-                  Product Status
+                  {t("menuComponents.modals.productModal.productStatus")}
                 </h3>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-700">Activated</span>
+                    <span className="text-sm text-gray-700">
+                      {t("menuComponents.modals.productModal.activated")}
+                    </span>
                     <button
                       type="button"
                       onClick={() =>
@@ -722,7 +757,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       htmlFor="outOfStock"
                       className="text-sm text-gray-700 cursor-pointer"
                     >
-                      Product out of stock
+                      {t("menuComponents.modals.productModal.outOfStock")}
                     </label>
                   </div>
                 </div>
@@ -731,11 +766,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
               {/* Basic Product Information */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-black">
-                  Basic Product Information
+                  {t("menuComponents.modals.productModal.basicInfo")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CustomInput
-                    label="NAME *"
+                    label={t("menuComponents.modals.productModal.name")}
                     name="name"
                     type="text"
                     value={formData.name}
@@ -743,12 +778,16 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       setFormData({ ...formData, name: e.target.value })
                     }
                     inputClasses="focus:ring-orange-500 focus:border-orange-500"
-                    placeholder="Enter product name"
+                    placeholder={t(
+                      "menuComponents.modals.productModal.enterProductName"
+                    )}
                     required
                   />
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      ASSOCIATED CATEGORY *
+                      {t(
+                        "menuComponents.modals.productModal.associatedCategory"
+                      )}
                     </label>
                     <CustomSelect
                       options={getCategoryOptions()}
@@ -768,13 +807,17 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           onClearSubcategories();
                         }
                       }}
-                      placeholder="Select category"
+                      placeholder={t(
+                        "menuComponents.modals.productModal.selectCategory"
+                      )}
                       portalClassName="product-category-dropdown-portal"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      ASSOCIATED SUBCATEGORY *
+                      {t(
+                        "menuComponents.modals.productModal.associatedSubcategory"
+                      )}
                     </label>
                     <CustomSelect
                       options={getSubcategoryOptions()}
@@ -787,8 +830,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       }
                       placeholder={
                         !formData.categoryId
-                          ? "Select a category first"
-                          : "Select subcategory"
+                          ? t(
+                              "menuComponents.modals.productModal.selectCategoryFirst"
+                            )
+                          : t(
+                              "menuComponents.modals.productModal.selectSubcategory"
+                            )
                       }
                       portalClassName="product-subcategory-dropdown-portal"
                       disabled={!formData.categoryId}
@@ -798,7 +845,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 {/* Product Image Upload */}
                 <div className="col-span-1 md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    PRODUCT IMAGE
+                    {t("menuComponents.modals.productModal.productImage")}
                   </label>
                   <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-orange-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-[150px] flex items-center justify-center">
                     <input
@@ -829,14 +876,18 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           </button>
                         </div>
                         <span className="text-xs text-gray-500 text-center">
-                          Click to change
+                          {t(
+                            "menuComponents.modals.productModal.clickToChange"
+                          )}
                         </span>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center text-gray-500">
                         <ImgIcon className="size-12 mb-2" />
                         <p className="text-sm font-medium">
-                          Upload product image
+                          {t(
+                            "menuComponents.modals.productModal.uploadProductImage"
+                          )}
                         </p>
                         <p className="text-xs">PNG, JPG up to 2MB</p>
                       </div>
@@ -845,7 +896,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    DESCRIPTION
+                    {t("menuComponents.modals.productModal.description")}
                   </label>
                   <textarea
                     value={formData.description}
@@ -856,7 +907,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                    placeholder="Write a description (Max 150 characters)"
+                    placeholder={t(
+                      "menuComponents.modals.productModal.writeDescription"
+                    )}
                     rows={3}
                     maxLength={150}
                   />
@@ -869,11 +922,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
               {/* Pricing and Financials */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-black">
-                  Pricing and Financials
+                  {t("menuComponents.modals.productModal.pricingFinancials")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <CustomInput
-                    label="PRICE *"
+                    label={t("menuComponents.modals.productModal.price")}
                     name="price"
                     type="number"
                     value={formData.price}
@@ -892,7 +945,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     otherClasses="relative"
                   />
                   <CustomInput
-                    label="PRIORITY"
+                    label={t("menuComponents.modals.productModal.priority")}
                     name="priority"
                     type="number"
                     value={formData.priority}
@@ -908,7 +961,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     required
                   />
                   <CustomInput
-                    label="TAX (%)"
+                    label={t("menuComponents.modals.productModal.tax")}
                     name="tax"
                     type="number"
                     value={formData.tax}
@@ -928,7 +981,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     secLabelClasses="right-3 top-2"
                   />
                   <CustomInput
-                    label="DISCOUNT"
+                    label={t("menuComponents.modals.productModal.discount")}
                     name="discount"
                     type="number"
                     value={formData.discount}
@@ -953,7 +1006,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700">
-                        Subtotal:
+                        {t("menuComponents.modals.productModal.subtotal")}
                       </span>
                       <span className="text-sm font-semibold text-black">
                         €{calculatePriceBreakdown().subtotal.toFixed(2)}
@@ -961,7 +1014,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700">
-                        Tax ({formData.tax || 0}%):
+                        {t("menuComponents.modals.productModal.taxAmount")} (
+                        {formData.tax || 0}%):
                       </span>
                       <span className="text-sm font-semibold text-black">
                         €{calculatePriceBreakdown().taxAmount.toFixed(2)}
@@ -970,7 +1024,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     {formData.discount > 0 && (
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-700">
-                          Discount:
+                          {t(
+                            "menuComponents.modals.productModal.discountAmount"
+                          )}
                         </span>
                         <span className="text-sm font-semibold text-red-600">
                           -€
@@ -981,7 +1037,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     <div className="border-t border-gray-300 pt-2">
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-semibold text-black">
-                          Total:
+                          {t("menuComponents.modals.productModal.total")}
                         </span>
                         <span className="text-lg font-bold text-green-600">
                           €{calculatePriceBreakdown().total.toFixed(2)}
@@ -995,33 +1051,35 @@ const ProductModal: React.FC<ProductModalProps> = ({
               {/* Product Attributes */}
               <div className="space-y-4 mb-4">
                 <h3 className="text-lg font-semibold text-black">
-                  Product Attributes
+                  {t("menuComponents.modals.productModal.productAttributes")}
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {[
                     {
                       key: "isDrink",
-                      label: "It is a drink",
+                      label: t("menuComponents.modals.productModal.isDrink"),
                     },
                     {
                       key: "isByWeight",
-                      label: "Product by weight",
+                      label: t("menuComponents.modals.productModal.isByWeight"),
                     },
                     {
                       key: "isPerDiner",
-                      label: "Product per diner",
+                      label: t("menuComponents.modals.productModal.isPerDiner"),
                     },
                     {
                       key: "isOutstanding",
-                      label: "Outstanding",
+                      label: t(
+                        "menuComponents.modals.productModal.isOutstanding"
+                      ),
                     },
                     {
                       key: "isPlus18",
-                      label: "Product +18",
+                      label: t("menuComponents.modals.productModal.isPlus18"),
                     },
                     {
                       key: "isForMenu",
-                      label: "Is for Menu",
+                      label: t("menuComponents.modals.productModal.isForMenu"),
                     },
                   ].map((attr) => (
                     <div key={attr.key} className="flex items-center space-x-2">
@@ -1058,7 +1116,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <label className="block text-sm font-medium text-gray-700">
-                    ASSIGN VARIANTS
+                    {t("menuComponents.modals.productModal.assignVariants")}
                   </label>
                 </div>
 
@@ -1067,7 +1125,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   options={getVariantOptions()}
                   value={selectedVariant}
                   onChange={(value: string) => handleVariantChange(value)}
-                  placeholder="Select a variant"
+                  placeholder={t(
+                    "menuComponents.modals.productModal.selectVariant"
+                  )}
                   portalClassName="variant-dropdown-portal"
                 />
 
@@ -1075,7 +1135,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 {selectedVariant && (
                   <div className="space-y-4">
                     <h4 className="text-sm font-medium text-gray-700">
-                      Variant Items and Pricing
+                      {t(
+                        "menuComponents.modals.productModal.variantItemsPricing"
+                      )}
                     </h4>
                     {getSelectedVariantItems().map((variant) => (
                       <div
@@ -1152,7 +1214,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      SELECT ADD-ONS PAGE
+                      {t("menuComponents.modals.productModal.selectAddonsPage")}
                     </label>
                   </div>
 
@@ -1189,7 +1251,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         type="button"
                         onClick={addAddonPage}
                         variant="transparent"
-                        label="Add Page"
+                        label={t("menuComponents.modals.productModal.addPage")}
                         Icon={<AddIcon />}
                         className="border-2 border-dashed border-gray-300 text-gray-600 hover:border-orange-500 hover:text-orange-600"
                       />
@@ -1200,7 +1262,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
                       <label className="block text-sm font-medium text-gray-700">
-                        PAGE {selectedAddonPage} SETUP
+                        {t("menuComponents.modals.productModal.pageSetup")}{" "}
+                        {selectedAddonPage}
                       </label>
                     </div>
 
@@ -1208,7 +1271,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       <div>
                         <CustomInput
                           type="number"
-                          label="Minimum number of complements"
+                          label={t(
+                            "menuComponents.modals.productModal.minComplements"
+                          )}
                           name="minComplements"
                           value={getCurrentPageData()?.minComplements || 0}
                           onChange={(e) =>
@@ -1232,7 +1297,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       <div>
                         <CustomInput
                           type="number"
-                          label="Maximum number of complements"
+                          label={t(
+                            "menuComponents.modals.productModal.maxComplements"
+                          )}
                           name="maxComplements"
                           value={getCurrentPageData()?.maxComplements || 0}
                           onChange={(e) =>
@@ -1276,11 +1343,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <label className="block text-sm font-medium text-gray-700">
-                    ADD PLUGIN GROUP FOR PAGE {selectedAddonPage}
+                    {t("menuComponents.modals.productModal.addPluginGroup")}{" "}
+                    {selectedAddonPage}
                   </label>
                   {getCurrentPageData()?.selectedGroup && (
                     <span className="text-sm text-gray-500">
-                      (Available items:{" "}
+                      ({t("menuComponents.modals.productModal.availableItems")}:{" "}
                       {getGroupItemCount(getCurrentPageData()?.selectedGroup)})
                     </span>
                   )}
@@ -1317,8 +1385,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
           {activeTab === "printers" && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-black">Printers</h3>
-              <p className="text-gray-600">Configure printer settings here.</p>
+              <h3 className="text-lg font-semibold text-black">
+                {t("menuComponents.modals.productModal.printers")}
+              </h3>
+              <p className="text-gray-600">
+                {t("menuComponents.modals.productModal.configurePrinters")}
+              </p>
               <div className="grid grid-cols-4 gap-4">
                 {printers.map((printer) => (
                   <div
@@ -1361,13 +1433,17 @@ const ProductModal: React.FC<ProductModalProps> = ({
               type="button"
               onClick={onClose}
               variant="secondary"
-              label="Cancel"
+              label={t("menuComponents.modals.productModal.cancel")}
             />
             <CustomButton
               type="submit"
               disabled={isSubmitting}
               variant="orange"
-              label={product ? "Save Changes" : "Create Product"}
+              label={
+                product
+                  ? t("menuComponents.modals.productModal.saveChanges")
+                  : t("menuComponents.modals.productModal.createProduct")
+              }
               isLoading={isSubmitting}
             />
           </div>

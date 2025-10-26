@@ -5,6 +5,7 @@ import { DoubleBackArrowIcon } from "@/renderer/public/Svg";
 import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
+import { useTranslation } from "react-i18next";
 
 export const Navigation = ({
   currentView,
@@ -22,6 +23,7 @@ export const Navigation = ({
   const {
     auth: { token },
   } = useAuth();
+  const { t } = useTranslation();
   const getConfigurations = async () => {
     const res = await (window as any).electronAPI.getConfigurations(token);
     if (!res.status) {
@@ -52,6 +54,22 @@ export const Navigation = ({
 
     return iconMap[view] || "./images/order.png";
   };
+
+  const getTranslatedLabel = (view: string) => {
+    const labelMap: { [key: string]: string } = {
+      order: t("navigation.orders"),
+      kitchen: t("navigation.kitchenView"),
+      delivery: t("navigation.deliveryView"),
+      "delivery-management": t("navigation.deliveryManagement"),
+      "manage-orders": t("navigation.manageOrders"),
+      reports: t("navigation.reports"),
+      "menu-structure": t("navigation.menuStructure"),
+      users: t("navigation.users"),
+      configurations: t("navigation.configurations"),
+    };
+
+    return labelMap[view] || view;
+  };
   return (
     <>
       {/* Sidebar */}
@@ -71,7 +89,9 @@ export const Navigation = ({
                 className="size-6"
               />
               <h1 className="text-lg font-bold text-gray-800">
-                {configurations.name ? configurations.name : "Delivery System"}
+                {configurations.name
+                  ? configurations.name
+                  : t("navigation.defaultCompanyName")}
               </h1>
             </div>
           )}
@@ -100,7 +120,7 @@ export const Navigation = ({
                   setView(view);
                   setIsOpen(false);
                 }}
-                title={!isOpen ? label : undefined}
+                title={!isOpen ? getTranslatedLabel(view) : undefined}
               >
                 <img
                   src={getIcon(view)}
@@ -108,7 +128,9 @@ export const Navigation = ({
                   className="w-10 h-10 flex-shrink-0"
                 />
                 {isOpen && (
-                  <span className="font-medium truncate">{label}</span>
+                  <span className="font-medium truncate">
+                    {getTranslatedLabel(view)}
+                  </span>
                 )}
               </button>
             ) : null
@@ -122,7 +144,7 @@ export const Navigation = ({
               !isOpen ? "justify-center" : ""
             }`}
             onClick={onLogout}
-            title={!isOpen ? "Logout" : undefined}
+            title={!isOpen ? t("navigation.logout") : undefined}
           >
             <img
               src={getIcon("logout")}
@@ -133,7 +155,9 @@ export const Navigation = ({
                 e.currentTarget.src = "./images/order.png";
               }}
             />
-            {isOpen && <span className="font-medium">Logout</span>}
+            {isOpen && (
+              <span className="font-medium">{t("navigation.logout")}</span>
+            )}
           </button>
         </div>
       </div>
