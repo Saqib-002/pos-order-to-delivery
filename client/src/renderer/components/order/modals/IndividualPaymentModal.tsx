@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import { Order } from "@/types/order";
 import { calculateOrderTotal } from "../../../utils/orderCalculations";
-import { calculatePaymentStatus } from "../../../utils/paymentStatus";
 import { updateOrder } from "../../../utils/order";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import CustomInput from "../../shared/CustomInput";
-import PersonIcon from "../../../public/icons/person.svg?react";
-import ThunderIcon from "../../../public/icons/thunder.svg?react";
+import { LightningBoltIcon, PersonIcon } from "@/renderer/public/Svg";
 
 interface IndividualPaymentModalProps {
   isOpen: boolean;
@@ -208,7 +206,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-xl">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-blue-100 rounded-lg">
-              <ThunderIcon className="w-6 h-6 text-blue-600" />
+              <LightningBoltIcon className="w-6 h-6 text-blue-600" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-black">
@@ -530,7 +528,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
               disabled={paymentMethods.length === 0}
               className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-medium transition-all duration-200 flex items-center space-x-2"
             >
-              <ThunderIcon className="w-4 h-4" />
+              <LightningBoltIcon className="w-4 h-4" />
               <span>{t("individualPaymentModal.processPayment")}</span>
             </button>
           </div>

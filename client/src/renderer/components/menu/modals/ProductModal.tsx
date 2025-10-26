@@ -4,14 +4,14 @@ import { CustomSelect } from "../../ui/CustomSelect";
 import { getGroups, getVariants } from "@/renderer/utils/menu";
 import { Variant } from "../VariantView";
 import { Group } from "../GroupView";
-import CrossIcon from "../../../public/icons/cross.svg?react";
-import AddIcon from "../../../public/icons/add.svg?react";
-import CheckMark from "../../../public/icons/mark.svg?react";
+// import CrossIcon from "../../../public/icons/cross.svg?react";
+// import AddIcon from "../../../public/icons/add.svg?react";
+// import CheckMark from "../../../public/icons/mark.svg?react";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { Product } from "@/types/Menu";
 import { fetchPrinters } from "@/renderer/utils/printer";
-import { ImgIcon } from "@/renderer/public/Svg";
+import { AddIcon, CheckIcon, CrossIcon, ImgIcon } from "@/renderer/public/Svg";
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -1310,7 +1310,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         <div
                           className={`absolute -top-3 -right-2 w-5 h-5 ${getPluginGroupCheckmarkClasses(group.color)} rounded-full flex items-center justify-center`}
                         >
-                          <CheckMark className="w-3 h-3 text-white" />
+                          <CheckIcon className="w-3 h-3 text-white" />
                         </div>
                       )}
                     </button>

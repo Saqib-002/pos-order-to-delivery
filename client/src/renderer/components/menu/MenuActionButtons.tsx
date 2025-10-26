@@ -1,7 +1,7 @@
 import React from "react";
-import AddIcon from "../../public/icons/add.svg?react";
 import { ActionButtonsProps } from "@/types/Menu";
 import CustomButton from "../ui/CustomButton";
+import { AddIcon } from "@/renderer/public/Svg";
 
 const ACTION_BUTTONS_CONFIG = {
   categories: {

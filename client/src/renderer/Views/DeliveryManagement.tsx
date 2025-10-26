@@ -6,13 +6,13 @@ import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
 import { OrderTable } from "../components/shared/OrderTable";
 import { DeliveryPersonModal } from "../components/delivery/modals/DeliveryPersonModal";
-import DeliveredIcon from "../public/icons/delivered.svg?react";
 import CustomButton from "../components/ui/CustomButton";
 import {
   AddIcon,
   BikeIcon,
   CarIcon,
   DeleteIcon,
+  DeliveredIcon,
   EditIcon,
   LocationIcon,
   MotorcycleIcon,

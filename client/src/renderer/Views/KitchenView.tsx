@@ -4,15 +4,6 @@ import { useTranslation } from "react-i18next";
 import { FilterControls } from "../components/shared/FilterControl.order";
 import { Order } from "@/types/order";
 import { StatsCard } from "../components/shared/StatsCard.order";
-import SentToKitchenIcon from "../public/icons/sent-to-kitchen.svg?react";
-
-// ICONS
-import TotalOrdersIcon from "../public/icons/total-orders.svg?react";
-import HighPriorityIcon from "../public/icons/high-priority.svg?react";
-import ThunderIcon from "../public/icons/thunder.svg?react";
-import MarkIcon from "../public/icons/mark.svg?react";
-import EyeIcon from "../public/icons/eye.svg?react";
-
 import { useAuth } from "../contexts/AuthContext";
 import { updateOrder, StringToComplements } from "../utils/order";
 import Header from "../components/shared/Header.order";
@@ -20,6 +11,7 @@ import { OrderTable } from "../components/shared/OrderTable";
 import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
+import { CheckIcon, ClipboardIcon, ClockIcon, EyeIcon, LightningBoltIcon, SentToKitchenIcon } from "../public/Svg";
 
 export const KitchenView = () => {
   const { t } = useTranslation();
@@ -102,21 +94,21 @@ export const KitchenView = () => {
       {
         title: t("kitchenView.stats.ordersInKitchen"),
         value: orders.length,
-        icon: <TotalOrdersIcon className="size-6 text-blue-600" />,
+        icon: <ClipboardIcon className="size-6 text-blue-600" />,
         bgColor: "bg-blue-100",
         textColor: "text-blue-600",
       },
       {
         title: t("kitchenView.stats.highPriority"),
         value: highPriorityCount,
-        icon: <HighPriorityIcon className="w-6 h-6 text-red-600" />,
+        icon: <ClockIcon className="w-6 h-6 text-red-600" />,
         bgColor: "bg-red-100",
         textColor: "text-red-600",
       },
       {
         title: t("kitchenView.stats.avgPrepTime"),
         value: t("kitchenView.stats.avgPrepTimeValue"),
-        icon: <ThunderIcon className="w-6 h-6 text-green-600" />,
+        icon: <LightningBoltIcon className="w-6 h-6 text-green-600" />,
         bgColor: "bg-green-100",
         textColor: "text-green-600",
       },
@@ -233,7 +225,7 @@ export const KitchenView = () => {
               className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
               title={t("kitchenView.actions.markAsReady")}
             >
-              <MarkIcon className="size-4" />
+              <CheckIcon className="size-4" />
             </button>
           </div>
         </td>

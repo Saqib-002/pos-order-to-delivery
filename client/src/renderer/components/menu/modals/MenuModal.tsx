@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { CustomSelect } from "../../ui/CustomSelect";
-import CrossIcon from "../../../public/icons/cross.svg?react";
-import DeleteIcon from "../../../public/icons/delete.svg?react";
 import CustomButton from "../../ui/CustomButton";
 import CustomInput from "../../shared/CustomInput";
-import { ImgIcon } from "@/renderer/public/Svg";
+import { CrossIcon, DeleteIcon, ImgIcon } from "@/renderer/public/Svg";
 import { Menu, MenuPage, MenuPageAssociation } from "@/types/menuPages";
 
 interface MenuModalProps {

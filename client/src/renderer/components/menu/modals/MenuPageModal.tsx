@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { CustomSelect } from "../../ui/CustomSelect";
-import CrossIcon from "../../../public/icons/cross.svg?react";
-import DeleteIcon from "../../../public/icons/delete.svg?react";
-import AddIcon from "../../../public/icons/add.svg?react";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { MenuPage, MenuPageProduct } from "@/types/menuPages";
+import { AddIcon, CrossIcon, DeleteIcon } from "@/renderer/public/Svg";
 
 interface MenuPageModalProps {
   isOpen: boolean;

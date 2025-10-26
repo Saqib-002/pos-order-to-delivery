@@ -16,15 +16,7 @@ import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
 import BulkPaymentModal from "../components/order/modals/BulkPaymentModal";
 import IndividualPaymentModal from "../components/order/modals/IndividualPaymentModal";
 import { toast } from "react-toastify";
-
-// ICONS
-import SearchIcon from "../public/icons/search.svg?react";
-import PersonIcon from "../public/icons/person.svg?react";
-import EyeIcon from "../public/icons/eye.svg?react";
-import DocumentIcon from "../public/icons/document.svg?react";
-import ThunderIcon from "../public/icons/thunder.svg?react";
-import DeliveredIcon from "../public/icons/delivered.svg?react";
-import { Euro } from "@/renderer/public/Svg";
+import { DeliveredIcon, DocumentIcon, Euro, EyeIcon, LightningBoltIcon, PersonIcon, SearchIcon } from "@/renderer/public/Svg";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 
@@ -258,7 +250,6 @@ export const ManageOrdersView = () => {
       </tr>
     );
   };
-  console.log(orders);
   return (
     <div className="p-4 flex flex-col">
       {/* Header */}
@@ -392,7 +383,7 @@ export const ManageOrdersView = () => {
                 onClick={handleBulkPaymentClick}
                 className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
               >
-                <ThunderIcon className="w-4 h-4" />
+                <LightningBoltIcon className="w-4 h-4" />
                 <span>{t("manageOrders.bulkPayment")}</span>
               </button>
             </div>
