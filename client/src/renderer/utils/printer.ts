@@ -1,9 +1,12 @@
 import { OrderItem } from "@/types/order";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import {
     calculateOrderTotal,
     calculateTaxPercentage,
 } from "./orderCalculations";
+
+const { t } = useTranslation();
 
 export const fetchConnectedPrinters = async (
     token: string | null,
@@ -12,7 +15,7 @@ export const fetchConnectedPrinters = async (
     const res = await (window as any).electronAPI.getConnectedPrinters(token);
     if (!res.status) {
         setPrinters([]);
-        toast.error("Unable to get printers");
+        toast.error(t("printerUtils.unableToGetPrinters"));
         return;
     }
     setPrinters(res.data);
@@ -24,7 +27,7 @@ export const fetchPrinters = async (
     const res = await (window as any).electronAPI.getAllPrinters(token);
     if (!res.status) {
         setPrinters([]);
-        toast.error("Unable to get printers");
+        toast.error(t("printerUtils.unableToGetPrinters"));
         return;
     }
     setPrinters(res.data);

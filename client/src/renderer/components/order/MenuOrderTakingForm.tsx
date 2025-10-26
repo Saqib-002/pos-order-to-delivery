@@ -3,6 +3,7 @@ import { useOrder } from "@/renderer/contexts/OrderContext";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import CustomButton from "../ui/CustomButton";
+import { useTranslation } from "react-i18next";
 
 interface MenuPageProduct {
   id: string;
@@ -37,6 +38,7 @@ const MenuOrderTakingForm = ({
   setCurrentOrderItem,
   token,
 }: MenuOrderTakingFormProps) => {
+  const { t } = useTranslation();
   const [menuPages, setMenuPages] = useState<MenuPage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentMenuPageIndex, setCurrentMenuPageIndex] = useState(0);
@@ -75,12 +77,14 @@ const MenuOrderTakingForm = ({
         window as any
       ).electronAPI.getMenuPageAssociations(token, selectedMenu.id);
       if (!associationsRes.status) {
-        toast.error("Unable to get menu page associations");
+        toast.error(
+          t("menuOrderTakingForm.errors.unableToGetMenuPageAssociations")
+        );
         return;
       }
       const pagesRes = await (window as any).electronAPI.getMenuPages(token);
       if (!pagesRes.status) {
-        toast.error("Unable to get menu pages");
+        toast.error(t("menuOrderTakingForm.errors.unableToGetMenuPages"));
         return;
       }
       const associatedPageIds = associationsRes.data.map(
@@ -142,7 +146,7 @@ const MenuOrderTakingForm = ({
       setMenuPages(pagesWithProducts);
       setCurrentMenuPageIndex(0);
     } catch (error) {
-      toast.error("Failed to fetch menu pages");
+      toast.error(t("menuOrderTakingForm.errors.failedToFetchMenuPages"));
     } finally {
       setIsLoading(false);
     }
@@ -211,7 +215,7 @@ const MenuOrderTakingForm = ({
         <div className="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full mx-4">
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
-            <span className="ml-2">Loading...</span>
+            <span className="ml-2">{t("common.loading")}</span>
           </div>
         </div>
       </div>
@@ -221,15 +225,13 @@ const MenuOrderTakingForm = ({
     // Check if order is assigned to a delivery person
     if (order && order.deliveryPerson && order.deliveryPerson.id) {
       toast.info(
-        "This order is assigned to a delivery person and cannot be edited."
+        t("menuOrderTakingForm.messages.orderAssignedToDeliveryPerson")
       );
       return;
     }
 
     if (currentMax <= processedCountsForCurrent) {
-      toast.warn(
-        "You have reached the maximum number of complements for this menu page"
-      );
+      toast.warn(t("menuOrderTakingForm.warnings.maximumComplementsReached"));
       return;
     }
     const res = await (window as any).electronAPI.getProductById(
@@ -237,7 +239,7 @@ const MenuOrderTakingForm = ({
       product.productId
     );
     if (!res.status) {
-      toast.error("Unable to fetch product");
+      toast.error(t("menuOrderTakingForm.errors.unableToFetchProduct"));
       return;
     }
     setSelectedProduct(res.data);
@@ -266,7 +268,7 @@ const MenuOrderTakingForm = ({
   const handleCancel = async () => {
     if (order && order.deliveryPerson && order.deliveryPerson.id) {
       toast.info(
-        "This order is assigned to a delivery person and cannot be edited."
+        t("menuOrderTakingForm.messages.orderAssignedToDeliveryPerson")
       );
       return;
     }
@@ -279,7 +281,7 @@ const MenuOrderTakingForm = ({
         editingGroup?.secondaryId || maxSecondaryId
       );
       if (!res.status) {
-        toast.error("Error removing menu from order");
+        toast.error(t("menuOrderTakingForm.errors.errorRemovingMenuFromOrder"));
         return;
       }
       removeMenuFromOrder(
@@ -292,7 +294,7 @@ const MenuOrderTakingForm = ({
   const handleRemoveMenuItem = async (menuProduct: MenuPageProduct) => {
     if (order && order.deliveryPerson && order.deliveryPerson.id) {
       toast.info(
-        "This order is assigned to a delivery person and cannot be edited."
+        t("menuOrderTakingForm.messages.orderAssignedToDeliveryPerson")
       );
       return;
     }
@@ -307,7 +309,9 @@ const MenuOrderTakingForm = ({
         menuProduct.menuPageId
       );
       if (!res.status) {
-        toast.error("Error removing menu item from order");
+        toast.error(
+          t("menuOrderTakingForm.errors.errorRemovingMenuItemFromOrder")
+        );
         return;
       }
       removeMenuItemFromOrder(
@@ -330,7 +334,7 @@ const MenuOrderTakingForm = ({
         menuProduct.productId
       );
       if (!res.status) {
-        toast.error(`Error getting product`);
+        toast.error(t("menuOrderTakingForm.errors.errorGettingProduct"));
         return;
       }
       setSelectedProduct(res.data);
@@ -365,8 +369,11 @@ const MenuOrderTakingForm = ({
               <div className="flex items-center space-x-2 mt-1">
                 <span className="text-sm text-gray-600">
                   {menuPages.length > 0
-                    ? `Page ${currentMenuPageIndex + 1} of ${menuPages.length}`
-                    : "No pages available"}
+                    ? t("menuOrderTakingForm.pageOf", {
+                        current: currentMenuPageIndex + 1,
+                        total: menuPages.length,
+                      })
+                    : t("menuOrderTakingForm.noPagesAvailable")}
                 </span>
                 {menuPages.length > 0 && (
                   <div className="flex space-x-1">
@@ -401,11 +408,10 @@ const MenuOrderTakingForm = ({
                 <DocumentIcon className="size-8 text-gray-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                No Menu Pages
+                {t("menuOrderTakingForm.noMenuPages")}
               </h3>
               <p className="text-gray-500 max-w-md mx-auto">
-                This menu has no pages configured yet. Please add some menu
-                pages to get started.
+                {t("menuOrderTakingForm.noMenuPagesDescription")}
               </p>
             </div>
           ) : currentMenuPage ? (
@@ -429,7 +435,7 @@ const MenuOrderTakingForm = ({
                 <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700">
-                      Selection Progress
+                      {t("menuOrderTakingForm.selectionProgress")}
                     </span>
                     <span className="text-sm font-semibold text-indigo-600">
                       {processedMenuProducts.size}/{currentMin}
@@ -447,20 +453,19 @@ const MenuOrderTakingForm = ({
                     {processedMenuProducts.size > 0 ? (
                       processedMenuProducts.size < currentMin ? (
                         <span className="text-amber-600">
-                          Select {currentMin - processedMenuProducts.size} more
-                          product
-                          {currentMin - processedMenuProducts.size !== 1
-                            ? "s"
-                            : ""}{" "}
-                          to continue.
+                          {t("menuOrderTakingForm.selectMoreProducts", {
+                            count: currentMin - processedMenuProducts.size,
+                          })}
                         </span>
                       ) : (
                         <span className="text-green-600 font-medium">
-                          ✓ Selection complete! You can now proceed.
+                          ✓ {t("menuOrderTakingForm.selectionComplete")}
                         </span>
                       )
                     ) : (
-                      `Select ${currentMin > 0 ? `at least ${currentMin}` : "any"} product${currentMin !== 1 ? "s" : ""} to get started`
+                      t("menuOrderTakingForm.selectProductsToGetStarted", {
+                        min: currentMin,
+                      })
                     )}
                   </p>
                 </div>
@@ -539,7 +544,7 @@ const MenuOrderTakingForm = ({
                               </svg>
                             </div>
                             <p className="text-xs text-gray-500 font-medium">
-                              No Image
+                              {t("menuOrderTakingForm.noImage")}
                             </p>
                           </div>
                         </div>
@@ -575,7 +580,7 @@ const MenuOrderTakingForm = ({
                               <div className="flex items-center space-x-2">
                                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                                 <span className="text-sm font-semibold text-green-700">
-                                  Processed
+                                  {t("menuOrderTakingForm.processed")}
                                 </span>
                               </div>
                               <div className="flex items-center space-x-2">
@@ -615,7 +620,7 @@ const MenuOrderTakingForm = ({
                                 />
                               </svg>
                               <span className="text-sm font-medium">
-                                Click to select
+                                {t("menuOrderTakingForm.clickToSelect")}
                               </span>
                             </div>
                           )}
@@ -628,7 +633,7 @@ const MenuOrderTakingForm = ({
               {/* Simple Navigation */}
               <div className="flex justify-between items-center">
                 <div className="text-sm text-gray-600">
-                  Click on any product to process it
+                  {t("menuOrderTakingForm.clickOnAnyProductToProcess")}
                 </div>
                 <div className="flex gap-3">
                   {allPagesComplete ? (
@@ -639,7 +644,9 @@ const MenuOrderTakingForm = ({
                       }}
                       type="button"
                       variant="green"
-                      label={`Complete Menu (${totalProcessed} products)`}
+                      label={t("menuOrderTakingForm.completeMenu", {
+                        count: totalProcessed,
+                      })}
                     />
                   ) : (
                     <CustomButton
@@ -648,7 +655,7 @@ const MenuOrderTakingForm = ({
                       }}
                       type="button"
                       variant="secondary"
-                      label="Cancel"
+                      label={t("common.cancel")}
                     />
                   )}
                   {currentMenuPageIndex > 0 && (
@@ -657,7 +664,7 @@ const MenuOrderTakingForm = ({
                         setCurrentMenuPageIndex((prev) => prev - 1);
                       }}
                       type="button"
-                      label="Previous Page"
+                      label={t("menuOrderTakingForm.previousPage")}
                       className="font-medium"
                     />
                   )}
@@ -667,7 +674,7 @@ const MenuOrderTakingForm = ({
                         setCurrentMenuPageIndex((prev) => prev + 1);
                       }}
                       type="button"
-                      label="Next Page"
+                      label={t("menuOrderTakingForm.nextPage")}
                       className="font-medium"
                     />
                   )}
@@ -677,7 +684,9 @@ const MenuOrderTakingForm = ({
           ) : (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading menu pages...</p>
+              <p className="text-gray-600">
+                {t("menuOrderTakingForm.loadingMenuPages")}
+              </p>
             </div>
           )}
         </div>

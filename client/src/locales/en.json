@@ -263,6 +263,8 @@
     "supplements": "Supplements",
     "total": "Total",
     "processOrder": "Process Order",
+    "pointOfSale": "Point of Sale",
+    "defaultAddress": "street 123",
     "warnings": {
       "noPrintersAttached": "No printers attached"
     },
@@ -275,7 +277,8 @@
       "errorGettingMenu": "Error getting menu",
       "menuHaveBeenDeleted": "Menu have been deleted",
       "errorUpdatingQuantity": "Error updating quantity",
-      "errorClearingOrder": "Error clearing order"
+      "errorClearingOrder": "Error clearing order",
+      "printerNotFoundError": "Printer not found"
     },
     "messages": {
       "printingCustomerReceipt": "Printing customer receipt...",
@@ -1145,5 +1148,41 @@
     "menuStructure": "Menu Structure",
     "users": "Users",
     "configurations": "Configurations"
+  },
+  "printerUtils": {
+    "unableToGetPrinters": "Unable to get printers"
+  },
+  "menuOrderTakingForm": {
+    "errors": {
+      "unableToGetMenuPageAssociations": "Unable to get menu page associations",
+      "unableToGetMenuPages": "Unable to get menu pages",
+      "failedToFetchMenuPages": "Failed to fetch menu pages",
+      "unableToFetchProduct": "Unable to fetch product",
+      "errorRemovingMenuFromOrder": "Error removing menu from order",
+      "errorRemovingMenuItemFromOrder": "Error removing menu item from order",
+      "errorGettingProduct": "Error getting product"
+    },
+    "messages": {
+      "orderAssignedToDeliveryPerson": "This order is assigned to a delivery person and cannot be edited."
+    },
+    "warnings": {
+      "maximumComplementsReached": "You have reached the maximum number of complements for this menu page"
+    },
+    "pageOf": "Page {{current}} of {{total}}",
+    "noPagesAvailable": "No pages available",
+    "noMenuPages": "No Menu Pages",
+    "noMenuPagesDescription": "No menu pages are available for this menu.",
+    "selectionProgress": "Selection Progress",
+    "selectMoreProducts": "Select {{count}} more product(s) to continue.",
+    "selectionComplete": "Selection complete! You can now proceed.",
+    "selectProductsToGetStarted": "Select {{min, plural, =0 {any products} other {at least # product}} to get started",
+    "noImage": "No Image",
+    "processed": "Processed",
+    "clickToSelect": "Click to select",
+    "clickOnAnyProductToProcess": "Click on any product to process it",
+    "completeMenu": "Complete Menu ({{count}} products)",
+    "previousPage": "Previous Page",
+    "nextPage": "Next Page",
+    "loadingMenuPages": "Loading menu pages..."
   }
 }

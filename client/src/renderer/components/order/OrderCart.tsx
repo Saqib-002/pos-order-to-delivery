@@ -63,8 +63,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
       return;
     }
     let configurations = {
-      name: "Point of Sale",
-      address: "street 123",
+      name: t("orderCart.pointOfSale"),
+      address: t("orderCart.defaultAddress"),
       logo: "",
       id: "",
     };
@@ -114,7 +114,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       );
       console.log(res);
       if (!res.status) {
-        if (res.error === "Printer not found") {
+        if (res.error === t("orderCart.errors.printerNotFoundError")) {
           toast.error(t("orderCart.errors.printerNotFound", { printerName }));
         } else {
           toast.error(t("orderCart.errors.errorPrintingReceipt"));

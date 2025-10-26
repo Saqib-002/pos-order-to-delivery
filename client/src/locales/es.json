@@ -265,6 +265,8 @@
     "supplements": "Suplementos",
     "total": "Total",
     "processOrder": "Procesar Pedido",
+    "pointOfSale": "Punto de Venta",
+    "defaultAddress": "calle 123",
     "warnings": {
       "noPrintersAttached": "No hay impresoras conectadas"
     },
@@ -277,7 +279,8 @@
       "errorGettingMenu": "Error al obtener menú",
       "menuHaveBeenDeleted": "El menú ha sido eliminado",
       "errorUpdatingQuantity": "Error al actualizar cantidad",
-      "errorClearingOrder": "Error al limpiar pedido"
+      "errorClearingOrder": "Error al limpiar pedido",
+      "printerNotFoundError": "Impresora no encontrada"
     },
     "messages": {
       "printingCustomerReceipt": "Imprimiendo recibo del cliente...",
@@ -1147,5 +1150,41 @@
     "menuStructure": "Estructura del Menú",
     "users": "Usuarios",
     "configurations": "Configuraciones"
+  },
+  "printerUtils": {
+    "unableToGetPrinters": "No se pudieron obtener las impresoras"
+  },
+  "menuOrderTakingForm": {
+    "errors": {
+      "unableToGetMenuPageAssociations": "No se pudieron obtener las asociaciones de páginas del menú",
+      "unableToGetMenuPages": "No se pudieron obtener las páginas del menú",
+      "failedToFetchMenuPages": "Error al obtener las páginas del menú",
+      "unableToFetchProduct": "No se pudo obtener el producto",
+      "errorRemovingMenuFromOrder": "Error al eliminar el menú del pedido",
+      "errorRemovingMenuItemFromOrder": "Error al eliminar el elemento del menú del pedido",
+      "errorGettingProduct": "Error al obtener el producto"
+    },
+    "messages": {
+      "orderAssignedToDeliveryPerson": "Este pedido está asignado a un repartidor y no se puede editar."
+    },
+    "warnings": {
+      "maximumComplementsReached": "Has alcanzado el número máximo de complementos para esta página del menú"
+    },
+    "pageOf": "Página {{current}} de {{total}}",
+    "noPagesAvailable": "No hay páginas disponibles",
+    "noMenuPages": "Sin Páginas de Menú",
+    "noMenuPagesDescription": "No hay páginas de menú disponibles para este menú.",
+    "selectionProgress": "Progreso de Selección",
+    "selectMoreProducts": "Selecciona {{count}} producto(s) más para continuar.",
+    "selectionComplete": "¡Selección completa! Ahora puedes proceder.",
+    "selectProductsToGetStarted": "Selecciona {{min, plural, =0 {cualquier producto} other {al menos # producto}} para comenzar",
+    "noImage": "Sin Imagen",
+    "processed": "Procesado",
+    "clickToSelect": "Haz clic para seleccionar",
+    "clickOnAnyProductToProcess": "Haz clic en cualquier producto para procesarlo",
+    "completeMenu": "Menú Completo ({{count}} productos)",
+    "previousPage": "Página Anterior",
+    "nextPage": "Página Siguiente",
+    "loadingMenuPages": "Cargando páginas del menú..."
   }
 }
