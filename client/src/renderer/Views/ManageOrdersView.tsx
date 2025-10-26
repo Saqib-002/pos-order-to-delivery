@@ -4,13 +4,12 @@ import { DeliveryPerson } from "@/types/delivery";
 import CustomInput from "../components/shared/CustomInput";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import { calculateOrderTotal } from "../utils/orderCalculations";
-import {
-  calculatePaymentStatus,
-  getPaymentStatusStyle,
-} from "../utils/paymentStatus";
+import { calculatePaymentStatus } from "../utils/paymentStatus";
 import {
   translateOrderStatus,
   getOrderStatusStyle,
+  translatePaymentStatus,
+  getPaymentStatusStyle,
 } from "../utils/orderStatus";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
@@ -185,7 +184,7 @@ export const ManageOrdersView = () => {
             <span
               className={`inline-flex w-fit px-2 py-1 text-xs font-semibold rounded-full border ${getPaymentStatusStyle(paymentStatus.status)}`}
             >
-              {paymentStatus.status}
+              {translatePaymentStatus(paymentStatus.status)}
             </span>
             {paymentStatus.status === "PARTIAL" && (
               <span className="text-xs text-yellow-700">

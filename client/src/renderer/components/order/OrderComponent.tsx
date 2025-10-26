@@ -8,7 +8,12 @@ import { StringToComplements, updateOrder } from "@/renderer/utils/order";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { calculateOrderTotal } from "@/renderer/utils/orderCalculations";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
-import { translateOrderStatus, getOrderStatusStyle } from "@/renderer/utils/orderStatus";
+import {
+  translateOrderStatus,
+  getOrderStatusStyle,
+  translatePaymentStatus,
+  getPaymentStatusStyle,
+} from "@/renderer/utils/orderStatus";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
 
@@ -93,18 +98,6 @@ const OrderComponent = () => {
                   orderTotal
                 );
 
-                const getPaymentStatusStyle = (status: string) => {
-                  switch (status) {
-                    case "PAID":
-                      return "bg-green-100 text-green-800 border-green-200";
-                    case "PARTIAL":
-                      return "bg-yellow-100 text-yellow-800 border-yellow-200";
-                    case "UNPAID":
-                    default:
-                      return "bg-red-100 text-red-800 border-red-200";
-                  }
-                };
-
                 const getOrderTypeStyle = (orderType: string) => {
                   switch (orderType?.toLowerCase()) {
                     case "pickup":
@@ -117,7 +110,6 @@ const OrderComponent = () => {
                       return "bg-gray-100 text-gray-800 border-gray-200";
                   }
                 };
-
 
                 const isAssignedToDelivery = Boolean(
                   order.deliveryPerson && order.deliveryPerson.id
@@ -168,7 +160,7 @@ const OrderComponent = () => {
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusStyle(paymentStatus.status)}`}
                         >
-                          {paymentStatus.status}
+                          {translatePaymentStatus(paymentStatus.status)}
                         </span>
 
                         {/* Delivery Person Assigned Pill */}

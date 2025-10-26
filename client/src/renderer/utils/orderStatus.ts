@@ -21,7 +21,6 @@ export const translateOrderStatus = (status: string): string => {
     case "cancelled":
       return i18n.t("orderStatuses.cancelled");
     default:
-      // Return the original status if no translation found
       return status;
   }
 };
@@ -44,5 +43,39 @@ export const getOrderStatusStyle = (status: string) => {
       return "bg-red-100 text-red-800 border-red-200";
     default:
       return "bg-gray-100 text-gray-800 border-gray-200";
+  }
+};
+
+export const translatePaymentStatus = (status: string): string => {
+  if (!status) return "";
+
+  const statusKey = status.toLowerCase();
+
+  switch (statusKey) {
+    case "paid":
+      return i18n.t("paymentStatusUtils.statuses.paid");
+    case "unpaid":
+      return i18n.t("paymentStatusUtils.statuses.unpaid");
+    case "partial":
+      return i18n.t("paymentStatusUtils.statuses.partial");
+    case "pending":
+      return i18n.t("paymentStatusUtils.statuses.pending");
+    default:
+      // Return the original status if no translation found
+      return status;
+  }
+};
+
+export const getPaymentStatusStyle = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case "paid":
+      return "bg-green-100 text-green-800 border-green-200";
+    case "partial":
+      return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    case "pending":
+      return "bg-blue-100 text-blue-800 border-blue-200";
+    case "unpaid":
+    default:
+      return "bg-red-100 text-red-800 border-red-200";
   }
 };

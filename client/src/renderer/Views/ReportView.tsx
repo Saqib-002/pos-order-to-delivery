@@ -4,6 +4,8 @@ import { toast } from "react-toastify";
 import {
   translateOrderStatus,
   getOrderStatusStyle,
+  translatePaymentStatus,
+  getPaymentStatusStyle,
 } from "../utils/orderStatus";
 import { DateRangeSelector } from "../components/report/DateRangeSelector";
 import { HourlyDistribution } from "../components/report/HourlyDistribution";

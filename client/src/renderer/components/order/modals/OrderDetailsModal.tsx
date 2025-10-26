@@ -2,12 +2,13 @@ import React from "react";
 import { Order } from "@/types/order";
 import { StringToComplements } from "../../../utils/order";
 import { calculateOrderTotal } from "../../../utils/orderCalculations";
-import {
-  calculatePaymentStatus,
-  getPaymentStatusStyle,
-} from "../../../utils/paymentStatus";
+import { calculatePaymentStatus } from "../../../utils/paymentStatus";
 import { formatAddress } from "../../../utils/utils";
-import { translateOrderStatus } from "@/renderer/utils/orderStatus";
+import {
+  translateOrderStatus,
+  translatePaymentStatus,
+  getPaymentStatusStyle,
+} from "@/renderer/utils/orderStatus";
 import { useTranslation } from "react-i18next";
 
 const parseComplements = (complements: any) => {
@@ -169,7 +170,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           <span
                             className={`inline-flex w-fit px-2 py-1 text-xs font-semibold rounded-full border ${getPaymentStatusStyle(paymentStatus.status)}`}
                           >
-                            {paymentStatus.status}
+                            {translatePaymentStatus(paymentStatus.status)}
                           </span>
                           {paymentStatus.status === "PARTIAL" && (
                             <span className="text-xs text-yellow-700">
