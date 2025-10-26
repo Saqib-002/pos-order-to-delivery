@@ -349,7 +349,6 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       }
 
       // Update local state
-      console.log(existingItem,newQuantity)
       updateQuantity(existingItem.id, newQuantity);
       toast.success(t("orderTakingForm.messages.quantityUpdated", { newQuantity }));
       setSelectedProduct(null);

@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { db } from "./index.js";
-import { uploadImg } from "../utils/utils.js";
+import { deleteImg, uploadImg } from "../utils/utils.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -142,6 +142,17 @@ export class ProductsDatabaseOperations {
         const trx = await db.transaction();
         try {
             const now = new Date().toISOString();
+            const product = await db("products")
+                .where("id", productData.id)
+                .first();
+            let updateUrl=productData.imgUrl;
+            if(updateUrl){
+                updateUrl=updateUrl.split("/").at(-1);
+            }
+            if (product && product.imgUrl && product.imgUrl !== updateUrl) {
+                const res=await deleteImg(product.imgUrl);
+                if(!res) throw new Error("Failed to delete image");
+            }
             if (productData.imgUrl && !productData.imgUrl.startsWith("http")) {
                 productData.imgUrl = await uploadImg(productData.imgUrl, false);
             } else if (productData.imgUrl) {
@@ -208,6 +219,13 @@ export class ProductsDatabaseOperations {
     }
     static async deleteProduct(id: string) {
         try {
+            const product = await db("products")
+                .where("id", id)
+                .first();
+            if (product && product.imgUrl) {
+                const res=await deleteImg(product.imgUrl);
+                if(!res) throw new Error("Failed to delete image");
+            }
             await db("products").where("id", id).delete();
         } catch (error) {
             throw error;

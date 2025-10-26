@@ -1,8 +1,7 @@
 import { Category, SubCategory } from "@/types/categories";
 import { randomUUID } from "crypto";
-import Logger from "electron-log";
 import { db } from "./index.js";
-import { uploadImg } from "../utils/utils.js";
+import { deleteImg, uploadImg } from "../utils/utils.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -24,7 +23,6 @@ export class CategoryDatabaseOperations {
             };
 
             await db("categories").insert(newCategory);
-            Logger.info(`Category created: ${newCategory.categoryName}`);
             const uploadUrl = process.env.CDN_URL;
             return {
                 newCategory,
@@ -55,8 +53,12 @@ export class CategoryDatabaseOperations {
     }
     static async deleteCategory(id: string) {
         try {
+            const category = await db("categories").where("id", id).first();
+            if (category && category.imgUrl) {
+                const res=await deleteImg(category.imgUrl);
+                if(!res) throw new Error("Failed to delete image");
+            }
             await db("categories").where("id", id).delete();
-            Logger.info(`Category deleted: ${id}`);
         } catch (error) {
             throw error;
         }
@@ -64,6 +66,15 @@ export class CategoryDatabaseOperations {
     static async updateCategory(id: string, updates: Partial<Category>) {
         try {
             const now = new Date().toISOString();
+            const category = await db("categories").where("id", id).first();
+            let updateUrl=updates.imgUrl;
+            if(updateUrl){
+                updateUrl=updateUrl.split("/").at(-1);
+            }
+            if (category && category.imgUrl && category.imgUrl !== updateUrl) {
+                const res=await deleteImg(category.imgUrl);
+                if(!res) throw new Error("Failed to delete image");
+            }
             if (updates.imgUrl && !updates.imgUrl.startsWith("http")) {
                 updates.imgUrl = await uploadImg(updates.imgUrl, false);
             } else if (updates.imgUrl) {
@@ -75,7 +86,6 @@ export class CategoryDatabaseOperations {
                     ...updates,
                     updatedAt: now,
                 });
-            Logger.info(`Category updated: ${id}`);
             return updatedCategory;
         } catch (error) {
             throw error;
@@ -102,7 +112,6 @@ export class SubCategoriesOperations {
                 updatedAt: now,
             };
             await db("sub_categories").insert(newSubcategory);
-            Logger.info(`Sub Category created: ${newSubcategory.name}`);
             return newSubcategory;
         } catch (error) {
             throw error;
@@ -151,8 +160,14 @@ export class SubCategoriesOperations {
     }
     static async deleteSubCategory(id: string) {
         try {
+            const subcategory = await db("sub_categories")
+                .where("id", id)
+                .first();
+            if (subcategory && subcategory.imgUrl) {
+                const res=await deleteImg(subcategory.imgUrl);
+                if(!res) throw new Error("Failed to delete image");
+            }
             await db("sub_categories").where("id", id).delete();
-            Logger.info(`Sub Category deleted: ${id}`);
         } catch (error) {
             throw error;
         }
@@ -160,6 +175,17 @@ export class SubCategoriesOperations {
     static async updateSubCategory(id: string, updates: Partial<SubCategory>) {
         try {
             const now = new Date().toISOString();
+            const subcategory = await db("sub_categories")
+                .where("id", id)
+                .first();
+            let updateUrl=updates.imgUrl;
+            if(updateUrl){
+                updateUrl=updateUrl.split("/").at(-1);
+            }
+            if (subcategory && subcategory.imgUrl && subcategory.imgUrl !== updateUrl) {
+                const res=await deleteImg(subcategory.imgUrl);
+                if(!res) throw new Error("Failed to delete image");
+            }
             if (updates.imgUrl && !updates.imgUrl.startsWith("http")) {
                 updates.imgUrl = await uploadImg(updates.imgUrl, false);
             } else if (updates.imgUrl) {
@@ -171,7 +197,6 @@ export class SubCategoriesOperations {
                     ...updates,
                     updatedAt: now,
                 });
-            Logger.info(`Sub Category updated: ${id}`);
             return updatedSubCategory;
         } catch (error) {
             throw error;

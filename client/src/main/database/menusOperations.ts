@@ -2,7 +2,7 @@ import { db } from "./index.js";
 import { Menu, MenuPageAssociation } from "@/types/menuPages.js";
 import { randomUUID } from "crypto";
 import Logger from "electron-log";
-import { uploadImg } from "../utils/utils.js";
+import { deleteImg, uploadImg } from "../utils/utils.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -90,6 +90,15 @@ export class MenusOperations {
         const trx = await db.transaction();
         try {
             const now = new Date().toISOString();
+            const menu = await trx("menus").where("id", id).first();
+            let updateUrl=updates.imgUrl;
+            if(updateUrl){
+                updateUrl=updateUrl.split("/").at(-1);
+            }
+            if (menu && menu.imgUrl && menu.imgUrl !== updateUrl) {
+                const res=await deleteImg(menu.imgUrl);
+                if(!res) throw new Error("Failed to delete image");
+            }
             if (updates.imgUrl && !updates.imgUrl.startsWith("http")) {
                 updates.imgUrl = await uploadImg(updates.imgUrl, false);
             } else if (updates.imgUrl) {
@@ -153,6 +162,11 @@ export class MenusOperations {
 
     static async deleteMenu(id: string): Promise<void> {
         try {
+            const menu = await db("menus").where("id", id).first();
+            if (menu && menu.imgUrl) {
+                const res=await deleteImg(menu.imgUrl);
+                if(!res) throw new Error("Failed to delete image");
+            }
             await db("menus").where("id", id).delete();
             Logger.info(`Menu deleted: ${id}`);
         } catch (error) {

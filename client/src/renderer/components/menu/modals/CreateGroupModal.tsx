@@ -195,7 +195,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
     try {
       let res;
-      console.log(formData, complements);
       if (editingGroup) {
         res = await (window as any).electronAPI.updateGroup(
           token,

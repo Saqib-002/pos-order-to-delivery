@@ -1,7 +1,7 @@
 import { Group, GroupItem } from "@/types/groups";
 import { randomUUID } from "crypto";
 import { db } from "./index.js";
-import { uploadImg } from "../utils/utils.js";
+import { deleteImg, uploadImg } from "../utils/utils.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -102,6 +102,12 @@ export class GroupsDatabaseOperations {
     }
     static async deleteGroup(groupId: string) {
         try {
+            const groupItems = await db("group_items").where("groupId", groupId);
+            for (const item of groupItems) {
+                if (!item.imgUrl) continue;
+                const res = await deleteImg(item.imgUrl);
+                if (!res) throw new Error("Failed to delete image");
+            }
             await db("groups").where("id", groupId).delete();
         } catch (error) {
             throw error;
@@ -117,7 +123,7 @@ export class GroupsDatabaseOperations {
             await trx("groups").where("id", groupData.id).update(groupData);
             const existingItems = await trx("group_items")
                 .where("groupId", groupData.id)
-                .select("id");
+                .select("id", "imgUrl");
             const providedItemIds = new Set(
                 groupItems.map((item) => item.id).filter((id) => id)
             );
@@ -126,6 +132,11 @@ export class GroupsDatabaseOperations {
             );
             if (itemsToDelete.length > 0) {
                 const itemIdsToDelete = itemsToDelete.map((item) => item.id);
+                for (const item of itemsToDelete) {
+                    if (!item.imgUrl) continue;
+                    const res = await deleteImg(item.imgUrl);
+                    if (!res) throw new Error("Failed to delete image");
+                }
                 await trx("group_items")
                     .where("groupId", groupData.id)
                     .whereIn("id", itemIdsToDelete)
@@ -137,6 +148,14 @@ export class GroupsDatabaseOperations {
                     .andWhere("id", item.id)
                     .first();
                 if (existingItem) {
+                    let updateUrl=item.imgUrl;
+                    if(updateUrl){
+                        updateUrl=updateUrl.split("/").at(-1);
+                    }
+                    if(existingItem.imgUrl && existingItem.imgUrl!==updateUrl){
+                        const res = await deleteImg(existingItem.imgUrl);
+                        if (!res) throw new Error("Failed to delete image");
+                    }
                     if (item.imgUrl && !item.imgUrl.startsWith("http")) {
                         item.imgUrl = await uploadImg(item.imgUrl, false);
                     } else if (existingItem.imgUrl) {

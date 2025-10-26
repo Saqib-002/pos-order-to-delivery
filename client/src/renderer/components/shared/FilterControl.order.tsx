@@ -33,7 +33,6 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
             : ""
         }
         onChange={(e) => {
-          console.log(new Date(e.target.value));
           setFilter({
             ...filter,
             selectedDate: e.target.value ? new Date(e.target.value) : null,

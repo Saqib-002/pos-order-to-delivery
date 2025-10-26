@@ -1,7 +1,7 @@
 import { Variant, VariantItem } from "@/types/Variants.js";
 import { db } from "./index.js";
 import { randomUUID } from "crypto";
-import { uploadImg } from "../utils/utils.js";
+import { deleteImg, uploadImg } from "../utils/utils.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -104,6 +104,15 @@ export class VariantsDatabaseOperations {
     }
     static async deleteVariant(variantId: string) {
         try {
+            const varientItems = await db("variant_items").where(
+                "variantId",
+                variantId
+            );
+            for (const item of varientItems) {
+                if (!item.imgUrl) continue;
+                const res = await deleteImg(item.imgUrl);
+                if (!res) throw new Error("Failed to delete image");
+            }
             await db("variants").where("id", variantId).delete();
         } catch (error) {
             throw error;
@@ -121,7 +130,7 @@ export class VariantsDatabaseOperations {
                 .update(variantData);
             const existingItems = await trx("variant_items")
                 .where("variantId", variantData.id)
-                .select("id");
+                .select("id", "imgUrl");
             const providedItemIds = new Set(
                 variantItems.map((item) => item.id).filter((id) => id)
             );
@@ -130,6 +139,11 @@ export class VariantsDatabaseOperations {
             );
             if (itemsToDelete.length > 0) {
                 const itemIdsToDelete = itemsToDelete.map((item) => item.id);
+                for (const item of itemsToDelete) {
+                    if (!item.imgUrl) continue;
+                    const res = await deleteImg(item.imgUrl);
+                    if (!res) throw new Error("Failed to delete image");
+                }
                 await trx("variant_items")
                     .where("variantId", variantData.id)
                     .whereIn("id", itemIdsToDelete)
@@ -153,11 +167,17 @@ export class VariantsDatabaseOperations {
                     .andWhere("id", item.id)
                     .first();
                 if (existingItem) {
+                    let updateUrl=item.imgUrl;
+                    if(updateUrl){
+                        updateUrl=updateUrl.split("/").at(-1);
+                    }
+                    if(existingItem.imgUrl && existingItem.imgUrl!==updateUrl){
+                        const res=await deleteImg(existingItem.imgUrl);
+                        if(!res) throw new Error("Failed to delete image");
+                    }
                     if (item.imgUrl && !item.imgUrl.startsWith("http")) {
                         item.imgUrl = await uploadImg(item.imgUrl, false);
-                    } else if (
-                        existingItem.imgUrl
-                    ) {
+                    } else if (existingItem.imgUrl) {
                         item.imgUrl = item.imgUrl?.split("/").at(-1);
                     }
                     await trx("variant_items")

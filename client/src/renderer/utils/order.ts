@@ -18,7 +18,6 @@ export const handleOrderChange = ({
   audioRef,
 }: HandleOrderChangeArgs) => {
   setOrders((prevOrders) => {
-    console.log("Processing order change:", change);
 
     if (change.type === "delete") {
       // Handle deletion
