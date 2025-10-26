@@ -146,7 +146,6 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
         },
       ]);
     }
-
     setBulkCurrentAmount("");
   };
 

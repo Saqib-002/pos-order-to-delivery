@@ -206,7 +206,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
         <Icon className={iconSize} />
       </button>
     );
-    const actionClass = `opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex ${actionsLayout === "col" ? "flex-col items-center gap-1" : "items-center gap-1"
+    const actionClass = `flex ${actionsLayout === "col" ? "flex-col items-center gap-1" : "items-center gap-1"
       }`;
     const shouldShowDelete = hasDelete && onDelete && (type === "category" ? Number(data.itemCount) === 0 : (type === "subcategory" ? (Number(data.itemCount) === 0 && Number(data.menuCount) === 0) : true));
     return (
