@@ -1,9 +1,10 @@
 import { colorOptions } from "@/renderer/utils/utils";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react"; // Import useRef
 import { toast } from "react-toastify";
 import { CustomSelect } from "../../ui/CustomSelect";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
+import { CrossIcon, ImgIcon } from "@/renderer/public/Svg"; // Import icons
 
 interface Category {
   id: string;
@@ -19,6 +20,7 @@ interface Subcategory {
   itemCount: number;
   color: string;
   categoryId: string;
+  imgUrl?: string; // Add this
 }
 
 interface SubcategoryModalProps {
@@ -42,11 +44,14 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
     name: "",
     color: "red",
     categoryId: "",
+    imgUrl: "", // Add this
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null); // Add ref for file input
 
   // Get color classes for selection ring
   const getColorClasses = (color: string, isSelected: boolean) => {
+    // ... (no change in this function)
     if (!isSelected) {
       return "border-gray-200 hover:border-gray-300";
     }
@@ -70,6 +75,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
 
   // Get category options for CustomSelect
   const getCategoryOptions = () => {
+    // ... (no change in this function)
     return [
       { value: "", label: "Select a category" },
       ...categories.map((category) => ({
@@ -85,15 +91,37 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
         name: editingSubcategory.name,
         color: editingSubcategory.color,
         categoryId: editingSubcategory.categoryId,
+        imgUrl: editingSubcategory.imgUrl || "", // Set imgUrl
       });
     } else {
       setFormData({
         name: "",
         color: "red",
         categoryId: "",
+        imgUrl: "", // Reset imgUrl
       });
     }
   }, [editingSubcategory, categories, isOpen]);
+
+  // Add image handlers
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setFormData({ ...formData, imgUrl: base64 });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData({ ...formData, imgUrl: "" });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,6 +140,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
 
     try {
       let res;
+      // formData now includes imgUrl, so it will be passed automatically
       if (editingSubcategory) {
         res = await (window as any).electronAPI.updateSubcategory(
           token,
@@ -157,18 +186,66 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
-          <CustomInput
-            label="Subcategory Name"
-            name="name"
-            type="text"
-            placeholder="Enter subcategory name"
-            required
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            otherClasses="mb-4"
-          />
+          {/* Wrap name and image in a flex container */}
+          <div className="flex items-start gap-4 mb-4">
+            <CustomInput
+              label="Subcategory Name"
+              name="name"
+              type="text"
+              placeholder="Enter subcategory name"
+              required
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              otherClasses="flex-1" // Use flex-1
+            />
+
+            {/* Image Upload */}
+            <div className="w-32 flex-shrink-0">
+              <label className="block text-xs font-medium text-gray-700 mb-2">
+                IMAGE
+              </label>
+              <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-1 hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100  flex items-center justify-center touch-manipulation">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                {formData.imgUrl ? (
+                  <div className="flex flex-col items-center">
+                    <div className="relative">
+                      <img
+                        crossOrigin="anonymous"
+                        src={formData.imgUrl}
+                        alt="Subcategory Preview"
+                        className="size-9 object-cover rounded shadow-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent triggering file input
+                          handleRemoveImage();
+                        }}
+                        className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-md hover:bg-gray-100 transition-colors"
+                      >
+                        <CrossIcon className="size-3 text-gray-600 hover:text-gray-800" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center text-gray-500 text-xs">
+                    <ImgIcon className="size-9" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
           <div className="mb-4">
+            {/* ... (Parent Category select remains the same) ... */}
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Parent Category
             </label>
@@ -184,6 +261,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
           </div>
 
           <div className="mb-6">
+            {/* ... (color picker code remains the same) ... */}
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Color
             </label>
@@ -209,6 +287,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
           </div>
 
           <div className="flex justify-end gap-3">
+            {/* ... (buttons remain the same) ... */}
             <CustomButton
               type="button"
               onClick={onClose}

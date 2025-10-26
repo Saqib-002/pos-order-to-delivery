@@ -6,7 +6,7 @@
 !include "WordFunc.nsh" ; Optional: For string functions like StrLen (already used)
 !addplugindir /x86-unicode "${BUILD_RESOURCES_DIR}" ; Auto-embeds/loads InetC.dll from build/x86-unicode
 ; --- 2. Configuration ---
-!define VALIDATION_URL "http://localhost:3000/api/verify-license"
+!define VALIDATION_URL "https://thunderjaw-licenses-seven.vercel.app/api/verify-license"
 ; --- 3. Page Variables ---
 Var InstallKey
 Var hKeyInput ; Handle for the text input box

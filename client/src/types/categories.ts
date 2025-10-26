@@ -4,6 +4,7 @@ export interface Category{
     color: string;
     itemCount?: number;
     createdAt: string;
+    imgUrl?: string;
     updatedAt: string;
     isDeleted: boolean;
 }
@@ -13,6 +14,7 @@ export interface SubCategory{
     menuCount?: number;
     name: string;
     color: string;
+    imgUrl?: string;
     isForMenu?: boolean;
     categoryId: string;
     createdAt: string;

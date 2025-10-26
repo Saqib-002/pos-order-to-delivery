@@ -222,7 +222,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
         className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${isClickable ? "cursor-pointer" : ""
           }`}
       >
-        {['product', 'menu'].includes(type) &&
+        {['product', 'menu','category','subcategory'].includes(type) &&
           <img
             crossOrigin="anonymous"
             src={data.imgUrl || '../../public/pizza.jpg'}
