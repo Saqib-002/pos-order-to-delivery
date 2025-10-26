@@ -62,7 +62,6 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       colorMap[color] || "border-gray-500 ring-2 ring-gray-500 ring-opacity-50"
     );
   };
-  console.log(editingCategory);
   useEffect(() => {
     if (editingCategory) {
       setFormData({

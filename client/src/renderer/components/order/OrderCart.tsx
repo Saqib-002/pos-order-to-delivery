@@ -320,8 +320,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Variant: {item.variantName}</span>
-                    <span>€{item.variantPrice.toFixed(2)}</span>
+                    {item.variantId && (<><span>Variant: {item.variantName}</span>
+                      <span>€{item.variantPrice.toFixed(2)}</span></>)}
                   </div>
                 </div>
                 {item.complements.length > 0 && (
@@ -394,9 +394,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
                     item.variantPrice +
                     (Array.isArray(item.complements)
                       ? item.complements.reduce(
-                          (sum, complement) => sum + complement.price,
-                          0
-                        )
+                        (sum, complement) => sum + complement.price,
+                        0
+                      )
                       : 0)) *
                   item.quantity
                 ).toFixed(2)}
@@ -415,9 +415,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
             (itemTotal, item) => {
               const complementsTotal = Array.isArray(item.complements)
                 ? item.complements.reduce(
-                    (sum, complement) => sum + complement.price,
-                    0
-                  )
+                  (sum, complement) => sum + complement.price,
+                  0
+                )
                 : 0;
 
               return (

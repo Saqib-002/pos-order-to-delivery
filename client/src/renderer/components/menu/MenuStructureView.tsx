@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { MenuPageModal } from "./modals/MenuPageModal";
 import { MenuModal } from "./modals/MenuModal";
 import { UnifiedCard } from "../ui/UnifiedCard";
-import NoMenuIcon from "../../public/icons/no-menu.svg?react";
-import NoMenuPageIcon from "../../public/icons/no-menu-page.svg?react";
-import { Menu, MenuPage, MenuPageProduct } from "@/types/menuPages";
+import { Menu, MenuPage } from "@/types/menuPages";
 import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import { useTranslation } from "react-i18next";
+import { DocumentIcon, NoMenuIcon } from "@/renderer/public/Svg";
 
 export const MenuStructureComponent = () => {
   const [menuPages, setMenuPages] = useState<MenuPage[]>([]);
@@ -191,7 +190,7 @@ export const MenuStructureComponent = () => {
           ) : (
             <div className="col-span-full flex flex-col items-center justify-center py-8 text-center">
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-0">
-                <NoMenuPageIcon />
+                <DocumentIcon className="size-10 text-gray-400"/>
               </div>
               <h3 className="text-lg font-medium text-black mb-0">
                 {t("menuComponents.menuPages.noMenuPages")}
@@ -235,7 +234,7 @@ export const MenuStructureComponent = () => {
           ) : (
             <div className="col-span-full flex flex-col items-center justify-center py-8 text-center">
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-0">
-                <NoMenuIcon />
+                <NoMenuIcon className="text-gray-400 size-10"/>
               </div>
               <h3 className="text-lg font-medium text-black mb-0">
                 {t("menuComponents.menus.noMenus")}

@@ -5,13 +5,6 @@ import { useTranslation } from "react-i18next";
 import { DeliveryPersonInput } from "../components/delivery/DeliveryPersonInput.view";
 import { OrderTable } from "../components/shared/OrderTable";
 import { StatsCard } from "../components/shared/StatsCard.order";
-
-// ICONS
-import CircleCheckIcon from "../public/icons/circle-check.svg?react";
-import ThunderIcon from "../public/icons/thunder.svg?react";
-import MarkIcon from "../public/icons/mark.svg?react";
-import GroupIcon from "../public/icons/group.svg?react";
-import DeliveredIcon from "../public/icons/delivered.svg?react";
 import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
 import { FilterControls } from "../components/shared/FilterControl.order";
@@ -19,6 +12,7 @@ import { updateOrder } from "../utils/order";
 import { formatAddress } from "../utils/utils";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
+import { CheckIcon, CircleCheckIcon, DeliveredIcon, GroupIcon, LightningBoltIcon } from "../public/Svg";
 
 export const DeliveryView = () => {
   const { t } = useTranslation();
@@ -138,7 +132,7 @@ export const DeliveryView = () => {
       {
         title: t("deliveryView.stats.outForDelivery"),
         value: outForDeliveryOrders.length,
-        icon: <ThunderIcon className="text-blue-600 size-6" />,
+        icon: <LightningBoltIcon className="text-blue-600 size-6" />,
         bgColor: "bg-blue-100",
       },
       {
@@ -149,7 +143,7 @@ export const DeliveryView = () => {
           const today = new Date();
           return deliveredDate.toDateString() === today.toDateString();
         }).length,
-        icon: <MarkIcon className="text-gray-600 size-6" />,
+        icon: <CheckIcon className="text-gray-600 size-6" />,
         bgColor: "bg-gray-100",
       },
       {
@@ -226,7 +220,7 @@ export const DeliveryView = () => {
             disabled={!deliveryPerson?.name.trim()}
             className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105"
           >
-            <ThunderIcon className="size-4" />
+            <LightningBoltIcon className="size-4" />
             Assign
           </button>
         </td>
@@ -289,7 +283,7 @@ export const DeliveryView = () => {
           onClick={() => markAsDelivered(order.id)}
           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105"
         >
-          <MarkIcon className="size-4" />
+          <CheckIcon className="size-4" />
           {t("deliveryView.delivered")}
         </button>
       </td>

@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { UnifiedCard } from "../ui/UnifiedCard";
 import { CreateVariantModal } from "./modals/CreateVariantModal";
 import { VariantItem } from "@/types/Variants";
 import { toast } from "react-toastify";
-import AddIcon from "../../public/icons/add.svg?react";
 import {
   fetchAssociatedProductsByVariantId,
   getVariants,
@@ -12,6 +11,7 @@ import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import { useTranslation } from "react-i18next";
+import { AddIcon } from "@/renderer/public/Svg";
 
 export interface Variant {
   id: string;

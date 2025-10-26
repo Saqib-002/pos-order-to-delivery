@@ -1,6 +1,5 @@
+import { DeleteIcon, EditIcon } from "@/renderer/public/Svg";
 import React, { ReactNode } from "react";
-import EditIcon from "../../public/icons/edit.svg?react";
-import DeleteIcon from "../../public/icons/delete.svg?react";
 
 interface BaseCardData {
   id: string;

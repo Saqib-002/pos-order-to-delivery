@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import AddIcon from "../../public/icons/add.svg?react";
 import { DeliveryPerson } from "@/types/order";
 import { CustomSelect } from "../ui/CustomSelect";
+import { AddIcon } from "@/renderer/public/Svg";
 
 export const DeliveryPersonInput: React.FC<{
   deliveryPerson: DeliveryPerson | null;
