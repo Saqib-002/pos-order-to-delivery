@@ -9,7 +9,7 @@ const useOrderManagementInternal = (auth: AuthState) => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [filter, setFilter] = useState<FilterType>({
         searchTerm: "",
-        selectedDate: null,
+        selectedDate: new Date(),
         selectedStatus: ["all"],
         selectedPaymentStatus: [],
         selectedDeliveryPerson: "",

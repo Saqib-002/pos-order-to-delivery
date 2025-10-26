@@ -329,13 +329,12 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
     // regular product
     const existingItem = findExactProductMatch(
       selectedProduct!.id,
-      selectedVariant?.id || "",
+      selectedVariant?.id || undefined,
       complements
     );
-
-    if (existingItem && !editingProduct && selectedVariant) {
+    if (existingItem && !editingProduct) {
       // update quantity of existing item
-      const newQuantity = quantity;
+      const newQuantity = existingItem.quantity+quantity;
 
       // Update in database
       const res = await (window as any).electronAPI.updateItemQuantity(
@@ -350,6 +349,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       }
 
       // Update local state
+      console.log(existingItem,newQuantity)
       updateQuantity(existingItem.id, newQuantity);
       toast.success(`Quantity updated! Total: ${newQuantity}`);
       setSelectedProduct(null);

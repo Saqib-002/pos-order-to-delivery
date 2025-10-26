@@ -112,7 +112,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 
   const findExactProductMatch = (
     productId: string,
-    variantId: string,
+    variantId: string | undefined,
     complements: Array<{
       groupId: string;
       groupName: string;
@@ -125,7 +125,6 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     return (
       orderItems.find((item) => {
         if (item.menuId || item.productId !== productId) return false;
-
         if (item.variantId !== variantId) return false;
 
         if (item.complements.length !== complements.length) return false;
