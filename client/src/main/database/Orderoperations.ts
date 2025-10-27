@@ -291,8 +291,7 @@ export class OrderDatabaseOperations {
             parseInt(ordersStats.totalOutForDelivery, 10) || 0;
         ordersStats.totalCancelled =
             parseInt(ordersStats.totalCancelled, 10) || 0;
-        ordersStats.totalPending =
-            parseInt(ordersStats.totalPending, 10) || 0;
+        ordersStats.totalPending = parseInt(ordersStats.totalPending, 10) || 0;
         ordersStats.totalCompleted =
             parseInt(ordersStats.totalCompleted, 10) || 0;
         ordersStats.avgDeliveryTime =
@@ -387,8 +386,12 @@ export class OrderDatabaseOperations {
             orders: newOrders,
         };
     }
-    static async getOrdersByFilter(filter: FilterType): Promise<Order[]> {
+    static async getOrdersByFilter(
+        filter: FilterType
+    ): Promise<{ orders: Order[]; totalCount: number }> {
         try {
+            const { page = 0, limit = 10 } = filter;
+            const offset = page * limit;
             const query = db("orders");
             if (filter.searchTerm) {
                 query.where(function () {
@@ -416,10 +419,9 @@ export class OrderDatabaseOperations {
             ) {
                 query.whereIn("status", filter.selectedStatus);
             }
-            if (filter.selectedDeliveryPerson){
+            if (filter.selectedDeliveryPerson) {
                 query.where("deliveryPersonId", filter.selectedDeliveryPerson);
             }
-            // Filter by payment status if specified
             if (
                 filter.selectedPaymentStatus.length > 0 &&
                 filter.selectedPaymentStatus[0] !== "all"
@@ -497,7 +499,17 @@ export class OrderDatabaseOperations {
             `;
                 query.whereRaw(sql, [amountPattern, amountPattern]);
             }
-            const orders = await query;
+            const countQuery = query.clone().count("* as count").first();
+            const dataQuery = query
+                .clone()
+                .limit(limit)
+                .offset(offset)
+                .orderBy("createdAt", "desc");
+            const [countResult, orders] = await Promise.all([
+                countQuery,
+                dataQuery,
+            ]);
+            const totalCount = parseInt((countResult as any).count, 10) || 0;
             const newOrders = [];
             for (const order of orders) {
                 const items = await db("order_items").where(
@@ -545,7 +557,7 @@ export class OrderDatabaseOperations {
                 };
                 newOrders.push(newOrder);
             }
-            return newOrders;
+            return { orders: newOrders, totalCount };
         } catch (error) {
             throw error;
         }

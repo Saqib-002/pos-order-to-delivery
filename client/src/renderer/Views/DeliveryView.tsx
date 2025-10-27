@@ -13,6 +13,7 @@ import { formatAddress } from "../utils/utils";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 import { CheckIcon, CircleCheckIcon, DeliveredIcon, GroupIcon, LightningBoltIcon } from "../public/Svg";
+import { DEFAULT_PAGE_LIMIT } from "@/constants";
 
 export const DeliveryView = () => {
   const { t } = useTranslation();
@@ -53,7 +54,7 @@ export const DeliveryView = () => {
       selectedStatus: ["ready for delivery", "out for delivery"],
       selectedPaymentStatus: [],
       page: 0,
-      limit: 0,
+      limit: DEFAULT_PAGE_LIMIT,
       startDateRange: null,
       endDateRange: null,
       selectedDeliveryPerson: "",

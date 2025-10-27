@@ -12,6 +12,7 @@ import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 import { CheckIcon, ClipboardIcon, ClockIcon, EyeIcon, LightningBoltIcon, SentToKitchenIcon } from "../public/Svg";
+import { DEFAULT_PAGE_LIMIT } from "@/constants";
 
 export const KitchenView = () => {
   const { t } = useTranslation();
@@ -27,7 +28,7 @@ export const KitchenView = () => {
       selectedStatus: ["sent to kitchen"],
       selectedPaymentStatus: [],
       page: 0,
-      limit: 0,
+      limit: DEFAULT_PAGE_LIMIT,
       startDateRange: null,
       endDateRange: null,
       selectedDeliveryPerson: "",

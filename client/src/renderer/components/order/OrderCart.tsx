@@ -8,6 +8,7 @@ import {
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import CustomButton from "../ui/CustomButton";
 import {
+  ChevronLeftIcon,
   CrossIcon,
   DeleteIcon,
   EditIcon,
@@ -23,6 +24,7 @@ import { useAuth } from "@/renderer/contexts/AuthContext";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { useTranslation } from "react-i18next";
+import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
 
 interface OrderCartProps {
   orderId: string;
@@ -53,6 +55,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
   } = useOrder();
   const confirm = useConfirm();
   const { configurations } = useConfigurations();
+  const { refreshOrdersCallback } = useOrderManagementContext();
   const {
     auth: { user, token },
   } = useAuth();
@@ -266,13 +269,25 @@ const OrderCart: React.FC<OrderCartProps> = ({
     );
   }
   return (
-    <div className="h-[calc(100vh-5.2rem)] flex flex-col overflow-y-auto">
+    <div className="row-span-12 flex flex-col overflow-y-auto py-2">
       {/* Header */}
       <div className="flex justify-between items-center p-4 pb-2">
-        <h2 className="text-lg font-semibold text-gray-800">
-          {t("orderCart.yourOrder")} {configurations?.orderPrefix || "K"}
-          {order?.orderId}
-        </h2>
+        <span className="flex gap-1">
+          <CustomButton
+            type="button"
+            onClick={() => {
+              onClearOrder();
+              refreshOrdersCallback();
+            }}
+            Icon={<ChevronLeftIcon className="size-6" />}
+            className="!p-0 !m-0"
+            variant="transparent"
+          />
+          <h2 className="text-lg font-semibold text-gray-800">
+            {t("orderCart.yourOrder")} {configurations?.orderPrefix || "K"}
+            {order?.orderId}
+          </h2>
+        </span>
         <div className="flex items-center gap-1">
           <CustomButton
             type="button"
@@ -401,9 +416,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
                     item.variantPrice +
                     (Array.isArray(item.complements)
                       ? item.complements.reduce(
-                          (sum, complement) => sum + complement.price,
-                          0
-                        )
+                        (sum, complement) => sum + complement.price,
+                        0
+                      )
                       : 0)) *
                   item.quantity
                 ).toFixed(2)}
@@ -422,9 +437,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
             (itemTotal, item) => {
               const complementsTotal = Array.isArray(item.complements)
                 ? item.complements.reduce(
-                    (sum, complement) => sum + complement.price,
-                    0
-                  )
+                  (sum, complement) => sum + complement.price,
+                  0
+                )
                 : 0;
 
               return (

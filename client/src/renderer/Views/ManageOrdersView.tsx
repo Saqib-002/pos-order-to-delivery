@@ -30,13 +30,15 @@ import {
 } from "@/renderer/public/Svg";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
+import { DEFAULT_PAGE_LIMIT } from "@/constants";
+import Pagination from "../components/shared/Pagination";
 
 export const ManageOrdersView = () => {
   const { t } = useTranslation();
   const {
     auth: { token },
   } = useAuth();
-  const { orders, filter, setFilter, refreshOrdersCallback } =
+  const { orders, filter, setFilter, totalOrders, refreshOrdersCallback } =
     useOrderManagementContext();
   const { configurations } = useConfigurations();
   useEffect(() => {
@@ -44,6 +46,7 @@ export const ManageOrdersView = () => {
       setFilter((prev) => ({
         ...prev,
         selectedDate: new Date(),
+        page: 0,
       }));
     }
   }, [filter.selectedDate, setFilter]);
@@ -55,11 +58,11 @@ export const ManageOrdersView = () => {
   useEffect(() => {
     setFilter({
       searchTerm: "",
-      selectedDate: null,
+      selectedDate: new Date(),
       selectedStatus: [],
       selectedPaymentStatus: [],
       page: 0,
-      limit: 0,
+      limit: DEFAULT_PAGE_LIMIT,
       startDateRange: null,
       endDateRange: null,
       selectedDeliveryPerson: "",
@@ -103,7 +106,7 @@ export const ManageOrdersView = () => {
       selectedStatus: ["all"],
       selectedPaymentStatus: [],
       page: 0,
-      limit: 0,
+      limit: DEFAULT_PAGE_LIMIT,
       startDateRange: null,
       endDateRange: null,
       selectedDeliveryPerson: "",
@@ -269,6 +272,17 @@ export const ManageOrdersView = () => {
       </tr>
     );
   };
+  const totalPages =
+    totalOrders > 0
+      ? Math.ceil(totalOrders / (filter.limit || DEFAULT_PAGE_LIMIT))
+      : 0;
+
+  const handlePageChange = (newPage: number) => {
+    setFilter((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
+  };
   return (
     <div className="p-4 flex flex-col">
       {/* Header */}
@@ -328,6 +342,7 @@ export const ManageOrdersView = () => {
                     selectedDate: e.target.value
                       ? new Date(e.target.value)
                       : null,
+                    page: 0,
                   }))
                 }
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none"
@@ -353,6 +368,7 @@ export const ManageOrdersView = () => {
                   setFilter((prev) => ({
                     ...prev,
                     selectedDeliveryPerson: value,
+                    page: 0,
                   }));
                 }}
                 placeholder={
@@ -383,6 +399,7 @@ export const ManageOrdersView = () => {
                   setFilter((prev) => ({
                     ...prev,
                     selectedPaymentStatus: value ? [value] : [],
+                    page: 0,
                   }))
                 }
                 placeholder={t("manageOrders.allPaymentStatuses")}
@@ -414,7 +431,7 @@ export const ManageOrdersView = () => {
           <p className="text-sm text-gray-600">
             {t("manageOrders.showingOrders", {
               filtered: orders.length,
-              total: orders.length,
+              total: totalOrders || 0,
             })}
           </p>
           <div className="text-sm text-gray-500">
@@ -435,12 +452,17 @@ export const ManageOrdersView = () => {
             }
             emptyStateTitle={
               filter.searchTerm ||
-              filter.selectedDate ||
-              filter.selectedDeliveryPerson ||
-              filter.selectedStatus.length > 0
+                filter.selectedDate ||
+                filter.selectedDeliveryPerson ||
+                filter.selectedStatus.length > 0
                 ? t("manageOrders.noOrdersMatch")
                 : t("manageOrders.noOrdersFound")
             }
+          />
+          <Pagination
+            currentPage={filter.page || 0}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
           />
         </div>
       </div>

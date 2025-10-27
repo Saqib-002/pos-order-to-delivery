@@ -6,6 +6,7 @@ import CustomButton from "../ui/CustomButton";
 import { CustomSelect } from "../ui/CustomSelect";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
 import { useTranslation } from "react-i18next";
+import { DEFAULT_PAGE_LIMIT } from "@/constants";
 
 const OrderComponentHeader = () => {
   const { t } = useTranslation();
@@ -39,7 +40,7 @@ const OrderComponentHeader = () => {
       selectedStatus: [],
       selectedPaymentStatus: [],
       page: 0,
-      limit: 0,
+      limit: DEFAULT_PAGE_LIMIT,
       startDateRange: null,
       endDateRange: null,
       selectedDeliveryPerson: "",
@@ -52,6 +53,7 @@ const OrderComponentHeader = () => {
     setFilter((prev: FilterType) => ({
       ...prev,
       selectedDate,
+      page: 0
     }));
   };
 
@@ -66,6 +68,7 @@ const OrderComponentHeader = () => {
         ...prev,
         selectedStatus: [],
         selectedPaymentStatus: [],
+        page: 0
       }));
     } else if (value.startsWith("status:")) {
       const status = value.replace("status:", "");
@@ -73,6 +76,7 @@ const OrderComponentHeader = () => {
         ...prev,
         selectedStatus: [status],
         selectedPaymentStatus: [],
+        page: 0
       }));
     } else if (value.startsWith("payment:")) {
       const paymentStatus = value.replace("payment:", "");
@@ -80,6 +84,7 @@ const OrderComponentHeader = () => {
         ...prev,
         selectedStatus: [],
         selectedPaymentStatus: [paymentStatus],
+        page: 0
       }));
     }
   };
@@ -137,42 +142,29 @@ const OrderComponentHeader = () => {
 
   return (
     <>
-      <div className="flex justify-between items-center px-0 py-2">
-        <div className="flex items-center gap-0">
-          {orderItems.length > 0 && (
-            <CustomButton
-              type="button"
-              onClick={() => {
-                clearOrder();
-                refreshOrdersCallback();
-              }}
-              Icon={<ChevronLeftIcon className="size-6" />}
-              className="!p-0 !m-0"
-              variant="transparent"
-            />
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="flex items-center gap-2">
-            <input
-              id="date-filter"
-              type="date"
-              value={formatDateForInput(filter.selectedDate)}
-              onChange={handleDateChange}
-              className="px-3 py-3 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-            />
+      {!(orderItems.length > 0) && (
+        <div className="row-span-1">
+          <div className="flex justify-between items-center p-2 gap-2">
+            <>
+              <input
+                id="date-filter"
+                type="date"
+                value={formatDateForInput(filter.selectedDate)}
+                onChange={handleDateChange}
+                className="px-3 py-3 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors flex-1"
+              />
+              <CustomSelect
+                options={combinedFilterOptions}
+                value={getCurrentFilterValue()}
+                onChange={handleCombinedFilterChange}
+                placeholder={t("orderManagement.filters.filterOrders")}
+                className="text-sm flex-1"
+              />
+            </>
           </div>
-          <div className="w-46">
-            <CustomSelect
-              options={combinedFilterOptions}
-              value={getCurrentFilterValue()}
-              onChange={handleCombinedFilterChange}
-              placeholder={t("orderManagement.filters.filterOrders")}
-              className="text-sm"
-            />
-          </div>
+          <div className="h-[1px] bg-gray-400"></div>
         </div>
-      </div>
+      )}
     </>
   );
 };

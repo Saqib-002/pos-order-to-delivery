@@ -16,6 +16,8 @@ import {
 } from "@/renderer/utils/orderStatus";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
+import { DEFAULT_PAGE_LIMIT } from "@/constants";
+import Pagination from "../shared/Pagination";
 
 const OrderComponent = () => {
   const {
@@ -27,7 +29,7 @@ const OrderComponent = () => {
     order,
     setOrder,
   } = useOrder();
-  const { orders, refreshOrdersCallback } = useOrderManagementContext();
+  const { orders, refreshOrdersCallback, filter, setFilter, totalOrders } = useOrderManagementContext();
   const { configurations } = useConfigurations();
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
   const {
@@ -74,6 +76,17 @@ const OrderComponent = () => {
       });
     }
   };
+  const totalPages =
+    totalOrders > 0
+      ? Math.ceil(totalOrders / (filter.limit || DEFAULT_PAGE_LIMIT))
+      : 0;
+
+  const handlePageChange = (newPage: number) => {
+    setFilter((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
+  };
   return (
     <>
       {orderItems.length > 0 ? (
@@ -88,113 +101,123 @@ const OrderComponent = () => {
       ) : (
         <>
           {orders.length > 0 ? (
-            <div className="h-[calc(100vh-3.9rem)] overflow-y-auto">
-              {orders.map((order) => {
-                const { orderTotal } = order.items
-                  ? calculateOrderTotal(order.items)
-                  : { orderTotal: 0 };
-                const paymentStatus = calculatePaymentStatus(
-                  order.paymentType || "",
-                  orderTotal
-                );
+            <div className="row-span-11 flex flex-col">
+              <div className="overflow-y-auto flex-1">
+                {orders.map((order) => {
+                  const { orderTotal } = order.items
+                    ? calculateOrderTotal(order.items)
+                    : { orderTotal: 0 };
+                  const paymentStatus = calculatePaymentStatus(
+                    order.paymentType || "",
+                    orderTotal
+                  );
 
-                const getOrderTypeStyle = (orderType: string) => {
-                  switch (orderType?.toLowerCase()) {
-                    case "pickup":
-                      return "bg-blue-100 text-blue-800 border-blue-200";
-                    case "dine-in":
-                      return "bg-purple-100 text-purple-800 border-purple-200";
-                    case "delivery":
-                      return "bg-orange-100 text-orange-800 border-orange-200";
-                    default:
-                      return "bg-gray-100 text-gray-800 border-gray-200";
-                  }
-                };
+                  const getOrderTypeStyle = (orderType: string) => {
+                    switch (orderType?.toLowerCase()) {
+                      case "pickup":
+                        return "bg-blue-100 text-blue-800 border-blue-200";
+                      case "dine-in":
+                        return "bg-purple-100 text-purple-800 border-purple-200";
+                      case "delivery":
+                        return "bg-orange-100 text-orange-800 border-orange-200";
+                      default:
+                        return "bg-gray-100 text-gray-800 border-gray-200";
+                    }
+                  };
 
-                const isAssignedToDelivery = Boolean(
-                  order.deliveryPerson && order.deliveryPerson.id
-                );
-                return (
-                  <button
-                    key={order.id}
-                    className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-3 pb-3 w-full px-3 py-2 transition-all duration-200 ${
-                      isAssignedToDelivery
+                  const isAssignedToDelivery = Boolean(
+                    order.deliveryPerson && order.deliveryPerson.id
+                  );
+                  return (
+                    <button
+                      key={order.id}
+                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${isAssignedToDelivery
                         ? "bg-gray-100 cursor-not-allowed opacity-75"
                         : "hover:bg-gray-50 cursor-pointer"
-                    }`}
-                    onClick={() => handleOrderClick(order)}
-                    disabled={isAssignedToDelivery || order.status === "cancelled"}
-                  >
-                    <div className="flex flex-col items-start gap-2 flex-1">
-                      {/* Order Number and Total */}
-                      <div className="flex items-center justify-between gap-3 w-full">
-                        <h3 className="font-semibold text-black text-xl">
-                          {configurations.orderPrefix || "K"}
-                          {order.orderId}
-                        </h3>
-                        <div className="text-xl font-bold text-black">
-                          €{orderTotal.toFixed(2)}
+                        }`}
+                      onClick={() => handleOrderClick(order)}
+                      disabled={isAssignedToDelivery || order.status === "cancelled"}
+                    >
+                      <div className="flex flex-col items-start gap-2 flex-1">
+                        {/* Order Number and Total */}
+                        <div className="flex items-center justify-between gap-3 w-full">
+                          <h3 className="font-semibold text-black text-xl">
+                            {configurations.orderPrefix || "K"}
+                            {order.orderId}
+                          </h3>
+                          <div className="text-xl font-bold text-black">
+                            €{orderTotal.toFixed(2)}
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Status Pills Row */}
-                      <div className="flex flex-wrap gap-1.5">
-                        {/* Order Type Pill */}
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getOrderTypeStyle(order.orderType || "")}`}
-                        >
-                          {order.orderType
-                            ? order.orderType.toUpperCase()
-                            : "NOT SELECTED"}
-                        </span>
-
-                        {/* Order Status Pill */}
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getOrderStatusStyle(order.status || "")}`}
-                        >
-                          {translateOrderStatus(order.status || "")}
-                        </span>
-
-                        {/* Payment Status Pill */}
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusStyle(paymentStatus.status)}`}
-                        >
-                          {translatePaymentStatus(paymentStatus.status)}
-                        </span>
-
-                        {/* Delivery Person Assigned Pill */}
-                        {isAssignedToDelivery && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                            🚚 {order.deliveryPerson?.name}
+                        {/* Status Pills Row */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {/* Order Type Pill */}
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getOrderTypeStyle(order.orderType || "")}`}
+                          >
+                            {order.orderType
+                              ? order.orderType.toUpperCase()
+                              : "NOT SELECTED"}
                           </span>
-                        )}
-                      </div>
 
-                      {/* Partial Payment Info */}
-                      {paymentStatus.status === "PARTIAL" && (
-                        <p className="text-xs text-yellow-700 font-medium">
-                          Paid: €{paymentStatus.totalPaid.toFixed(2)} / €
-                          {orderTotal.toFixed(2)}
-                        </p>
-                      )}
-
-                      {/* Customer Info (if available) */}
-                      {order.customer && (
-                        <div className="text-xs text-gray-600">
-                          <span className="font-medium">
-                            {order.customer.name}
+                          {/* Order Status Pill */}
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getOrderStatusStyle(order.status || "")}`}
+                          >
+                            {translateOrderStatus(order.status || "")}
                           </span>
-                          {order.customer.phone && (
-                            <span className="ml-1">
-                              • {order.customer.phone}
+
+                          {/* Payment Status Pill */}
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusStyle(paymentStatus.status)}`}
+                          >
+                            {translatePaymentStatus(paymentStatus.status)}
+                          </span>
+
+                          {/* Delivery Person Assigned Pill */}
+                          {isAssignedToDelivery && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                              🚚 {order.deliveryPerson?.name}
                             </span>
                           )}
                         </div>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
+
+                        {/* Partial Payment Info */}
+                        {paymentStatus.status === "PARTIAL" && (
+                          <p className="text-xs text-yellow-700 font-medium">
+                            Paid: €{paymentStatus.totalPaid.toFixed(2)} / €
+                            {orderTotal.toFixed(2)}
+                          </p>
+                        )}
+
+                        {/* Customer Info (if available) */}
+                        {order.customer && (
+                          <div className="text-xs text-gray-600">
+                            <span className="font-medium">
+                              {order.customer.name}
+                            </span>
+                            {order.customer.phone && (
+                              <span className="ml-1">
+                                • {order.customer.phone}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex-shrink-0 border-t border-gray-200 bg-white">
+                <Pagination
+                containerClasses="!mt-0"
+                subContainerClasses="!justify-center"
+                  currentPage={filter.page || 0}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
             </div>
           ) : (
             <div className="p-4 text-center">

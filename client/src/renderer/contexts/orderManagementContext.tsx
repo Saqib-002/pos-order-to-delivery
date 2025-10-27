@@ -4,9 +4,11 @@ import { AuthState } from "@/types/user";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { StringToComplements } from "../utils/order";
+import { DEFAULT_PAGE_LIMIT } from "@/constants";
 
 const useOrderManagementInternal = (auth: AuthState) => {
     const [orders, setOrders] = useState<Order[]>([]);
+    const [totalOrders, setTotalOrders] = useState<number>(0);
     const [filter, setFilter] = useState<FilterType>({
         searchTerm: "",
         selectedDate: new Date(),
@@ -14,7 +16,7 @@ const useOrderManagementInternal = (auth: AuthState) => {
         selectedPaymentStatus: [],
         selectedDeliveryPerson: "",
         page:0,
-        limit:0,
+        limit: DEFAULT_PAGE_LIMIT,
         startDateRange: null,
         endDateRange: null,
     });
@@ -43,7 +45,8 @@ const useOrderManagementInternal = (auth: AuthState) => {
         toast.error("Error fetching orders");
         return;
       }
-      setOrders(convertOrderItems(res.data || []));
+      setOrders(convertOrderItems(res.data.orders || []));
+      setTotalOrders(res.data.totalCount || 0);
     } catch (error) {
       toast.error("Failed to refresh orders");
     }
@@ -54,13 +57,14 @@ const useOrderManagementInternal = (auth: AuthState) => {
     refreshOrdersCallback();
   }, [auth.token, filter]);
 
-  return { orders, setOrders, filter, setFilter, refreshOrdersCallback };
+  return { orders, setOrders, filter, totalOrders, setFilter, refreshOrdersCallback };
 };
 
 interface OrderContextType {
   orders: Order[];
   setOrders: (orders: Order[]) => void;
   filter: FilterType;
+  totalOrders: number;
   setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
   refreshOrdersCallback: () => Promise<void>;
 }
