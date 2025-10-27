@@ -222,7 +222,7 @@ export class OrderDatabaseOperations {
         }
     }
     static async getOrderAnalytics(filter: any): Promise<any> {
-        const { dateRange, selectedDate } = filter;
+        const { dateRange, selectedDate, page = 0, limit = 10 } = filter;
         let startDate = new Date();
         let endDate = new Date();
         switch (dateRange) {
@@ -296,12 +296,21 @@ export class OrderDatabaseOperations {
             parseInt(ordersStats.totalCompleted, 10) || 0;
         ordersStats.avgDeliveryTime =
             parseFloat(ordersStats.avgDeliveryTime) || 0;
-        const hourlyData = new Array(24).fill(0);
-        const orders = await db("orders")
+        const baseOrdersQuery = db("orders")
             .whereBetween("createdAt", [
                 startDate.toISOString(),
                 endDate.toISOString(),
-            ])
+            ]);
+        const allOrdersForHourly = await baseOrdersQuery.clone().select("createdAt");
+        const hourlyData = new Array(24).fill(0);
+        allOrdersForHourly.forEach(order => {
+            const orderTime = new Date(order.createdAt);
+            const hour = orderTime.getHours();
+            hourlyData[hour]++;
+        });
+        const totalCountResult = await baseOrdersQuery.clone().count("* as count").first();
+        const ordersTotalCount = parseInt((totalCountResult as any).count, 10) || 0;
+        const orders = await baseOrdersQuery.clone()
             .select(
                 "id",
                 "createdAt",
@@ -309,14 +318,13 @@ export class OrderDatabaseOperations {
                 "orderId",
                 "customerPhone",
                 "status"
-            );
+            )
+            .offset(page * limit)
+            .limit(limit)
+            .orderBy("createdAt", "desc");
 
         const newOrders = [];
         for (const order of orders) {
-            const orderTime = new Date(order.createdAt);
-            const hour = orderTime.getHours();
-            hourlyData[hour]++;
-
             // Get order items for each order
             const items = await db("order_items")
                 .where("orderId", order.id)
@@ -384,6 +392,7 @@ export class OrderDatabaseOperations {
             topItems,
             topMenus,
             orders: newOrders,
+            ordersTotalCount
         };
     }
     static async getOrdersByFilter(

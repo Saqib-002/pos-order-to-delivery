@@ -54,4 +54,4 @@ export const CATEGORY_LABELS = {
     [MENU_CATEGORIES.PASTA]: "Pasta",
     [MENU_CATEGORIES.SANDWICHES]: "Sandwiches",
 } as const;
-export const DEFAULT_PAGE_LIMIT = 50;
+export const DEFAULT_PAGE_LIMIT = 25;

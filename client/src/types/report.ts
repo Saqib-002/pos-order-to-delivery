@@ -15,4 +15,5 @@ export interface AnalyticsType {
     topItems: { name: string; count: number }[];
     topMenus: { name: string; count: number }[];
     orders: Order[];
+    ordersTotalCount: number;
 }

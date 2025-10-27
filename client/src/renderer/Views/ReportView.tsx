@@ -4,8 +4,6 @@ import { toast } from "react-toastify";
 import {
   translateOrderStatus,
   getOrderStatusStyle,
-  translatePaymentStatus,
-  getPaymentStatusStyle,
 } from "../utils/orderStatus";
 import { DateRangeSelector } from "../components/report/DateRangeSelector";
 import { HourlyDistribution } from "../components/report/HourlyDistribution";
@@ -24,6 +22,8 @@ import { StatsCard } from "../components/shared/StatsCard.order";
 import { OrderTable } from "../components/shared/OrderTable";
 import { useConfigurations } from "../contexts/configurationContext";
 import { useTranslation } from "react-i18next";
+import { DEFAULT_PAGE_LIMIT } from "@/constants";
+import Pagination from "../components/shared/Pagination";
 
 export const ReportView = () => {
   const { t } = useTranslation();
@@ -31,6 +31,7 @@ export const ReportView = () => {
     new Date().toISOString().split("T")[0]
   );
   const { configurations } = useConfigurations();
+  const [currentPage, setCurrentPage] = useState(0);
 
   const [dateRange, setDateRange] = useState<string>("today");
   const [analytics, setAnalytics] = useState<AnalyticsType | null>(null);
@@ -39,10 +40,15 @@ export const ReportView = () => {
   } = useAuth();
 
   useEffect(() => {
+    setCurrentPage(0);
+  }, [dateRange, selectedDate]);
+  useEffect(() => {
     const fetchAnalytics = async () => {
       const res = await (window as any).electronAPI.getOrderAnalytics(token, {
         dateRange,
         selectedDate,
+        page: currentPage,
+        limit: DEFAULT_PAGE_LIMIT,
       });
       if (!res.status) {
         toast.error(t("reports.errors.fetchFailed"));
@@ -68,7 +74,7 @@ export const ReportView = () => {
       });
     };
     fetchAnalytics();
-  }, [dateRange, selectedDate]);
+  }, [dateRange, selectedDate,currentPage]);
 
   const renderOrderRow = (order: any) => (
     <tr
@@ -112,8 +118,9 @@ export const ReportView = () => {
       </td>
     </tr>
   );
-
-  const ordersData = analytics?.orders.slice(0, 20) || [];
+  const ordersData = analytics?.orders || [];
+  const totalOrdersCount = analytics?.ordersTotalCount || 0;
+  const totalPages = Math.ceil(totalOrdersCount / DEFAULT_PAGE_LIMIT);
 
   return (
     <div className="p-4 flex flex-col">
@@ -196,10 +203,14 @@ export const ReportView = () => {
           emptyStateTitle={t("reports.noOrdersFound")}
           subtitle={t("reports.noOrdersSubtitle")}
         />
-        {analytics?.orders && analytics.orders.length > 20 && (
-          <div className="px-6 py-4 border-t border-gray-200 text-center text-sm text-gray-500">
-            {t("reports.showingOrders", { total: analytics.orders.length })}
-          </div>
+        {totalOrdersCount > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            containerClasses="border-t border-gray-200"
+            subContainerClasses="px-0 py-0"
+          />
         )}
       </div>
     </div>
