@@ -171,7 +171,7 @@ export const KitchenView = () => {
             {label}
           </span>
         </td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
+        <td className="px-6 py-4 whitespace-nowrap text-2xl font-bold text-black">
           {configurations.orderPrefix || "K"}{order.orderId}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">

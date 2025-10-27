@@ -163,7 +163,7 @@ export const ManageOrdersView = () => {
 
     return (
       <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
+        <td className="px-6 py-4 whitespace-nowrap text-2xl font-bold text-black">
           {configurations.orderPrefix || "K"}
           {order.orderId}
         </td>
@@ -319,6 +319,7 @@ export const ManageOrdersView = () => {
                     setFilter((prev) => ({
                       ...prev,
                       searchTerm: e.target.value,
+                      page: 0
                     }))
                   }
                   placeholder={t("manageOrders.searchPlaceholder")}

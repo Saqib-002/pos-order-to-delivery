@@ -303,7 +303,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
         {['product', 'menu','category','subcategory'].includes(type) &&
           <img
             crossOrigin="anonymous"
-            src={data.imgUrl || '../../public/pizza.jpg'}
+            src={data.imgUrl || '/pizza.jpg'}
             alt={`${data.name || 'Product'} image`}
             className="w-full h-34 object-cover rounded-md"
           />

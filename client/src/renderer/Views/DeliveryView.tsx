@@ -172,7 +172,7 @@ export const DeliveryView = () => {
         className="hover:bg-gray-50 transition-colors duration-150"
       >
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-sm font-medium text-black">{configurations.orderPrefix || "K"}{order.orderId}</div>
+          <div className="text-2xl font-bold text-black">{configurations.orderPrefix || "K"}{order.orderId}</div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-sm font-medium text-black">
@@ -234,7 +234,7 @@ export const DeliveryView = () => {
       className="hover:bg-gray-50 transition-colors duration-150"
     >
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-medium text-black">{configurations.orderPrefix || "K"}{order.orderId}</div>
+        <div className="text-2xl font-bold text-black">{configurations.orderPrefix || "K"}{order.orderId}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm font-medium text-black">
