@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
 import CustomerModal from "./modals/CustomerModal";
 import PaymentProcessingModal from "./modals/PaymentProcessingModal";
 import PaymentOptionModal from "./modals/PaymentOptionModal";
@@ -40,7 +44,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const [orderType, setOrderType] = useState<"pickup" | "delivery" | "dine-in">(
     "pickup"
   );
-  const [pickupTime, setPickupTime] = useState("");
+  const [pickupTime, setPickupTime] = useState<Dayjs | null>(null);
   const [notes, setNotes] = useState("");
   const [customCustomerName, setCustomCustomerName] = useState("");
   const [customCustomerPhone, setCustomCustomerPhone] = useState("");
@@ -254,7 +258,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           ? "sent to kitchen"
           : order?.status || "sent to kitchen",
       notes: notes || "",
-      pickupTime: orderType === "pickup" ? pickupTime : "",
+      pickupTime:
+        orderType === "pickup" && pickupTime ? pickupTime.format("HH:mm") : "",
     };
     onProcessOrder(orderData);
     setIsPaymentModalOpen(false);
@@ -636,13 +641,30 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   {t("pickupTime.title")}
                 </h3>
               </div>
-              <input
-                type="time"
-                value={pickupTime}
-                onChange={(e) => setPickupTime(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:outline-none text-lg touch-manipulation"
-                placeholder={t("pickupTime.placeholder")}
-              />
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <MobileTimePicker
+                  value={pickupTime}
+                  onChange={(newValue: Dayjs | null) => setPickupTime(newValue)}
+                  label={t("pickupTime.placeholder")}
+                  views={["hours", "minutes"]}
+                  ampm={false}
+                  sx={{
+                    width: "100%",
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "0.75rem",
+                      padding: "0.75rem 1rem",
+                      fontSize: "1.125rem",
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#6366f1",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#6366f1",
+                        borderWidth: "2px",
+                      },
+                    },
+                  }}
+                />
+              </LocalizationProvider>
               <p className="text-sm text-gray-500">
                 {t("pickupTime.description")}
               </p>
