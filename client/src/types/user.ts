@@ -2,9 +2,10 @@ export interface User {
   id?: string;
   username: string;
   password: string;
-  role: 'admin' | 'kitchen' | 'manager' | 'staff';
+  role: "admin" | "kitchen" | "manager" | "staff";
   name: string;
   email?: string;
+  modulePermissions?: string[];
   createdAt: string;
   updatedAt: string;
   syncAt: string;
@@ -13,4 +14,4 @@ export interface User {
 export interface AuthState {
   token: string | null;
   user: Omit<User, "password"> | null;
-} 
+}

@@ -62,12 +62,18 @@
     "modal": {
       "addNew": "Add New User",
       "edit": "Edit User",
+      "tabs": {
+        "general": "General",
+        "permissions": "Permissions"
+      },
       "username": "Username",
       "password": "Password",
       "newPassword": "New Password",
       "fullName": "Full Name",
       "email": "Email",
       "role": "Role",
+      "modulePermissions": "Module Permissions",
+      "selectModules": "Select which modules this user can access",
       "cancel": "Cancel",
       "add": "Add User",
       "update": "Update User"
@@ -150,7 +156,7 @@
       "completed": "Completed",
       "sentToKitchen": "Sent to Kitchen",
       "outForDelivery": "Out for Delivery",
-      "pending":"Pending",
+      "pending": "Pending",
       "cancelled": "Cancelled",
       "readyForDelivery": "Ready for Delivery"
     },
@@ -1265,6 +1271,11 @@
         "description": "In restaurant"
       }
     },
+    "pickupTime": {
+      "title": "Pickup Time",
+      "placeholder": "Select pickup time",
+      "description": "When should the order be ready for pickup?"
+    },
     "deliveryAddress": {
       "title": "Delivery Address"
     },
@@ -1325,5 +1336,10 @@
   },
   "orderTable": {
     "noDataFound": "No data found"
+  },
+  "orderTypes": {
+    "pickup": "Pickup",
+    "delivery": "Delivery",
+    "dineIn": "Dine In"
   }
 }

@@ -296,21 +296,27 @@ export class OrderDatabaseOperations {
             parseInt(ordersStats.totalCompleted, 10) || 0;
         ordersStats.avgDeliveryTime =
             parseFloat(ordersStats.avgDeliveryTime) || 0;
-        const baseOrdersQuery = db("orders")
-            .whereBetween("createdAt", [
-                startDate.toISOString(),
-                endDate.toISOString(),
-            ]);
-        const allOrdersForHourly = await baseOrdersQuery.clone().select("createdAt");
+        const baseOrdersQuery = db("orders").whereBetween("createdAt", [
+            startDate.toISOString(),
+            endDate.toISOString(),
+        ]);
+        const allOrdersForHourly = await baseOrdersQuery
+            .clone()
+            .select("createdAt");
         const hourlyData = new Array(24).fill(0);
-        allOrdersForHourly.forEach(order => {
+        allOrdersForHourly.forEach((order) => {
             const orderTime = new Date(order.createdAt);
             const hour = orderTime.getHours();
             hourlyData[hour]++;
         });
-        const totalCountResult = await baseOrdersQuery.clone().count("* as count").first();
-        const ordersTotalCount = parseInt((totalCountResult as any).count, 10) || 0;
-        const orders = await baseOrdersQuery.clone()
+        const totalCountResult = await baseOrdersQuery
+            .clone()
+            .count("* as count")
+            .first();
+        const ordersTotalCount =
+            parseInt((totalCountResult as any).count, 10) || 0;
+        const orders = await baseOrdersQuery
+            .clone()
             .select(
                 "id",
                 "createdAt",
@@ -329,7 +335,6 @@ export class OrderDatabaseOperations {
             const items = await db("order_items")
                 .where("orderId", order.id)
                 .select("productName as name", "quantity");
-
             const formattedItems = items.map((item) => ({
                 name: item.name,
                 quantity: item.quantity,
@@ -392,7 +397,7 @@ export class OrderDatabaseOperations {
             topItems,
             topMenus,
             orders: newOrders,
-            ordersTotalCount
+            ordersTotalCount,
         };
     }
     static async getOrdersByFilter(
@@ -543,6 +548,7 @@ export class OrderDatabaseOperations {
                     updatedAt: order.updatedAt,
                     assignedAt: order.assignedAt,
                     deliveredAt: order.deliveredAt,
+                    pickupTime: order.pickupTime,
                     orderId: order.orderId,
                     status: order.status,
                     paymentType: order.paymentType,

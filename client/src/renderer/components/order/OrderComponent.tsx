@@ -13,6 +13,8 @@ import {
   getOrderStatusStyle,
   translatePaymentStatus,
   getPaymentStatusStyle,
+  translateOrderType,
+  getOrderTypeStyle,
 } from "@/renderer/utils/orderStatus";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
@@ -29,7 +31,8 @@ const OrderComponent = () => {
     order,
     setOrder,
   } = useOrder();
-  const { orders, refreshOrdersCallback, filter, setFilter, totalOrders } = useOrderManagementContext();
+  const { orders, refreshOrdersCallback, filter, setFilter, totalOrders } =
+    useOrderManagementContext();
   const { configurations } = useConfigurations();
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
   const {
@@ -112,31 +115,21 @@ const OrderComponent = () => {
                     orderTotal
                   );
 
-                  const getOrderTypeStyle = (orderType: string) => {
-                    switch (orderType?.toLowerCase()) {
-                      case "pickup":
-                        return "bg-blue-100 text-blue-800 border-blue-200";
-                      case "dine-in":
-                        return "bg-purple-100 text-purple-800 border-purple-200";
-                      case "delivery":
-                        return "bg-orange-100 text-orange-800 border-orange-200";
-                      default:
-                        return "bg-gray-100 text-gray-800 border-gray-200";
-                    }
-                  };
-
                   const isAssignedToDelivery = Boolean(
                     order.deliveryPerson && order.deliveryPerson.id
                   );
                   return (
                     <button
                       key={order.id}
-                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${isAssignedToDelivery
-                        ? "bg-gray-100 cursor-not-allowed opacity-75"
-                        : "hover:bg-gray-50 cursor-pointer"
-                        }`}
+                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${
+                        isAssignedToDelivery
+                          ? "bg-gray-100 cursor-not-allowed opacity-75"
+                          : "hover:bg-gray-50 cursor-pointer"
+                      }`}
                       onClick={() => handleOrderClick(order)}
-                      disabled={isAssignedToDelivery || order.status === "cancelled"}
+                      disabled={
+                        isAssignedToDelivery || order.status === "cancelled"
+                      }
                     >
                       <div className="flex flex-col items-start gap-2 flex-1">
                         {/* Order Number and Total */}
@@ -154,11 +147,10 @@ const OrderComponent = () => {
                         <div className="flex flex-wrap gap-1.5">
                           {/* Order Type Pill */}
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getOrderTypeStyle(order.orderType || "")}`}
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getOrderTypeStyle(order.orderType || "")}`}
                           >
-                            {order.orderType
-                              ? order.orderType.toUpperCase()
-                              : "NOT SELECTED"}
+                            {translateOrderType(order.orderType || "") ||
+                              "NOT SELECTED"}
                           </span>
 
                           {/* Order Status Pill */}
@@ -211,8 +203,8 @@ const OrderComponent = () => {
               </div>
               <div className="flex-shrink-0 border-t border-gray-200 bg-white">
                 <Pagination
-                containerClasses="!mt-0"
-                subContainerClasses="!justify-center"
+                  containerClasses="!mt-0"
+                  subContainerClasses="!justify-center"
                   currentPage={filter.page || 0}
                   totalPages={totalPages}
                   onPageChange={handlePageChange}

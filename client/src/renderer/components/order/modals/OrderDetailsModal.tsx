@@ -8,6 +8,8 @@ import {
   translateOrderStatus,
   translatePaymentStatus,
   getPaymentStatusStyle,
+  translateOrderType,
+  getOrderTypeStyle,
 } from "@/renderer/utils/orderStatus";
 import { useTranslation } from "react-i18next";
 
@@ -113,8 +115,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     <p className="text-sm font-medium text-gray-600">
                       {t("orderDetailsModal.orderType")}
                     </p>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {order.orderType?.toUpperCase() ||
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getOrderTypeStyle(order.orderType || "")}`}
+                    >
+                      {translateOrderType(order.orderType || "") ||
                         t("manageOrders.statuses.nA")}
                     </span>
                   </div>

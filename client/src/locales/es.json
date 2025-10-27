@@ -88,12 +88,18 @@
     "modal": {
       "addNew": "Agregar nuevo usuario",
       "edit": "Editar usuario",
+      "tabs": {
+        "general": "General",
+        "permissions": "Permisos"
+      },
       "username": "Nombre de usuario",
       "password": "Contraseña",
       "newPassword": "Nueva contraseña",
       "fullName": "Nombre completo",
       "email": "Correo electrónico",
       "role": "Rol",
+      "modulePermissions": "Permisos de Módulos",
+      "selectModules": "Selecciona qué módulos puede acceder este usuario",
       "cancel": "Cancelar",
       "add": "Agregar usuario",
       "update": "Actualizar usuario"
@@ -151,7 +157,7 @@
       "completed": "Completado",
       "delivered": "Entregado",
       "sentToKitchen": "Enviado a Cocina",
-      "pending":"Pendiente",
+      "pending": "Pendiente",
       "outForDelivery": "En Camino",
       "cancelled": "Cancelado",
       "readyForDelivery": "Listo para Entrega"
@@ -1267,6 +1273,11 @@
         "description": "En el restaurante"
       }
     },
+    "pickupTime": {
+      "title": "Hora de Recogida",
+      "placeholder": "Seleccionar hora de recogida",
+      "description": "¿Cuándo debería estar listo el pedido para recoger?"
+    },
     "deliveryAddress": {
       "title": "Dirección de Entrega"
     },
@@ -1327,5 +1338,10 @@
   },
   "orderTable": {
     "noDataFound": "No se encontraron datos"
+  },
+  "orderTypes": {
+    "pickup": "Recoger",
+    "delivery": "Entrega",
+    "dineIn": "Comer Aquí"
   }
 }
