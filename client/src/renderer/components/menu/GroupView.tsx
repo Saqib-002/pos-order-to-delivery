@@ -54,7 +54,7 @@ export const GroupView = () => {
         <CustomButton
           type="button"
           label={t("menuComponents.groups.addGroup")}
-          variant="yellow"
+          variant="primary"
           onClick={handleCreateGroup}
         />
       </div>

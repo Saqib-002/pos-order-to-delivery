@@ -152,13 +152,13 @@ export const MenuStructureComponent = () => {
           type="button"
           onClick={handleCreateMenuPage}
           label={t("menuComponents.menuPages.addMenuPage")}
-          variant="orange"
+          variant="primary"
         />
         <CustomButton
           type="button"
           onClick={handleCreateMenu}
           label={t("menuComponents.menus.addMenu")}
-          variant="orange"
+          variant="primary"
         />
       </div>
 

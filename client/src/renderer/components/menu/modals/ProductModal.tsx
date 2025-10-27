@@ -695,7 +695,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`cursor-pointer py-2 px-1 text-sm font-medium border-b-2 transition-colors duration-200 ${
                   activeTab === tab.id
-                    ? "border-orange-500 text-orange-600"
+                    ? "border-gray-500 text-black"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
@@ -728,7 +728,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         })
                       }
                       className={`cursor-pointer relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                        formData.isAvailable ? "bg-orange-500" : "bg-gray-200"
+                        formData.isAvailable ? "bg-black" : "bg-gray-200"
                       }`}
                     >
                       <span
@@ -751,7 +751,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           isOutOfStock: e.target.checked,
                         })
                       }
-                      className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded cursor-pointer"
+                      className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded cursor-pointer"
                     />
                     <label
                       htmlFor="outOfStock"
@@ -777,7 +777,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    inputClasses="focus:ring-orange-500 focus:border-orange-500"
+                    inputClasses="focus:ring-black focus:border-black"
                     placeholder={t(
                       "menuComponents.modals.productModal.enterProductName"
                     )}
@@ -847,7 +847,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t("menuComponents.modals.productModal.productImage")}
                   </label>
-                  <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-orange-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-[150px] flex items-center justify-center">
+                  <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-black transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-[150px] flex items-center justify-center">
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -906,7 +906,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         description: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
                     placeholder={t(
                       "menuComponents.modals.productModal.writeDescription"
                     )}
@@ -936,7 +936,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         price: parseFloat(e.target.value) || 0,
                       })
                     }
-                    inputClasses="focus:ring-orange-500 focus:border-orange-500 pl-8"
+                    inputClasses="focus:ring-black focus:border-black pl-8"
                     placeholder="0"
                     step="0.01"
                     min="0"
@@ -955,7 +955,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         priority: parseInt(e.target.value) || 0,
                       })
                     }
-                    inputClasses="focus:ring-orange-500 focus:border-orange-500"
+                    inputClasses="focus:ring-black focus:border-black"
                     placeholder="0"
                     min="0"
                     required
@@ -971,7 +971,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         tax: parseInt(e.target.value) || 0,
                       })
                     }
-                    inputClasses="focus:ring-orange-500 focus:border-orange-500 pr-8"
+                    inputClasses="focus:ring-black focus:border-black pr-8"
                     placeholder="10"
                     min="0"
                     max="100"
@@ -991,7 +991,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         discount: parseFloat(e.target.value) || 0,
                       })
                     }
-                    inputClasses="focus:ring-orange-500 focus:border-orange-500 pl-8"
+                    inputClasses="focus:ring-black focus:border-black pl-8"
                     placeholder="0"
                     step="0.01"
                     min="0"
@@ -1095,7 +1095,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                             [attr.key]: e.target.checked,
                           })
                         }
-                        className="h-4 w-4 accent-orange-600 cursor-pointer"
+                        className="h-4 w-4 accent-black cursor-pointer"
                       />
                       <label
                         htmlFor={attr.key}
@@ -1226,7 +1226,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           onClick={() => setSelectedAddonPage(page.pageNo)}
                           className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                             selectedAddonPage === page.pageNo
-                              ? "bg-orange-500 text-white"
+                              ? "bg-black text-white"
                               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                           }`}
                         >
@@ -1253,7 +1253,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         variant="transparent"
                         label={t("menuComponents.modals.productModal.addPage")}
                         Icon={<AddIcon />}
-                        className="border-2 border-dashed border-gray-300 text-gray-600 hover:border-orange-500 hover:text-orange-600"
+                        className="border-2 border-dashed border-gray-300 text-gray-600 hover:border-black hover:text-black"
                       />
                     )}
                   </div>
@@ -1283,7 +1283,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                               parseInt(e.target.value) || 0
                             )
                           }
-                          inputClasses={`focus:ring-orange-500 focus:border-orange-500 ${validationErrors[selectedAddonPage] ? "border-red-500 focus:ring-red-500 focus:border-red-500" : ""}`}
+                          inputClasses={`focus:ring-black focus:border-black ${validationErrors[selectedAddonPage] ? "border-red-500 focus:ring-red-500 focus:border-red-500" : ""}`}
                           placeholder="0"
                           min="0"
                           otherClasses="w-full"
@@ -1309,7 +1309,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                               parseInt(e.target.value) || 0
                             )
                           }
-                          inputClasses={`focus:ring-orange-500 focus:border-orange-500 ${validationErrors[selectedAddonPage] ? "border-red-500 focus:ring-red-500 focus:border-red-500" : ""}`}
+                          inputClasses={`focus:ring-black focus:border-black ${validationErrors[selectedAddonPage] ? "border-red-500 focus:ring-red-500 focus:border-red-500" : ""}`}
                           placeholder="0"
                           min="0"
                           otherClasses="w-full"
@@ -1328,7 +1328,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                               parseInt(e.target.value) || 0
                             )
                           }
-                          inputClasses="focus:ring-orange-500 focus:border-orange-500"
+                          inputClasses="focus:ring-black focus:border-black"
                           placeholder="0"
                           min="0"
                           otherClasses="w-full"
@@ -1413,7 +1413,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           );
                         }
                       }}
-                      className="size-6 text-orange-600 focus:ring-orange-500 border-gray-300 rounded cursor-pointer"
+                      className="size-6 text-black focus:ring-black border-gray-300 rounded cursor-pointer"
                     />
                     <label
                       htmlFor={`printer-${printer.id}`}
@@ -1438,7 +1438,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
             <CustomButton
               type="submit"
               disabled={isSubmitting}
-              variant="orange"
+              variant="primary"
               label={
                 product
                   ? t("menuComponents.modals.productModal.saveChanges")

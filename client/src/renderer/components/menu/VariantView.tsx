@@ -88,7 +88,7 @@ export const VariantView = () => {
         <CustomButton
           onClick={handleCreateVariant}
           label={t("menuComponents.variants.addVariant")}
-          variant="orange"
+          variant="primary"
           type="button"
           Icon={<AddIcon className="size-5" />}
         />

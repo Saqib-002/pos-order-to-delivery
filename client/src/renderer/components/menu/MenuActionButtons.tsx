@@ -45,8 +45,8 @@ export const MenuActionButtons: React.FC<ActionButtonsProps> = ({
     <div className="mb-4">
       <div className="flex flex-wrap gap-4 items-center">
         <div className="flex flex-wrap gap-4">
-          <CustomButton Icon={<AddIcon className="size-6"/>} type="button" onClick={primaryAction} label={t(config.primary.labelKey)} variant="yellow"/>
-          <CustomButton Icon={<AddIcon className="size-6"/>} type="button" onClick={secondaryAction} label={t(config.secondary.labelKey)} variant="yellow"/>
+          <CustomButton Icon={<AddIcon className="size-6"/>} type="button" onClick={primaryAction} label={t(config.primary.labelKey)} variant="primary"/>
+          <CustomButton Icon={<AddIcon className="size-6"/>} type="button" onClick={secondaryAction} label={t(config.secondary.labelKey)} variant="primary"/>
         </div>
       </div>
     </div>
