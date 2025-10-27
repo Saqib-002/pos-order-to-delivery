@@ -84,7 +84,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading menu...</p>
         </div>
       </div>
@@ -98,7 +98,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <button
             onClick={handleBackToMenuPages}
-            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-colors"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
           >
             <svg
               className="w-5 h-5"
@@ -143,7 +143,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
                         {product.name}
                       </h3>
                       {product.supplement > 0 && (
-                        <span className="text-sm font-medium text-indigo-600">
+                        <span className="text-sm font-medium text-gray-600">
                           +€{product.supplement.toFixed(2)}
                         </span>
                       )}
@@ -202,14 +202,14 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
               <div
                 key={menuPage.id}
                 onClick={() => handleMenuPageClick(menuPage)}
-                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer group"
+                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer group"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">
+                  <h3 className="text-lg font-semibold text-gray-800 group-hover:text-gray-600 transition-colors">
                     {menuPage.name}
                   </h3>
                   <svg
-                    className="w-5 h-5 text-gray-400 group-hover:text-indigo-500 transition-colors"
+                    className="w-5 h-5 text-gray-400 group-hover:text-gray-500 transition-colors"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"

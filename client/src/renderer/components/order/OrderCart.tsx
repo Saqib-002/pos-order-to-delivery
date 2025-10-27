@@ -416,9 +416,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
                     item.variantPrice +
                     (Array.isArray(item.complements)
                       ? item.complements.reduce(
-                        (sum, complement) => sum + complement.price,
-                        0
-                      )
+                          (sum, complement) => sum + complement.price,
+                          0
+                        )
                       : 0)) *
                   item.quantity
                 ).toFixed(2)}
@@ -437,9 +437,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
             (itemTotal, item) => {
               const complementsTotal = Array.isArray(item.complements)
                 ? item.complements.reduce(
-                  (sum, complement) => sum + complement.price,
-                  0
-                )
+                    (sum, complement) => sum + complement.price,
+                    0
+                  )
                 : 0;
 
               return (
@@ -544,7 +544,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                             {item.productName}
                           </h3>
                           <div className="flex flex-wrap gap-1">
-                            <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
+                            <span className="bg-gray-100 text-black text-xs px-2 py-1 rounded-full">
                               {item.menuPageName}
                             </span>
                             {item.supplement && Number(item.supplement) > 0 ? (
@@ -601,7 +601,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       <div className="border-t border-gray-200 px-4">
         <div className="flex justify-between text-lg font-semibold mb-4">
           <span>{t("orderCart.total")}:</span>
-          <span className="text-indigo-600">€{orderTotal.toFixed(2)}</span>
+          <span className="text-black">€{orderTotal.toFixed(2)}</span>
         </div>
         <CustomButton
           label={t("orderCart.processOrder")}

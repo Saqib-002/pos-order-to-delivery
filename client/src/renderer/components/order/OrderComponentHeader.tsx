@@ -151,7 +151,7 @@ const OrderComponentHeader = () => {
                 type="date"
                 value={formatDateForInput(filter.selectedDate)}
                 onChange={handleDateChange}
-                className="px-3 py-3 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors flex-1"
+                className="px-3 py-3 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors flex-1"
               />
               <CustomSelect
                 options={combinedFilterOptions}
