@@ -29,27 +29,30 @@ const App: React.FC = () => {
   const { auth, logout, setAuth } = useAuth();
   const { setLanguage } = useConfigurations();
 
-  const handleLogout = useCallback(async (showToast = true) => {
-    try {
-      await logout();
-      setView(VIEWS.LOGIN);
-      if (showToast){
-        toast.success("Logged out successfully");
+  const handleLogout = useCallback(
+    async (showToast = true) => {
+      try {
+        await logout();
+        setView(VIEWS.LOGIN);
+        if (showToast) {
+          toast.success("Logged out successfully");
+        }
+      } catch (error) {
+        toast.error("Failed to log out");
       }
-    } catch (error) {
-      toast.error("Failed to log out");
-    }
-  }, [logout]);
+    },
+    [logout]
+  );
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language');
-    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'es')) {
+    const savedLanguage = localStorage.getItem("language");
+    if (savedLanguage && (savedLanguage === "en" || savedLanguage === "es")) {
       i18n.changeLanguage(savedLanguage);
-      setLanguage(savedLanguage as 'en' | 'es');
+      setLanguage(savedLanguage as "en" | "es");
     }
-  }, [])
+  }, []);
   useEffect(() => {
     const handleTokenExpired = async () => {
-      if(!auth.token) return;
+      if (!auth.token) return;
       try {
         await handleLogout(false);
         toast.info("Session expired. Please log in again.");
@@ -61,36 +64,29 @@ const App: React.FC = () => {
 
     (window as any).electronAPI.onTokenExpired(handleTokenExpired);
     return () => {
-      (window as any).electronAPI.removeTokenExpiredListener(handleTokenExpired);
+      (window as any).electronAPI.removeTokenExpiredListener(
+        handleTokenExpired
+      );
     };
   }, [handleLogout]);
   const handleLogin = () => {
     setView(VIEWS.ORDER);
   };
-  
 
   const viewConfig: Record<string, ViewConfig> = {
     [VIEWS.ORDER]: {
-      component: (
-        <OrderView />
-      ),
+      component: <OrderView />,
     },
     [VIEWS.KITCHEN]: {
-      component: (
-        <KitchenView />
-      ),
+      component: <KitchenView />,
       roles: ["admin", "kitchen"],
     },
     [VIEWS.DELIVERY]: {
-      component: (
-        <DeliveryView />
-      ),
+      component: <DeliveryView />,
       roles: ["admin", "delivery"],
     },
     [VIEWS.REPORTS]: {
-      component: (
-        <ReportView />
-      ),
+      component: <ReportView />,
       roles: ["admin"],
     },
     [VIEWS.MENU_STRUCTURE]: {
@@ -106,16 +102,12 @@ const App: React.FC = () => {
       roles: ["admin"],
     },
     [VIEWS.MANAGE_ORDERS]: {
-      component: (
-        <ManageOrdersView />
-      ),
+      component: <ManageOrdersView />,
       roles: ["admin"],
     },
     [VIEWS.CONFIGURATIONS]: {
-      component: (
-        <Configurations />
-      )
-    }
+      component: <Configurations />,
+    },
   };
 
   const renderView = () => {
@@ -144,6 +136,7 @@ const App: React.FC = () => {
         currentView={view}
         setView={setView}
         userRole={auth.user?.role}
+        userModulePermissions={auth.user?.modulePermissions}
         onLogout={handleLogout}
       />
       <div className="ml-16 h-screen overflow-y-auto">

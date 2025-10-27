@@ -68,6 +68,7 @@ export interface Order {
   readyAt?: string;
   cancelAt?: string;
   deliveredAt?: string;
+  pickupTime?: string;
   updatedAt?: string;
   createdAt?: string;
   items?: OrderItem[];

@@ -6,16 +6,19 @@ import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { useTranslation } from "react-i18next";
+import { hasModuleAccess } from "@/renderer/utils/permissions";
 
 export const Navigation = ({
   currentView,
   setView,
   userRole,
+  userModulePermissions,
   onLogout,
 }: {
   currentView: string;
   setView: (view: string) => void;
   userRole: string | undefined;
+  userModulePermissions?: string[];
   onLogout: () => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -70,6 +73,7 @@ export const Navigation = ({
 
     return labelMap[view] || view;
   };
+
   return (
     <>
       {/* Sidebar */}
@@ -108,7 +112,7 @@ export const Navigation = ({
         {/* Navigation Items */}
         <div className="py-4">
           {navItems.map(({ view, label, roles }: NavItem) =>
-            roles && roles.includes(userRole!.toLowerCase()) ? (
+            hasModuleAccess(view, userModulePermissions, userRole, roles) ? (
               <button
                 key={view}
                 className={`w-full flex items-center gap-3 px-2 py-2 text-left transition-colors duration-200 ${

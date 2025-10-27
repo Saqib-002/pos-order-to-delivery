@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { User } from "@/types/user";
 import { toast } from "react-toastify";
+import { MODULES, MODULE_LABELS, AVAILABLE_MODULES } from "@/constants";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import { useAuth } from "../contexts/AuthContext";
 import {
@@ -28,10 +29,14 @@ export const UserManagement = () => {
     name: "",
     email: "",
     role: "staff",
+    modulePermissions: [] as string[],
     id: "",
   });
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"general" | "permissions">(
+    "general"
+  );
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
@@ -119,6 +124,7 @@ export const UserManagement = () => {
           name: formData.name,
           email: formData.email,
           role: formData.role,
+          modulePermissions: formData.modulePermissions,
         });
         if (!res.status) {
           toast.error(
@@ -166,9 +172,26 @@ export const UserManagement = () => {
       name: "",
       email: "",
       role: "staff",
+      modulePermissions: [],
       id: "",
     });
     setEmailError("");
+    setActiveTab("general");
+  };
+
+  const toggleModulePermission = (module: string) => {
+    const currentPermissions = formData.modulePermissions;
+    if (currentPermissions.includes(module)) {
+      setFormData({
+        ...formData,
+        modulePermissions: currentPermissions.filter((m) => m !== module),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        modulePermissions: [...currentPermissions, module],
+      });
+    }
   };
 
   const handleDeleteUser = async (userId: string) => {
@@ -201,6 +224,7 @@ export const UserManagement = () => {
       name: user.name,
       email: user.email || "",
       role: user.role,
+      modulePermissions: user.modulePermissions || [],
       password: "",
     });
     setEmailError("");
@@ -257,7 +281,7 @@ export const UserManagement = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div>
       </div>
     );
   }
@@ -383,8 +407,8 @@ export const UserManagement = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
-                            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                              <span className="text-sm font-medium text-indigo-600">
+                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                              <span className="text-sm font-medium text-black">
                                 {user.name.charAt(0).toUpperCase()}
                               </span>
                             </div>
@@ -421,7 +445,7 @@ export const UserManagement = () => {
                           variant="transparent"
                           onClick={() => openEditModal(user as User)}
                           Icon={<EditIcon className="size-4" />}
-                          className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 hover:scale-105 !px-2 !py-1 !gap-1"
+                          className="text-black hover:text-black hover:bg-gray-50 hover:scale-105 !px-2 !py-1 !gap-1"
                         />
                         <CustomButton
                           type="button"
@@ -445,7 +469,8 @@ export const UserManagement = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-white rounded-t-2xl">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl">
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-bold">
                   {modalMode === "add"
@@ -457,79 +482,148 @@ export const UserManagement = () => {
                   variant="transparent"
                   onClick={closeModal}
                   Icon={<CrossIcon className="size-6" />}
-                  className="text-white hover:text-indigo-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
+                  className="text-white hover:text-gray-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
                 />
               </div>
             </div>
-            <form onSubmit={handleSubmit} className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <CustomInput
-                  label={`${t("userManagement.modal.username")} *`}
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={(e) =>
-                    setFormData({ ...formData, username: e.target.value })
-                  }
-                  placeholder={t("userManagement.modal.username")}
-                  inputClasses="py-3 px-4"
-                />
-                <CustomInput
-                  label={
-                    modalMode === "add"
-                      ? `${t("userManagement.modal.password")} *`
-                      : t("userManagement.modal.newPassword")
-                  }
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  placeholder={
-                    modalMode === "add"
-                      ? t("userManagement.modal.password")
-                      : t("userManagement.modal.newPassword")
-                  }
-                  inputClasses="py-3 px-4"
-                />
-                <CustomInput
-                  label={`${t("userManagement.modal.fullName")} *`}
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  placeholder={t("userManagement.modal.fullName")}
-                  inputClasses="py-3 px-4"
-                />
-                <CustomInput
-                  label={`${t("userManagement.modal.email")} *`}
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={(e) => handleEmailChange(e.target.value)}
-                  placeholder={t("userManagement.modal.email")}
-                  inputClasses={`py-3 px-4 ${emailError ? "border-red-300 focus:!ring-1 focus:ring-red-600 focus:border-red-600" : "border-gray-300 focus:ring-indigo-600 focus:border-indigo-600"}`}
-                  onBlur={handleEmailBlur}
-                  error={emailError}
-                />
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t("userManagement.modal.role")} *
-                  </label>
-                  <CustomSelect
-                    options={getRoleOptions()}
-                    value={formData.role}
-                    onChange={(value: string) =>
-                      setFormData({ ...formData, role: value as any })
-                    }
-                    placeholder={t("userManagement.modal.role")}
-                    portalClassName="role-dropdown-portal"
-                  />
-                </div>
+
+            {/* Tabs */}
+            <div className="border-b border-gray-200 bg-white">
+              <div className="flex gap-2 px-8">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("general")}
+                  className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 cursor-pointer ${
+                    activeTab === "general"
+                      ? "text-black border-black"
+                      : "text-gray-500 border-transparent hover:text-black"
+                  }`}
+                >
+                  {t("userManagement.modal.tabs.general")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("permissions")}
+                  className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 cursor-pointer ${
+                    activeTab === "permissions"
+                      ? "text-black border-black"
+                      : "text-gray-500 border-transparent hover:text-black"
+                  }`}
+                >
+                  {t("userManagement.modal.tabs.permissions")}
+                </button>
               </div>
+            </div>
+            <form onSubmit={handleSubmit} className="p-8">
+              {/* General Tab */}
+              {activeTab === "general" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <CustomInput
+                    label={`${t("userManagement.modal.username")} *`}
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={(e) =>
+                      setFormData({ ...formData, username: e.target.value })
+                    }
+                    placeholder={t("userManagement.modal.username")}
+                    inputClasses="py-3 px-4"
+                  />
+                  <CustomInput
+                    label={
+                      modalMode === "add"
+                        ? `${t("userManagement.modal.password")} *`
+                        : t("userManagement.modal.newPassword")
+                    }
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    placeholder={
+                      modalMode === "add"
+                        ? t("userManagement.modal.password")
+                        : t("userManagement.modal.newPassword")
+                    }
+                    inputClasses="py-3 px-4"
+                  />
+                  <CustomInput
+                    label={`${t("userManagement.modal.fullName")} *`}
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    placeholder={t("userManagement.modal.fullName")}
+                    inputClasses="py-3 px-4"
+                  />
+                  <CustomInput
+                    label={`${t("userManagement.modal.email")} *`}
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    placeholder={t("userManagement.modal.email")}
+                    inputClasses={`py-3 px-4 ${emailError ? "border-red-300 focus:!ring-1 focus:ring-red-600 focus:border-red-600" : "border-gray-300 focus:ring-black focus:border-black"}`}
+                    onBlur={handleEmailBlur}
+                    error={emailError}
+                  />
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t("userManagement.modal.role")} *
+                    </label>
+                    <CustomSelect
+                      options={getRoleOptions()}
+                      value={formData.role}
+                      onChange={(value: string) =>
+                        setFormData({ ...formData, role: value as any })
+                      }
+                      placeholder={t("userManagement.modal.role")}
+                      portalClassName="role-dropdown-portal"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Permissions Tab */}
+              {activeTab === "permissions" && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      {t("userManagement.modal.modulePermissions")}
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                      {AVAILABLE_MODULES.map((module) => (
+                        <label
+                          key={module}
+                          className="flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-50 transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.modulePermissions.includes(
+                              module
+                            )}
+                            onChange={() => toggleModulePermission(module)}
+                            className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black accent-black"
+                          />
+                          <span className="text-sm text-gray-700">
+                            {
+                              MODULE_LABELS[
+                                module as keyof typeof MODULE_LABELS
+                              ]
+                            }
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      {t("userManagement.modal.selectModules")}
+                    </p>
+                  </div>
+                </div>
+              )}
               <div className="flex justify-end gap-4 mt-8">
                 <CustomButton
                   type="button"
@@ -546,7 +640,7 @@ export const UserManagement = () => {
                       ? t("userManagement.modal.add")
                       : t("userManagement.modal.update")
                   }
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-105"
+                  className="bg-gradient-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 hover:scale-105"
                 />
               </div>
             </form>

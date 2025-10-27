@@ -40,6 +40,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const [orderType, setOrderType] = useState<"pickup" | "delivery" | "dine-in">(
     "pickup"
   );
+  const [pickupTime, setPickupTime] = useState("");
   const [notes, setNotes] = useState("");
   const [customCustomerName, setCustomCustomerName] = useState("");
   const [customCustomerPhone, setCustomCustomerPhone] = useState("");
@@ -253,6 +254,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           ? "sent to kitchen"
           : order?.status || "sent to kitchen",
       notes: notes || "",
+      pickupTime: orderType === "pickup" ? pickupTime : "",
     };
     onProcessOrder(orderData);
     setIsPaymentModalOpen(false);
@@ -622,6 +624,30 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               />
             </div>
           </div>
+
+          {/* Pickup Time (only for pickup) */}
+          {orderType === "pickup" && (
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <div className="w-3 h-2 bg-green-600"></div>
+                </div>
+                <h3 className="text-xl font-bold text-black">
+                  {t("pickupTime.title")}
+                </h3>
+              </div>
+              <input
+                type="time"
+                value={pickupTime}
+                onChange={(e) => setPickupTime(e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:outline-none text-lg touch-manipulation"
+                placeholder={t("pickupTime.placeholder")}
+              />
+              <p className="text-sm text-gray-500">
+                {t("pickupTime.description")}
+              </p>
+            </div>
+          )}
 
           {/* Delivery Address Info (only for delivery) */}
           {orderType === "delivery" &&

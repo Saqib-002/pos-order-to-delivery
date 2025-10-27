@@ -10,6 +10,8 @@ import {
   getOrderStatusStyle,
   translatePaymentStatus,
   getPaymentStatusStyle,
+  translateOrderType,
+  getOrderTypeStyle,
 } from "../utils/orderStatus";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
@@ -171,8 +173,11 @@ export const ManageOrdersView = () => {
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            {order.orderType?.toUpperCase() || t("manageOrders.statuses.nA")}
+          <span
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getOrderTypeStyle(order.orderType || "")}`}
+          >
+            {translateOrderType(order.orderType || "") ||
+              t("manageOrders.statuses.nA")}
           </span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
@@ -391,7 +396,7 @@ export const ManageOrdersView = () => {
                   { value: "", label: t("manageOrders.allPaymentStatuses") },
                   ...paymentStatuses.map((status) => ({
                     value: status,
-                    label: status.charAt(0).toUpperCase() + status.slice(1),
+                    label: translatePaymentStatus(status),
                   })),
                 ]}
                 value={filter.selectedPaymentStatus[0] || ""}
@@ -452,9 +457,9 @@ export const ManageOrdersView = () => {
             }
             emptyStateTitle={
               filter.searchTerm ||
-                filter.selectedDate ||
-                filter.selectedDeliveryPerson ||
-                filter.selectedStatus.length > 0
+              filter.selectedDate ||
+              filter.selectedDeliveryPerson ||
+              filter.selectedStatus.length > 0
                 ? t("manageOrders.noOrdersMatch")
                 : t("manageOrders.noOrdersFound")
             }
