@@ -1324,5 +1324,8 @@
     "completed": "Completado",
     "delivered": "Entregado",
     "cancelled": "Cancelado"
+  },
+  "orderTable": {
+    "noDataFound": "No se encontraron datos"
   }
 }
