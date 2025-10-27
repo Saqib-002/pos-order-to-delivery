@@ -43,7 +43,7 @@ const CustomButton = ({
     return (
         <button
             type={type}
-            className={`flex touch-manipulation justify-center items-center gap-2 px-4 py-2 cursor-pointer font-medium border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-all duration-300 disabled:opacity-50 ${getVariant()} ${className}`}
+            className={`flex touch-manipulation justify-center items-center gap-2 px-4 py-2 cursor-pointer font-medium border rounded-md focus:outline-none focus:ring-2 focus:ring-black transition-all duration-300 disabled:opacity-50 ${getVariant()} ${className}`}
             {...rest}
         >
             {isLoading ? (

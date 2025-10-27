@@ -117,7 +117,7 @@ export const Navigation = ({
                 key={view}
                 className={`w-full flex items-center gap-3 px-2 py-2 text-left transition-colors duration-200 ${
                   currentView === view
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-gray-300 text-black"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
                 onClick={() => {

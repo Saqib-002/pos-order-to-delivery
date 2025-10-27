@@ -189,7 +189,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
       if (product.imgUrl) {
         setImagePreview(product.imgUrl);
       }
-      const getPrinters=async()=>{
+      const getPrinters = async () => {
         const printerRes = await (window as any).electronAPI.getProductPrinters(
           token,
           product.id
@@ -201,7 +201,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
             t("menuComponents.modals.productModal.errors.unableToGetPrinters")
           );
         }
-      }
+      };
       getPrinters();
     } else {
       setFormData({

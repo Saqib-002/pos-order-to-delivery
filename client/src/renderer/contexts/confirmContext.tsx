@@ -128,11 +128,11 @@ function getTypeStyles(type: string) {
             };
         case "info":
             return {
-                headerBg: "from-blue-600 to-indigo-600",
-                iconBg: "bg-blue-100",
-                iconColor: "text-blue-600",
-                confirmBg: "from-blue-600 to-indigo-600",
-                confirmHover: "hover:from-blue-700 hover:to-indigo-700",
+                headerBg: "from-black to-gray-800",
+                iconBg: "bg-gray-100",
+                iconColor: "text-gray-600",
+                confirmBg: "from-black to-gray-800",
+                confirmHover: "hover:from-gray-700 hover:to-gray-800",
                 icon: (
                     <InfoIcon className="size-6" />
                 ),

@@ -321,8 +321,8 @@ export const DeliveryManagement = () => {
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center">
           <div className="flex-shrink-0 h-10 w-10">
-            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-              <span className="text-sm font-medium text-indigo-600">
+            <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+              <span className="text-sm font-medium text-black">
                 {person.name.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -374,7 +374,7 @@ export const DeliveryManagement = () => {
           variant="transparent"
           onClick={() => handleEditDeliveryPerson(person as DeliveryPerson)}
           Icon={<EditIcon className="size-4" />}
-          className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 hover:scale-105 !px-2 !py-1 !gap-1"
+          className="text-black hover:text-black hover:bg-gray-50 hover:scale-105 !px-2 !py-1 !gap-1"
         />
         <CustomButton
           type="button"
@@ -391,7 +391,7 @@ export const DeliveryManagement = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div>
       </div>
     );
   }
@@ -427,8 +427,8 @@ export const DeliveryManagement = () => {
           <StatsCard
             title={t("deliveryManagement.deliveryPersonnelCount")}
             value={deliveryPersons.length}
-            icon={<LocationIcon className="size-6 text-indigo-600" />}
-            bgColor="bg-indigo-100"
+            icon={<LocationIcon className="size-6 text-black" />}
+            bgColor="bg-gray-100"
           />
           <StatsCard
             title={t("deliveryManagement.bikes")}
