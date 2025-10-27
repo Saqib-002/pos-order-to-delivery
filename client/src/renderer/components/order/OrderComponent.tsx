@@ -134,7 +134,7 @@ const OrderComponent = () => {
                       <div className="flex flex-col items-start gap-2 flex-1">
                         {/* Order Number and Total */}
                         <div className="flex items-center justify-between gap-3 w-full">
-                          <h3 className="font-semibold text-black text-xl">
+                          <h3 className="font-semibold text-black text-3xl">
                             {configurations.orderPrefix || "K"}
                             {order.orderId}
                           </h3>
