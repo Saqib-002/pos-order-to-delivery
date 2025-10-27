@@ -638,14 +638,14 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   <div className="w-3 h-2 bg-green-600"></div>
                 </div>
                 <h3 className="text-xl font-bold text-black">
-                  {t("pickupTime.title")}
+                  {t("orderProcessingModal.pickupTime.title")}
                 </h3>
               </div>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <MobileTimePicker
                   value={pickupTime}
                   onChange={(newValue: Dayjs | null) => setPickupTime(newValue)}
-                  label={t("pickupTime.placeholder")}
+                  label={t("orderProcessingModal.pickupTime.placeholder")}
                   views={["hours", "minutes"]}
                   ampm={false}
                   sx={{
@@ -666,7 +666,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 />
               </LocalizationProvider>
               <p className="text-sm text-gray-500">
-                {t("pickupTime.description")}
+                {t("orderProcessingModal.pickupTime.description")}
               </p>
             </div>
           )}
