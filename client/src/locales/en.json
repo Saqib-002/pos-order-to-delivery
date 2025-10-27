@@ -150,6 +150,7 @@
       "completed": "Completed",
       "sentToKitchen": "Sent to Kitchen",
       "outForDelivery": "Out for Delivery",
+      "pending":"Pending",
       "cancelled": "Cancelled",
       "readyForDelivery": "Ready for Delivery"
     },

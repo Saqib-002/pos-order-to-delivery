@@ -38,25 +38,34 @@ export const KitchenView = () => {
     async (order: Order) => {
       try {
         // Determine status based on order type
-        let newStatus: string;
+        let updates: {
+          status: string;
+          readyAt?: string;
+          assignedAt?: string;
+          deliveredAt?: string;
+        };
         if (order.orderType === "delivery") {
-          newStatus = "ready for delivery";
+          updates = {
+            status: "ready for delivery",
+            readyAt: new Date(Date.now()).toISOString(),
+          };
         } else {
           // For pickup and dine-in orders, mark as completed
-          newStatus = "completed";
+          updates = {
+            status: "completed",
+            readyAt: new Date(Date.now()).toISOString(),
+            assignedAt: new Date(Date.now()).toISOString(),
+            deliveredAt: new Date(Date.now()).toISOString(),
+          };
         }
-
-        const res = await updateOrder(token, order.id, {
-          status: newStatus,
-          readyAt: new Date(Date.now()).toISOString(),
-        });
+        const res = await updateOrder(token, order.id, updates);
         if (!res) {
           toast.error(t("kitchenView.messages.failedToUpdateOrder"));
           return;
         }
         refreshOrdersCallback();
         toast.success(
-          newStatus === "completed"
+          updates.status === "completed"
             ? t("kitchenView.messages.orderMarkedAsCompleted")
             : t("kitchenView.messages.orderMarkedAsReady")
         );

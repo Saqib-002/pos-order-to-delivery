@@ -114,7 +114,6 @@ const OrderComponent = () => {
                 const isAssignedToDelivery = Boolean(
                   order.deliveryPerson && order.deliveryPerson.id
                 );
-
                 return (
                   <button
                     key={order.id}
@@ -124,7 +123,7 @@ const OrderComponent = () => {
                         : "hover:bg-gray-50 cursor-pointer"
                     }`}
                     onClick={() => handleOrderClick(order)}
-                    disabled={isAssignedToDelivery}
+                    disabled={isAssignedToDelivery || order.status === "cancelled"}
                   >
                     <div className="flex flex-col items-start gap-2 flex-1">
                       {/* Order Number and Total */}

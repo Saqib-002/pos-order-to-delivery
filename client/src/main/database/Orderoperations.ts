@@ -274,6 +274,9 @@ export class OrderDatabaseOperations {
                     `COUNT(CASE WHEN LOWER("status") = LOWER('Completed') THEN 1 END) as "totalCompleted"`
                 ),
                 db.raw(
+                    `COUNT(CASE WHEN LOWER("status") = LOWER('Pending') THEN 1 END) as "totalPending"`
+                ),
+                db.raw(
                     `AVG(CASE WHEN LOWER("status") = LOWER('Delivered') AND "assignedAt" IS NOT NULL AND "deliveredAt" IS NOT NULL THEN EXTRACT(EPOCH FROM ("deliveredAt" - "assignedAt")) / 60 END) as "avgDeliveryTime"`
                 )
             )
@@ -288,6 +291,8 @@ export class OrderDatabaseOperations {
             parseInt(ordersStats.totalOutForDelivery, 10) || 0;
         ordersStats.totalCancelled =
             parseInt(ordersStats.totalCancelled, 10) || 0;
+        ordersStats.totalPending =
+            parseInt(ordersStats.totalPending, 10) || 0;
         ordersStats.totalCompleted =
             parseInt(ordersStats.totalCompleted, 10) || 0;
         ordersStats.avgDeliveryTime =

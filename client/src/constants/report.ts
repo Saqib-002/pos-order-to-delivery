@@ -14,10 +14,15 @@ export const STATUS_DISTRIBUTION = [
     status: "reports.statuses.sentToKitchen",
     key: "totalSentToKitchen",
     color: "bg-orange-500",
-  },
+  }, 
   {
     status: "reports.statuses.readyForDelivery",
     key: "totalReadyForDelivery",
+    color: "bg-cyan-500",
+  },
+  {
+    status: "reports.statuses.pending",
+    key: "totalPending",
     color: "bg-yellow-500",
   },
   {

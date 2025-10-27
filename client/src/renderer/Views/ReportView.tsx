@@ -53,14 +53,14 @@ export const ReportView = () => {
         res.data.totalDelivered +
         res.data.totalOutForDelivery +
         res.data.totalReadyForDelivery +
-        res.data.totalSentToKitchen;
+        res.data.totalSentToKitchen+res.data.totalCompleted+res.data.totalPending;
       setAnalytics({
         ...res.data,
         totalOrders,
         inProgress:
           res.data.totalReadyForDelivery +
           res.data.totalOutForDelivery +
-          res.data.totalSentToKitchen,
+          res.data.totalSentToKitchen+res.data.pending,
         successRate:
           totalOrders > 0
             ? Math.round((res.data.totalDelivered / totalOrders) * 100)
@@ -69,21 +69,6 @@ export const ReportView = () => {
     };
     fetchAnalytics();
   }, [dateRange, selectedDate]);
-
-  const getStatusStyles = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "delivered":
-        return "bg-green-100 text-green-800";
-      case "sent to kitchen":
-        return "bg-orange-100 text-orange-800";
-      case "out for delivery":
-        return "bg-blue-100 text-blue-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 
   const renderOrderRow = (order: any) => (
     <tr
@@ -179,6 +164,7 @@ export const ReportView = () => {
         <StatusDistribution analytics={analytics} />
         <HourlyDistribution analytics={analytics} />
       </div>
+      <div className="flex flex-col gap-4">
       {analytics?.topItems && analytics.topItems.length > 0 && (
         <TopItems
           topItems={analytics?.topItems}
@@ -187,10 +173,11 @@ export const ReportView = () => {
       )}
       {analytics?.topMenus && analytics.topMenus.length > 0 && (
         <TopItems
-          topItems={analytics?.topMenus}
-          title={t("reports.topOrderedMenus")}
+        topItems={analytics?.topMenus}
+        title={t("reports.topOrderedMenus")}
         />
       )}
+      </div>
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden my-4">
         <OrderTable
           data={ordersData}

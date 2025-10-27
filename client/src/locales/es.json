@@ -151,6 +151,7 @@
       "completed": "Completado",
       "delivered": "Entregado",
       "sentToKitchen": "Enviado a Cocina",
+      "pending":"Pendiente",
       "outForDelivery": "En Camino",
       "cancelled": "Cancelado",
       "readyForDelivery": "Listo para Entrega"
