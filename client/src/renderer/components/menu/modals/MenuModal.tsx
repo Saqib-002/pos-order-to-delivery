@@ -557,7 +557,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   )}
                   value={formData.name}
                   onChange={handleInputChange}
-                  inputClasses="focus:ring-orange-500"
+                  inputClasses="focus:ring-black"
                 />
 
                 <div>
@@ -584,7 +584,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                   placeholder={t(
                     "menuComponents.modals.menuModal.writeDescription"
                   )}
@@ -601,7 +601,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t("menuComponents.modals.menuModal.image")}
               </label>
-              <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-orange-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-[150px] flex items-center justify-center">
+              <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-black transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-[150px] flex items-center justify-center">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -660,7 +660,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   onChange={handleInputChange}
                   min="0"
                   step="0.01"
-                  inputClasses="focus:ring-orange-500 pl-8"
+                  inputClasses="focus:ring-black pl-8"
                   preLabel="€"
                 />
                 <CustomInput
@@ -671,7 +671,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   value={formData.priority}
                   onChange={handleInputChange}
                   min="0"
-                  inputClasses="focus:ring-orange-500"
+                  inputClasses="focus:ring-black"
                 />
                 <CustomInput
                   label={t("menuComponents.modals.menuModal.tax")}
@@ -682,7 +682,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   onChange={handleInputChange}
                   min="0"
                   max="100"
-                  inputClasses="focus:ring-orange-500 pr-8"
+                  inputClasses="focus:ring-black pr-8"
                   otherClasses="relative"
                   postLabel="%"
                   secLabelClasses="right-3 top-2"
@@ -696,7 +696,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   onChange={handleInputChange}
                   min="0"
                   step="0.01"
-                  inputClasses="focus:ring-orange-500 pl-8"
+                  inputClasses="focus:ring-black pl-8"
                   preLabel="€"
                 />
               </div>
@@ -762,7 +762,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     name="outstanding"
                     checked={formData.outstanding}
                     onChange={handleInputChange}
-                    className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                    className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
                   />
                   <span className="ml-2 text-sm font-medium text-gray-700">
                     {t("menuComponents.modals.menuModal.outstanding")}
@@ -825,7 +825,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     onChange={handleNewPageAssociationChange}
                     min="1"
                     max={selectedPageProductCount || undefined}
-                    inputClasses={`focus:ring-orange-500 ${validationErrors.minimum ? "border-red-500" : ""}`}
+                    inputClasses={`focus:ring-black ${validationErrors.minimum ? "border-red-500" : ""}`}
                     otherClasses="w-24"
                   />
                   {validationErrors.minimum && (
@@ -843,7 +843,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     onChange={handleNewPageAssociationChange}
                     min="1"
                     max={selectedPageProductCount || undefined}
-                    inputClasses={`focus:ring-orange-500 ${validationErrors.maximum ? "border-red-500" : ""}`}
+                    inputClasses={`focus:ring-black ${validationErrors.maximum ? "border-red-500" : ""}`}
                     otherClasses="w-24"
                   />
                   {validationErrors.maximum && (
@@ -859,7 +859,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   value={newPageAssociation.priority}
                   onChange={handleNewPageAssociationChange}
                   min="0"
-                  inputClasses="focus:ring-orange-500"
+                  inputClasses="focus:ring-black"
                   otherClasses="w-24"
                 />
 
@@ -907,7 +907,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   <CustomButton
                     type="button"
                     label={t("menuComponents.modals.menuModal.add")}
-                    variant="orange"
+                    variant="primary"
                     onClick={handleAddPageAssociation}
                   />
                 </div>
@@ -965,7 +965,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   )
                                 );
                               }}
-                              className="w-24 px-2 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500"
+                              className="w-24 px-2 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
                               min="1"
                             />
                           </td>
@@ -986,7 +986,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   )
                                 );
                               }}
-                              className="w-24 px-2 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500"
+                              className="w-24 px-2 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
                               min="1"
                             />
                           </td>
@@ -1007,7 +1007,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   )
                                 );
                               }}
-                              className="w-24 px-2 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500"
+                              className="w-24 px-2 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
                               min="0"
                             />
                           </td>

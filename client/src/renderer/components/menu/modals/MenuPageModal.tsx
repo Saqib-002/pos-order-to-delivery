@@ -321,7 +321,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                 )}
                 value={formData.name}
                 onChange={handleInputChange}
-                inputClasses="focus:ring-orange-500"
+                inputClasses="focus:ring-black"
                 otherClasses="mb-4"
               />
               <CustomInput
@@ -333,7 +333,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                 )}
                 value={formData.description}
                 onChange={handleInputChange}
-                inputClasses="focus:ring-orange-500"
+                inputClasses="focus:ring-black"
                 otherClasses="mb-4"
                 maxLength={40}
               />
@@ -378,7 +378,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                   )}
                   value={newProduct.supplement}
                   onChange={handleNewProductChange}
-                  inputClasses="focus:ring-orange-500 pl-8"
+                  inputClasses="focus:ring-black pl-8"
                   preLabel="€"
                   otherClasses="w-32"
                   min="0"
@@ -394,7 +394,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                   )}
                   value={newProduct.priority}
                   onChange={handleNewProductChange}
-                  inputClasses="focus:ring-orange-500"
+                  inputClasses="focus:ring-black"
                   otherClasses="w-32"
                   min="0"
                 />
@@ -402,7 +402,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
                   <CustomButton
                     type="button"
                     label={t("menuComponents.modals.menuPageModal.add")}
-                    variant="orange"
+                    variant="primary"
                     Icon={<AddIcon />}
                     onClick={handleAddProduct}
                   />
