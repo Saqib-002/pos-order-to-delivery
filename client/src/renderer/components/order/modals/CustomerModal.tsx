@@ -170,7 +170,7 @@ const CustomerModal = ({
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full mx-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-indigo-500">
+            <h2 className="text-xl font-semibold text-gray-600">
               {t("customerModal.title")}
             </h2>
             <button
@@ -251,7 +251,7 @@ const CustomerModal = ({
                 name="comments"
                 placeholder="comments"
                 rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:outline-none focus:ring-indigo-500 focus:border-transparent resize-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:outline-none focus:ring-gray-500 focus:border-transparent resize-none"
               ></textarea>
             </div>
             <div className="grid grid-cols-2 gap-y-2 gap-x-4 mb-4">

@@ -21,13 +21,13 @@ const CustomButton = ({
     const getVariant = () => {
         switch (variant) {
             case "primary":
-                return "bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-900";
+                return "bg-gradient-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 text-white border-gray-900";
             case "secondary":
                 return "bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-300";
             case "gradient":
-                return "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700";
+                return "bg-gradient-to-r from-black to-gray-800 text-white hover:from-gray-900 hover:to-gray-900";
             case "transparent":
-                return "border-0 focus:ring-0 focus:ring-transparent text-gray-700 hover:text-indigo-500";
+                return "border-0 focus:ring-0 focus:ring-transparent text-gray-700 hover:text-gray-500";
             case "yellow":
                 return "bg-yellow-500 text-white hover:bg-yellow-600 border-yellow-600 focus:ring-yellow-300";
             case "red":
@@ -37,7 +37,7 @@ const CustomButton = ({
             case "green":
                 return "bg-green-500 text-white hover:bg-green-600 border-green-600 focus:ring-green-300";
             default:
-                return "bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-900";
+                return "bg-gradient-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 text-white border-gray-900";
         }
     };
     return (

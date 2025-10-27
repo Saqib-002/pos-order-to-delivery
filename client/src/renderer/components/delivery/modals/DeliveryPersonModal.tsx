@@ -46,7 +46,7 @@ export const DeliveryPersonModal: React.FC<DeliveryPersonModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
-        <div className="bg-black px-8 py-6 text-white rounded-t-2xl">
+        <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-bold">
               {isEditing
@@ -58,7 +58,7 @@ export const DeliveryPersonModal: React.FC<DeliveryPersonModalProps> = ({
               variant="transparent"
               onClick={onClose}
               Icon={<CrossIcon className="size-6" />}
-              className="text-white hover:text-indigo-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
+              className="text-white hover:text-gray-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
             />
           </div>
         </div>

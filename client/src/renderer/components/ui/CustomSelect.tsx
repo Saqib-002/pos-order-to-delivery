@@ -69,7 +69,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           type="button"
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
-          className={`relative w-full px-4 py-3 border border-gray-300 rounded-lg leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-left flex items-center justify-between hover:border-gray-400 transition-colors duration-200 ${
+          className={`relative w-full px-4 py-3 border border-gray-300 rounded-lg leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm text-left flex items-center justify-between hover:border-gray-400 transition-colors duration-200 ${
             disabled ? "bg-gray-100 cursor-not-allowed" : ""
           }`}
         >
@@ -121,8 +121,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                   option.disabled
                     ? "text-gray-400 cursor-not-allowed bg-gray-50"
                     : value === option.value
-                      ? "bg-indigo-100 text-indigo-900 font-medium hover:bg-indigo-200"
-                      : "text-black hover:bg-indigo-500 hover:text-white"
+                      ? "bg-gray-100 text-gray-900 font-medium hover:bg-gray-200"
+                      : "text-black hover:bg-gray-500 hover:text-white"
                 }`}
               >
                 {option.label}

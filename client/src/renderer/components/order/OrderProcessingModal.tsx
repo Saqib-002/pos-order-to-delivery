@@ -268,18 +268,18 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+        <div className="flex items-center justify-between relative bg-gradient-to-r from-black to-gray-800 text-white p-6">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
               <div className="bg-white size-5 p-1 rounded-full">
-                <CheckIcon className="size-3 text-indigo-600" />
+                <CheckIcon className="size-3 text-white" />
               </div>
             </div>
             <div>
               <h2 className="text-2xl font-bold">
                 {t("orderProcessingModal.title")}
               </h2>
-              <p className="text-indigo-100 text-sm">
+              <p className="text-white text-sm">
                 {t("orderProcessingModal.subtitle")}
               </p>
             </div>
@@ -335,7 +335,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 inputClasses="py-3 px-4 text-lg pr-12"
                 postLabel={
                   isSearching ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500 touch-manipulation"></div>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black touch-manipulation"></div>
                   ) : (
                     <SearchIcon className="size-5 text-gray-400" />
                   )
@@ -349,7 +349,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 variant="green"
                 onClick={() => setIsCustomerModalOpen(true)}
                 Icon={<AddIcon className="size-5" />}
-                className="h-max py-3 self-end text-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 touch-manipulation"
+                className="h-max py-3 self-end text-lg bg-gradient-to-r from-black to-gray-800 text-white hover:from-gray-800 hover:to-gray-900 touch-manipulation"
               />
               {showSearchResults && searchResults.length > 0 && (
                 <div className="absolute z-50 top-20 w-full bg-white border-2 border-gray-200 rounded-xl shadow-xl max-h-48 overflow-y-auto mt-2 customer-search-container">
@@ -373,7 +373,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                           </div>
                         </>
                       }
-                      className="hover:bg-indigo-50 border-b border-gray-100 last:border-b-0 w-full touch-manipulation !block text-start rounded-none"
+                      className="hover:bg-gray-50 border-b border-gray-100 last:border-b-0 w-full touch-manipulation !block text-start rounded-none"
                     />
                   ))}
                 </div>
@@ -382,10 +382,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
 
             {/* Selected Customer Card */}
             {selectedCustomer && (
-              <div className="mt-6 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl">
+              <div className="mt-6 p-6 bg-gradient-to-br from-gray  -50 to-gray-100 border-2 border-gray-200 rounded-xl">
                 <div className="flex justify-between items-start mb-4">
                   <h4 className="text-lg font-bold text-black flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                    <div className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm font-bold">
                       ✓
                     </div>
                     <span>
@@ -399,7 +399,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     onClick={clearCustomerSelection}
                     label={t("orderProcessingModal.customerSearch.change")}
                     variant="transparent"
-                    className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 touch-manipulation !py-1 !px-3"
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 touch-manipulation !py-1 !px-3"
                   />
                 </div>
                 <div className="space-y-4">
@@ -438,7 +438,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     selectedCustomer.address.trim() && (
                       <div className="">
                         <div className="text-sm font-semibold text-gray-700 mb-2 flex items-center space-x-2">
-                          <LocationFilledIcon className="text-indigo-600 size-4" />
+                          <LocationFilledIcon className="text-gray-600 size-4" />
                           <span>
                             {t("orderProcessingModal.customerSearch.address")}
                           </span>
@@ -570,8 +570,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 variant="transparent"
                 className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
                   orderType === "pickup"
-                    ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
-                    : "border-gray-200 hover:border-indigo-300 bg-white"
+                    ? "border-black bg-gray-50 text-gray-700 shadow-md"
+                    : "border-gray-200 hover:border-gray-300 bg-white"
                 }`}
                 label={
                   <>
@@ -591,8 +591,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 variant="transparent"
                 className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
                   orderType === "delivery"
-                    ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
-                    : "border-gray-200 hover:border-indigo-300 bg-white"
+                    ? "border-black bg-gray-50 text-gray-700 shadow-md"
+                    : "border-gray-200 hover:border-gray-300 bg-white"
                 }`}
                 label={
                   <>
@@ -612,8 +612,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 variant="transparent"
                 className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
                   orderType === "dine-in"
-                    ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
-                    : "border-gray-200 hover:border-indigo-300 bg-white"
+                    ? "border-black bg-gray-50 text-gray-700 shadow-md"
+                    : "border-gray-200 hover:border-gray-300 bg-white"
                 }`}
                 label={
                   <>
@@ -655,10 +655,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                       padding: "0.75rem 1rem",
                       fontSize: "1.125rem",
                       "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#6366f1",
+                        borderColor: "#000000",
                       },
                       "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#6366f1",
+                        borderColor: "#000000",
                         borderWidth: "2px",
                       },
                     },
@@ -675,12 +675,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           {orderType === "delivery" &&
             selectedCustomer &&
             selectedCustomer.address && (
-              <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl flex items-start gap-4">
+              <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 rounded-xl flex items-start gap-4">
                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <LocationFilledIcon className="size-5 text-blue-600" />
+                  <LocationFilledIcon className="size-5 text-gray-600" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-base font-bold text-blue-800 mb-3">
+                  <div className="text-base font-bold text-gray-800 mb-3">
                     {t("orderProcessingModal.deliveryAddress.title")}
                   </div>
                   <div className="text-blue-700 text-sm leading-relaxed">
@@ -723,17 +723,17 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:outline-none text-lg touch-manipulation resize-none"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent focus:outline-none text-lg touch-manipulation resize-none"
               rows={3}
               placeholder={t("orderProcessingModal.orderNotes.placeholder")}
             />
           </div>
 
           {/* Order Summary */}
-          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
             <div className="flex items-center space-x-2 mb-6">
-              <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <div className="w-3 h-2 bg-indigo-600"></div>
+              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                <div className="w-3 h-2 bg-gray-600"></div>
               </div>
               <h3 className="text-xl font-bold text-black">
                 {t("orderProcessingModal.orderSummary.title")}
@@ -838,7 +838,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                                 <h3 className="font-medium text-gray-800">
                                   {item.productName}
                                 </h3>
-                                {/* <div className="text-xs text-indigo-600 mb-1">
+                                {/* <div className="text-xs text-gray-600 mb-1">
                                   Page: {item.menuPageName}
                                   {item.supplement &&
                                     Number(item.supplement) > 0 && (
@@ -888,12 +888,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   </div>
                 );
               })}
-              <div className="border-t-2 border-indigo-200 pt-6 mt-6">
+              <div className="border-t-2 border-gray-200 pt-6 mt-6">
                 <div className="flex justify-between items-center">
                   <span className="text-2xl font-bold text-black">
                     {t("orderProcessingModal.orderSummary.total")}
                   </span>
-                  <span className="text-3xl font-bold text-indigo-600 px-6 py-3">
+                  <span className="text-3xl font-bold text-black px-6 py-3">
                     €{orderTotal.toFixed(2)}
                   </span>
                 </div>
@@ -914,10 +914,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           <CustomButton
             type="button"
             onClick={handleProcessOrder}
-            className="flex-1 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold hover:from-indigo-700 hover:to-purple-700"
+            className="flex-1 text-lg bg-gradient-to-r from-black to-gray-800 text-white font-semibold hover:from-gray-800 hover:to-gray-900"
             Icon={
               <span className="bg-white rounded-full size-5 flex justify-center items-center">
-                <CheckIcon className="size-3 text-indigo-600" />
+                <CheckIcon className="size-3 text-black" />
               </span>
             }
             label={t("orderProcessingModal.buttons.proceedOrder")}

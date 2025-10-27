@@ -50,7 +50,7 @@ const CustomInput = ({
                     value={value}
                     onChange={onChange}
                     required={required}
-                    className={`w-full touch-manipulation px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${inputClasses}`}
+                    className={`w-full touch-manipulation px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black ${inputClasses}`}
                     {...rest}
                 />
                 {postLabel && <span className={`absolute text-gray-500 ${secLabelClasses?secLabelClasses:"left-3 top-2"}`}>{postLabel} </span>}

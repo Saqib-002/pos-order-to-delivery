@@ -160,13 +160,15 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
           [groupId]: [...currentSelection, itemId],
         }));
       } else {
-        toast.warning(t("orderTakingForm.warnings.maximumItemsAllowed", { maxComplements }));
+        toast.warning(
+          t("orderTakingForm.warnings.maximumItemsAllowed", { maxComplements })
+        );
       }
     }
   };
 
   const canProceed = () => {
-    if(variantItems?.length==0) return true;
+    if (variantItems?.length == 0) return true;
     if (!selectedVariant) return false;
 
     if (addOnPages && addOnPages.length > 0) {
@@ -213,7 +215,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       toast.info(t("orderTakingForm.messages.orderAssignedToDeliveryPerson"));
       return;
     }
-    if ((!selectedVariant) && variantItems!.length > 0) {
+    if (!selectedVariant && variantItems!.length > 0) {
       toast.error(t("orderTakingForm.errors.pleaseSelectVariant"));
       return;
     }
@@ -334,7 +336,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
     );
     if (existingItem && !editingProduct) {
       // update quantity of existing item
-      const newQuantity = existingItem.quantity+quantity;
+      const newQuantity = existingItem.quantity + quantity;
 
       // Update in database
       const res = await (window as any).electronAPI.updateItemQuantity(
@@ -350,7 +352,9 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
 
       // Update local state
       updateQuantity(existingItem.id, newQuantity);
-      toast.success(t("orderTakingForm.messages.quantityUpdated", { newQuantity }));
+      toast.success(
+        t("orderTakingForm.messages.quantityUpdated", { newQuantity })
+      );
       setSelectedProduct(null);
       return;
     }
@@ -395,10 +399,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         ...orderItem,
         complements: newComplement,
       });
-        if (!res.status) {
-          toast.error(t("orderTakingForm.errors.unableToSaveOrder"));
-          return;
-        }
+      if (!res.status) {
+        toast.error(t("orderTakingForm.errors.unableToSaveOrder"));
+        return;
+      }
       addToOrder({ ...orderItem, id: res.data.itemId });
       setOrder(res.data.order);
     } else {
@@ -407,10 +411,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         order!.id,
         { ...orderItem, complements: newComplement }
       );
-        if (!res.status) {
-          toast.error(t("orderTakingForm.errors.unableToUpdateOrder"));
-          return;
-        }
+      if (!res.status) {
+        toast.error(t("orderTakingForm.errors.unableToUpdateOrder"));
+        return;
+      }
       addToOrder({ ...orderItem, id: res.data.itemId });
     }
     toast.success(t("orderTakingForm.messages.itemAddedToOrder"));
@@ -423,8 +427,8 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-200"></div>
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent absolute top-0 left-0"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-600 border-t-transparent absolute top-0 left-0"></div>
             </div>
             <div className="text-center">
               <h3 className="text-lg font-semibold text-black mb-1">
@@ -443,14 +447,16 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col">
         {/* Modern Header */}
-        <div className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 flex items-center justify-between">
+        <div className="relative bg-gradient-to-r from-black to-gray-800 text-white p-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
               <div className="w-3 h-3 bg-white"></div>
             </div>
             <div>
               <h2 className="text-2xl font-bold">{selectedProduct?.name}</h2>
-              <p className="text-indigo-100 text-sm">{t("orderTakingForm.customizeYourOrder")}</p>
+              <p className="text-gray-100 text-sm">
+                {t("orderTakingForm.customizeYourOrder")}
+              </p>
             </div>
           </div>
           <button
@@ -468,13 +474,17 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
           {variantItems && variantItems.length > 0 ? (
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <div className="w-3 h-2 bg-indigo-600"></div>
+                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <div className="w-3 h-2 bg-gray-600"></div>
                 </div>
-                <h3 className="text-xl font-bold text-black">{t("orderTakingForm.chooseVariant")}</h3>
+                <h3 className="text-xl font-bold text-black">
+                  {t("orderTakingForm.chooseVariant")}
+                </h3>
               </div>
               <p className="text-gray-600 ml-10">
-                {t("orderTakingForm.selectPreferredVariant", { productName: selectedProduct?.name })}
+                {t("orderTakingForm.selectPreferredVariant", {
+                  productName: selectedProduct?.name,
+                })}
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 ml-10">
                 {variantItems.map((item) => (
@@ -482,8 +492,8 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                     key={item.id}
                     className={`group relative flex flex-col p-2 border-2 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md touch-manipulation ${
                       selectedVariant?.id === item.id
-                        ? "border-indigo-500 bg-indigo-50 shadow-md"
-                        : "border-gray-200 hover:border-indigo-300 bg-white"
+                        ? "border-gray-500 bg-gray-50 shadow-md"
+                        : "border-gray-200 hover:border-gray-300 bg-white"
                     }`}
                   >
                     <input
@@ -548,8 +558,8 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                       <div
                         className={`absolute top-1 right-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
                           selectedVariant?.id === item.id
-                            ? "border-indigo-500 bg-indigo-500"
-                            : "border-white bg-white shadow-sm group-hover:border-indigo-400"
+                            ? "border-gray-500 bg-gray-500"
+                            : "border-white bg-white shadow-sm group-hover:border-gray-400"
                         }`}
                       >
                         {selectedVariant?.id === item.id && (
@@ -563,7 +573,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                       <div className="font-medium text-black text-sm truncate flex-1">
                         {item.name || `Variant ${item.id}`}
                       </div>
-                      <div className="text-sm font-bold text-indigo-600 ml-2">
+                      <div className="text-sm font-bold text-gray-600 ml-2">
                         €{item.price?.toFixed(2) || "0.00"}
                       </div>
                     </div>
@@ -601,14 +611,16 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                   >
                     <div className="flex items-center justify-between">
                       <h4 className="text-lg font-bold text-black flex items-center space-x-2">
-                        <span className="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        <span className="w-6 h-6 bg-gray-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                           {index + 1}
                         </span>
                         <span>{group.name}</span>
                       </h4>
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600">{t("orderTakingForm.selected")}:</span>
-                        <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-semibold">
+                        <span className="text-sm text-gray-600">
+                          {t("orderTakingForm.selected")}:
+                        </span>
+                        <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-semibold">
                           {selectedComplements[group.id]?.length || 0}
                         </span>
                       </div>
@@ -635,13 +647,17 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                           >
                             <CheckIcon className="size-2 text-white" />
                           </div>
-                          <span>{t("orderTakingForm.min")}: {page.minComplements}</span>
+                          <span>
+                            {t("orderTakingForm.min")}: {page.minComplements}
+                          </span>
                         </span>
                       )}
                       {page.maxComplements > 0 && (
                         <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex items-center space-x-1">
                           <span className="bg-blue-600 h-[2px] w-2"></span>
-                          <span>{t("orderTakingForm.max")}: {page.maxComplements}</span>
+                          <span>
+                            {t("orderTakingForm.max")}: {page.maxComplements}
+                          </span>
                         </span>
                       )}
                       {page.freeAddons > 0 && (
@@ -649,7 +665,9 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                           <div className="size-[14px] p-[2px] bg-green-600 flex items-center justify-center rounded-full">
                             <CheckIcon className="size-2 text-white" />
                           </div>
-                          <span>{t("orderTakingForm.free")}: {page.freeAddons}</span>
+                          <span>
+                            {t("orderTakingForm.free")}: {page.freeAddons}
+                          </span>
                         </span>
                       )}
                     </div>
@@ -667,8 +685,8 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                             }
                             className={`group relative flex flex-col p-3 border-2 rounded-lg text-left transition-all duration-200 hover:shadow-md touch-manipulation ${
                               isSelected
-                                ? "border-indigo-500 bg-indigo-50 shadow-md"
-                                : "border-gray-200 hover:border-indigo-300 bg-white"
+                                ? "border-gray-500 bg-gray-50 shadow-md"
+                                : "border-gray-200 hover:border-gray-300 bg-white"
                             }`}
                           >
                             {/* Image Section */}
@@ -725,8 +743,8 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                               <div
                                 className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
                                   isSelected
-                                    ? "border-indigo-500 bg-indigo-500"
-                                    : "border-gray-300 bg-white shadow-sm group-hover:border-indigo-400"
+                                    ? "border-gray-500 bg-gray-500"
+                                    : "border-gray-300 bg-white shadow-sm group-hover:border-gray-400"
                                 }`}
                               >
                                 {isSelected && (
@@ -740,7 +758,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                               <div className="font-medium text-black text-xs truncate flex-1">
                                 {item.name}
                               </div>
-                              <div className="text-sm font-bold text-indigo-600 ml-2">
+                              <div className="text-sm font-bold text-black ml-2">
                                 €{item.price.toFixed(2)}
                               </div>
                             </div>
@@ -763,51 +781,59 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                   <ClockIcon className="size-4 text-purple-600" />
                 </div>
-                <h3 className="text-xl font-bold text-black">{t("orderTakingForm.quantity")}</h3>
+                <h3 className="text-xl font-bold text-black">
+                  {t("orderTakingForm.quantity")}
+                </h3>
               </div>
               <div className="flex items-center space-x-6">
                 <button
                   type="button"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-14 h-14 rounded-full border-2 border-gray-300 hover:border-indigo-500 hover:bg-indigo-50 flex items-center justify-center transition-colors duration-200 group touch-manipulation"
+                  className="w-14 h-14 rounded-full border-2 border-gray-300 hover:border-gray-500 hover:bg-gray-50 flex items-center justify-center transition-colors duration-200 group touch-manipulation"
                 >
-                  <span className="bg-gray-600 group-hover:bg-indigo-600 h-[2px] w-4"></span>
+                  <span className="bg-gray-600 group-hover:bg-gray-600 h-[2px] w-4"></span>
                 </button>
-                <div className="w-20 h-14 bg-white border-2 border-indigo-500 rounded-xl flex items-center justify-center">
-                  <span className="text-2xl font-bold text-indigo-600">
+                <div className="w-20 h-14 bg-white border-2 border-gray-500 rounded-xl flex items-center justify-center">
+                  <span className="text-2xl font-bold text-gray-600">
                     {quantity}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setQuantity(quantity + 1)}
-                  className="w-14 h-14 rounded-full border-2 border-gray-300 hover:border-indigo-500 hover:bg-indigo-50 flex items-center justify-center transition-colors duration-200 group touch-manipulation"
+                  className="w-14 h-14 rounded-full border-2 border-gray-300 hover:border-gray-500 hover:bg-gray-50 flex items-center justify-center transition-colors duration-200 group touch-manipulation"
                 >
-                  <AddIcon className="w-6 h-6 text-gray-600 group-hover:text-indigo-600" />
+                  <AddIcon className="w-6 h-6 text-gray-600 group-hover:text-gray-600" />
                 </button>
               </div>
             </div>
           )}
 
           {/* Price Breakdown */}
-          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <CashIcon className="size-4 text-indigo-600" />
+              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                <CashIcon className="size-4 text-gray-600" />
               </div>
-              <h3 className="text-xl font-bold text-black">{t("orderTakingForm.priceBreakdown")}</h3>
+              <h3 className="text-xl font-bold text-black">
+                {t("orderTakingForm.priceBreakdown")}
+              </h3>
             </div>
 
             <div className="space-y-3">
               <div className="flex justify-between items-center py-2">
-                <span className="text-gray-700">{t("orderTakingForm.baseProduct")}:</span>
+                <span className="text-gray-700">
+                  {t("orderTakingForm.baseProduct")}:
+                </span>
                 <span className="font-semibold text-black">
                   €{calculateBaseProductPrice(selectedProduct).toFixed(2)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center py-2 text-gray-600">
-                <span>{t("orderTakingForm.tax")} ({selectedProduct?.tax || 0}%):</span>
+                <span>
+                  {t("orderTakingForm.tax")} ({selectedProduct?.tax || 0}%):
+                </span>
                 <span>
                   €{calculateProductTaxAmount(selectedProduct).toFixed(2)}
                 </span>
@@ -839,7 +865,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                       className="flex justify-between items-center py-1 text-gray-600"
                     >
                       <span className="flex items-center space-x-2">
-                        <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full"></div>
+                        <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
                         <span>{item.name}:</span>
                       </span>
                       <span>€{item.price.toFixed(2)}</span>
@@ -848,12 +874,12 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                 });
               })}
 
-              <div className="border-t-2 border-indigo-200 pt-4 mt-4">
+              <div className="border-t-2 border-gray-300 pt-4 mt-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-xl font-bold text-indigo-600">
+                  <span className="text-xl font-bold text-gray-600">
                     {t("orderTakingForm.total")} (×{quantity}):
                   </span>
-                  <span className="text-2xl font-bold text-indigo-600">
+                  <span className="text-2xl font-bold text-gray-600">
                     €{calculateTotalPrice().toFixed(2)}
                   </span>
                 </div>
@@ -882,7 +908,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                 <>
                   {canProceed() && (
                     <div className="size-5 p-1 bg-white flex items-center justify-center rounded-full">
-                      <CheckIcon className="size-3 text-indigo-600" />
+                      <CheckIcon className="size-3 text-gray-600" />
                     </div>
                   )}
                 </>

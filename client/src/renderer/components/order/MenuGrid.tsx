@@ -66,13 +66,13 @@ const MenuGrid: React.FC<MenuGridProps> = ({
         <div
           key={menu.id}
           onClick={() => onMenuSelect(menu)}
-          className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer group"
+          className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">
+            <h3 className="text-lg font-semibold text-gray-800 group-hover:text-gray-600 transition-colors">
               {menu.name}
             </h3>
-            <div className="text-sm font-medium text-indigo-600">
+            <div className="text-sm font-medium text-gray-600">
               €{menu.price.toFixed(2)}
             </div>
           </div>

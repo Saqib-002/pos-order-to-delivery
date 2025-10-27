@@ -404,7 +404,7 @@ const CreateVariantModal: React.FC<CreateVariantModalProps> = ({
                   );
                   setShowAssociatedProducts(true);
                 }}
-                className="cursor-pointer text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+                className="cursor-pointer text-gray-600 hover:text-gray-800 text-sm flex items-center gap-1"
               >
                 <DocumentIcon className="size-4" />
                 {t(

@@ -214,7 +214,7 @@ const MenuOrderTakingForm = ({
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full mx-4">
           <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-500"></div>
             <span className="ml-2">{t("common.loading")}</span>
           </div>
         </div>
@@ -357,17 +357,17 @@ const MenuOrderTakingForm = ({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Modern Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-2xl">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-black to-gray-800 rounded-t-2xl">
           <div className="flex items-center space-x-4">
-            <div className="p-3 bg-indigo-100 rounded-xl">
-              <DocumentIcon className="w-6 h-6 text-indigo-600" />
+            <div className="p-3 bg-gray-100 rounded-xl">
+              <DocumentIcon className="w-6 h-6 text-gray-600" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-white">
                 {selectedMenu.name}
               </h2>
               <div className="flex items-center space-x-2 mt-1">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-white">
                   {menuPages.length > 0
                     ? t("menuOrderTakingForm.pageOf", {
                         current: currentMenuPageIndex + 1,
@@ -382,7 +382,7 @@ const MenuOrderTakingForm = ({
                         key={index}
                         className={`w-2 h-2 rounded-full ${
                           index === currentMenuPageIndex
-                            ? "bg-indigo-600"
+                            ? "bg-gray-600"
                             : "bg-gray-300"
                         }`}
                       />
@@ -432,18 +432,18 @@ const MenuOrderTakingForm = ({
                 </div>
 
                 {/* Progress Indicator */}
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-100">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700">
                       {t("menuOrderTakingForm.selectionProgress")}
                     </span>
-                    <span className="text-sm font-semibold text-indigo-600">
+                    <span className="text-sm font-semibold text-gray-600">
                       {processedMenuProducts.size}/{currentMin}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
                     <div
-                      className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                      className="bg-gradient-to-r from-gray-400 to-gray-800 h-2 rounded-full transition-all duration-300"
                       style={{
                         width: `${Math.min((processedMenuProducts.size / currentMin) * 100, 100)}%`,
                       }}
@@ -486,7 +486,7 @@ const MenuOrderTakingForm = ({
                       className={`group relative touch-manipulation border-2 rounded-xl overflow-hidden transition-all duration-300 transform hover:scale-[1.02] ${
                         processedMenuProducts.has(menuProduct.productId)
                           ? "border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg shadow-green-100/50"
-                          : "border-gray-200 hover:border-indigo-300 hover:bg-gradient-to-br hover:from-indigo-50 hover:to-purple-50 hover:shadow-xl hover:shadow-indigo-100/50 cursor-pointer"
+                          : "border-gray-200 hover:border-gray-300 hover:bg-gradient-to-br hover:from-gray-50 hover:to-gray-100 hover:shadow-xl hover:shadow-gray-100/50 cursor-pointer"
                       }`}
                     >
                       {/* Status Badge */}
@@ -552,7 +552,7 @@ const MenuOrderTakingForm = ({
                         {/* Price Badge Overlay */}
                         {Number(menuProduct.supplement || 0) > 0 && (
                           <div className="absolute top-2 left-2">
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-indigo-600 text-white shadow-lg">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-black text-white shadow-lg">
                               +€{Number(menuProduct.supplement || 0).toFixed(2)}
                             </span>
                           </div>
@@ -563,7 +563,7 @@ const MenuOrderTakingForm = ({
                       <div className="p-3">
                         {/* Product Header */}
                         <div className="mb-2">
-                          <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-indigo-700 transition-colors line-clamp-1">
+                          <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-gray-700 transition-colors line-clamp-1">
                             {menuProduct.name}
                           </h4>
                           {menuProduct.description && (
@@ -589,7 +589,7 @@ const MenuOrderTakingForm = ({
                                     e.stopPropagation();
                                     handleEditMenuItem(menuProduct);
                                   }}
-                                  className="p-2 text-indigo-500 hover:text-indigo-700 hover:bg-indigo-100 rounded-lg transition-all duration-200 touch-manipulation"
+                                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 touch-manipulation"
                                 >
                                   <EditIcon className="w-5 h-5" />
                                 </button>
@@ -605,7 +605,7 @@ const MenuOrderTakingForm = ({
                               </div>
                             </>
                           ) : (
-                            <div className="flex items-center space-x-2 text-indigo-600 group-hover:text-indigo-700 transition-colors">
+                            <div className="flex items-center space-x-2 text-gray-600 group-hover:text-gray-700 transition-colors">
                               <svg
                                 className="w-4 h-4"
                                 fill="none"
@@ -683,7 +683,7 @@ const MenuOrderTakingForm = ({
             </>
           ) : (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-500 mx-auto mb-4"></div>
               <p className="text-gray-600">
                 {t("menuOrderTakingForm.loadingMenuPages")}
               </p>
