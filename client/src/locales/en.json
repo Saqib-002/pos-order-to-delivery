@@ -812,8 +812,9 @@
         "failedToCreate": "Failed to create",
         "failedToUpdate": "Failed to update",
         "failedToDelete": "Failed to delete"
-      },
-      "modals": {
+      }
+    },
+    "modals": {
         "categoryModal": {
           "title": "Create New Category",
           "editTitle": "Edit Category",
@@ -1121,7 +1122,6 @@
           "variantDeleteWarning": "If you delete this variant you can no longer edit this variant in any attached order!"
         }
       }
-    }
   },
   "menuView": {
     "titles": {
