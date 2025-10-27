@@ -422,7 +422,7 @@ export const ManageOrdersView = () => {
               </button>
               <button
                 onClick={handleBulkPaymentClick}
-                className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
+                className="w-full sm:w-auto bg-gradient-to-r from-black to-gray-800 hover:from-gray-700 hover:to-gray-800 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
               >
                 <LightningBoltIcon className="w-4 h-4" />
                 <span>{t("manageOrders.bulkPayment")}</span>

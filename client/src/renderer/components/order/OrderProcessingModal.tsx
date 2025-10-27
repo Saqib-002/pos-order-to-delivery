@@ -713,8 +713,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           {/* Order Notes */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <DocumentIcon className="text-purple-600 size-5" />
+              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                <DocumentIcon className="text-gray-600 size-5" />
               </div>
               <h3 className="text-xl font-bold text-black">
                 {t("orderProcessingModal.orderNotes.title")}

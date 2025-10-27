@@ -219,7 +219,7 @@ export const DeliveryView = () => {
           <button
             onClick={() => assignDelivery(order)}
             disabled={!deliveryPerson?.name.trim()}
-            className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105"
+            className="bg-black hover:bg-black disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105"
           >
             <LightningBoltIcon className="size-4" />
             Assign

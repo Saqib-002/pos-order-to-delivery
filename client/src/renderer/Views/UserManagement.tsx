@@ -309,8 +309,8 @@ export const UserManagement = () => {
           <StatsCard
             title={t("userManagement.totalUsers")}
             value={users.length}
-            icon={<GroupIcon className="size-6 text-indigo-600" />}
-            bgColor="bg-indigo-100"
+            icon={<GroupIcon className="size-6 text-black" />}
+            bgColor="bg-gray-100"
           />
           <StatsCard
             title={t("userManagement.admins")}
