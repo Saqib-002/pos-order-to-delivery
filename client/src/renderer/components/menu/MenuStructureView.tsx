@@ -105,7 +105,7 @@ export const MenuStructureComponent = () => {
         return;
       }
       toast.success(t("menuComponents.messages.success.menuPageDeleted"));
-      fetchMenuPages(); // Refresh data
+      fetchMenuPages();
     } catch (error) {
       toast.error(t("menuComponents.messages.errors.failedToDelete"));
     }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 
 import { CategoryModal } from "./modals/CategoryModal";
 import { SubcategoryModal } from "./modals/SubcategoryModal";
@@ -11,7 +11,7 @@ import { MenuContentSections } from "./MenuContentSections";
 import { Category, Subcategory, Product } from "@/types/Menu";
 import {
   fetchCategories,
-  fetchProducts,
+  fetchProductsByCatIdForOrder,
   fetchSubcategories,
 } from "@/renderer/utils/menu";
 import { useAuth } from "@/renderer/contexts/AuthContext";
@@ -57,7 +57,6 @@ export const MenuComponent = () => {
   // Initialize data
   useEffect(() => {
     fetchCategories(token, setCategories);
-    fetchProducts(token, setProducts);
   }, [token]);
   // Modal control functions
   const openModal = (type: keyof typeof modals, editItem?: any) => {
@@ -88,6 +87,8 @@ export const MenuComponent = () => {
       currentLevel: "products",
       selectedSubcategory: subcategory,
     }));
+    if (!subcategory.id) return;
+    fetchProductsByCatIdForOrder(token,subcategory.id, setProducts);
   };
 
   const handleBackToCategories = () => {
@@ -146,7 +147,9 @@ export const MenuComponent = () => {
 
   const handleProductSuccess = () => {
     closeModal("product");
-    fetchProducts(token, setProducts);
+    if (navigation.selectedSubcategory){
+      fetchProductsByCatIdForOrder(token,navigation.selectedSubcategory.id, setProducts);
+    }
   };
 
   const handleMenuSuccess = () => {
@@ -182,7 +185,9 @@ export const MenuComponent = () => {
       toast.error(t("menuComponents.messages.errors.failedToDelete"));
       return;
     }
-    fetchProducts(token, setProducts);
+    if (navigation.selectedSubcategory){
+      fetchProductsByCatIdForOrder(token,navigation.selectedSubcategory.id, setProducts);
+    }
   };
 
   return (

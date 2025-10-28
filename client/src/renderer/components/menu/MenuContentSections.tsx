@@ -25,12 +25,6 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
   onEditProduct,
   onDeleteProduct,
 }) => {
-  const getFilteredProducts = () => {
-    if (!selectedSubcategory) return [];
-    return products.filter(
-      (product) => product.subcategoryId === selectedSubcategory.id
-    );
-  };
 
   const renderSection = () => {
     switch (currentLevel) {
@@ -58,7 +52,7 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
       case "products":
         return (
           <ProductSection
-            products={getFilteredProducts()}
+            products={products}
             selectedSubcategory={selectedSubcategory}
             onEditProduct={onEditProduct}
             onDeleteProduct={onDeleteProduct}

@@ -81,7 +81,7 @@ export class ProductsDatabaseOperations {
                     "sub_categories.id"
                 )
                 .select("products.*", "sub_categories.categoryId")
-                .orderBy("products.name", "asc");
+                .orderBy("products.priority", "asc");
             const products = await query;
             return products.map((p: any) => ({
                 ...p,
@@ -102,7 +102,7 @@ export class ProductsDatabaseOperations {
                 )
                 .where("products.subcategoryId", subcatId)
                 .select("products.*", "sub_categories.categoryId")
-                .orderBy("products.name", "asc");
+                .orderBy("products.priority", "asc");
             const products = await query;
             const productIds = products.map((p: any) => p.id);
             const allPrinters = await db("printers_products")

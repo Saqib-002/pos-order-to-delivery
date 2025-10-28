@@ -178,7 +178,7 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     hasDelete: true,
     getBody: (data) => (
       <p className="text-xs text-white opacity-90 mb-0 line-clamp-2">
-        {data.description}
+        {data.description?.length ? data.description : "No description"}
       </p>
     ),
     getLeft: (data) => ({
@@ -303,7 +303,7 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
         {['product', 'menu','category','subcategory'].includes(type) &&
           <img
             crossOrigin="anonymous"
-            src={data.imgUrl || '/pizza.jpg'}
+            src={data.imgUrl || 'pizza.jpg'}
             alt={`${data.name || 'Product'} image`}
             className="w-full h-34 object-cover rounded-md"
           />

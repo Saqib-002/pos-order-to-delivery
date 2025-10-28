@@ -50,7 +50,7 @@ export class MenusOperations {
 
     static async getMenus(): Promise<Menu[]> {
         try {
-            const menus = await db("menus").orderBy("name", "asc");
+            const menus = await db("menus").orderBy("priority", "asc");
             return menus.map((menu) => ({
                 ...menu,
                 imgUrl: `${menu.imgUrl ? `${process.env.CDN_URL}/uploads/${menu.imgUrl}` : ""}`,

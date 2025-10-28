@@ -82,7 +82,7 @@ export const MenuPageModal: React.FC<MenuPageModalProps> = ({
     }
   };
 
-  // Fetch existing menu page products
+  // Fetch existing menu page products 
   const fetchMenuPageProducts = async (menuPageId: string) => {
     try {
       const res = await (window as any).electronAPI.getMenuPageProducts(
