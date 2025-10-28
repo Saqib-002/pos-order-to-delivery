@@ -26,13 +26,16 @@ export const calculateOrderTotal = (
           0
         )
       : 0;
-    const itemTotal =
-      (item.productPrice +
-        item.productTax -
-        item.productDiscount +
-        item.variantPrice +
-        complementsTotal) *
-      item.quantity;
+
+    const subtotal =
+      item.productPrice +
+      item.productTax +
+      item.variantPrice +
+      complementsTotal;
+
+    const discountAmount = (subtotal * item.productDiscount) / 100;
+    const itemTotal = (subtotal - discountAmount) * item.quantity;
+
     return sum + itemTotal;
   }, 0);
 
@@ -119,13 +122,16 @@ export const calculateItemTotal = (item: OrderItem): number => {
     const complementsTotal = Array.isArray(item.complements)
       ? item.complements.reduce((sum, complement) => sum + complement.price, 0)
       : 0;
-    const itemTotal =
-      (item.productPrice +
-        item.productTax -
-        item.productDiscount +
-        item.variantPrice +
-        complementsTotal) *
-      item.quantity;
+
+    const subtotal =
+      item.productPrice +
+      item.productTax +
+      item.variantPrice +
+      complementsTotal;
+
+    const discountAmount = (subtotal * item.productDiscount) / 100;
+    const itemTotal = (subtotal - discountAmount) * item.quantity;
+
     return itemTotal;
   }
 };

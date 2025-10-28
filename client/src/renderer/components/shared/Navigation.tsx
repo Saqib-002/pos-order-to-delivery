@@ -45,7 +45,7 @@ export const Navigation = ({
     const iconMap: { [key: string]: string } = {
       order: "./images/order.png",
       kitchen: "./images/kitchen.png",
-      delivery: "./images/delivery.png",
+      delivery: "./images/delivery-bike.png",
       "delivery-management": "./images/driving-management.png",
       "manage-orders": "./images/order-management.png",
       reports: "./images/reports.png",

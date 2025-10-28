@@ -96,7 +96,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
           order!.orderId,
           order?.orderType,
           user!.role,
-          status
+          status,
+          t
         );
       } else {
         receiptHTML = generateItemsReceiptHTML(
@@ -104,7 +105,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
           configurations,
           order,
           user!.role,
-          status
+          status,
+          t
         );
       }
       if (!receiptHTML) {

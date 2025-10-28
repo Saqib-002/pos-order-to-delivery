@@ -2,119 +2,112 @@ import { OrderItem } from "@/types/order";
 import { toast } from "react-toastify";
 import i18n from "../../i18n";
 import {
-    calculateOrderTotal,
-    calculateTaxPercentage,
+  calculateOrderTotal,
+  calculateTaxPercentage,
 } from "./orderCalculations";
 
 export const fetchConnectedPrinters = async (
-    token: string | null,
-    setPrinters: React.Dispatch<React.SetStateAction<any>>
+  token: string | null,
+  setPrinters: React.Dispatch<React.SetStateAction<any>>
 ) => {
-    const res = await (window as any).electronAPI.getConnectedPrinters(token);
-    if (!res.status) {
-        setPrinters([]);
-        toast.error(i18n.t("printerUtils.unableToGetPrinters"));
-        return;
-    }
-    setPrinters(res.data);
+  const res = await (window as any).electronAPI.getConnectedPrinters(token);
+  if (!res.status) {
+    setPrinters([]);
+    toast.error(i18n.t("printerUtils.unableToGetPrinters"));
+    return;
+  }
+  setPrinters(res.data);
 };
 export const fetchPrinters = async (
-    token: string | null,
-    setPrinters: React.Dispatch<React.SetStateAction<any>>
+  token: string | null,
+  setPrinters: React.Dispatch<React.SetStateAction<any>>
 ) => {
-    const res = await (window as any).electronAPI.getAllPrinters(token);
-    if (!res.status) {
-        setPrinters([]);
-        toast.error(i18n.t("printerUtils.unableToGetPrinters"));
-        return;
-    }
-    setPrinters(res.data);
+  const res = await (window as any).electronAPI.getAllPrinters(token);
+  if (!res.status) {
+    setPrinters([]);
+    toast.error(i18n.t("printerUtils.unableToGetPrinters"));
+    return;
+  }
+  setPrinters(res.data);
 };
 export const groupItemsByPrinter = (
-    items: OrderItem[]
+  items: OrderItem[]
 ): Record<string, OrderItem[]> => {
-    const printerGroups: Record<string, OrderItem[]> = {};
-    items.forEach((item) => {
-        item.printers?.forEach((printerStr) => {
-            const printerName = printerStr.split("|")[1];
-            const printerIsMain = printerStr.split("|")[2];
-            if (!printerGroups[`${printerName}|${printerIsMain}`]) {
-                printerGroups[`${printerName}|${printerIsMain}`] = [];
-            }
-            printerGroups[`${printerName}|${printerIsMain}`].push(item);
-        });
+  const printerGroups: Record<string, OrderItem[]> = {};
+  items.forEach((item) => {
+    item.printers?.forEach((printerStr) => {
+      const printerName = printerStr.split("|")[1];
+      const printerIsMain = printerStr.split("|")[2];
+      if (!printerGroups[`${printerName}|${printerIsMain}`]) {
+        printerGroups[`${printerName}|${printerIsMain}`] = [];
+      }
+      printerGroups[`${printerName}|${printerIsMain}`].push(item);
     });
+  });
 
-    return printerGroups;
+  return printerGroups;
 };
 export const generateReceiptHTML = (
-    items: OrderItem[],
-    configurations: any,
-    orderId: string,
-    orderType: string | undefined,
-    userRole: string,
-    status: string
+  items: OrderItem[],
+  configurations: any,
+  orderId: string,
+  orderType: string | undefined,
+  userRole: string,
+  status: string,
+  t: (key: string) => string
 ): string => {
-    const { nonMenuItems, groups, orderTotal } = calculateOrderTotal(items);
+  const { nonMenuItems, groups, orderTotal } = calculateOrderTotal(items);
 
-    // START FIX: Define sort function and sort item lists
-    const prioritySort = (a: OrderItem, b: OrderItem) =>
-        (a.productPriority || 0) - (b.productPriority || 0);
+  // START FIX: Define sort function and sort item lists
+  const prioritySort = (a: OrderItem, b: OrderItem) =>
+    (a.productPriority || 0) - (b.productPriority || 0);
 
-    const sortedNonMenuItems = nonMenuItems.sort(prioritySort);
-    const sortedGroups = groups.map((group) => ({
-        ...group,
-        items: group.items.sort(prioritySort),
-    }));
-    // END FIX
+  const sortedNonMenuItems = nonMenuItems.sort(prioritySort);
+  const sortedGroups = groups.map((group) => ({
+    ...group,
+    items: group.items.sort(prioritySort),
+  }));
+  // END FIX
 
-    const now = new Date();
-    const dateStr = now.toLocaleDateString("es-ES", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-    });
-    const timeStr = now.toLocaleTimeString("es-ES", {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
-    const dateTimeStr = `${dateStr} - ${timeStr}`;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  const timeStr = now.toLocaleTimeString("es-ES", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const dateTimeStr = `${dateStr} - ${timeStr}`;
 
-    // Simple VAT breakdown (group by tax rate; assumes tax % calculable from items)
-    const taxBreakdown = items.reduce(
-        (acc, item) => {
-            let base = 0;
-            let tax = 0;
-            let rate = 0;
-            if (item.menuId) {
-                base = item.menuPrice || 0;
-                tax = item.menuTax || 0;
-                rate = calculateTaxPercentage(base, tax);
-            } else {
-                base = item.productPrice || 0;
-                tax = item.productTax || 0;
-                rate = calculateTaxPercentage(base, tax);
-            }
-            const rateKey = `${Math.round(rate)}%`;
-            if (!acc[rateKey]) {
-                acc[rateKey] = { base: 0, tax: 0, rate: parseFloat(rateKey) };
-            }
-            acc[rateKey].base += base * item.quantity;
-            acc[rateKey].tax += tax * item.quantity;
-            return acc;
-        },
-        {} as Record<string, { base: number; tax: number; rate: number }>
-    );
+  // Simple VAT breakdown (group by tax rate; assumes tax % calculable from items)
+  const taxBreakdown = items.reduce(
+    (acc, item) => {
+      let base = 0;
+      let tax = 0;
+      let rate = 0;
+      if (item.menuId) {
+        base = item.menuPrice || 0;
+        tax = item.menuTax || 0;
+        rate = calculateTaxPercentage(base, tax);
+      } else {
+        base = item.productPrice || 0;
+        tax = item.productTax || 0;
+        rate = calculateTaxPercentage(base, tax);
+      }
+      const rateKey = `${Math.round(rate)}%`;
+      if (!acc[rateKey]) {
+        acc[rateKey] = { base: 0, tax: 0, rate: parseFloat(rateKey) };
+      }
+      acc[rateKey].base += base * item.quantity;
+      acc[rateKey].tax += tax * item.quantity;
+      return acc;
+    },
+    {} as Record<string, { base: number; tax: number; rate: number }>
+  );
 
-    // Default rates if none
-    if (Object.keys(taxBreakdown).length === 0) {
-        taxBreakdown["10%"] = {
-            base: orderTotal / 1.1,
-            tax: orderTotal / 11,
-            rate: 10,
-        };
-    }
-    let html = `
+  let html = `
     <html>
         <head>
         <style>
@@ -148,55 +141,73 @@ export const generateReceiptHTML = (
         </div>
         <div class="line"></div>
         <div class="order-info center">
-            <h1 class="bold">K${orderId}</h1>
+            <h1 class="bold" style="font-size: 24px;">${configurations.orderPrefix}${orderId}</h1>
         </div>
         <div class="order-info left">
-            <p><span class="bold">Date:</span> ${dateTimeStr}</p>
-            <p><span class="bold">Order:</span> K${orderId}(${orderType?.toUpperCase() || "N/A"})</p>
-            <p><span class="bold">Payment:</span> ${status}</p>
-            <p><span class="bold">Served By:</span> ${userRole}</p>
+            <p><span class="bold">${t("receipt.date")}:</span> ${dateTimeStr}</p>
+            <p><span class="bold">${t("receipt.order")}:</span> ${configurations.orderPrefix}${orderId}(${orderType?.toUpperCase() || "N/A"})</p>
+            <p><span class="bold">${t("receipt.payment")}:</span> ${status}</p>
+            <p><span class="bold">${t("receipt.servedBy")}:</span> ${userRole}</p>
             <div class="line"></div>
         </div>
         <table>
             <thead>
                 <tr>
-                    <th class="qty-col">Qty.</th>
-                    <th class="name-col">Name</th>
-                    <th class="sub-col">Subtotal</th>
-                    <th class="total-col">TOTAL</th>
+                    <th class="qty-col">${t("receipt.quantity")}</th>
+                    <th class="name-col">${t("receipt.name")}</th>
+                    <th class="sub-col">${t("receipt.subtotal")}</th>
+                    <th class="total-col">${t("receipt.total")}</th>
                 </tr>
             </thead>
             <tbody>
     `;
 
-    // Menu groups - MODIFIED to use sortedGroups
-    sortedGroups.forEach((group) => {
-        const sectionQty = group.items[0]?.quantity || 1;
-        const menuPrice = group.basePrice;
-        const sectionSubtotal = menuPrice * sectionQty;
-        const sectionTotal =
-            (menuPrice + group.taxPerUnit + group.supplementTotal) * sectionQty;
-        html += `
+  // Menu groups - MODIFIED to use sortedGroups
+  sortedGroups.forEach((group) => {
+    const sectionQty = group.items[0]?.quantity || 1;
+    const menuPrice = group.basePrice;
+    const menuTax = group.taxPerUnit;
+    const supplementTotal = group.supplementTotal;
+
+    const menuGroupPrice = (menuPrice + menuTax + supplementTotal) * sectionQty;
+    const variantsAndComplementsTotal = group.items.reduce(
+      (itemTotal, item) => {
+        const complementsTotal = Array.isArray(item.complements)
+          ? item.complements.reduce(
+              (sum, complement) => sum + complement.price,
+              0
+            )
+          : 0;
+        return (
+          itemTotal +
+          ((item.variantPrice || 0) + complementsTotal) * item.quantity
+        );
+      },
+      0
+    );
+
+    const totalGroupPrice = menuGroupPrice + variantsAndComplementsTotal;
+
+    html += `
                 <tr>
                     <td class="qty-col">${sectionQty}</td>
                     <td class="name-col">${group.menuName}</td>
                     <td class="sub-col">€${menuPrice.toFixed(2)}</td>
-                    <td class="total-col">€${sectionSubtotal.toFixed(2)}</td>
+                    <td class="total-col">€${totalGroupPrice.toFixed(2)}</td>
                 </tr>
         `;
-        // Sub-items and their complements - This loop now uses sorted items
-        group.items.forEach((item) => {
-            html += `
+    group.items.forEach((item) => {
+      html += `
                 ${
-                    item.supplement
-                        ? `<tr>
+                  item.supplement
+                    ? `<tr>
                     <td class="qty-col"></td>
-                    <td class="name-col sub-item">Extra:${item.supplement}</td>
+                    <td class="name-col sub-item">${t("receipt.extra")}:${item.supplement}</td>
                     <td class="sub-col"></td>
                     <td class="total-col">€${item.supplement.toFixed(2)}</td>
                 </tr>
                 `
-                        : ""
+                    : ""
                 }
                 <tr>
                     <td class="qty-col"></td>
@@ -205,43 +216,59 @@ export const generateReceiptHTML = (
                     <td class="total-col"></td>
                 </tr>
                 ${
-                    item.variantPrice && item.variantPrice > 0
-                        ? `<tr>
+                  item.variantPrice && item.variantPrice > 0
+                    ? `<tr>
                     <td class="qty-col"></td>
                     <td class="name-col sub-item indent">${item.variantName}</td>
                     <td class="sub-col"></td>
                     <td class="total-col">€${item.variantPrice.toFixed(2)}</td>
                 </tr>`
-                        : ""
+                    : ""
                 }
             `;
-            item.complements.forEach((comp) => {
-                html += `
+      item.complements.forEach((comp) => {
+        html += `
                      <tr>
                          <td class="qty-col"></td>
-                         <td class="name-col sub-item indent">+${comp.itemName}</td>
+                         <td class="name-col sub-item indent">${comp.itemName}</td>
                          <td class="sub-col"></td>
                          <td class="total-col">€${comp.price.toFixed(2)}</td>
                      </tr>
                  `;
-            });
-        });
+      });
     });
+  });
 
-    // Non-menu items - MODIFIED to use sortedNonMenuItems
-    sortedNonMenuItems.forEach((item) => {
-        const unitPrice = item.productPrice + item.productTax;
-        const baseTotal = (unitPrice * item.quantity).toFixed(2);
-        html += `
+  // Non-menu items - MODIFIED to use sortedNonMenuItems
+  sortedNonMenuItems.forEach((item) => {
+    // Calculate item total using same logic as orderCalculations
+    const complementsTotal = Array.isArray(item.complements)
+      ? item.complements.reduce(
+          (complementSum, complement) => complementSum + complement.price,
+          0
+        )
+      : 0;
+
+    const subtotal =
+      item.productPrice +
+      item.productTax +
+      item.variantPrice +
+      complementsTotal;
+    const discountAmount = (subtotal * item.productDiscount) / 100;
+    const itemTotal = (subtotal - discountAmount) * item.quantity;
+
+    const unitPrice = item.productPrice + item.productTax;
+
+    html += `
             <tr>
                 <td class="qty-col">${item.quantity}</td>
                 <td class="name-col">${item.productName}</td>
                 <td class="sub-col">€${unitPrice.toFixed(2)}</td>
-                <td class="total-col">€${baseTotal}</td>
+                <td class="total-col">€${itemTotal.toFixed(2)}</td>
             </tr>
         `;
-        if (item.variantPrice && item.variantPrice > 0) {
-            html += `
+    if (item.variantPrice && item.variantPrice > 0) {
+      html += `
             <tr>
                 <td class="qty-col"></td>
                 <td class="name-col sub-item">${item.variantName}</td>
@@ -249,93 +276,94 @@ export const generateReceiptHTML = (
                 <td class="total-col">€${item.variantPrice.toFixed(2)}</td>
             </tr>
         `;
-        }
-        item.complements.forEach((comp) => {
-            html += `
+    }
+    item.complements.forEach((comp) => {
+      html += `
                  <tr>
                      <td class="qty-col"></td>
-                     <td class="name-col sub-item">+${comp.itemName}</td>
+                     <td class="name-col sub-item">${comp.itemName}</td>
                      <td class="sub-col"></td>
                      <td class="total-col">€${comp.price.toFixed(2)}</td>
                  </tr>
              `;
-        });
     });
+  });
 
-    html += `
+  html += `
             </tbody>
         </table>
         <div class="total-row center">
             <table style="width: 100%; margin: 10px 0;">
-                <tr><td class="qty-col"></td><td class="name-col"></td><td class="sub-col bold">TOTAL</td><td class="total-col bold">€${orderTotal.toFixed(2)}</td></tr>
+                <tr><td class="qty-col"></td><td class="name-col"></td><td class="sub-col bold">${t("receipt.total")}</td><td class="total-col bold">€${orderTotal.toFixed(2)}</td></tr>
             </table>
         </div>
         <div class="line"></div>
         <table class="vat-table">
             <thead>
                 <tr>
-                    <th class="name-col">VAT</th>
-                    <th class="sub-col">Base</th>
-                    <th class="total-col">Tax</th>
+                    <th class="name-col">${t("receipt.vat")}</th>
+                    <th class="sub-col">${t("receipt.base")}</th>
+                    <th class="total-col">${t("receipt.tax")}</th>
                 </tr>
             </thead>
             <tbody>
     `;
 
-    // VAT rows
-    Object.entries(taxBreakdown).forEach(([rateKey, { base, tax }]) => {
-        html += `
+  // VAT rows
+  Object.entries(taxBreakdown).forEach(([rateKey, { base, tax }]) => {
+    html += `
                 <tr>
                     <td class="name-col">${rateKey}</td>
                     <td class="sub-col">€${base.toFixed(2)}</td>
                     <td class="total-col">€${tax.toFixed(2)}</td>
                 </tr>
         `;
-    });
+  });
 
-    html += `
+  html += `
             </tbody>
         </table>
         <div class="line"></div>
-        <div class="center"><small>Thank you for your visit</small></div>
+        <div class="center"><small>${t("receipt.thankYou")}</small></div>
         </body>
     </html>
     `;
-    return html;
+  return html;
 };
 export const generateItemsReceiptHTML = (
-    items: OrderItem[],
-    configurations: any,
-    order: any,
-    userRole: string,
-    status: string
+  items: OrderItem[],
+  configurations: any,
+  order: any,
+  userRole: string,
+  status: string,
+  t: (key: string) => string
 ): string => {
-    const { nonMenuItems, groups } = calculateOrderTotal(items);
+  const { nonMenuItems, groups } = calculateOrderTotal(items);
 
-    // START FIX: Define sort function and sort item lists
-    const prioritySort = (a: OrderItem, b: OrderItem) =>
-        (a.productPriority || 0) - (b.productPriority || 0);
+  // START FIX: Define sort function and sort item lists
+  const prioritySort = (a: OrderItem, b: OrderItem) =>
+    (a.productPriority || 0) - (b.productPriority || 0);
 
-    const sortedNonMenuItems = nonMenuItems.sort(prioritySort);
-    const sortedGroups = groups.map((group) => ({
-        ...group,
-        items: group.items.sort(prioritySort),
-    }));
-    // END FIX
+  const sortedNonMenuItems = nonMenuItems.sort(prioritySort);
+  const sortedGroups = groups.map((group) => ({
+    ...group,
+    items: group.items.sort(prioritySort),
+  }));
+  // END FIX
 
-    const now = new Date();
-    const dateStr = now.toLocaleDateString("es-ES", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-    });
-    const timeStr = now.toLocaleTimeString("es-ES", {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
-    const dateTimeStr = `${dateStr} - ${timeStr}`;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  const timeStr = now.toLocaleTimeString("es-ES", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const dateTimeStr = `${dateStr} - ${timeStr}`;
 
-    let html = `
+  let html = `
     <html>
         <head>
         <style>
@@ -363,8 +391,8 @@ export const generateItemsReceiptHTML = (
         </head>
         <body>
         <div class="order-info center">
-            <h1 class="bold">K${order.orderId}</h1>
-            <h1 class="bold">${order.orderType ? order.orderType.toUpperCase() : "N/A"}</h1>
+            <h1 class="bold" style="font-size: 24px;">${configurations.orderPrefix}${order.orderId}</h1>
+            <h1 class="bold" style="font-size: 16px;">${order.orderType ? order.orderType.toUpperCase() : "N/A"}</h1>
             <p>${dateTimeStr}</p>
             <p>${status}</p>
         </div>
@@ -372,57 +400,57 @@ export const generateItemsReceiptHTML = (
         <div>
     `;
 
-    // Menu groups - MODIFIED to use sortedGroups
-    sortedGroups.forEach((group) => {
-        // Sub-items and their complements - This loop now uses sorted items
-        html += `
+  // Menu groups - MODIFIED to use sortedGroups
+  sortedGroups.forEach((group) => {
+    // Sub-items and their complements - This loop now uses sorted items
+    html += `
                     <div class="name-col bold">${group.menuName}</div>
         `;
-        group.items.forEach((item) => {
-            html += `
+    group.items.forEach((item) => {
+      html += `
             <div class="sub-item bold">
             ${item.productName} ${item.variantId ? "-" : ""} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}
             </div>
             <div class="indent">
-            ${item.supplement ? `Extra: ${item.supplement}` : ""}
+            ${item.supplement ? `${t("receipt.extra")}: ${item.supplement}` : ""}
             </div>
             `;
-            item.complements.forEach((comp) => {
-                html += `
+      item.complements.forEach((comp) => {
+        html += `
                 <div class="indent">
-                +${comp.itemName}
+                ${comp.itemName}
                 </div>
                 `;
-            });
-        });
+      });
     });
+  });
 
-    // Non-menu items - MODIFIED to use sortedNonMenuItems
-    sortedNonMenuItems.forEach((item) => {
-        html += `
+  // Non-menu items - MODIFIED to use sortedNonMenuItems
+  sortedNonMenuItems.forEach((item) => {
+    html += `
             <div class="bold">
                 ${item.productName} ${item.variantId ? "-" : ""} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}
             </div>
         `;
-        item.complements.forEach((comp) => {
-            html += `
+    item.complements.forEach((comp) => {
+      html += `
                 <div class="sub-item">
-                +${comp.itemName}
+                 ${comp.itemName}
                 </div>
                 `;
-        });
     });
+  });
 
-    html += `
+  html += `
         </div>
         <div class="line"></div>
         <div>
-            Order K${order.orderId} - ${dateTimeStr}
+            ${t("receipt.order")} ${configurations.orderPrefix}${order.orderId} - ${dateTimeStr}
         </div>
         <div class="center">
-            Waiter: ${order.deliveryPersonName ? order.deliveryPersonName : "N/A"}
+            ${t("receipt.waiter")}: ${order.deliveryPersonName ? order.deliveryPersonName : "N/A"}
         </div>
     `;
 
-    return html;
+  return html;
 };

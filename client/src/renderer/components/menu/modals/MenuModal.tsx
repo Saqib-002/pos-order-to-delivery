@@ -462,17 +462,18 @@ export const MenuModal: React.FC<MenuModalProps> = ({
   // Calculate price breakdown
   const calculatePriceBreakdown = () => {
     const basePrice = formData.price || 0;
-    const discount = formData.discount || 0;
+    const discountPercentage = formData.discount || 0;
     const taxPercentage = formData.tax || 0;
 
     const tax = ((basePrice / (1 + taxPercentage / 100)) * taxPercentage) / 100;
     const subtotal = basePrice - tax;
-    const total = basePrice - discount;
+    const discountAmount = (subtotal * discountPercentage) / 100;
+    const total = subtotal - discountAmount;
 
     return {
       subtotal: subtotal,
       taxAmount: tax,
-      discount: discount,
+      discount: discountAmount,
       total: total,
     };
   };
@@ -695,9 +696,12 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   value={formData.discount}
                   onChange={handleInputChange}
                   min="0"
+                  max="100"
                   step="0.01"
-                  inputClasses="focus:ring-black pl-8"
-                  preLabel="€"
+                  inputClasses="focus:ring-black pr-8"
+                  otherClasses="relative"
+                  postLabel="%"
+                  secLabelClasses="right-3 top-2"
                 />
               </div>
             </div>
@@ -729,7 +733,8 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   {formData.discount > 0 && (
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700">
-                        {t("menuComponents.modals.menuModal.discount")}:
+                        {t("menuComponents.modals.menuModal.discount")} (
+                        {formData.discount}%):
                       </span>
                       <span className="text-sm font-semibold text-red-600">
                         -€{calculatePriceBreakdown().discount.toFixed(2)}

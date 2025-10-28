@@ -486,17 +486,18 @@ const ProductModal: React.FC<ProductModalProps> = ({
   // Calculate price breakdown
   const calculatePriceBreakdown = () => {
     const basePrice = formData.price || 0;
-    const discount = formData.discount || 0;
+    const discountPercentage = formData.discount || 0;
     const taxPercentage = formData.tax || 0;
 
     const tax = ((basePrice / (1 + taxPercentage / 100)) * taxPercentage) / 100;
     const subtotal = basePrice - tax;
-    const total = basePrice - discount;
+    const discountAmount = (subtotal * discountPercentage) / 100;
+    const total = subtotal - discountAmount;
 
     return {
       subtotal: subtotal,
       taxAmount: tax,
-      discount: discount,
+      discount: discountAmount,
       total: total,
     };
   };
@@ -991,13 +992,15 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         discount: parseFloat(e.target.value) || 0,
                       })
                     }
-                    inputClasses="focus:ring-black focus:border-black pl-8"
+                    inputClasses="focus:ring-black focus:border-black pr-8"
                     placeholder="0"
                     step="0.01"
                     min="0"
+                    max="100"
                     required
                     otherClasses="relative"
-                    preLabel="€"
+                    postLabel="%"
+                    secLabelClasses="right-3 top-2"
                   />
                 </div>
 
@@ -1026,7 +1029,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         <span className="text-sm font-medium text-gray-700">
                           {t(
                             "menuComponents.modals.productModal.discountAmount"
-                          )}
+                          )}{" "}
+                          ({formData.discount}%):
                         </span>
                         <span className="text-sm font-semibold text-red-600">
                           -€

@@ -1162,6 +1162,22 @@
   "printerUtils": {
     "unableToGetPrinters": "No se pudieron obtener las impresoras"
   },
+  "receipt": {
+    "date": "Fecha",
+    "order": "Pedido",
+    "payment": "Pago",
+    "servedBy": "Atendido Por",
+    "quantity": "Cant.",
+    "name": "Nombre",
+    "subtotal": "Subtotal",
+    "total": "TOTAL",
+    "vat": "IVA",
+    "base": "Base",
+    "tax": "Impuesto",
+    "thankYou": "Gracias por su visita",
+    "extra": "Extra",
+    "waiter": "Camarero"
+  },
   "menuOrderTakingForm": {
     "errors": {
       "unableToGetMenuPageAssociations": "No se pudieron obtener las asociaciones de páginas del menú",
@@ -1341,7 +1357,7 @@
   },
   "orderTypes": {
     "pickup": "Recoger",
-    "delivery": "Entrega",
+    "delivery": "Domicilio",
     "dineIn": "Comer Aquí"
   }
 }
