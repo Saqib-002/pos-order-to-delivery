@@ -9,9 +9,17 @@ export class OrderDatabaseOperations {
         const trx = await db.transaction();
         try {
             const now = new Date().toISOString();
+            const todayDate = now.slice(0, 10);
+            const countResult = await trx("orders")
+                .whereRaw(`"createdAt"::date = ?`, [todayDate])
+                .count("* as count")
+                .first();
+            const newDailyOrderId =
+                (Number((countResult as any).count) || 0) + 1;
             const newOrder = {
                 id: randomUUID(),
                 status: "pending",
+                orderId: newDailyOrderId,
                 createdAt: now,
                 updatedAt: now,
             };

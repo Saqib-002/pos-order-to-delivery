@@ -303,6 +303,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
           ...orderItem,
           complements: newComplement,
         });
+        console.log(res);
         if (!res.status) {
           toast.error(t("orderTakingForm.errors.unableToSaveOrder"));
           return;
@@ -399,6 +400,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         ...orderItem,
         complements: newComplement,
       });
+      console.log(res);
       if (!res.status) {
         toast.error(t("orderTakingForm.errors.unableToSaveOrder"));
         return;

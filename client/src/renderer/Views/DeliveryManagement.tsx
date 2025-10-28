@@ -44,8 +44,8 @@ export const DeliveryManagement = () => {
   // Email validation function
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim()) {
-      return t("deliveryManagement.errors.emailRequired");
+    if (email.trim()==="") {
+      return "";
     }
     if (!emailRegex.test(email)) {
       return t("deliveryManagement.errors.validEmail");
@@ -63,7 +63,7 @@ export const DeliveryManagement = () => {
       return t("deliveryManagement.errors.validPhone");
     }
     const digitsOnly = phone.replace(/\D/g, "");
-    if (digitsOnly.length < 10) {
+    if (digitsOnly.length < 9) {
       return t("deliveryManagement.errors.phoneMinDigits");
     }
     if (digitsOnly.length > 15) {
@@ -88,7 +88,7 @@ export const DeliveryManagement = () => {
     if (phoneRegex.test(value) && currentDeliveryPerson) {
       setCurrentDeliveryPerson({
         ...currentDeliveryPerson,
-        phone: value,
+        phone: value, 
       } as any);
       if (phoneError) {
         setPhoneError("");
