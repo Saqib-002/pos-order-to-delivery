@@ -309,7 +309,7 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(({
       style={style}
       {...(type === "product" ? dragAttributes : {})}
       {...(type === "product" ? dragListeners : {})}
-      onClick={type !== "product" ? onClick : undefined}
+      onClick={onClick }
       className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${isClickable ? "cursor-pointer" : ""
         } ${ ["product", "menu"].includes(type) ? "cursor-grab active:cursor-grabbing" : ""}`}
     >

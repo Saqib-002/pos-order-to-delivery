@@ -184,12 +184,15 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
   };
 
   const calculateTotalPrice = () => {
-    if (!selectedVariant) return 0;
+    if(!selectedProduct) return 0;
+    if (variantItems && variantItems.length > 0){
+      if (!selectedVariant) return 0;
+    }
     const productTaxRate = (selectedProduct?.tax || 0) / 100;
     const baseProductPrice = selectedProduct!.price / (1 + productTaxRate);
     const productTaxAmount = selectedProduct!.price - baseProductPrice;
 
-    let total = baseProductPrice + (selectedVariant.price || 0);
+    let total = baseProductPrice + (selectedVariant?.price || 0);
 
     // Add complement prices
     Object.entries(selectedComplements).forEach(([groupId, itemIds]) => {
@@ -400,7 +403,6 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         ...orderItem,
         complements: newComplement,
       });
-      console.log(res);
       if (!res.status) {
         toast.error(t("orderTakingForm.errors.unableToSaveOrder"));
         return;
