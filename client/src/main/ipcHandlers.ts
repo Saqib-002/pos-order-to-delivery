@@ -65,9 +65,10 @@ import {
   getProductsByCatId,
   getVariantsByProductId,
   updateProduct,
+  updateProductPriorities,
 } from "./handlers/products.js";
 import { createMenuPage, deleteMenuPage, getAssociatedMenuByMenuPageId, getMenuPageProducts, getMenuPages, updateMenuPage } from "./handlers/menuPages.js";
-import {  createMenu, deleteMenu, getMenuById, getMenuPageAssociations, getMenus, getMenusBySubcategory, updateMenu } from "./handlers/menus.js";
+import {  createMenu, deleteMenu, getMenuById, getMenuPageAssociations, getMenus, getMenusBySubcategory, updateMenu, updateMenuPriorities } from "./handlers/menus.js";
 import { createCustomer, getCustomersByPhone, updateCustomer } from "./handlers/customers.js";
 import { createPrinter, deletePrinter, getAllPrinters, getConnectedPrinters, getProductPrinters, printToPrinter, updatePrinter } from "./handlers/printers.js";
 import { createConfigurations, getConfigurations, updateConfigurations } from "./handlers/configurations.js";
@@ -108,6 +109,8 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-product-by-id",getProductById)
   ipcMain.handle("get-associated-menu-pages-by-product-id", getAssociatedMenuPagesByProductId
 );
+ipcMain.handle("update-product-priorities", updateProductPriorities);
+
 
   // Customer handlers
   ipcMain.handle("create-customer", createCustomer);
@@ -130,6 +133,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-menu-by-id", getMenuById);
   ipcMain.handle("update-menu", updateMenu);
   ipcMain.handle("delete-menu", deleteMenu);
+  ipcMain.handle("update-menu-priorities", updateMenuPriorities);
   ipcMain.handle("get-menu-page-associations", getMenuPageAssociations);
 
   // Authentication handlers

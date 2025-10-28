@@ -93,6 +93,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
             addonPages,
             printerIds
         ),
+    updateProductPriorities: (token: string, productIds: string[]) =>
+        ipcRenderer.invoke("update-product-priorities", token, productIds),
     getAllProducts: (token: string) =>
         ipcRenderer.invoke("get-all-products", token),
     getProductsByCatId: (token: string, catId: string) =>
@@ -316,6 +318,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ),
     deleteMenu: (token: string, id: string) =>
         ipcRenderer.invoke("delete-menu", token, id),
+    updateMenuPriorities: (token: string, menus: { id: string, priority: number }[]) => ipcRenderer.invoke("update-menu-priorities", token, menus),
     getMenuPageAssociations: (token: string, menuId: string) =>
         ipcRenderer.invoke("get-menu-page-associations", token, menuId),
 

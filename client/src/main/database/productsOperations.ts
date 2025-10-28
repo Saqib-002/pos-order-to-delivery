@@ -317,4 +317,27 @@ export class ProductsDatabaseOperations {
             throw error;
         }
     }
+    static async updateProductPriorities(productIds: string[]) {
+        const trx = await db.transaction();
+        try {
+            // Create an array of update promises
+            const updatePromises = productIds.map((id, index) => {
+                return trx("products")
+                    .where("id", id)
+                    .update({ 
+                        priority: index,
+                        updatedAt: new Date().toISOString() 
+                    });
+            });
+            
+            // Wait for all updates to complete
+            await Promise.all(updatePromises);
+            
+            await trx.commit();
+            return { status: true, count: productIds.length };
+        } catch (error) {
+            await trx.rollback();
+            throw error;
+        }
+    }
 }

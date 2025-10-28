@@ -1,4 +1,4 @@
-import { DeleteIcon, EditIcon } from "@/renderer/public/Svg";
+import { DeleteIcon, EditIcon, GrabberIcon } from "@/renderer/public/Svg";
 import React, { ReactNode } from "react";
 
 interface BaseCardData {
@@ -29,6 +29,9 @@ interface UnifiedCardProps {
   onDelete?: () => void;
   onClick?: () => void;
   showActions?: boolean;
+  style?: React.CSSProperties;
+  dragAttributes?: any;
+  dragListeners?: any;
 }
 
 interface Config {
@@ -246,14 +249,17 @@ const getColorClasses = (color: string | undefined, type: string) => {
   return colorMap[color] || colorMap.gray;
 };
 
-const UnifiedCard: React.FC<UnifiedCardProps> = ({
+const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(({
   data,
   type,
   onEdit,
   onDelete,
   onClick,
   showActions = true,
-}) => {
+  style,
+  dragAttributes,
+  dragListeners,
+}, ref) => {
   const colorClasses = getColorClasses(data.color, type);
   const isClickable = !!onClick;
   const config = configs[type];
@@ -279,6 +285,9 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
           onClick();
         }}
         className={`p-1 rounded-full transition-colors duration-200 cursor-pointer ${hoverClass}`}
+        onPointerDown={(e) => {
+            e.stopPropagation();
+          }}
         title={title}
       >
         <Icon className={iconSize} />
@@ -295,31 +304,35 @@ const UnifiedCard: React.FC<UnifiedCardProps> = ({
     );
   };
   return (
-    <div onClick={onClick}>
-      <div
-        className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${isClickable ? "cursor-pointer" : ""
-          }`}
-      >
-        {['product', 'menu','category','subcategory'].includes(type) &&
-          <img
-            crossOrigin="anonymous"
-            src={data.imgUrl || 'pizza.jpg'}
-            alt={`${data.name || 'Product'} image`}
-            className="w-full h-34 object-cover rounded-md"
-          />
-        }
-        <div className={`flex items-center justify-between mt-1 ${headerMb}`}>
-          <h3 className="font-semibold text-white text-lg truncate">{data.name}</h3>
+    <div
+      ref={ref}
+      style={style}
+      {...(type === "product" ? dragAttributes : {})}
+      {...(type === "product" ? dragListeners : {})}
+      onClick={type !== "product" ? onClick : undefined}
+      className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${isClickable ? "cursor-pointer" : ""
+        } ${ ["product", "menu"].includes(type) ? "cursor-grab active:cursor-grabbing" : ""}`}
+    >
+      {['product', 'menu', 'category', 'subcategory'].includes(type) &&
+        <img
+          crossOrigin="anonymous"
+          src={data.imgUrl || 'pizza.jpg'}
+          alt={`${data.name || 'Product'} image`}
+          className="w-full h-34 object-cover rounded-md"
+          onDragStart={(e) => e.preventDefault()}
+        />
+      }
+      <div className={`flex items-center justify-between mt-1 ${headerMb}`}>
+        <h3 className="font-semibold text-white text-lg truncate">{data.name}</h3>
           {renderActions()}
-        </div>
-        {bodyContent}
-        <div className={`flex items-center justify-between ${footerMb}`}>
-          <div className={left.className}>{left.text}</div>
-          <div className="flex items-center gap-2">{rightContent}</div>
-        </div>
+      </div>
+      {bodyContent}
+      <div className={`flex items-center justify-between ${footerMb}`}>
+        <div className={left.className}>{left.text}</div>
+        <div className="flex items-center gap-2">{rightContent}</div>
       </div>
     </div>
   );
-};
+});
 
 export { UnifiedCard };

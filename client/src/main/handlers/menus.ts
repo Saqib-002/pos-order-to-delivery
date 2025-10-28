@@ -105,6 +105,22 @@ export const deleteMenu = async (
         };
     }
 };
+export const updateMenuPriorities = async (
+    event: IpcMainInvokeEvent,
+    token: string,
+    menus: { id: string; priority: number }[]
+) => {
+    try {
+        await verifyToken(event, token);
+        await MenusOperations.updateMenuPriorities(menus);
+        return { status: true };
+    } catch (error) {
+        return {
+            status: false,
+            error: error instanceof Error ? error.message : String(error),
+        };
+    }
+};
 
 export const getMenuPageAssociations = async (
     event: IpcMainInvokeEvent,

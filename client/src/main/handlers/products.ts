@@ -205,3 +205,26 @@ export const getAssociatedMenuPagesByProductId = async (
         };
     }
 };
+export const updateProductPriorities = async (
+    event: IpcMainInvokeEvent,
+    token: string,
+    productIds: string[]
+) => {
+    try {
+        await verifyToken(event, token);
+        const result =
+            await ProductsDatabaseOperations.updateProductPriorities(
+                productIds
+            );
+        return {
+            status: true,
+            data: result,
+        };
+    } catch (error) {
+        Logger.error("Error updating product priorities:", error);
+        return {
+            status: false,
+            error: (error as Error).message,
+        };
+    }
+};

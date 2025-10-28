@@ -1,3 +1,5 @@
+import { DragEndEvent } from "@dnd-kit/core";
+
 export interface MenuCategory {
   name: string;
   label: string;
@@ -67,6 +69,7 @@ export interface ContentSectionProps {
   subcategories: Subcategory[];
   products: Product[];
   selectedCategory: Category | null;
+  onProductDragEnd: (event: DragEndEvent) => void;
   selectedSubcategory: Subcategory | null;
   onCategoryClick: (category: Category) => void;
   onSubcategoryClick: (subcategory: Subcategory) => void;
@@ -81,6 +84,7 @@ export interface ProductSectionProps {
   products: Product[];
   selectedSubcategory: Subcategory | null;
   onEditProduct: (product: Product) => void;
+  onProductDragEnd: (event: DragEndEvent) => void;
   onDeleteProduct: (product: Product) => void;
 }
 export interface SectionWrapperProps {

@@ -9,6 +9,60 @@ import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import { useTranslation } from "react-i18next";
 import { DocumentIcon, NoMenuIcon } from "@/renderer/public/Svg";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+const SortableMenuCard = ({ menu, onEdit, onDelete }: { menu: Menu, onEdit: () => void, onDelete: () => void }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: menu.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : "auto",
+    opacity: isDragging ? 0.8 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <UnifiedCard
+        data={{
+          id: menu.id,
+          name: menu.name,
+          description: menu.description,
+          imgUrl: menu.imgUrl,
+          price: menu.price,
+          isAvailable: true,
+          color: "orange",
+        }}
+        type="menu"
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    </div>
+  );
+};
 
 export const MenuStructureComponent = () => {
   const [menuPages, setMenuPages] = useState<MenuPage[]>([]);
@@ -22,7 +76,12 @@ export const MenuStructureComponent = () => {
   } = useAuth();
   const confirm = useConfirm();
   const { t } = useTranslation();
-
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
   // Fetch data from API
   useEffect(() => {
     fetchMenuPages();
@@ -145,6 +204,37 @@ export const MenuStructureComponent = () => {
     setEditingMenu(null);
     fetchMenus(); // Refresh data
   };
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = menus.findIndex((m) => m.id === active.id);
+      const newIndex = menus.findIndex((m) => m.id === over.id);
+      const reorderedMenus = arrayMove(menus, oldIndex, newIndex);
+      setMenus(reorderedMenus);
+
+      const updatedMenusWithPriority = reorderedMenus.map((menu, index) => ({
+        id: menu.id,
+        priority: index,
+      }));
+
+      try {
+        const res = await (window as any).electronAPI.updateMenuPriorities(
+          token,
+          updatedMenusWithPriority
+        );
+        if (!res.status) {
+          toast.error(t("menuComponents.messages.errors.failedToUpdate"));
+          fetchMenus();
+        } else {
+          fetchMenus();
+        }
+      } catch (error) {
+        toast.error(t("menuComponents.messages.errors.failedToUpdate"));
+        fetchMenus();
+      }
+    }
+  };
   return (
     <>
       <div className="flex flex-wrap gap-4 items-center mb-4">
@@ -190,7 +280,7 @@ export const MenuStructureComponent = () => {
           ) : (
             <div className="col-span-full flex flex-col items-center justify-center py-8 text-center">
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-0">
-                <DocumentIcon className="size-10 text-gray-400"/>
+                <DocumentIcon className="size-10 text-gray-400" />
               </div>
               <h3 className="text-lg font-medium text-black mb-0">
                 {t("menuComponents.menuPages.noMenuPages")}
@@ -210,41 +300,41 @@ export const MenuStructureComponent = () => {
             {t("menuComponents.menus.title")}
           </h2>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {menus.length > 0 ? (
-            menus.map((menu) => (
-              <UnifiedCard
-                key={menu.id}
-                data={{
-                  id: menu.id,
-                  name: menu.name,
-                  description: menu.description,
-                  imgUrl: menu.imgUrl,
-                  price: menu.price,
-                  // isAvailable: !menu.outstanding,
-                  isAvailable: true,
-                  color: "orange",
-                }}
-                type="menu"
-                onEdit={() => handleEditMenu(menu)}
-                onDelete={() => handleDeleteMenu(menu)}
-              />
-            ))
-          ) : (
-            <div className="col-span-full flex flex-col items-center justify-center py-8 text-center">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-0">
-                <NoMenuIcon className="text-gray-400 size-10"/>
-              </div>
-              <h3 className="text-lg font-medium text-black mb-0">
-                {t("menuComponents.menus.noMenus")}
-              </h3>
-              <p className="text-gray-500 mb-0">
-                {t("menuComponents.menus.createFirst")}
-              </p>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={menus.map(m => m.id)} // Pass array of IDs
+            strategy={verticalListSortingStrategy} // Or rectSortingStrategy for grid
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {menus.length > 0 ? (
+                menus.map((menu) => (
+                  <SortableMenuCard
+                    key={menu.id}
+                    menu={menu}
+                    onEdit={() => handleEditMenu(menu)}
+                    onDelete={() => handleDeleteMenu(menu)}
+                  />
+                ))
+              ) : (
+                <div className="col-span-full flex flex-col items-center justify-center py-8 text-center">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-0">
+                    <NoMenuIcon className="text-gray-400 size-10" />
+                  </div>
+                  <h3 className="text-lg font-medium text-black mb-0">
+                    {t("menuComponents.menus.noMenus")}
+                  </h3>
+                  <p className="text-gray-500 mb-0">
+                    {t("menuComponents.menus.createFirst")}
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </SortableContext>
+        </DndContext>
       </div>
 
       {/* Menu Page Modal */}

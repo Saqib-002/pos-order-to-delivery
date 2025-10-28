@@ -8,12 +8,29 @@ import {
   CategorySectionProps,
 } from "@/types/Menu";
 import { useTranslation } from "react-i18next";
+import {
+    DndContext,
+    closestCenter,
+    PointerSensor,
+    TouchSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent,
+} from "@dnd-kit/core";
+import {
+    arrayMove,
+    SortableContext,
+    useSortable,
+    rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export const MenuContentSections: React.FC<ContentSectionProps> = ({
   currentLevel,
   categories,
   subcategories,
   products,
+  onProductDragEnd,
   selectedCategory,
   selectedSubcategory,
   onCategoryClick,
@@ -56,6 +73,7 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
             selectedSubcategory={selectedSubcategory}
             onEditProduct={onEditProduct}
             onDeleteProduct={onDeleteProduct}
+            onProductDragEnd={onProductDragEnd!}
           />
         );
 
@@ -125,31 +143,86 @@ const SubcategorySection: React.FC<SubcategorySectionProps> = ({
     </SectionWrapper>
   );
 };
+const SortableProductCard: React.FC<{ product: any, onEditProduct: (product: any) => void, onDeleteProduct: (product: any) => void }> = ({
+  product,
+  onEditProduct,
+  onDeleteProduct,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: product.id });
 
-const ProductSection: React.FC<ProductSectionProps> = ({
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 0,
+    opacity: isDragging ? 0.8 : 1,
+  };
+
+  return (
+    <UnifiedCard
+      ref={setNodeRef}
+      style={style}
+      data={product}
+      type="product"
+      onEdit={() => onEditProduct(product)}
+      onDelete={() => onDeleteProduct(product)}
+      dragAttributes={attributes}
+      dragListeners={listeners}
+    />
+  );
+};
+
+const ProductSection: React.FC<ProductSectionProps & { onProductDragEnd: (event: DragEndEvent) => void }> = ({
   products,
   selectedSubcategory,
   onEditProduct,
   onDeleteProduct,
+  onProductDragEnd,
 }) => {
   const { t } = useTranslation();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        distance: 10,
+      },
+    })
+  );
+
   return (
     <SectionWrapper title={`${t("menuComponents.products.title")} in ${selectedSubcategory?.name}`}>
-      <ItemGrid>
-        {products.length === 0 ? (
-          <EmptyState message={t("menuComponents.products.noProducts")} />
-        ) : (
-          products.map((product) => (
-            <UnifiedCard
-              key={product.id}
-              data={product}
-              type="product"
-              onEdit={() => onEditProduct(product)}
-              onDelete={() => onDeleteProduct(product)}
-            />
-          ))
-        )}
-      </ItemGrid>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={onProductDragEnd} // Pass the handler
+      >
+        <SortableContext
+          items={products.map((p) => p.id)}
+          strategy={rectSortingStrategy}
+        >
+          <ItemGrid>
+            {products.length === 0 ? (
+              <EmptyState message={t("menuComponents.products.noProducts")} />
+            ) : (
+              products.map((product) => (
+                <SortableProductCard
+                  key={product.id}
+                  product={product}
+                  onEditProduct={onEditProduct}
+                  onDeleteProduct={onDeleteProduct}
+                />
+              ))
+            )}
+          </ItemGrid>
+        </SortableContext>
+      </DndContext>
     </SectionWrapper>
   );
 };

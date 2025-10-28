@@ -173,6 +173,27 @@ export class MenusOperations {
             throw error;
         }
     }
+    static async updateMenuPriorities(
+        menus: { id: string; priority: number }[]
+    ): Promise<void> {
+        const trx = await db.transaction();
+        try {
+            const now = new Date().toISOString();
+            const promises = menus.map((menu) =>
+                trx("menus").where("id", menu.id).update({
+                    priority: menu.priority,
+                    updatedAt: now,
+                })
+            );
+            await Promise.all(promises);
+            await trx.commit();
+            Logger.info(`Updated priorities for ${menus.length} menus.`);
+        } catch (error) {
+            await trx.rollback();
+            Logger.error("Error updating menu priorities:", error);
+            throw error;
+        }
+    }
 
     static async getMenuPageAssociations(
         menuId: string

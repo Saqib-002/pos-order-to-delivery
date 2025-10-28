@@ -18,6 +18,8 @@ import { useAuth } from "@/renderer/contexts/AuthContext";
 import { toast } from "react-toastify";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import { useTranslation } from "react-i18next";
+import { DragEndEvent } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 
 type NavigationLevel = "categories" | "subcategories" | "products";
 
@@ -189,6 +191,31 @@ export const MenuComponent = () => {
       fetchProductsByCatIdForOrder(token,navigation.selectedSubcategory.id, setProducts);
     }
   };
+  const handleProductDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setProducts((currentProducts) => {
+        const oldIndex = currentProducts.findIndex((p) => p.id === active.id);
+        const newIndex = currentProducts.findIndex((p) => p.id === over.id);
+
+        const reorderedProducts = arrayMove(currentProducts, oldIndex, newIndex);
+        const newOrderProducts = reorderedProducts.map((product, index) => ({
+          ...product,
+          priority: index,
+        }));
+        const newPriorityIds = newOrderProducts.map((p) => p.id);
+
+        (window as any).electronAPI
+          .updateProductPriorities(token, newPriorityIds)
+          .catch((err: any) => {
+            console.error("Failed to update product priorities:", err);
+            toast.error("Failed to save new product order.");
+          });
+        return newOrderProducts;
+      });
+    }
+  };
 
   return (
     <>
@@ -225,6 +252,7 @@ export const MenuComponent = () => {
         onEditSubcategory={(subcategory) =>
           openModal("subcategory", subcategory)
         }
+        onProductDragEnd={handleProductDragEnd}
         onDeleteSubcategory={handleSubCategoryDelete}
         onEditProduct={(product) => openModal("product", product)}
         onDeleteProduct={handleDeleteProduct}
