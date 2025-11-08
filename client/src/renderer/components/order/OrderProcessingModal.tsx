@@ -41,8 +41,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [customerSearch, setCustomerSearch] = useState("");
-  const [orderType, setOrderType] = useState<"pickup" | "delivery" | "dine-in">(
-    "pickup"
+  const [orderType, setOrderType] = useState<"delivery" | "pickup" | "dine-in">(
+    "delivery"
   );
   const [pickupTime, setPickupTime] = useState<Dayjs | null>(null);
   const [notes, setNotes] = useState("");
@@ -65,7 +65,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
 
   useEffect(() => {
     setCustomerSearch(order?.customer?.name || "");
-    setOrderType(order?.orderType || "pickup");
+    setOrderType(order?.orderType || "delivery");
     setNotes(order?.notes || "");
     setSearchResults([]);
     setIsSearching(false);
@@ -566,27 +566,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <CustomButton
                 type="button"
-                onClick={() => setOrderType("pickup")}
-                variant="transparent"
-                className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
-                  orderType === "pickup"
-                    ? "border-black bg-gray-50 text-gray-700 shadow-md"
-                    : "border-gray-200 hover:border-gray-300 bg-white"
-                }`}
-                label={
-                  <>
-                    <div className="text-3xl mb-3">🏪</div>
-                    <div className="font-semibold text-base">
-                      {t("orderProcessingModal.orderType.pickup.title")}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {t("orderProcessingModal.orderType.pickup.description")}
-                    </div>
-                  </>
-                }
-              />
-              <CustomButton
-                type="button"
                 onClick={() => setOrderType("delivery")}
                 variant="transparent"
                 className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
@@ -596,12 +575,45 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 }`}
                 label={
                   <>
-                    <div className="text-3xl mb-3">🚚</div>
+                    <div className="mb-3 flex justify-center">
+                      <img
+                        src="./images/delivery-truck.png"
+                        alt="Delivery"
+                        className="w-12 h-12 object-contain"
+                      />
+                    </div>
                     <div className="font-semibold text-base">
                       {t("orderProcessingModal.orderType.delivery.title")}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
                       {t("orderProcessingModal.orderType.delivery.description")}
+                    </div>
+                  </>
+                }
+              />
+              <CustomButton
+                type="button"
+                onClick={() => setOrderType("pickup")}
+                variant="transparent"
+                className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
+                  orderType === "pickup"
+                    ? "border-black bg-gray-50 text-gray-700 shadow-md"
+                    : "border-gray-200 hover:border-gray-300 bg-white"
+                }`}
+                label={
+                  <>
+                    <div className="mb-3 flex justify-center">
+                      <img
+                        src="./images/pickup.png"
+                        alt="Pickup"
+                        className="w-12 h-12 object-contain"
+                      />
+                    </div>
+                    <div className="font-semibold text-base">
+                      {t("orderProcessingModal.orderType.pickup.title")}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {t("orderProcessingModal.orderType.pickup.description")}
                     </div>
                   </>
                 }
@@ -617,7 +629,13 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 }`}
                 label={
                   <>
-                    <div className="text-3xl mb-3">🍽️</div>
+                    <div className="mb-3 flex justify-center">
+                      <img
+                        src="./images/dinein.png"
+                        alt="Dine In"
+                        className="w-12 h-12 object-contain"
+                      />
+                    </div>
                     <div className="font-semibold text-base">
                       {t("orderProcessingModal.orderType.dineIn.title")}
                     </div>
