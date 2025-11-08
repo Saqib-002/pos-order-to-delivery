@@ -90,7 +90,8 @@
       "edit": "Editar usuario",
       "tabs": {
         "general": "General",
-        "permissions": "Permisos"
+        "permissions": "Permisos",
+        "functions": "Funciones"
       },
       "username": "Nombre de usuario",
       "password": "Contraseña",
@@ -100,6 +101,8 @@
       "role": "Rol",
       "modulePermissions": "Permisos de Módulos",
       "selectModules": "Selecciona qué módulos puede acceder este usuario",
+      "functionPermissions": "Permisos de Funciones",
+      "selectFunctions": "Selecciona qué funciones puede realizar este usuario",
       "cancel": "Cancelar",
       "add": "Agregar usuario",
       "update": "Actualizar usuario"
@@ -386,6 +389,8 @@
     "searchOrders": "Buscar Pedidos",
     "searchPlaceholder": "Buscar por número de pedido...",
     "filterByDate": "Filtrar por Fecha",
+    "customer": "Cliente",
+    "allCustomers": "Todos los Clientes",
     "deliveryPerson": "Repartidor",
     "paymentStatus": "Estado de Pago",
     "allDeliveryPersons": "Todos los Repartidores",
@@ -410,12 +415,30 @@
     "actions": {
       "viewOrder": "Ver Pedido",
       "printOrder": "Imprimir Pedido",
-      "processPayment": "Procesar Pago"
+      "processPayment": "Procesar Pago",
+      "cancelOrder": "Cancelar Pedido"
     },
     "statuses": {
       "notAssigned": "No asignado",
       "nA": "N/A"
+    },
+    "confirmCancelOrder": "¿Estás seguro de que deseas cancelar el pedido {{orderId}}?",
+    "errors": {
+      "cancelFailed": "Error al cancelar el pedido"
+    },
+    "messages": {
+      "orderCancelled": "Pedido cancelado exitosamente"
     }
+  },
+  "cancelOrderModal": {
+    "title": "Cancelar Pedido",
+    "orderNumber": "Número de Pedido",
+    "customer": "Cliente",
+    "cancelNote": "Nota de Cancelación *",
+    "cancelNotePlaceholder": "Ingresa el motivo de la cancelación...",
+    "noteRequired": "Se requiere una nota de cancelación",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar Cancelación"
   },
   "orderDetailsModal": {
     "title": "Artículos del Pedido - K{{orderId}}",
@@ -429,6 +452,8 @@
     "quantity": "Cant",
     "price": "Precio",
     "total": "Total",
+    "orderNotes": "Notas del Pedido",
+    "cancelled": "CANCELADO",
     "subtotal": "Subtotal",
     "tax": "Impuesto",
     "deliveryFee": "Tarifa de Entrega",
@@ -643,13 +668,16 @@
       "actions": "Acciones",
       "outForDelivery": "En Camino"
     },
+    "cancelOrder": "Cancelar Pedido",
     "messages": {
       "pleaseEnterDeliveryPersonName": "Por favor ingresa el nombre del repartidor",
       "failedToAssignDeliveryPerson": "Error al asignar repartidor",
       "failedToAssignDelivery": "Error al asignar entrega. Por favor intenta de nuevo.",
       "failedToMarkAsDelivered": "Error al marcar como entregado",
       "orderMarkedAsDelivered": "Pedido marcado como entregado",
-      "failedToMarkAsDeliveredRetry": "Error al marcar como entregado. Por favor intenta de nuevo."
+      "failedToMarkAsDeliveredRetry": "Error al marcar como entregado. Por favor intenta de nuevo.",
+      "failedToCancelOrder": "Error al cancelar el pedido",
+      "orderCancelled": "Pedido cancelado exitosamente"
     }
   },
   "kitchenView": {

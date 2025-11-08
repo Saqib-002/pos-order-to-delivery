@@ -31,6 +31,16 @@ export class CustomerDatabaseOperations {
       throw error;
     }
   }
+  static async getAllCustomers() {
+    try {
+      const customers = await db("customers")
+        .select("*")
+        .orderBy("name", "asc");
+      return customers || [];
+    } catch (error) {
+      throw error;
+    }
+  }
   static async upsertCustomer(customer: Partial<Customer>) {
     try {
       const existingCustomer = await db("customers")

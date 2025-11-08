@@ -79,6 +79,7 @@ export interface FilterType {
   selectedStatus: string[];
   selectedPaymentStatus: string[];
   selectedDeliveryPerson: string;
+  selectedCustomer: string;
   page: number;
   limit: number;
   startDateRange: Date | null;

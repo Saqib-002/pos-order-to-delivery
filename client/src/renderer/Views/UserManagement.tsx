@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { User } from "@/types/user";
 import { toast } from "react-toastify";
-import { MODULES, MODULE_LABELS, AVAILABLE_MODULES } from "@/constants";
+import {
+  MODULES,
+  MODULE_LABELS,
+  AVAILABLE_MODULES,
+  FUNCTIONS,
+  FUNCTION_LABELS,
+  AVAILABLE_FUNCTIONS,
+} from "@/constants";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import { useAuth } from "../contexts/AuthContext";
 import {
@@ -30,13 +37,14 @@ export const UserManagement = () => {
     email: "",
     role: "staff",
     modulePermissions: [] as string[],
+    functionPermissions: [] as string[],
     id: "",
   });
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"general" | "permissions">(
-    "general"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "general" | "permissions" | "functions"
+  >("general");
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
@@ -125,6 +133,7 @@ export const UserManagement = () => {
           email: formData.email,
           role: formData.role,
           modulePermissions: formData.modulePermissions,
+          functionPermissions: formData.functionPermissions,
         });
         if (!res.status) {
           toast.error(
@@ -173,6 +182,7 @@ export const UserManagement = () => {
       email: "",
       role: "staff",
       modulePermissions: [],
+      functionPermissions: [],
       id: "",
     });
     setEmailError("");
@@ -190,6 +200,23 @@ export const UserManagement = () => {
       setFormData({
         ...formData,
         modulePermissions: [...currentPermissions, module],
+      });
+    }
+  };
+
+  const toggleFunctionPermission = (functionName: string) => {
+    const currentPermissions = formData.functionPermissions;
+    if (currentPermissions.includes(functionName)) {
+      setFormData({
+        ...formData,
+        functionPermissions: currentPermissions.filter(
+          (f) => f !== functionName
+        ),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        functionPermissions: [...currentPermissions, functionName],
       });
     }
   };
@@ -225,6 +252,7 @@ export const UserManagement = () => {
       email: user.email || "",
       role: user.role,
       modulePermissions: user.modulePermissions || [],
+      functionPermissions: user.functionPermissions || [],
       password: "",
     });
     setEmailError("");
@@ -512,6 +540,17 @@ export const UserManagement = () => {
                 >
                   {t("userManagement.modal.tabs.permissions")}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("functions")}
+                  className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 cursor-pointer ${
+                    activeTab === "functions"
+                      ? "text-black border-black"
+                      : "text-gray-500 border-transparent hover:text-black"
+                  }`}
+                >
+                  {t("userManagement.modal.tabs.functions")}
+                </button>
               </div>
             </div>
             <form onSubmit={handleSubmit} className="p-8">
@@ -620,6 +659,46 @@ export const UserManagement = () => {
                     </div>
                     <p className="text-xs text-gray-500 mt-2">
                       {t("userManagement.modal.selectModules")}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Functions Tab */}
+              {activeTab === "functions" && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      {t("userManagement.modal.functionPermissions")}
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                      {AVAILABLE_FUNCTIONS.map((functionName) => (
+                        <label
+                          key={functionName}
+                          className="flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-50 transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.functionPermissions.includes(
+                              functionName
+                            )}
+                            onChange={() =>
+                              toggleFunctionPermission(functionName)
+                            }
+                            className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black accent-black"
+                          />
+                          <span className="text-sm text-gray-700">
+                            {
+                              FUNCTION_LABELS[
+                                functionName as keyof typeof FUNCTION_LABELS
+                              ]
+                            }
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      {t("userManagement.modal.selectFunctions")}
                     </p>
                   </div>
                 </div>

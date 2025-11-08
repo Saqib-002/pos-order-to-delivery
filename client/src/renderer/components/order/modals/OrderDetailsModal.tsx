@@ -35,6 +35,48 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   view = "kitchen",
 }) => {
   const { t } = useTranslation();
+
+  const formatOrderNotes = (notes: string) => {
+    if (!notes) return null;
+    const noteSections = notes.split(/\n\n+/);
+
+    return noteSections.map((section, index) => {
+      const cancelledMatch = section.match(/^\[CANCELLED:\s*(.+?)\]\s*(.*)$/s);
+
+      if (cancelledMatch) {
+        const [, timestamp, noteText] = cancelledMatch;
+        const cancelledDate = new Date(timestamp);
+        const formattedDate = cancelledDate.toLocaleString();
+
+        return (
+          <div key={index} className="mb-4 last:mb-0">
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+              <div className="flex items-start gap-2 mb-2">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                  {t("orderDetailsModal.cancelled") || "CANCELLED"}
+                </span>
+                <span className="text-xs text-gray-500">{formattedDate}</span>
+              </div>
+              {noteText.trim() && (
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                  {noteText.trim()}
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div key={index} className="mb-4 last:mb-0">
+          <p className="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded-lg">
+            {section.trim()}
+          </p>
+        </div>
+      );
+    });
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] overflow-hidden flex flex-col">
@@ -324,11 +366,11 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               {order.notes && (
                 <div>
                   <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
-                    {t("orderDetailsModal.orderNotes")}
+                    {t("orderDetailsModal.orderNotes") || "Order Notes"}
                   </h3>
-                  <p className="text-black bg-gray-50 p-3 rounded-lg">
-                    {order.notes}
-                  </p>
+                  <div className="space-y-2">
+                    {formatOrderNotes(order.notes)}
+                  </div>
                 </div>
               )}
             </div>

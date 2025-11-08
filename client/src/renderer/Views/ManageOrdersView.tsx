@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
-import { Order } from "@/types/order";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { Order, Customer } from "@/types/order";
 import { DeliveryPerson } from "@/types/delivery";
 import CustomInput from "../components/shared/CustomInput";
 import { CustomSelect } from "../components/ui/CustomSelect";
@@ -20,6 +20,7 @@ import { OrderTable } from "../components/shared/OrderTable";
 import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
 import BulkPaymentModal from "../components/order/modals/BulkPaymentModal";
 import IndividualPaymentModal from "../components/order/modals/IndividualPaymentModal";
+import { CancelOrderModal } from "../components/order/modals/CancelOrderModal";
 import { toast } from "react-toastify";
 import {
   DeliveredIcon,
@@ -29,16 +30,19 @@ import {
   LightningBoltIcon,
   PersonIcon,
   SearchIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CrossIcon,
 } from "@/renderer/public/Svg";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
-import { DEFAULT_PAGE_LIMIT } from "@/constants";
+import { DEFAULT_PAGE_LIMIT, FUNCTIONS } from "@/constants";
 import Pagination from "../components/shared/Pagination";
 
 export const ManageOrdersView = () => {
   const { t } = useTranslation();
   const {
-    auth: { token },
+    auth: { token, user },
   } = useAuth();
   const { orders, filter, setFilter, totalOrders, refreshOrdersCallback } =
     useOrderManagementContext();
@@ -56,6 +60,7 @@ export const ManageOrdersView = () => {
   // Fetch delivery persons on component mount
   useEffect(() => {
     fetchDeliveryPersons();
+    fetchCustomers();
   }, []);
   useEffect(() => {
     setFilter({
@@ -68,6 +73,7 @@ export const ManageOrdersView = () => {
       startDateRange: null,
       endDateRange: null,
       selectedDeliveryPerson: "",
+      selectedCustomer: "",
     });
   }, []);
 
@@ -80,6 +86,14 @@ export const ManageOrdersView = () => {
   const [isBulkPaymentModalOpen, setIsBulkPaymentModalOpen] = useState(false);
   const [deliveryPersons, setDeliveryPersons] = useState<DeliveryPerson[]>([]);
   const [loadingDeliveryPersons, setLoadingDeliveryPersons] = useState(false);
+  const [isCancelOrderModalOpen, setIsCancelOrderModalOpen] = useState(false);
+  const [selectedOrderForCancel, setSelectedOrderForCancel] =
+    useState<Order | null>(null);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loadingCustomers, setLoadingCustomers] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // Fetch delivery persons from database
   const fetchDeliveryPersons = async () => {
@@ -99,6 +113,61 @@ export const ManageOrdersView = () => {
     }
   };
 
+  // Fetch customers from database
+  const fetchCustomers = async () => {
+    try {
+      setLoadingCustomers(true);
+      const res = await (window as any).electronAPI.getAllCustomers(token);
+      if (!res.status) {
+        toast.error(t("deliveryManagement.errors.fetchFailed"));
+        return;
+      }
+      setCustomers(res.data || []);
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+      toast.error(t("deliveryManagement.errors.fetchFailed"));
+    } finally {
+      setLoadingCustomers(false);
+    }
+  };
+
+  // Check scroll position and update arrow visibility
+  const checkScrollPosition = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } =
+        scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  // Scroll handlers
+  const handleScrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -300, behavior: "smooth" });
+    }
+  };
+
+  const handleScrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 300, behavior: "smooth" });
+    }
+  };
+
+  // Check scroll position on mount and when content changes
+  useEffect(() => {
+    checkScrollPosition();
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener("scroll", checkScrollPosition);
+      window.addEventListener("resize", checkScrollPosition);
+      return () => {
+        container.removeEventListener("scroll", checkScrollPosition);
+        window.removeEventListener("resize", checkScrollPosition);
+      };
+    }
+  }, [orders, customers, deliveryPersons]);
+
   const paymentStatuses = ["PARTIAL", "UNPAID", "PAID"];
 
   const clearFilters = () => {
@@ -112,6 +181,7 @@ export const ManageOrdersView = () => {
       startDateRange: null,
       endDateRange: null,
       selectedDeliveryPerson: "",
+      selectedCustomer: "",
     });
   };
 
@@ -128,6 +198,52 @@ export const ManageOrdersView = () => {
   const handlePrintOrder = (order: Order) => {
     // TODO: Implement print order functionality
     console.log("Print order:", order.id);
+  };
+
+  const handleCancelOrderClick = (order: Order) => {
+    setSelectedOrderForCancel(order);
+    setIsCancelOrderModalOpen(true);
+  };
+
+  const handleCancelOrderConfirm = async (cancelNote: string) => {
+    if (!selectedOrderForCancel) return;
+
+    try {
+      const res = await (window as any).electronAPI.deleteOrder(
+        token,
+        selectedOrderForCancel.id,
+        cancelNote
+      );
+      if (!res.status) {
+        toast.error(
+          res.error ||
+            t("manageOrders.errors.cancelFailed") ||
+            "Failed to cancel order"
+        );
+        return;
+      }
+      toast.success(
+        t("manageOrders.messages.orderCancelled") ||
+          "Order cancelled successfully"
+      );
+      setIsCancelOrderModalOpen(false);
+      setSelectedOrderForCancel(null);
+      refreshOrdersCallback();
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      toast.error(
+        t("manageOrders.errors.cancelFailed") || "Failed to cancel order"
+      );
+    }
+  };
+
+  // Check if user has cancel order permission
+  const hasCancelOrderPermission = () => {
+    if (!user) return false;
+    // Admins always have permission
+    if (user.role === "admin") return true;
+    // Check function permissions
+    return user.functionPermissions?.includes(FUNCTIONS.CANCEL_ORDER) || false;
   };
 
   const closePaymentModal = () => {
@@ -272,6 +388,21 @@ export const ManageOrdersView = () => {
               }
               return null;
             })()}
+
+            {/* Cancel Order Button - Only show if user has permission and order is not already cancelled/delivered */}
+            {hasCancelOrderPermission() &&
+              order.status !== "cancelled" &&
+              order.status !== "delivered" && (
+                <button
+                  onClick={() => handleCancelOrderClick(order)}
+                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                  title={
+                    t("manageOrders.actions.cancelOrder") || "Cancel Order"
+                  }
+                >
+                  <CrossIcon className="w-4 h-4" />
+                </button>
+              )}
           </div>
         </td>
       </tr>
@@ -300,134 +431,210 @@ export const ManageOrdersView = () => {
       {/* Main Content */}
       <div className="flex-1 overflow-auto pb-6">
         {/* Search and Filter Bar */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-end">
-            {/* Search Input */}
-            <div className="w-full lg:w-80">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <span className="inline w-4 h-4 mr-1">🔍</span>
-                {t("manageOrders.searchOrders")}
-              </label>
-              <div className="relative">
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <CustomInput
-                  label=""
-                  name="searchTerm"
-                  type="text"
-                  value={filter.searchTerm || ""}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 relative">
+          {/* Scroll Arrows */}
+          <div className="absolute top-1 right-4 flex gap-2 z-10">
+            <button
+              onClick={handleScrollLeft}
+              disabled={!canScrollLeft}
+              className={`p-2 rounded-lg transition-all duration-200 ${
+                canScrollLeft
+                  ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
+                  : "bg-gray-100 text-gray-300 cursor-not-allowed"
+              }`}
+              title="Scroll left"
+            >
+              <ChevronLeftIcon className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleScrollRight}
+              disabled={!canScrollRight}
+              className={`p-2 rounded-lg transition-all duration-200 ${
+                canScrollRight
+                  ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              }`}
+              title="Scroll right"
+            >
+              <ChevronRightIcon className="w-5 h-5" />
+            </button>
+          </div>
+          <div
+            ref={scrollContainerRef}
+            className="overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide"
+            style={{
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}
+          >
+            <style>{`
+              .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
+            <div className="flex flex-col lg:flex-row gap-4 items-end min-w-max">
+              {/* Search Input */}
+              <div className="w-full lg:w-80">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <span className="inline w-4 h-4 mr-1">🔍</span>
+                  {t("manageOrders.searchOrders")}
+                </label>
+                <div className="relative">
+                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <CustomInput
+                    label=""
+                    name="searchTerm"
+                    type="text"
+                    value={filter.searchTerm || ""}
+                    onChange={(e) =>
+                      setFilter((prev) => ({
+                        ...prev,
+                        searchTerm: e.target.value,
+                        page: 0,
+                      }))
+                    }
+                    placeholder={t("manageOrders.searchPlaceholder")}
+                    otherClasses="w-full"
+                    inputClasses="pl-10 py-2.5"
+                  />
+                </div>
+              </div>
+
+              {/* Date Filter */}
+              <div className="w-full lg:w-48">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <span className="inline w-4 h-4 mr-1">📅</span>
+                  {t("manageOrders.filterByDate")}
+                </label>
+                <input
+                  type="date"
+                  value={
+                    filter.selectedDate
+                      ? filter.selectedDate.toISOString().split("T")[0]
+                      : ""
+                  }
                   onChange={(e) =>
                     setFilter((prev) => ({
                       ...prev,
-                      searchTerm: e.target.value,
-                      page: 0
+                      selectedDate: e.target.value
+                        ? new Date(e.target.value)
+                        : null,
+                      page: 0,
                     }))
                   }
-                  placeholder={t("manageOrders.searchPlaceholder")}
-                  otherClasses="w-full"
-                  inputClasses="pl-10 py-2.5"
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none"
                 />
               </div>
-            </div>
 
-            {/* Date Filter */}
-            <div className="w-full lg:w-48">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <span className="inline w-4 h-4 mr-1">📅</span>
-                {t("manageOrders.filterByDate")}
-              </label>
-              <input
-                type="date"
-                value={
-                  filter.selectedDate
-                    ? filter.selectedDate.toISOString().split("T")[0]
-                    : ""
-                }
-                onChange={(e) =>
-                  setFilter((prev) => ({
-                    ...prev,
-                    selectedDate: e.target.value
-                      ? new Date(e.target.value)
-                      : null,
-                    page: 0,
-                  }))
-                }
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none"
-              />
-            </div>
+              {/* Customer Filter */}
+              <div className="w-full lg:w-48">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <PersonIcon className="inline w-4 h-4 mr-1" />
+                  {t("manageOrders.customer")}
+                </label>
+                <CustomSelect
+                  options={[
+                    {
+                      value: "",
+                      label: t("manageOrders.allCustomers"),
+                    },
+                    ...customers.map((customer) => ({
+                      value: customer.id || "",
+                      label: `${customer.name} (${customer.phone})`,
+                    })),
+                  ]}
+                  value={filter.selectedCustomer}
+                  onChange={(value) => {
+                    setFilter((prev) => ({
+                      ...prev,
+                      selectedCustomer: value,
+                      page: 0,
+                    }));
+                  }}
+                  placeholder={
+                    loadingCustomers
+                      ? "Loading..."
+                      : t("manageOrders.allCustomers")
+                  }
+                  className="w-full"
+                  disabled={loadingCustomers}
+                />
+              </div>
 
-            {/* Delivery Person Filter */}
-            <div className="w-full lg:w-48">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <PersonIcon className="inline w-4 h-4 mr-1" />
-                {t("manageOrders.deliveryPerson")}
-              </label>
-              <CustomSelect
-                options={[
-                  { value: "", label: t("manageOrders.allDeliveryPersons") },
-                  ...deliveryPersons.map((person) => ({
-                    value: person.id,
-                    label: person.name,
-                  })),
-                ]}
-                value={filter.selectedDeliveryPerson}
-                onChange={(value) => {
-                  setFilter((prev) => ({
-                    ...prev,
-                    selectedDeliveryPerson: value,
-                    page: 0,
-                  }));
-                }}
-                placeholder={
-                  loadingDeliveryPersons
-                    ? "Loading..."
-                    : t("manageOrders.allDeliveryPersons")
-                }
-                className="w-full"
-                disabled={loadingDeliveryPersons}
-              />
-            </div>
+              {/* Delivery Person Filter */}
+              <div className="w-full lg:w-48">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <PersonIcon className="inline w-4 h-4 mr-1" />
+                  {t("manageOrders.deliveryPerson")}
+                </label>
+                <CustomSelect
+                  options={[
+                    { value: "", label: t("manageOrders.allDeliveryPersons") },
+                    ...deliveryPersons.map((person) => ({
+                      value: person.id,
+                      label: person.name,
+                    })),
+                  ]}
+                  value={filter.selectedDeliveryPerson}
+                  onChange={(value) => {
+                    setFilter((prev) => ({
+                      ...prev,
+                      selectedDeliveryPerson: value,
+                      page: 0,
+                    }));
+                  }}
+                  placeholder={
+                    loadingDeliveryPersons
+                      ? "Loading..."
+                      : t("manageOrders.allDeliveryPersons")
+                  }
+                  className="w-full"
+                  disabled={loadingDeliveryPersons}
+                />
+              </div>
 
-            {/* Payment Status Filter */}
-            <div className="w-full lg:w-64">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("manageOrders.paymentStatus")}
-              </label>
-              <CustomSelect
-                options={[
-                  { value: "", label: t("manageOrders.allPaymentStatuses") },
-                  ...paymentStatuses.map((status) => ({
-                    value: status,
-                    label: translatePaymentStatus(status),
-                  })),
-                ]}
-                value={filter.selectedPaymentStatus[0] || ""}
-                onChange={(value) =>
-                  setFilter((prev) => ({
-                    ...prev,
-                    selectedPaymentStatus: value ? [value] : [],
-                    page: 0,
-                  }))
-                }
-                placeholder={t("manageOrders.allPaymentStatuses")}
-                className="w-full"
-              />
-            </div>
+              {/* Payment Status Filter */}
+              <div className="w-full lg:w-64">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("manageOrders.paymentStatus")}
+                </label>
+                <CustomSelect
+                  options={[
+                    { value: "", label: t("manageOrders.allPaymentStatuses") },
+                    ...paymentStatuses.map((status) => ({
+                      value: status,
+                      label: translatePaymentStatus(status),
+                    })),
+                  ]}
+                  value={filter.selectedPaymentStatus[0] || ""}
+                  onChange={(value) =>
+                    setFilter((prev) => ({
+                      ...prev,
+                      selectedPaymentStatus: value ? [value] : [],
+                      page: 0,
+                    }))
+                  }
+                  placeholder={t("manageOrders.allPaymentStatuses")}
+                  className="w-full"
+                />
+              </div>
 
-            {/* Action Buttons */}
-            <div className="w-full lg:w-auto flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={clearFilters}
-                className="w-full sm:w-auto px-4 py-3 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                {t("manageOrders.clearAllFilters")}
-              </button>
-              <button
-                onClick={handleBulkPaymentClick}
-                className="w-full sm:w-auto bg-gradient-to-r from-black to-gray-800 hover:from-gray-700 hover:to-gray-800 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
-              >
-                <LightningBoltIcon className="w-4 h-4" />
-                <span>{t("manageOrders.bulkPayment")}</span>
-              </button>
+              {/* Action Buttons */}
+              <div className="w-full lg:w-auto flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={clearFilters}
+                  className="w-full sm:w-auto px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  {t("manageOrders.clearAllFilters")}
+                </button>
+                <button
+                  onClick={handleBulkPaymentClick}
+                  className="w-full sm:w-auto bg-gradient-to-r from-black to-gray-800 hover:from-gray-700 hover:to-gray-800 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
+                >
+                  <LightningBoltIcon className="w-4 h-4" />
+                  <span>{t("manageOrders.bulkPayment")}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -460,6 +667,7 @@ export const ManageOrdersView = () => {
               filter.searchTerm ||
               filter.selectedDate ||
               filter.selectedDeliveryPerson ||
+              filter.selectedCustomer ||
               filter.selectedStatus.length > 0
                 ? t("manageOrders.noOrdersMatch")
                 : t("manageOrders.noOrdersFound")
@@ -503,6 +711,18 @@ export const ManageOrdersView = () => {
           view="manage"
         />
       )}
+
+      {/* Cancel Order Modal */}
+      <CancelOrderModal
+        isOpen={isCancelOrderModalOpen}
+        onClose={() => {
+          setIsCancelOrderModalOpen(false);
+          setSelectedOrderForCancel(null);
+        }}
+        onConfirm={handleCancelOrderConfirm}
+        order={selectedOrderForCancel}
+        orderPrefix={configurations.orderPrefix || "K"}
+      />
     </div>
   );
 };

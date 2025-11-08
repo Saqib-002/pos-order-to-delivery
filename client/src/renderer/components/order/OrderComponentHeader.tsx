@@ -44,6 +44,7 @@ const OrderComponentHeader = () => {
       startDateRange: null,
       endDateRange: null,
       selectedDeliveryPerson: "",
+      selectedCustomer: "",
     });
   }, []);
   const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,7 +54,7 @@ const OrderComponentHeader = () => {
     setFilter((prev: FilterType) => ({
       ...prev,
       selectedDate,
-      page: 0
+      page: 0,
     }));
   };
 
@@ -68,7 +69,7 @@ const OrderComponentHeader = () => {
         ...prev,
         selectedStatus: [],
         selectedPaymentStatus: [],
-        page: 0
+        page: 0,
       }));
     } else if (value.startsWith("status:")) {
       const status = value.replace("status:", "");
@@ -76,7 +77,7 @@ const OrderComponentHeader = () => {
         ...prev,
         selectedStatus: [status],
         selectedPaymentStatus: [],
-        page: 0
+        page: 0,
       }));
     } else if (value.startsWith("payment:")) {
       const paymentStatus = value.replace("payment:", "");
@@ -84,7 +85,7 @@ const OrderComponentHeader = () => {
         ...prev,
         selectedStatus: [],
         selectedPaymentStatus: [paymentStatus],
-        page: 0
+        page: 0,
       }));
     }
   };

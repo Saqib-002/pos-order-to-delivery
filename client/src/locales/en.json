@@ -64,7 +64,8 @@
       "edit": "Edit User",
       "tabs": {
         "general": "General",
-        "permissions": "Permissions"
+        "permissions": "Permissions",
+        "functions": "Functions"
       },
       "username": "Username",
       "password": "Password",
@@ -74,6 +75,8 @@
       "role": "Role",
       "modulePermissions": "Module Permissions",
       "selectModules": "Select which modules this user can access",
+      "functionPermissions": "Function Permissions",
+      "selectFunctions": "Select which functions this user can perform",
       "cancel": "Cancel",
       "add": "Add User",
       "update": "Update User"
@@ -384,6 +387,8 @@
     "searchOrders": "Search Orders",
     "searchPlaceholder": "Search by order number...",
     "filterByDate": "Filter by Date",
+    "customer": "Customer",
+    "allCustomers": "All Customers",
     "deliveryPerson": "Delivery Person",
     "paymentStatus": "Payment Status",
     "allDeliveryPersons": "All Delivery Persons",
@@ -408,12 +413,30 @@
     "actions": {
       "viewOrder": "View Order",
       "printOrder": "Print Order",
-      "processPayment": "Process Payment"
+      "processPayment": "Process Payment",
+      "cancelOrder": "Cancel Order"
     },
     "statuses": {
       "notAssigned": "Not assigned",
       "nA": "N/A"
+    },
+    "confirmCancelOrder": "Are you sure you want to cancel order {{orderId}}?",
+    "errors": {
+      "cancelFailed": "Failed to cancel order"
+    },
+    "messages": {
+      "orderCancelled": "Order cancelled successfully"
     }
+  },
+  "cancelOrderModal": {
+    "title": "Cancel Order",
+    "orderNumber": "Order Number",
+    "customer": "Customer",
+    "cancelNote": "Cancellation Note *",
+    "cancelNotePlaceholder": "Enter reason for cancellation...",
+    "noteRequired": "A cancellation note is required",
+    "cancel": "Cancel",
+    "confirm": "Confirm Cancellation"
   },
   "orderDetailsModal": {
     "title": "Order Items - K{{orderId}}",
@@ -427,6 +450,8 @@
     "quantity": "Qty",
     "price": "Price",
     "total": "Total",
+    "orderNotes": "Order Notes",
+    "cancelled": "CANCELLED",
     "subtotal": "Subtotal",
     "tax": "Tax",
     "deliveryFee": "Delivery Fee",
@@ -641,13 +666,16 @@
       "actions": "Actions",
       "outForDelivery": "Out for Delivery"
     },
+    "cancelOrder": "Cancel Order",
     "messages": {
       "pleaseEnterDeliveryPersonName": "Please enter delivery person name",
       "failedToAssignDeliveryPerson": "Failed to assign delivery person",
       "failedToAssignDelivery": "Failed to assign delivery. Please try again.",
       "failedToMarkAsDelivered": "Failed to mark as delivered",
       "orderMarkedAsDelivered": "Order marked as delivered",
-      "failedToMarkAsDeliveredRetry": "Failed to mark as delivered. Please try again."
+      "failedToMarkAsDeliveredRetry": "Failed to mark as delivered. Please try again.",
+      "failedToCancelOrder": "Failed to cancel order",
+      "orderCancelled": "Order cancelled successfully"
     }
   },
   "kitchenView": {

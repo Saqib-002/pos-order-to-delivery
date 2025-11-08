@@ -12,14 +12,23 @@ import { updateOrder } from "../utils/order";
 import { formatAddress } from "../utils/utils";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
-import { CheckIcon, CircleCheckIcon, DeliveredIcon, GroupIcon, LightningBoltIcon } from "../public/Svg";
-import { DEFAULT_PAGE_LIMIT } from "@/constants";
+import {
+  CheckIcon,
+  CircleCheckIcon,
+  DeliveredIcon,
+  GroupIcon,
+  LightningBoltIcon,
+  CrossIcon,
+} from "../public/Svg";
+import { DEFAULT_PAGE_LIMIT, FUNCTIONS } from "@/constants";
+import { CancelOrderModal } from "../components/order/modals/CancelOrderModal";
 
 export const DeliveryView = () => {
   const { t } = useTranslation();
   const { auth } = useAuth();
-  const { token } = auth;
-  const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagementContext();
+  const { token, user } = auth;
+  const { orders, filter, setFilter, refreshOrdersCallback } =
+    useOrderManagementContext();
   const { configurations } = useConfigurations();
   useEffect(() => {
     if (!filter.selectedDate) {
@@ -34,6 +43,9 @@ export const DeliveryView = () => {
   );
   const [deliveryPersons, setDeliveryPersons] = useState<DeliveryPerson[]>([]);
   const [showDeliverySuggestions, setShowDeliverySuggestions] = useState(false);
+  const [isCancelOrderModalOpen, setIsCancelOrderModalOpen] = useState(false);
+  const [selectedOrderForCancel, setSelectedOrderForCancel] =
+    useState<Order | null>(null);
 
   useEffect(() => {
     const fetchDeliveryPersons = async () => {
@@ -58,6 +70,7 @@ export const DeliveryView = () => {
       startDateRange: null,
       endDateRange: null,
       selectedDeliveryPerson: "",
+      selectedCustomer: "",
     });
   }, []);
 
@@ -119,8 +132,55 @@ export const DeliveryView = () => {
         toast.error(t("deliveryView.messages.failedToMarkAsDeliveredRetry"));
       }
     },
-    [token, refreshOrdersCallback]
+    [token, refreshOrdersCallback, t]
   );
+
+  const handleCancelOrderClick = (order: Order) => {
+    setSelectedOrderForCancel(order);
+    setIsCancelOrderModalOpen(true);
+  };
+
+  const handleCancelOrderConfirm = async (cancelNote: string) => {
+    if (!selectedOrderForCancel) return;
+
+    try {
+      const res = await (window as any).electronAPI.deleteOrder(
+        token,
+        selectedOrderForCancel.id,
+        cancelNote
+      );
+      if (!res.status) {
+        toast.error(
+          res.error ||
+            t("deliveryView.messages.failedToCancelOrder") ||
+            "Failed to cancel order"
+        );
+        return;
+      }
+      toast.success(
+        t("deliveryView.messages.orderCancelled") ||
+          "Order cancelled successfully"
+      );
+      setIsCancelOrderModalOpen(false);
+      setSelectedOrderForCancel(null);
+      refreshOrdersCallback();
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      toast.error(
+        t("deliveryView.messages.failedToCancelOrder") ||
+          "Failed to cancel order"
+      );
+    }
+  };
+
+  // Check if user has cancel order permission
+  const hasCancelOrderPermission = () => {
+    if (!user) return false;
+    // Admins always have permission
+    if (user.role === "admin") return true;
+    // Check function permissions
+    return user.functionPermissions?.includes(FUNCTIONS.CANCEL_ORDER) || false;
+  };
 
   const stats = useMemo(
     () => [
@@ -172,7 +232,10 @@ export const DeliveryView = () => {
         className="hover:bg-gray-50 transition-colors duration-150"
       >
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-2xl font-bold text-black">{configurations.orderPrefix || "K"}{order.orderId}</div>
+          <div className="text-2xl font-bold text-black">
+            {configurations.orderPrefix || "K"}
+            {order.orderId}
+          </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-sm font-medium text-black">
@@ -224,6 +287,16 @@ export const DeliveryView = () => {
             <LightningBoltIcon className="size-4" />
             Assign
           </button>
+          {/* Cancel Order Button */}
+          {hasCancelOrderPermission() && (
+            <button
+              onClick={() => handleCancelOrderClick(order)}
+              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+              title={t("deliveryView.cancelOrder") || "Cancel Order"}
+            >
+              <CrossIcon className="w-4 h-4" />
+            </button>
+          )}
         </td>
       </tr>
     );
@@ -234,7 +307,10 @@ export const DeliveryView = () => {
       className="hover:bg-gray-50 transition-colors duration-150"
     >
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-2xl font-bold text-black">{configurations.orderPrefix || "K"}{order.orderId}</div>
+        <div className="text-2xl font-bold text-black">
+          {configurations.orderPrefix || "K"}
+          {order.orderId}
+        </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm font-medium text-black">
@@ -279,7 +355,7 @@ export const DeliveryView = () => {
           </div>
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end min-w-[120px]">
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2 min-w-[180px]">
         <button
           onClick={() => markAsDelivered(order.id)}
           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105"
@@ -287,6 +363,16 @@ export const DeliveryView = () => {
           <CheckIcon className="size-4" />
           {t("deliveryView.delivered")}
         </button>
+        {/* Cancel Order Button */}
+        {hasCancelOrderPermission() && (
+          <button
+            onClick={() => handleCancelOrderClick(order)}
+            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+            title={t("deliveryView.cancelOrder") || "Cancel Order"}
+          >
+            <CrossIcon className="w-4 h-4" />
+          </button>
+        )}
       </td>
     </tr>
   );
@@ -334,8 +420,8 @@ export const DeliveryView = () => {
                     {readyOrders.length > 0
                       ? t("deliveryView.descriptions.ordersReadyToAssign")
                       : t(
-                        "deliveryView.descriptions.allOrdersInKitchenOrAssigned"
-                      )}
+                          "deliveryView.descriptions.allOrdersInKitchenOrAssigned"
+                        )}
                   </p>
                 </div>
                 <FilterControls filter={filter} setFilter={setFilter} />
@@ -387,6 +473,18 @@ export const DeliveryView = () => {
           )}
         </div>
       </div>
+
+      {/* Cancel Order Modal */}
+      <CancelOrderModal
+        isOpen={isCancelOrderModalOpen}
+        onClose={() => {
+          setIsCancelOrderModalOpen(false);
+          setSelectedOrderForCancel(null);
+        }}
+        onConfirm={handleCancelOrderConfirm}
+        order={selectedOrderForCancel}
+        orderPrefix={configurations.orderPrefix || "K"}
+      />
     </div>
   );
 };

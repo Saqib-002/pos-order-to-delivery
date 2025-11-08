@@ -67,11 +67,44 @@ import {
   updateProduct,
   updateProductPriorities,
 } from "./handlers/products.js";
-import { createMenuPage, deleteMenuPage, getAssociatedMenuByMenuPageId, getMenuPageProducts, getMenuPages, updateMenuPage } from "./handlers/menuPages.js";
-import {  createMenu, deleteMenu, getMenuById, getMenuPageAssociations, getMenus, getMenusBySubcategory, updateMenu, updateMenuPriorities } from "./handlers/menus.js";
-import { createCustomer, getCustomersByPhone, updateCustomer } from "./handlers/customers.js";
-import { createPrinter, deletePrinter, getAllPrinters, getConnectedPrinters, getProductPrinters, printToPrinter, updatePrinter } from "./handlers/printers.js";
-import { createConfigurations, getConfigurations, updateConfigurations } from "./handlers/configurations.js";
+import {
+  createMenuPage,
+  deleteMenuPage,
+  getAssociatedMenuByMenuPageId,
+  getMenuPageProducts,
+  getMenuPages,
+  updateMenuPage,
+} from "./handlers/menuPages.js";
+import {
+  createMenu,
+  deleteMenu,
+  getMenuById,
+  getMenuPageAssociations,
+  getMenus,
+  getMenusBySubcategory,
+  updateMenu,
+  updateMenuPriorities,
+} from "./handlers/menus.js";
+import {
+  createCustomer,
+  getCustomersByPhone,
+  updateCustomer,
+  getAllCustomers,
+} from "./handlers/customers.js";
+import {
+  createPrinter,
+  deletePrinter,
+  getAllPrinters,
+  getConnectedPrinters,
+  getProductPrinters,
+  printToPrinter,
+  updatePrinter,
+} from "./handlers/printers.js";
+import {
+  createConfigurations,
+  getConfigurations,
+  updateConfigurations,
+} from "./handlers/configurations.js";
 
 export function registerIpcHandlers() {
   // categories handlers
@@ -90,7 +123,10 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-variants", getVariants);
   ipcMain.handle("delete-variant", deleteVariant);
   ipcMain.handle("update-variant", updateVariant);
-  ipcMain.handle("get-associated-products-by-variant-id", getAssociatedProductsByVariantId);
+  ipcMain.handle(
+    "get-associated-products-by-variant-id",
+    getAssociatedProductsByVariantId
+  );
   // groups handlers
   ipcMain.handle("create-group", createGroup);
   ipcMain.handle("get-groups", getGroups);
@@ -106,25 +142,29 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-product", deleteProduct);
   ipcMain.handle("get-variants-by-product-id", getVariantsByProductId);
   ipcMain.handle("get-add-on-pages-by-product-id", getAddOnPagesByProductId);
-  ipcMain.handle("get-product-by-id",getProductById)
-  ipcMain.handle("get-associated-menu-pages-by-product-id", getAssociatedMenuPagesByProductId
-);
-ipcMain.handle("update-product-priorities", updateProductPriorities);
-
+  ipcMain.handle("get-product-by-id", getProductById);
+  ipcMain.handle(
+    "get-associated-menu-pages-by-product-id",
+    getAssociatedMenuPagesByProductId
+  );
+  ipcMain.handle("update-product-priorities", updateProductPriorities);
 
   // Customer handlers
   ipcMain.handle("create-customer", createCustomer);
   ipcMain.handle("get-customers-by-phone", getCustomersByPhone);
+  ipcMain.handle("get-all-customers", getAllCustomers);
   ipcMain.handle("upsert-customer", updateCustomer);
-  
+
   // Menu Pages handlers
   ipcMain.handle("create-menu-page", createMenuPage);
   ipcMain.handle("get-menu-pages", getMenuPages);
   ipcMain.handle("update-menu-page", updateMenuPage);
   ipcMain.handle("delete-menu-page", deleteMenuPage);
   ipcMain.handle("get-menu-page-products", getMenuPageProducts);
-  ipcMain.handle("get-associated-menu-by-menu-page-id", getAssociatedMenuByMenuPageId);
-
+  ipcMain.handle(
+    "get-associated-menu-by-menu-page-id",
+    getAssociatedMenuByMenuPageId
+  );
 
   // Menus handlers
   ipcMain.handle("create-menu", createMenu);
@@ -154,7 +194,7 @@ ipcMain.handle("update-product-priorities", updateProductPriorities);
   ipcMain.handle("update-item-quantity", updateItemQuantity);
   ipcMain.handle("update-menu-quantity", updateMenuQuantity);
   ipcMain.handle("update-order-item", updateOrderItem);
-  ipcMain.handle("get-order-items", getOrderItems)
+  ipcMain.handle("get-order-items", getOrderItems);
   ipcMain.handle("update-order", updateOrder);
   ipcMain.handle("get-order-analytics", getOrderAnalytics);
   ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
@@ -180,5 +220,4 @@ ipcMain.handle("update-product-priorities", updateProductPriorities);
   ipcMain.handle("create-configurations", createConfigurations);
   ipcMain.handle("get-configurations", getConfigurations);
   ipcMain.handle("update-configurations", updateConfigurations);
-
 }

@@ -26,6 +26,7 @@ export class UserDatabaseOperations {
         name: userData.name,
         email: userData.email,
         modulePermissions: JSON.stringify(userData.modulePermissions || []),
+        functionPermissions: JSON.stringify(userData.functionPermissions || []),
         createdAt: now,
         updatedAt: now,
       };
@@ -113,6 +114,9 @@ export class UserDatabaseOperations {
         modulePermissions: row.modulePermissions
           ? JSON.parse(row.modulePermissions)
           : [],
+        functionPermissions: row.functionPermissions
+          ? JSON.parse(row.functionPermissions)
+          : [],
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
       }));
@@ -142,6 +146,12 @@ export class UserDatabaseOperations {
         );
       }
 
+      if (userData.functionPermissions !== undefined) {
+        updateData.functionPermissions = JSON.stringify(
+          userData.functionPermissions
+        );
+      }
+
       if (userData.password) {
         updateData.password = await bcrypt.hash(userData.password, 10);
       }
@@ -159,6 +169,9 @@ export class UserDatabaseOperations {
         email: updatedUser.email,
         modulePermissions: updatedUser.modulePermissions
           ? JSON.parse(updatedUser.modulePermissions)
+          : [],
+        functionPermissions: updatedUser.functionPermissions
+          ? JSON.parse(updatedUser.functionPermissions)
           : [],
         createdAt: updatedUser.createdAt,
         updatedAt: updatedUser.updatedAt,

@@ -6,6 +6,7 @@ export interface User {
   name: string;
   email?: string;
   modulePermissions?: string[];
+  functionPermissions?: string[];
   createdAt: string;
   updatedAt: string;
   syncAt: string;

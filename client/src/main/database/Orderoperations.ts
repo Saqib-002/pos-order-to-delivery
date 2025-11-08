@@ -5,454 +5,455 @@ import { randomUUID } from "crypto";
 import { calculatePaymentStatus } from "../../renderer/utils/paymentStatus.js";
 
 export class OrderDatabaseOperations {
-    static async saveOrder(item: any): Promise<any> {
-        const trx = await db.transaction();
-        try {
-            const now = new Date().toISOString();
-            const todayDate = now.slice(0, 10);
-            const countResult = await trx("orders")
-                .whereRaw(`"createdAt"::date = ?`, [todayDate])
-                .count("* as count")
-                .first();
-            const newDailyOrderId =
-                (Number((countResult as any).count) || 0) + 1;
-            const newOrder = {
-                id: randomUUID(),
-                status: "pending",
-                orderId: newDailyOrderId,
-                createdAt: now,
-                updatedAt: now,
-            };
-            const order = await trx("orders").insert(newOrder).returning("*");
-            const orderItem = {
-                ...item,
-                printers: item.printers.join("="),
-                id: randomUUID(),
-                orderId: newOrder.id,
-                createdAt: now,
-                updatedAt: now,
-            };
-            await trx("order_items").insert(orderItem);
-            await trx.commit();
-            return {
-                order: order[0],
-                itemId: orderItem.id,
-            };
-        } catch (error) {
-            await trx.rollback();
-            throw error;
-        }
+  static async saveOrder(item: any): Promise<any> {
+    const trx = await db.transaction();
+    try {
+      const now = new Date().toISOString();
+      const todayDate = now.slice(0, 10);
+      const countResult = await trx("orders")
+        .whereRaw(`"createdAt"::date = ?`, [todayDate])
+        .count("* as count")
+        .first();
+      const newDailyOrderId = (Number((countResult as any).count) || 0) + 1;
+      const newOrder = {
+        id: randomUUID(),
+        status: "pending",
+        orderId: newDailyOrderId,
+        createdAt: now,
+        updatedAt: now,
+      };
+      const order = await trx("orders").insert(newOrder).returning("*");
+      const orderItem = {
+        ...item,
+        printers: item.printers.join("="),
+        id: randomUUID(),
+        orderId: newOrder.id,
+        createdAt: now,
+        updatedAt: now,
+      };
+      await trx("order_items").insert(orderItem);
+      await trx.commit();
+      return {
+        order: order[0],
+        itemId: orderItem.id,
+      };
+    } catch (error) {
+      await trx.rollback();
+      throw error;
     }
-    static async addItemToOrder(orderId: string, item: any): Promise<any> {
-        try {
-            const now = new Date().toISOString();
-            const orderItem = {
-                ...item,
-                id: randomUUID(),
-                printers: item.printers.join("="),
-                orderId,
-                createdAt: now,
-                updatedAt: now,
-            };
-            await db("order_items").insert(orderItem);
-            return { itemId: orderItem.id };
-        } catch (error) {
-            throw error;
-        }
+  }
+  static async addItemToOrder(orderId: string, item: any): Promise<any> {
+    try {
+      const now = new Date().toISOString();
+      const orderItem = {
+        ...item,
+        id: randomUUID(),
+        printers: item.printers.join("="),
+        orderId,
+        createdAt: now,
+        updatedAt: now,
+      };
+      await db("order_items").insert(orderItem);
+      return { itemId: orderItem.id };
+    } catch (error) {
+      throw error;
     }
-    static async removeItemFromOrder(
-        orderId: string,
-        itemId: string
-    ): Promise<any> {
-        try {
-            await db("order_items").where("id", itemId).delete();
-            const totalOrderItems = await db("order_items")
-                .where("orderId", orderId)
-                .count("* as count");
-            if (Number(totalOrderItems[0]?.count) === 0) {
-                const now = new Date().toISOString();
-                await db("orders").where("id", orderId).update({
-                    status: "cancelled",
-                    cancelAt: now,
-                    updatedAt: now,
-                });
-            }
-            return { itemId };
-        } catch (error) {
-            throw error;
-        }
-    }
-    static async removeMenuFromOrder(
-        orderId: string,
-        menuId: string,
-        menuSecondaryId: string
-    ): Promise<any> {
-        try {
-            await db("order_items")
-                .where("orderId", orderId)
-                .andWhere("menuId", menuId)
-                .andWhere("menuSecondaryId", menuSecondaryId)
-                .delete();
-            const totalOrderItems = await db("order_items")
-                .where("orderId", orderId)
-                .count("* as count");
-            if (Number(totalOrderItems[0]?.count) === 0) {
-                const now = new Date().toISOString();
-                await db("orders").where("id", orderId).update({
-                    status: "cancelled",
-                    cancelAt: now,
-                    updatedAt: now,
-                });
-            }
-            return { menuId };
-        } catch (error) {
-            throw error;
-        }
-    }
-    static async removeMenuItemFromOrder(
-        orderId: string,
-        menuId: string,
-        menuSecondaryId: string,
-        productId: string,
-        menuPageId: string
-    ): Promise<any> {
-        try {
-            await db("order_items")
-                .where("orderId", orderId)
-                .andWhere("menuId", menuId)
-                .andWhere("menuSecondaryId", menuSecondaryId)
-                .andWhere("productId", productId)
-                .andWhere("menuPageId", menuPageId)
-                .delete();
-            const totalOrderItems = await db("order_items")
-                .where("orderId", orderId)
-                .count("* as count");
-            if (Number(totalOrderItems[0]?.count) === 0) {
-                const now = new Date().toISOString();
-                await db("orders").where("id", orderId).update({
-                    status: "cancelled",
-                    cancelAt: now,
-                    updatedAt: now,
-                });
-            }
-            return { menuId };
-        } catch (error) {
-            throw error;
-        }
-    }
-    static updateMenuQuantity(
-        orderId: string,
-        menuId: string,
-        menuSecondaryId: string,
-        quantity: number
-    ): Promise<any> {
-        try {
-            return db("order_items")
-                .where("orderId", orderId)
-                .andWhere("menuId", menuId)
-                .andWhere("menuSecondaryId", menuSecondaryId)
-                .update({ quantity });
-        } catch (error) {
-            throw error;
-        }
-    }
-    static async updateItemQuantity(
-        itemId: string,
-        quantity: number
-    ): Promise<any> {
-        try {
-            const now = new Date().toISOString();
-            await db("order_items").where("id", itemId).update({
-                quantity,
-                updatedAt: now,
-            });
-            return { itemId };
-        } catch (error) {
-            throw error;
-        }
-    }
-    static async updateOrderItem(
-        itemId: string,
-        itemData: Partial<OrderItem>
-    ): Promise<any> {
-        try {
-            const now = new Date().toISOString();
-            await db("order_items")
-                .where("id", itemId)
-                .update({
-                    ...itemData,
-                    updatedAt: now,
-                });
-            return { itemId };
-        } catch (error) {
-            throw error;
-        }
-    }
-    static async deleteOrder(id: string): Promise<any> {
-        try {
-            const now = new Date().toISOString();
-            await db("orders").where("id", id).update({
-                status: "cancelled",
-                cancelAt: now,
-                updatedAt: now,
-            });
-            return { id };
-        } catch (error) {
-            throw error;
-        }
-    }
-    static async getOrderItems(orderId: string): Promise<any[]> {
-        try {
-            const items = await db("order_items").where("orderId", orderId);
-            return items.map((item) => ({
-                ...item,
-                printers: item.printers.split("="),
-            }));
-        } catch (error) {
-            throw error;
-        }
-    }
-    static async updateOrder(
-        orderId: string,
-        orderData: Partial<Order>
-    ): Promise<any> {
-        try {
-            const now = new Date().toISOString();
-            await db("orders")
-                .where("id", orderId)
-                .update({
-                    ...orderData,
-                    updatedAt: now,
-                });
-            return { orderId };
-        } catch (error) {
-            throw error;
-        }
-    }
-    static async getOrderAnalytics(filter: any): Promise<any> {
-        const { dateRange, selectedDate, page = 0, limit = 10 } = filter;
-        let startDate = new Date();
-        let endDate = new Date();
-        switch (dateRange) {
-            case "today":
-                startDate = new Date(startDate.setHours(0, 0, 0, 0));
-                endDate = new Date(endDate.setHours(23, 59, 59, 999));
-                break;
-            case "week":
-                startDate = new Date(
-                    endDate.getTime() - 7 * 24 * 60 * 60 * 1000
-                );
-                break;
-            case "month":
-                startDate = new Date(
-                    endDate.getTime() - 30 * 24 * 60 * 60 * 1000
-                );
-                break;
-            case "custom":
-                startDate = new Date(selectedDate);
-                startDate.setHours(0, 0, 0, 0);
-                endDate = new Date(selectedDate);
-                endDate.setHours(23, 59, 59, 999);
-                break;
-            default:
-                throw new Error("Invalid date range");
-        }
-        const ordersStats = await db("orders")
-            .whereBetween("createdAt", [
-                startDate.toISOString(),
-                endDate.toISOString(),
-            ])
-            .select(
-                db.raw(
-                    `COUNT(CASE WHEN LOWER("status") = LOWER('Delivered') THEN 1 END) as "totalDelivered"`
-                ),
-                db.raw(
-                    `COUNT(CASE WHEN LOWER("status") = LOWER('sent to kitchen') THEN 1 END) as "totalSentToKitchen"`
-                ),
-                db.raw(
-                    `COUNT(CASE WHEN LOWER("status") = LOWER('ready for delivery') THEN 1 END) as "totalReadyForDelivery"`
-                ),
-                db.raw(
-                    `COUNT(CASE WHEN LOWER("status") = LOWER('out for delivery') THEN 1 END) as "totalOutForDelivery"`
-                ),
-                db.raw(
-                    `COUNT(CASE WHEN LOWER("status") = LOWER('Cancelled') THEN 1 END) as "totalCancelled"`
-                ),
-                db.raw(
-                    `COUNT(CASE WHEN LOWER("status") = LOWER('Completed') THEN 1 END) as "totalCompleted"`
-                ),
-                db.raw(
-                    `COUNT(CASE WHEN LOWER("status") = LOWER('Pending') THEN 1 END) as "totalPending"`
-                ),
-                db.raw(
-                    `AVG(CASE WHEN LOWER("status") = LOWER('Delivered') AND "assignedAt" IS NOT NULL AND "deliveredAt" IS NOT NULL THEN EXTRACT(EPOCH FROM ("deliveredAt" - "assignedAt")) / 60 END) as "avgDeliveryTime"`
-                )
-            )
-            .first();
-        ordersStats.totalDelivered =
-            parseInt(ordersStats.totalDelivered, 10) || 0;
-        ordersStats.totalSentToKitchen =
-            parseInt(ordersStats.totalSentToKitchen, 10) || 0;
-        ordersStats.totalReadyForDelivery =
-            parseInt(ordersStats.totalReadyForDelivery, 10) || 0;
-        ordersStats.totalOutForDelivery =
-            parseInt(ordersStats.totalOutForDelivery, 10) || 0;
-        ordersStats.totalCancelled =
-            parseInt(ordersStats.totalCancelled, 10) || 0;
-        ordersStats.totalPending = parseInt(ordersStats.totalPending, 10) || 0;
-        ordersStats.totalCompleted =
-            parseInt(ordersStats.totalCompleted, 10) || 0;
-        ordersStats.avgDeliveryTime =
-            parseFloat(ordersStats.avgDeliveryTime) || 0;
-        const baseOrdersQuery = db("orders").whereBetween("createdAt", [
-            startDate.toISOString(),
-            endDate.toISOString(),
-        ]);
-        const allOrdersForHourly = await baseOrdersQuery
-            .clone()
-            .select("createdAt");
-        const hourlyData = new Array(24).fill(0);
-        allOrdersForHourly.forEach((order) => {
-            const orderTime = new Date(order.createdAt);
-            const hour = orderTime.getHours();
-            hourlyData[hour]++;
+  }
+  static async removeItemFromOrder(
+    orderId: string,
+    itemId: string
+  ): Promise<any> {
+    try {
+      await db("order_items").where("id", itemId).delete();
+      const totalOrderItems = await db("order_items")
+        .where("orderId", orderId)
+        .count("* as count");
+      if (Number(totalOrderItems[0]?.count) === 0) {
+        const now = new Date().toISOString();
+        await db("orders").where("id", orderId).update({
+          status: "cancelled",
+          cancelAt: now,
+          updatedAt: now,
         });
-        const totalCountResult = await baseOrdersQuery
-            .clone()
-            .count("* as count")
-            .first();
-        const ordersTotalCount =
-            parseInt((totalCountResult as any).count, 10) || 0;
-        const orders = await baseOrdersQuery
-            .clone()
-            .select(
-                "id",
-                "createdAt",
-                "customerName",
-                "orderId",
-                "customerPhone",
-                "status"
-            )
-            .offset(page * limit)
-            .limit(limit)
-            .orderBy("createdAt", "desc");
-
-        const newOrders = [];
-        for (const order of orders) {
-            // Get order items for each order
-            const items = await db("order_items")
-                .where("orderId", order.id)
-                .select("productName as name", "quantity");
-            const formattedItems = items.map((item) => ({
-                name: item.name,
-                quantity: item.quantity,
-            }));
-
-            const newOrder = {
-                createdAt: order.createdAt,
-                customer: {
-                    name: order.customerName,
-                    phone: order.customerPhone,
-                },
-                orderId: order.orderId,
-                status: order.status,
-                items: formattedItems,
-            };
-            newOrders.push(newOrder);
-        }
-
-        const topItems = await db("order_items")
-            .innerJoin("orders", "order_items.orderId", "orders.id")
-            .whereBetween("orders.createdAt", [
-                startDate.toISOString(),
-                endDate.toISOString(),
-            ])
-            .andWhere("order_items.menuId", null)
-            .andWhereNot("orders.status", "pending")
-            .groupBy("order_items.productId", "order_items.productName")
-            .select(
-                "order_items.productName as name",
-                db.raw("SUM(order_items.quantity) as count")
-            )
-            .orderBy("count", "desc")
-            .limit(8);
-        const subquery = db("order_items")
-            .select(
-                "menuId",
-                "menuName",
-                "orderId",
-                db.raw("MIN(quantity) as menu_qty")
-            )
-            .whereNotNull("menuId")
-            .groupBy("menuId", "menuName", "orderId")
-            .as("sub");
-
-        const topMenus = await db(subquery)
-            .innerJoin("orders", "sub.orderId", "orders.id")
-            .whereBetween("orders.createdAt", [
-                startDate.toISOString(),
-                endDate.toISOString(),
-            ])
-            .andWhereNot("orders.status", "pending")
-            .select("sub.menuName as name", db.sum("sub.menu_qty").as("count"))
-            .groupBy("sub.menuId", "sub.menuName")
-            .orderBy("count", "desc")
-            .limit(8);
-
-        return {
-            ...ordersStats,
-            hourlyData,
-            topItems,
-            topMenus,
-            orders: newOrders,
-            ordersTotalCount,
-        };
+      }
+      return { itemId };
+    } catch (error) {
+      throw error;
     }
-    static async getOrdersByFilter(
-        filter: FilterType
-    ): Promise<{ orders: Order[]; totalCount: number }> {
-        try {
-            const { page = 0, limit = 10 } = filter;
-            const offset = page * limit;
-            const query = db("orders");
-            if (filter.searchTerm) {
-                query.where(function () {
-                    this.where("customerName", "like", `%${filter.searchTerm}%`)
-                        .orWhere(
-                            "customerPhone",
-                            "like",
-                            `%${filter.searchTerm}%`
-                        )
-                        .orWhere("orderId", filter.searchTerm);
-                });
-            }
-            if (filter.selectedDate) {
-                const startDate = new Date(filter.selectedDate);
-                startDate.setHours(0, 0, 0, 0);
-                const endDate = new Date(filter.selectedDate);
-                endDate.setHours(23, 59, 59, 999);
-                query
-                    .andWhere("createdAt", ">=", startDate.toISOString())
-                    .andWhere("createdAt", "<=", endDate.toISOString());
-            }
-            if (
-                filter.selectedStatus.length > 0 &&
-                filter.selectedStatus[0] !== "all"
-            ) {
-                query.whereIn("status", filter.selectedStatus);
-            }
-            if (filter.selectedDeliveryPerson) {
-                query.where("deliveryPersonId", filter.selectedDeliveryPerson);
-            }
-            if (
-                filter.selectedPaymentStatus.length > 0 &&
-                filter.selectedPaymentStatus[0] !== "all"
-            ) {
-                const paymentStatusesArray = filter.selectedPaymentStatus
-                    .map((s) => `'${s}'`)
-                    .join(",");
-                const amountPattern = "^[0-9]+(\\.[0-9]*)?$"; // JS string for binding
-                const sql = `
+  }
+  static async removeMenuFromOrder(
+    orderId: string,
+    menuId: string,
+    menuSecondaryId: string
+  ): Promise<any> {
+    try {
+      await db("order_items")
+        .where("orderId", orderId)
+        .andWhere("menuId", menuId)
+        .andWhere("menuSecondaryId", menuSecondaryId)
+        .delete();
+      const totalOrderItems = await db("order_items")
+        .where("orderId", orderId)
+        .count("* as count");
+      if (Number(totalOrderItems[0]?.count) === 0) {
+        const now = new Date().toISOString();
+        await db("orders").where("id", orderId).update({
+          status: "cancelled",
+          cancelAt: now,
+          updatedAt: now,
+        });
+      }
+      return { menuId };
+    } catch (error) {
+      throw error;
+    }
+  }
+  static async removeMenuItemFromOrder(
+    orderId: string,
+    menuId: string,
+    menuSecondaryId: string,
+    productId: string,
+    menuPageId: string
+  ): Promise<any> {
+    try {
+      await db("order_items")
+        .where("orderId", orderId)
+        .andWhere("menuId", menuId)
+        .andWhere("menuSecondaryId", menuSecondaryId)
+        .andWhere("productId", productId)
+        .andWhere("menuPageId", menuPageId)
+        .delete();
+      const totalOrderItems = await db("order_items")
+        .where("orderId", orderId)
+        .count("* as count");
+      if (Number(totalOrderItems[0]?.count) === 0) {
+        const now = new Date().toISOString();
+        await db("orders").where("id", orderId).update({
+          status: "cancelled",
+          cancelAt: now,
+          updatedAt: now,
+        });
+      }
+      return { menuId };
+    } catch (error) {
+      throw error;
+    }
+  }
+  static updateMenuQuantity(
+    orderId: string,
+    menuId: string,
+    menuSecondaryId: string,
+    quantity: number
+  ): Promise<any> {
+    try {
+      return db("order_items")
+        .where("orderId", orderId)
+        .andWhere("menuId", menuId)
+        .andWhere("menuSecondaryId", menuSecondaryId)
+        .update({ quantity });
+    } catch (error) {
+      throw error;
+    }
+  }
+  static async updateItemQuantity(
+    itemId: string,
+    quantity: number
+  ): Promise<any> {
+    try {
+      const now = new Date().toISOString();
+      await db("order_items").where("id", itemId).update({
+        quantity,
+        updatedAt: now,
+      });
+      return { itemId };
+    } catch (error) {
+      throw error;
+    }
+  }
+  static async updateOrderItem(
+    itemId: string,
+    itemData: Partial<OrderItem>
+  ): Promise<any> {
+    try {
+      const now = new Date().toISOString();
+      await db("order_items")
+        .where("id", itemId)
+        .update({
+          ...itemData,
+          updatedAt: now,
+        });
+      return { itemId };
+    } catch (error) {
+      throw error;
+    }
+  }
+  static async deleteOrder(id: string, cancelNote?: string): Promise<any> {
+    try {
+      const now = new Date().toISOString();
+      const existingOrder = await db("orders").where("id", id).first();
+      const existingNotes = existingOrder?.notes || "";
+      const cancelNoteText = cancelNote
+        ? `[CANCELLED: ${now}] ${cancelNote}${existingNotes ? `\n\n${existingNotes}` : ""}`
+        : existingNotes;
+
+      await db("orders").where("id", id).update({
+        status: "cancelled",
+        cancelAt: now,
+        notes: cancelNoteText,
+        updatedAt: now,
+      });
+      return { id };
+    } catch (error) {
+      throw error;
+    }
+  }
+  static async getOrderItems(orderId: string): Promise<any[]> {
+    try {
+      const items = await db("order_items").where("orderId", orderId);
+      return items.map((item) => ({
+        ...item,
+        printers: item.printers.split("="),
+      }));
+    } catch (error) {
+      throw error;
+    }
+  }
+  static async updateOrder(
+    orderId: string,
+    orderData: Partial<Order>
+  ): Promise<any> {
+    try {
+      const now = new Date().toISOString();
+      await db("orders")
+        .where("id", orderId)
+        .update({
+          ...orderData,
+          updatedAt: now,
+        });
+      return { orderId };
+    } catch (error) {
+      throw error;
+    }
+  }
+  static async getOrderAnalytics(filter: any): Promise<any> {
+    const { dateRange, selectedDate, page = 0, limit = 10 } = filter;
+    let startDate = new Date();
+    let endDate = new Date();
+    switch (dateRange) {
+      case "today":
+        startDate = new Date(startDate.setHours(0, 0, 0, 0));
+        endDate = new Date(endDate.setHours(23, 59, 59, 999));
+        break;
+      case "week":
+        startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case "month":
+        startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case "custom":
+        startDate = new Date(selectedDate);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(selectedDate);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      default:
+        throw new Error("Invalid date range");
+    }
+    const ordersStats = await db("orders")
+      .whereBetween("createdAt", [
+        startDate.toISOString(),
+        endDate.toISOString(),
+      ])
+      .select(
+        db.raw(
+          `COUNT(CASE WHEN LOWER("status") = LOWER('Delivered') THEN 1 END) as "totalDelivered"`
+        ),
+        db.raw(
+          `COUNT(CASE WHEN LOWER("status") = LOWER('sent to kitchen') THEN 1 END) as "totalSentToKitchen"`
+        ),
+        db.raw(
+          `COUNT(CASE WHEN LOWER("status") = LOWER('ready for delivery') THEN 1 END) as "totalReadyForDelivery"`
+        ),
+        db.raw(
+          `COUNT(CASE WHEN LOWER("status") = LOWER('out for delivery') THEN 1 END) as "totalOutForDelivery"`
+        ),
+        db.raw(
+          `COUNT(CASE WHEN LOWER("status") = LOWER('Cancelled') THEN 1 END) as "totalCancelled"`
+        ),
+        db.raw(
+          `COUNT(CASE WHEN LOWER("status") = LOWER('Completed') THEN 1 END) as "totalCompleted"`
+        ),
+        db.raw(
+          `COUNT(CASE WHEN LOWER("status") = LOWER('Pending') THEN 1 END) as "totalPending"`
+        ),
+        db.raw(
+          `AVG(CASE WHEN LOWER("status") = LOWER('Delivered') AND "assignedAt" IS NOT NULL AND "deliveredAt" IS NOT NULL THEN EXTRACT(EPOCH FROM ("deliveredAt" - "assignedAt")) / 60 END) as "avgDeliveryTime"`
+        )
+      )
+      .first();
+    ordersStats.totalDelivered = parseInt(ordersStats.totalDelivered, 10) || 0;
+    ordersStats.totalSentToKitchen =
+      parseInt(ordersStats.totalSentToKitchen, 10) || 0;
+    ordersStats.totalReadyForDelivery =
+      parseInt(ordersStats.totalReadyForDelivery, 10) || 0;
+    ordersStats.totalOutForDelivery =
+      parseInt(ordersStats.totalOutForDelivery, 10) || 0;
+    ordersStats.totalCancelled = parseInt(ordersStats.totalCancelled, 10) || 0;
+    ordersStats.totalPending = parseInt(ordersStats.totalPending, 10) || 0;
+    ordersStats.totalCompleted = parseInt(ordersStats.totalCompleted, 10) || 0;
+    ordersStats.avgDeliveryTime = parseFloat(ordersStats.avgDeliveryTime) || 0;
+    const baseOrdersQuery = db("orders").whereBetween("createdAt", [
+      startDate.toISOString(),
+      endDate.toISOString(),
+    ]);
+    const allOrdersForHourly = await baseOrdersQuery
+      .clone()
+      .select("createdAt");
+    const hourlyData = new Array(24).fill(0);
+    allOrdersForHourly.forEach((order) => {
+      const orderTime = new Date(order.createdAt);
+      const hour = orderTime.getHours();
+      hourlyData[hour]++;
+    });
+    const totalCountResult = await baseOrdersQuery
+      .clone()
+      .count("* as count")
+      .first();
+    const ordersTotalCount = parseInt((totalCountResult as any).count, 10) || 0;
+    const orders = await baseOrdersQuery
+      .clone()
+      .select(
+        "id",
+        "createdAt",
+        "customerName",
+        "orderId",
+        "customerPhone",
+        "status"
+      )
+      .offset(page * limit)
+      .limit(limit)
+      .orderBy("createdAt", "desc");
+
+    const newOrders = [];
+    for (const order of orders) {
+      // Get order items for each order
+      const items = await db("order_items")
+        .where("orderId", order.id)
+        .select("productName as name", "quantity");
+      const formattedItems = items.map((item) => ({
+        name: item.name,
+        quantity: item.quantity,
+      }));
+
+      const newOrder = {
+        createdAt: order.createdAt,
+        customer: {
+          name: order.customerName,
+          phone: order.customerPhone,
+        },
+        orderId: order.orderId,
+        status: order.status,
+        items: formattedItems,
+      };
+      newOrders.push(newOrder);
+    }
+
+    const topItems = await db("order_items")
+      .innerJoin("orders", "order_items.orderId", "orders.id")
+      .whereBetween("orders.createdAt", [
+        startDate.toISOString(),
+        endDate.toISOString(),
+      ])
+      .andWhere("order_items.menuId", null)
+      .andWhereNot("orders.status", "pending")
+      .groupBy("order_items.productId", "order_items.productName")
+      .select(
+        "order_items.productName as name",
+        db.raw("SUM(order_items.quantity) as count")
+      )
+      .orderBy("count", "desc")
+      .limit(8);
+    const subquery = db("order_items")
+      .select(
+        "menuId",
+        "menuName",
+        "orderId",
+        db.raw("MIN(quantity) as menu_qty")
+      )
+      .whereNotNull("menuId")
+      .groupBy("menuId", "menuName", "orderId")
+      .as("sub");
+
+    const topMenus = await db(subquery)
+      .innerJoin("orders", "sub.orderId", "orders.id")
+      .whereBetween("orders.createdAt", [
+        startDate.toISOString(),
+        endDate.toISOString(),
+      ])
+      .andWhereNot("orders.status", "pending")
+      .select("sub.menuName as name", db.sum("sub.menu_qty").as("count"))
+      .groupBy("sub.menuId", "sub.menuName")
+      .orderBy("count", "desc")
+      .limit(8);
+
+    return {
+      ...ordersStats,
+      hourlyData,
+      topItems,
+      topMenus,
+      orders: newOrders,
+      ordersTotalCount,
+    };
+  }
+  static async getOrdersByFilter(
+    filter: FilterType
+  ): Promise<{ orders: Order[]; totalCount: number }> {
+    try {
+      const { page = 0, limit = 10 } = filter;
+      const offset = page * limit;
+      const query = db("orders");
+      if (filter.searchTerm) {
+        query.where(function () {
+          this.where("customerName", "like", `%${filter.searchTerm}%`)
+            .orWhere("customerPhone", "like", `%${filter.searchTerm}%`)
+            .orWhere("orderId", filter.searchTerm);
+        });
+      }
+      if (filter.selectedDate) {
+        const startDate = new Date(filter.selectedDate);
+        startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date(filter.selectedDate);
+        endDate.setHours(23, 59, 59, 999);
+        query
+          .andWhere("createdAt", ">=", startDate.toISOString())
+          .andWhere("createdAt", "<=", endDate.toISOString());
+      }
+      if (
+        filter.selectedStatus.length > 0 &&
+        filter.selectedStatus[0] !== "all"
+      ) {
+        query.whereIn("status", filter.selectedStatus);
+      }
+      if (filter.selectedDeliveryPerson) {
+        query.where("deliveryPersonId", filter.selectedDeliveryPerson);
+      }
+      if (filter.selectedCustomer) {
+        const customer = await db("customers")
+          .where("id", filter.selectedCustomer)
+          .first();
+        if (customer) {
+          query.where("customerPhone", customer.phone);
+        }
+      }
+      if (
+        filter.selectedPaymentStatus.length > 0 &&
+        filter.selectedPaymentStatus[0] !== "all"
+      ) {
+        const paymentStatusesArray = filter.selectedPaymentStatus
+          .map((s) => `'${s}'`)
+          .join(",");
+        const amountPattern = "^[0-9]+(\\.[0-9]*)?$"; // JS string for binding
+        const sql = `
                 CASE
                     WHEN (
                         CASE
@@ -519,70 +520,64 @@ export class OrderDatabaseOperations {
                     ELSE 'PARTIAL'
                 END = ANY(ARRAY[${paymentStatusesArray}])
             `;
-                query.whereRaw(sql, [amountPattern, amountPattern]);
-            }
-            const countQuery = query.clone().count("* as count").first();
-            const dataQuery = query
-                .clone()
-                .limit(limit)
-                .offset(offset)
-                .orderBy("createdAt", "desc");
-            const [countResult, orders] = await Promise.all([
-                countQuery,
-                dataQuery,
-            ]);
-            const totalCount = parseInt((countResult as any).count, 10) || 0;
-            const newOrders = [];
-            for (const order of orders) {
-                const items = await db("order_items").where(
-                    "orderId",
-                    order.id
-                );
-                const totalAmount = calculateOrderTotal(items).orderTotal;
-                const paymentStatusResult = calculatePaymentStatus(
-                    order.paymentType,
-                    totalAmount
-                );
-                const newOrder = {
-                    customer: {
-                        name: order.customerName,
-                        phone: order.customerPhone,
-                        address: order.customerAddress,
-                        cif: order.customerCIF,
-                        email: order.customerEmail,
-                        comments: order.customerComments,
-                    },
-                    createdAt: order.createdAt,
-                    updatedAt: order.updatedAt,
-                    assignedAt: order.assignedAt,
-                    deliveredAt: order.deliveredAt,
-                    pickupTime: order.pickupTime,
-                    orderId: order.orderId,
-                    status: order.status,
-                    paymentType: order.paymentType,
-                    orderType: order.orderType,
-                    notes: order.notes,
-                    isPaid: order.isPaid,
-                    id: order.id,
-                    deliveryPerson: {
-                        id: order.deliveryPersonId,
-                        name: order.deliveryPersonName,
-                        phone: order.deliveryPersonPhone,
-                        email: order.deliveryPersonEmail,
-                        vehicleType: order.deliveryPersonVehicleType,
-                        licenseNo: order.deliveryPersonLicenseNo,
-                    },
-                    paymentStatus: paymentStatusResult.status,
-                    items: items.map((item) => ({
-                        ...item,
-                        printers: item.printers.split("="),
-                    })),
-                };
-                newOrders.push(newOrder);
-            }
-            return { orders: newOrders, totalCount };
-        } catch (error) {
-            throw error;
-        }
+        query.whereRaw(sql, [amountPattern, amountPattern]);
+      }
+      const countQuery = query.clone().count("* as count").first();
+      const dataQuery = query
+        .clone()
+        .limit(limit)
+        .offset(offset)
+        .orderBy("createdAt", "desc");
+      const [countResult, orders] = await Promise.all([countQuery, dataQuery]);
+      const totalCount = parseInt((countResult as any).count, 10) || 0;
+      const newOrders = [];
+      for (const order of orders) {
+        const items = await db("order_items").where("orderId", order.id);
+        const totalAmount = calculateOrderTotal(items).orderTotal;
+        const paymentStatusResult = calculatePaymentStatus(
+          order.paymentType,
+          totalAmount
+        );
+        const newOrder = {
+          customer: {
+            name: order.customerName,
+            phone: order.customerPhone,
+            address: order.customerAddress,
+            cif: order.customerCIF,
+            email: order.customerEmail,
+            comments: order.customerComments,
+          },
+          createdAt: order.createdAt,
+          updatedAt: order.updatedAt,
+          assignedAt: order.assignedAt,
+          deliveredAt: order.deliveredAt,
+          pickupTime: order.pickupTime,
+          orderId: order.orderId,
+          status: order.status,
+          paymentType: order.paymentType,
+          orderType: order.orderType,
+          notes: order.notes,
+          isPaid: order.isPaid,
+          id: order.id,
+          deliveryPerson: {
+            id: order.deliveryPersonId,
+            name: order.deliveryPersonName,
+            phone: order.deliveryPersonPhone,
+            email: order.deliveryPersonEmail,
+            vehicleType: order.deliveryPersonVehicleType,
+            licenseNo: order.deliveryPersonLicenseNo,
+          },
+          paymentStatus: paymentStatusResult.status,
+          items: items.map((item) => ({
+            ...item,
+            printers: item.printers.split("="),
+          })),
+        };
+        newOrders.push(newOrder);
+      }
+      return { orders: newOrders, totalCount };
+    } catch (error) {
+      throw error;
     }
+  }
 }

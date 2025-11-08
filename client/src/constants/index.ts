@@ -83,3 +83,15 @@ export const MODULE_LABELS = {
 
 // Available modules for permission management
 export const AVAILABLE_MODULES = Object.values(MODULES) as string[];
+
+// Function Permissions Configuration
+export const FUNCTIONS = {
+  CANCEL_ORDER: "cancel-order",
+} as const;
+
+export const FUNCTION_LABELS = {
+  [FUNCTIONS.CANCEL_ORDER]: "Cancel Order",
+} as const;
+
+// Available functions for permission management
+export const AVAILABLE_FUNCTIONS = Object.values(FUNCTIONS) as string[];
