@@ -65,6 +65,7 @@ const SubcategorySelection: React.FC<SubcategorySelectionProps> = ({
                 color: subcategory.color,
                 itemCount: subcategory.itemCount || 0,
                 menuCount: subcategory.menuCount || 0,
+                imgUrl: subcategory.imgUrl,
               }}
               type="subcategory"
               onClick={() => onSubcategorySelect(subcategory)}

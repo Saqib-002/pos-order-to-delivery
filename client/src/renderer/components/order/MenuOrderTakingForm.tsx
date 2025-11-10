@@ -28,6 +28,8 @@ interface MenuPage {
   products: MenuPageProduct[];
   minComplements: number;
   maxComplements: number;
+  priority: number;
+  kitchenPriority: string;
 }
 interface MenuOrderTakingFormProps {
   setCurrentOrderItem: React.Dispatch<React.SetStateAction<any>>;
@@ -87,23 +89,21 @@ const MenuOrderTakingForm = ({
         toast.error(t("menuOrderTakingForm.errors.unableToGetMenuPages"));
         return;
       }
-      const associatedPageIds = associationsRes.data.map(
-        (assoc: any) => assoc.menuPageId
-      );
-      const filteredPages = pagesRes.data.filter((page: any) =>
-        associatedPageIds.includes(page.id)
+      const pagesMap = new Map(
+        pagesRes.data.map((page: any) => [page.id, page])
       );
       const allProductsRes = await (window as any).electronAPI.getAllProducts(
         token
       );
       const pagesWithProducts = await Promise.all(
-        filteredPages.map(async (page: any) => {
+        associationsRes.data.map(async (association: any) => {
+          const page = pagesMap.get(association.menuPageId) as any;
+          if (!page) {
+            return null;
+          }
           const productsRes = await (
             window as any
           ).electronAPI.getMenuPageProducts(token, page.id);
-          const association = associationsRes.data.find(
-            (assoc: any) => assoc.menuPageId === page.id
-          );
           const productsWithDetails = productsRes.status
             ? await Promise.all(
                 productsRes.data.map(async (menuProduct: any) => {
@@ -140,10 +140,23 @@ const MenuOrderTakingForm = ({
             products: productsWithDetails,
             minComplements: association?.minimum || 0,
             maxComplements: association?.maximum || 0,
+            priority: association?.priority || 0,
+            kitchenPriority: association?.kitchenPriority || "Priority 1",
           };
         })
       );
-      setMenuPages(pagesWithProducts);
+      const extractPriorityNumber = (kitchenPriority: string): number => {
+        const match = kitchenPriority.match(/\d+/);
+        return match ? parseInt(match[0], 10) : 999;
+      };
+      const validPages = pagesWithProducts
+        .filter((page): page is MenuPage => page !== null)
+        .sort((a, b) => {
+          const priorityA = extractPriorityNumber(a.kitchenPriority);
+          const priorityB = extractPriorityNumber(b.kitchenPriority);
+          return priorityA - priorityB;
+        });
+      setMenuPages(validPages);
       setCurrentMenuPageIndex(0);
     } catch (error) {
       toast.error(t("menuOrderTakingForm.errors.failedToFetchMenuPages"));
@@ -222,7 +235,6 @@ const MenuOrderTakingForm = ({
     );
   }
   const handleMenuProductSelect = async (product: MenuPageProduct) => {
-    // Check if order is assigned to a delivery person
     if (order && order.deliveryPerson && order.deliveryPerson.id) {
       toast.info(
         t("menuOrderTakingForm.messages.orderAssignedToDeliveryPerson")
