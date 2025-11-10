@@ -102,6 +102,7 @@ const OrderMenu = () => {
     setSelectedProduct(product);
     setEditingGroup(null);
     setEditingProduct(null);
+    setCurrentOrderItem(null);
   };
   const handleMenuSelect = (menu: any) => {
     setMode("menu");

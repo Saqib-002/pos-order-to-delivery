@@ -184,8 +184,8 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
   };
 
   const calculateTotalPrice = () => {
-    if(!selectedProduct) return 0;
-    if (variantItems && variantItems.length > 0){
+    if (!selectedProduct) return 0;
+    if (variantItems && variantItems.length > 0) {
       if (!selectedVariant) return 0;
     }
     const productTaxRate = (selectedProduct?.tax || 0) / 100;
@@ -494,11 +494,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                 {variantItems.map((item) => (
                   <label
                     key={item.id}
-                    className={`group relative flex flex-col p-2 border-2 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md touch-manipulation ${
-                      selectedVariant?.id === item.id
+                    className={`group relative flex flex-col p-2 border-2 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md touch-manipulation ${selectedVariant?.id === item.id
                         ? "border-gray-500 bg-gray-50 shadow-md"
                         : "border-gray-200 hover:border-gray-300 bg-white"
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"
@@ -560,11 +559,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
 
                       {/* Selection Indicator */}
                       <div
-                        className={`absolute top-1 right-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                          selectedVariant?.id === item.id
+                        className={`absolute top-1 right-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedVariant?.id === item.id
                             ? "border-gray-500 bg-gray-500"
                             : "border-white bg-white shadow-sm group-hover:border-gray-400"
-                        }`}
+                          }`}
                       >
                         {selectedVariant?.id === item.id && (
                           <div className="w-3 h-3 bg-white rounded-full"></div>
@@ -634,20 +632,18 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                     <div className="flex flex-wrap gap-2">
                       {page.minComplements > 0 && (
                         <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${
-                            (selectedComplements[group.id]?.length || 0) >=
-                            page.minComplements
+                          className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${(selectedComplements[group.id]?.length || 0) >=
+                              page.minComplements
                               ? "bg-green-100 text-green-700"
                               : "bg-red-100 text-red-700"
-                          }`}
+                            }`}
                         >
                           <div
-                            className={`size-[14px] p-[2px] ${
-                              (selectedComplements[group.id]?.length || 0) >=
-                              page.minComplements
+                            className={`size-[14px] p-[2px] ${(selectedComplements[group.id]?.length || 0) >=
+                                page.minComplements
                                 ? "bg-green-600"
                                 : "bg-red-600"
-                            } flex items-center justify-center rounded-full`}
+                              } flex items-center justify-center rounded-full`}
                           >
                             <CheckIcon className="size-2 text-white" />
                           </div>
@@ -687,11 +683,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                             onClick={() =>
                               handleComplementToggle(group.id, item.id)
                             }
-                            className={`group relative flex flex-col p-3 border-2 rounded-lg text-left transition-all duration-200 hover:shadow-md touch-manipulation ${
-                              isSelected
+                            className={`group relative flex flex-col p-3 border-2 rounded-lg text-left transition-all duration-200 hover:shadow-md touch-manipulation ${isSelected
                                 ? "border-gray-500 bg-gray-50 shadow-md"
                                 : "border-gray-200 hover:border-gray-300 bg-white"
-                            }`}
+                              }`}
                           >
                             {/* Image Section */}
                             <div className="relative mb-2">
@@ -745,11 +740,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
 
                               {/* Selection Indicator */}
                               <div
-                                className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                                  isSelected
+                                className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected
                                     ? "border-gray-500 bg-gray-500"
                                     : "border-gray-300 bg-white shadow-sm group-hover:border-gray-400"
-                                }`}
+                                  }`}
                               >
                                 {isSelected && (
                                   <CheckIcon className="size-3 text-white" />
@@ -814,82 +808,86 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
           )}
 
           {/* Price Breakdown */}
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                <CashIcon className="size-4 text-gray-600" />
-              </div>
-              <h3 className="text-xl font-bold text-black">
-                {t("orderTakingForm.priceBreakdown")}
-              </h3>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-center py-2">
-                <span className="text-gray-700">
-                  {t("orderTakingForm.baseProduct")}:
-                </span>
-                <span className="font-semibold text-black">
-                  €{calculateBaseProductPrice(selectedProduct).toFixed(2)}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center py-2 text-gray-600">
-                <span>
-                  {t("orderTakingForm.tax")} ({selectedProduct?.tax || 0}%):
-                </span>
-                <span>
-                  €{calculateProductTaxAmount(selectedProduct).toFixed(2)}
-                </span>
-              </div>
-
-              {selectedVariant && (
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-gray-700">
-                    {t("orderTakingForm.variant")} (
-                    {selectedVariant.name || `Variant ${selectedVariant.id}`}):
-                  </span>
-                  <span className="font-semibold text-black">
-                    €{(selectedVariant.price || 0).toFixed(2)}
-                  </span>
+          {
+            !currentOrderItem?.menuId && (
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <CashIcon className="size-4 text-gray-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-black">
+                    {t("orderTakingForm.priceBreakdown")}
+                  </h3>
                 </div>
-              )}
 
-              {Object.entries(selectedComplements).map(([groupId, itemIds]) => {
-                const group = groups?.find((g) => g.id === groupId);
-                if (!group) return null;
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-gray-700">
+                      {t("orderTakingForm.baseProduct")}:
+                    </span>
+                    <span className="font-semibold text-black">
+                      €{calculateBaseProductPrice(selectedProduct).toFixed(2)}
+                    </span>
+                  </div>
 
-                return itemIds.map((itemId) => {
-                  const item = group.items?.find((i) => i.id === itemId);
-                  if (!item) return null;
+                  <div className="flex justify-between items-center py-2 text-gray-600">
+                    <span>
+                      {t("orderTakingForm.tax")} ({selectedProduct?.tax || 0}%):
+                    </span>
+                    <span>
+                      €{calculateProductTaxAmount(selectedProduct).toFixed(2)}
+                    </span>
+                  </div>
 
-                  return (
-                    <div
-                      key={itemId}
-                      className="flex justify-between items-center py-1 text-gray-600"
-                    >
-                      <span className="flex items-center space-x-2">
-                        <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
-                        <span>{item.name}:</span>
+                  {selectedVariant && (
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-gray-700">
+                        {t("orderTakingForm.variant")} (
+                        {selectedVariant.name || `Variant ${selectedVariant.id}`}):
                       </span>
-                      <span>€{item.price.toFixed(2)}</span>
+                      <span className="font-semibold text-black">
+                        €{(selectedVariant.price || 0).toFixed(2)}
+                      </span>
                     </div>
-                  );
-                });
-              })}
+                  )}
 
-              <div className="border-t-2 border-gray-300 pt-4 mt-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-xl font-bold text-gray-600">
-                    {t("orderTakingForm.total")} (×{quantity}):
-                  </span>
-                  <span className="text-2xl font-bold text-gray-600">
-                    €{calculateTotalPrice().toFixed(2)}
-                  </span>
+                  {Object.entries(selectedComplements).map(([groupId, itemIds]) => {
+                    const group = groups?.find((g) => g.id === groupId);
+                    if (!group) return null;
+
+                    return itemIds.map((itemId) => {
+                      const item = group.items?.find((i) => i.id === itemId);
+                      if (!item) return null;
+
+                      return (
+                        <div
+                          key={itemId}
+                          className="flex justify-between items-center py-1 text-gray-600"
+                        >
+                          <span className="flex items-center space-x-2">
+                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                            <span>{item.name}:</span>
+                          </span>
+                          <span>€{item.price.toFixed(2)}</span>
+                        </div>
+                      );
+                    });
+                  })}
+
+                  <div className="border-t-2 border-gray-300 pt-4 mt-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xl font-bold text-gray-600">
+                        {t("orderTakingForm.total")} (×{quantity}):
+                      </span>
+                      <span className="text-2xl font-bold text-gray-600">
+                        €{calculateTotalPrice().toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            )
+          }
         </div>
 
         {/* Modern Action Buttons */}
