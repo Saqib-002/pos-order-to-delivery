@@ -349,10 +349,25 @@
     "city": "City",
     "province": "Province",
     "addCustomer": "Add Customer",
+    "placeholders": {
+      "phone": "Enter phone number",
+      "name": "Enter name",
+      "cifDni": "Enter CIF/DNI",
+      "email": "Enter email address",
+      "comments": "Enter comments",
+      "address": "Enter address",
+      "postalCode": "Enter postal code",
+      "city": "Enter city",
+      "province": "Enter province"
+    },
     "errors": {
       "customerAlreadyExists": "Customer already exists",
       "failedToEditCustomer": "Failed to edit customer",
-      "failedToAddCustomer": "Failed to add customer"
+      "failedToAddCustomer": "Failed to add customer",
+      "phoneRequired": "Phone number is required",
+      "addressRequired": "Address is required",
+      "postalCodeRequired": "Postal code is required",
+      "cityRequired": "City is required"
     }
   },
   "printerModal": {

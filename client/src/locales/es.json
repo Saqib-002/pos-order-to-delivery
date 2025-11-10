@@ -351,10 +351,25 @@
     "city": "Ciudad",
     "province": "Provincia",
     "addCustomer": "Agregar Cliente",
+    "placeholders": {
+      "phone": "Ingrese número de teléfono",
+      "name": "Ingrese nombre",
+      "cifDni": "Ingrese CIF/DNI",
+      "email": "Ingrese correo electrónico",
+      "comments": "Ingrese comentarios",
+      "address": "Ingrese dirección",
+      "postalCode": "Ingrese código postal",
+      "city": "Ingrese ciudad",
+      "province": "Ingrese provincia"
+    },
     "errors": {
       "customerAlreadyExists": "El cliente ya existe",
       "failedToEditCustomer": "Error al editar cliente",
-      "failedToAddCustomer": "Error al agregar cliente"
+      "failedToAddCustomer": "Error al agregar cliente",
+      "phoneRequired": "El número de teléfono es obligatorio",
+      "addressRequired": "La dirección es obligatoria",
+      "postalCodeRequired": "El código postal es obligatorio",
+      "cityRequired": "La ciudad es obligatoria"
     }
   },
   "printerModal": {

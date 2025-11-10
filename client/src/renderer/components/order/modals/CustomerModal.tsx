@@ -111,22 +111,46 @@ const CustomerModal = ({
     // Handle form submission here, e.g., add customer to order
     const formData = new FormData(e.target as HTMLFormElement);
     const data = Object.fromEntries(formData.entries());
+
+    // Validate required fields
+    const phone = (data.phone as string)?.trim();
+    const address = (data.address as string)?.trim();
+    const postal = (data.postal as string)?.trim();
+    const city = (data.city as string)?.trim();
+
+    if (!phone) {
+      toast.error(t("customerModal.errors.phoneRequired"));
+      return;
+    }
+    if (!address) {
+      toast.error(t("customerModal.errors.addressRequired"));
+      return;
+    }
+    if (!postal) {
+      toast.error(t("customerModal.errors.postalCodeRequired"));
+      return;
+    }
+    if (!city) {
+      toast.error(t("customerModal.errors.cityRequired"));
+      return;
+    }
+
     const addressObj = {
-      address: data.address as string,
-      postal: data.postal as string,
-      city: data.city as string,
-      province: data.province as string,
+      address: address,
+      postal: postal,
+      city: city,
+      province: (data.province as string) || "",
     };
     const addressString = Object.entries(addressObj)
       .map(([key, value]) => `${key}=${value}`)
       .join("|");
     const customer: Customer = {
-      name: data.name as string,
-      phone: data.phone as string,
+      name: (data.name as string) || "",
+      phone: phone,
       address: addressString,
-      cif: data.cif as string,
-      email: data.email as string,
-      comments: data.comments as string,
+      cif: (data.cif as string) || "",
+      email: (data.email as string) || "",
+      comments: (data.comments as string) || "",
     };
     let res;
     if (!isEditing) {
@@ -181,14 +205,13 @@ const CustomerModal = ({
               &times;
             </button>
           </div>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <div className="relative">
               <CustomInput
                 type="tel"
                 name="phone"
                 label={t("customerModal.phone")}
-                placeholder="+1 (555) 123-4567"
-                required
+                placeholder={t("customerModal.placeholders.phone")}
                 otherClasses="mb-2"
                 value={phone}
                 onChange={handlePhoneChange}
@@ -220,15 +243,14 @@ const CustomerModal = ({
                 type="text"
                 name="name"
                 label={t("customerModal.name")}
-                placeholder="John Doe"
-                required
+                placeholder={t("customerModal.placeholders.name")}
                 otherClasses="mb-2 col-span-2"
               />
               <CustomInput
                 type="text"
                 name="cif"
                 label={t("customerModal.cifDni")}
-                placeholder="12345678Z"
+                placeholder={t("customerModal.placeholders.cifDni")}
                 otherClasses="mb-2 col-span-1"
               />
             </div>
@@ -236,7 +258,7 @@ const CustomerModal = ({
               type="email"
               name="email"
               label={t("customerModal.email")}
-              placeholder="zOg2Q@example.com"
+              placeholder={t("customerModal.placeholders.email")}
               otherClasses="mb-2"
             />
             <div className="mb-2">
@@ -249,7 +271,7 @@ const CustomerModal = ({
               <textarea
                 id="comments"
                 name="comments"
-                placeholder="comments"
+                placeholder={t("customerModal.placeholders.comments")}
                 rows={2}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:outline-none focus:ring-gray-500 focus:border-transparent resize-none"
               ></textarea>
@@ -259,26 +281,26 @@ const CustomerModal = ({
                 type="text"
                 name="address"
                 label={t("customerModal.address")}
-                placeholder="Address"
+                placeholder={t("customerModal.placeholders.address")}
               />
 
               <CustomInput
                 type="text"
                 name="postal"
                 label={t("customerModal.postalCode")}
-                placeholder="Postal Code"
+                placeholder={t("customerModal.placeholders.postalCode")}
               />
               <CustomInput
                 type="text"
                 name="city"
                 label={t("customerModal.city")}
-                placeholder="City"
+                placeholder={t("customerModal.placeholders.city")}
               />
               <CustomInput
                 type="text"
                 name="province"
                 label={t("customerModal.province")}
-                placeholder="Province"
+                placeholder={t("customerModal.placeholders.province")}
               />
             </div>
             <div className="flex justify-end space-x-3">
