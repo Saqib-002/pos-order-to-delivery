@@ -9,6 +9,12 @@ import { useAuth } from "@/renderer/contexts/AuthContext";
 import { calculateOrderTotal } from "@/renderer/utils/orderCalculations";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
 import {
+  generateReceiptHTML,
+  generateItemsReceiptHTML,
+  groupItemsByPrinter,
+} from "@/renderer/utils/printer";
+import { useTranslation } from "react-i18next";
+import {
   translateOrderStatus,
   getOrderStatusStyle,
   translatePaymentStatus,
@@ -22,6 +28,7 @@ import { DEFAULT_PAGE_LIMIT } from "@/constants";
 import Pagination from "../shared/Pagination";
 
 const OrderComponent = () => {
+  const { t } = useTranslation();
   const {
     orderItems,
     removeFromOrder,
@@ -36,7 +43,7 @@ const OrderComponent = () => {
   const { configurations } = useConfigurations();
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
   const {
-    auth: { token },
+    auth: { token, user },
   } = useAuth();
   useEffect(() => {
     if (orderItems.length == 0) {
@@ -58,6 +65,97 @@ const OrderComponent = () => {
       return;
     }
     toast.success("Order processed successfully");
+
+    // Automatically print receipts after processing
+    try {
+      const printerGroups = groupItemsByPrinter(orderItems);
+      if (!Object.keys(printerGroups).length) {
+        toast.warn(t("orderCart.warnings.noPrintersAttached"));
+        clearOrder();
+        return;
+      }
+
+      // Get configurations
+      let configs = {
+        name: t("orderCart.pointOfSale"),
+        address: t("orderCart.defaultAddress"),
+        logo: "",
+        id: "",
+        orderPrefix: configurations.orderPrefix || "K",
+      };
+      const configRes = await (window as any).electronAPI.getConfigurations(
+        token
+      );
+      if (!configRes.status) {
+        toast.error(t("orderCart.errors.errorGettingConfigurations"));
+        clearOrder();
+        return;
+      }
+      if (configRes.data) {
+        configs = { ...configs, ...configRes.data };
+      }
+
+      // Calculate payment status
+      const { orderTotal } = calculateOrderTotal(orderItems);
+      const { status } = calculatePaymentStatus(
+        orderData.paymentType || "",
+        orderTotal
+      );
+
+      toast.info(t("orderCart.messages.printingCustomerReceipt"));
+
+      // Print to all printers
+      for (const [printer, items] of Object.entries(printerGroups)) {
+        const printerName = printer.split("|")[0];
+        const printerIsMain = printer.split("|")[1];
+        let receiptHTML = "";
+
+        if (printerIsMain === "true") {
+          receiptHTML = generateReceiptHTML(
+            items,
+            configs,
+            order!.orderId,
+            orderData.orderType,
+            user!.role,
+            status,
+            t
+          );
+        } else {
+          receiptHTML = generateItemsReceiptHTML(
+            items,
+            configs,
+            { ...order, ...orderData },
+            user!.role,
+            status,
+            t
+          );
+        }
+
+        if (!receiptHTML) {
+          continue;
+        }
+
+        const printRes = await (window as any).electronAPI.printToPrinter(
+          token,
+          printerName,
+          { html: receiptHTML }
+        );
+
+        if (!printRes.status) {
+          if (printRes.error === t("orderCart.errors.printerNotFoundError")) {
+            toast.error(t("orderCart.errors.printerNotFound", { printerName }));
+          } else {
+            toast.error(t("orderCart.errors.errorPrintingReceipt"));
+          }
+        }
+      }
+
+      toast.success(t("orderCart.messages.receiptPrintedSuccessfully"));
+    } catch (error) {
+      console.error("Failed to print receipts:", error);
+      // Don't block order processing if printing fails
+    }
+
     clearOrder();
   };
   const handleOrderClick = async (order: Order) => {
@@ -150,7 +248,7 @@ const OrderComponent = () => {
                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getOrderTypeStyle(order.orderType || "")}`}
                           >
                             {translateOrderType(order.orderType || "") ||
-                              "NOT SELECTED"}
+                              t("manageOrders.statuses.notSelected")}
                           </span>
 
                           {/* Order Status Pill */}
@@ -178,8 +276,10 @@ const OrderComponent = () => {
                         {/* Partial Payment Info */}
                         {paymentStatus.status === "PARTIAL" && (
                           <p className="text-xs text-yellow-700 font-medium">
-                            Paid: €{paymentStatus.totalPaid.toFixed(2)} / €
-                            {orderTotal.toFixed(2)}
+                            {t("orderComponent.partialPayment", {
+                              paid: paymentStatus.totalPaid.toFixed(2),
+                              total: orderTotal.toFixed(2),
+                            })}
                           </p>
                         )}
 
@@ -230,10 +330,10 @@ const OrderComponent = () => {
                   </svg>
                 </div>
                 <h3 className="text-lg font-medium text-black mb-1">
-                  No Orders
+                  {t("orderComponent.noOrders")}
                 </h3>
                 <p className="text-gray-500 text-sm">
-                  No orders available to display
+                  {t("orderComponent.noOrdersAvailable")}
                 </p>
               </div>
             </div>

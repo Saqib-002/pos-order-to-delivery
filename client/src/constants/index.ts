@@ -81,16 +81,16 @@ export const MODULE_LABELS = {
   [MODULES.CONFIGURATIONS]: "Configurations",
 } as const;
 
-// Available modules for permission management
 export const AVAILABLE_MODULES = Object.values(MODULES) as string[];
 
-// Function Permissions Configuration
 export const FUNCTIONS = {
   CANCEL_ORDER: "cancel-order",
+  CHANGE_DELIVERY_PERSON: "change-delivery-person",
 } as const;
 
 export const FUNCTION_LABELS = {
   [FUNCTIONS.CANCEL_ORDER]: "Cancel Order",
+  [FUNCTIONS.CHANGE_DELIVERY_PERSON]: "Change Delivery Person",
 } as const;
 
 // Available functions for permission management

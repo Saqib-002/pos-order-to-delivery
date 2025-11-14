@@ -50,7 +50,6 @@ export const MenuModal: React.FC<MenuModalProps> = ({
     minimum: 1,
     maximum: 1,
     priority: 0,
-    kitchenPriority: "Priority 1",
     multiple: "No",
   });
   const [selectedPageProductCount, setSelectedPageProductCount] =
@@ -61,14 +60,6 @@ export const MenuModal: React.FC<MenuModalProps> = ({
   }>({});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const kitchenPriorityOptions = [
-    { value: "Priority 1", label: "Priority 1" },
-    { value: "Priority 2", label: "Priority 2" },
-    { value: "Priority 3", label: "Priority 3" },
-    { value: "Priority 4", label: "Priority 4" },
-    { value: "Priority 5", label: "Priority 5" },
-  ];
 
   // Multiple options
   const multipleOptions = [
@@ -167,7 +158,6 @@ export const MenuModal: React.FC<MenuModalProps> = ({
           minimum: assoc.minimum,
           maximum: assoc.maximum,
           priority: assoc.priority,
-          kitchenPriority: assoc.kitchenPriority,
           multiple: assoc.multiple,
         }));
         setMenuPageAssociations(existingAssociations);
@@ -220,7 +210,6 @@ export const MenuModal: React.FC<MenuModalProps> = ({
       minimum: 1,
       maximum: 1,
       priority: 0,
-      kitchenPriority: "Priority 1",
       multiple: "No",
     });
   }, [editingMenu, isOpen, token]);
@@ -368,7 +357,6 @@ export const MenuModal: React.FC<MenuModalProps> = ({
       minimum: newPageAssociation.minimum,
       maximum: newPageAssociation.maximum,
       priority: newPageAssociation.priority,
-      kitchenPriority: newPageAssociation.kitchenPriority,
       multiple: newPageAssociation.multiple,
     };
 
@@ -378,7 +366,6 @@ export const MenuModal: React.FC<MenuModalProps> = ({
       minimum: 1,
       maximum: 1,
       priority: 0,
-      kitchenPriority: "Priority 1",
       multiple: "No",
     });
     setValidationErrors({});
@@ -868,27 +855,6 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   otherClasses="w-24"
                 />
 
-                <div className="w-32">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t("menuComponents.modals.menuModal.kitchenPriority")}
-                  </label>
-                  <CustomSelect
-                    options={kitchenPriorityOptions}
-                    value={newPageAssociation.kitchenPriority}
-                    onChange={(value) =>
-                      setNewPageAssociation((prev) => ({
-                        ...prev,
-                        kitchenPriority: value,
-                      }))
-                    }
-                    placeholder={t(
-                      "menuComponents.modals.menuModal.selectPriority"
-                    )}
-                    className="w-full"
-                    maxHeight="max-h-36"
-                  />
-                </div>
-
                 {/* <div className="w-24">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     MULTIPLE
@@ -935,9 +901,6 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           {t("menuComponents.modals.menuModal.priority")}
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {t("menuComponents.modals.menuModal.kitchenPriority")}
                         </th>
                         {/* <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           MULTIPLE
@@ -1014,26 +977,6 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                               }}
                               className="w-24 px-2 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
                               min="0"
-                            />
-                          </td>
-                          <td className="px-4 py-2">
-                            <CustomSelect
-                              options={kitchenPriorityOptions}
-                              value={association.kitchenPriority}
-                              onChange={(value) => {
-                                setMenuPageAssociations((prev) =>
-                                  prev.map((assoc) =>
-                                    assoc.id === association.id
-                                      ? {
-                                          ...assoc,
-                                          kitchenPriority: value,
-                                        }
-                                      : assoc
-                                  )
-                                );
-                              }}
-                              className="w-32"
-                              maxHeight="max-h-36"
                             />
                           </td>
                           {/* <td className="px-4 py-2">

@@ -10,7 +10,8 @@
     "update": "Update",
     "close": "Close",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "apply": "Apply"
   },
   "welcome": "Welcome to our website.",
   "configurations": {
@@ -433,7 +434,8 @@
     },
     "statuses": {
       "notAssigned": "Not assigned",
-      "nA": "N/A"
+      "nA": "N/A",
+      "notSelected": "Not Selected"
     },
     "confirmCancelOrder": "Are you sure you want to cancel order {{orderId}}?",
     "errors": {
@@ -455,7 +457,7 @@
   },
   "orderDetailsModal": {
     "title": "Order Items - K{{orderId}}",
-    "created": "Created: {{date}}",
+    "created": "Created:",
     "customer": "Customer",
     "deliveryAddress": "Delivery Address",
     "orderType": "Order Type",
@@ -489,7 +491,6 @@
     "addOns": "Add-ons:",
     "each": "each",
     "noItemsFound": "No items found",
-    "orderNotes": "Order Notes",
     "notRecorded": "Not recorded",
     "notAssignedYet": "Not assigned yet"
   },
@@ -659,6 +660,7 @@
     "readyForDeliveryOrders": "Ready for Delivery Orders",
     "noOrdersReady": "No orders ready for delivery",
     "delivered": "Delivered",
+    "assignDelivery": "Assign",
     "stats": {
       "readyForDelivery": "Ready for Delivery",
       "outForDelivery": "Out for Delivery",
@@ -682,6 +684,9 @@
       "outForDelivery": "Out for Delivery"
     },
     "cancelOrder": "Cancel Order",
+    "changeDeliveryPerson": "Change Delivery Person",
+    "selectNewDeliveryPerson": "Select new delivery person",
+    "confirmChange": "Confirm Change",
     "messages": {
       "pleaseEnterDeliveryPersonName": "Please enter delivery person name",
       "failedToAssignDeliveryPerson": "Failed to assign delivery person",
@@ -690,7 +695,9 @@
       "orderMarkedAsDelivered": "Order marked as delivered",
       "failedToMarkAsDeliveredRetry": "Failed to mark as delivered. Please try again.",
       "failedToCancelOrder": "Failed to cancel order",
-      "orderCancelled": "Order cancelled successfully"
+      "orderCancelled": "Order cancelled successfully",
+      "deliveryPersonChanged": "Delivery person changed successfully",
+      "failedToChangeDeliveryPerson": "Failed to change delivery person"
     }
   },
   "kitchenView": {
@@ -735,6 +742,59 @@
   "filterControls": {
     "searchPlaceholder": "Search orders...",
     "clearFilters": "Clear Filters"
+  },
+  "dateRangePicker": {
+    "selectDateRange": "Select Date Range",
+    "currentSelection": "Current Selection",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "shortcuts": {
+      "thisWeek": "This Week",
+      "lastWeek": "Last Week",
+      "last7Days": "Last 7 Days",
+      "currentMonth": "Current Month",
+      "nextMonth": "Next Month",
+      "thisYear": "This Year",
+      "lastYear": "Last Year",
+      "reset": "Reset"
+    },
+    "days": {
+      "sunday": "S",
+      "monday": "M",
+      "tuesday": "T",
+      "wednesday": "W",
+      "thursday": "T",
+      "friday": "F",
+      "saturday": "S"
+    },
+    "months": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    },
+    "monthsShort": {
+      "january": "Jan",
+      "february": "Feb",
+      "march": "Mar",
+      "april": "Apr",
+      "may": "May",
+      "june": "Jun",
+      "july": "Jul",
+      "august": "Aug",
+      "september": "Sep",
+      "october": "Oct",
+      "november": "Nov",
+      "december": "Dec"
+    }
   },
   "menuComponents": {
     "common": {
@@ -1400,5 +1460,10 @@
     "pickup": "Pickup",
     "delivery": "Delivery",
     "dineIn": "Dine In"
+  },
+  "orderComponent": {
+    "partialPayment": "Paid: €{{paid}} / €{{total}}",
+    "noOrders": "No Orders",
+    "noOrdersAvailable": "No orders available to display"
   }
 }

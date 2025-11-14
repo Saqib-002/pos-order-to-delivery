@@ -318,7 +318,7 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(({
           crossOrigin="anonymous"
           src={data.imgUrl || 'pizza.jpg'}
           alt={`${data.name || 'Product'} image`}
-          className="w-full h-34 object-cover rounded-md"
+          className="w-full h-34 rounded-md object-cover"
           onDragStart={(e) => e.preventDefault()}
         />
       }

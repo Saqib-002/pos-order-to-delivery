@@ -236,28 +236,55 @@ export class OrderDatabaseOperations {
     }
   }
   static async getOrderAnalytics(filter: any): Promise<any> {
-    const { dateRange, selectedDate, page = 0, limit = 10 } = filter;
+    const {
+      dateRange,
+      selectedDate,
+      startDateRange,
+      endDateRange,
+      page = 0,
+      limit = 10,
+    } = filter;
     let startDate = new Date();
     let endDate = new Date();
-    switch (dateRange) {
-      case "today":
-        startDate = new Date(startDate.setHours(0, 0, 0, 0));
-        endDate = new Date(endDate.setHours(23, 59, 59, 999));
-        break;
-      case "week":
-        startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case "month":
-        startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
-        break;
-      case "custom":
-        startDate = new Date(selectedDate);
-        startDate.setHours(0, 0, 0, 0);
-        endDate = new Date(selectedDate);
-        endDate.setHours(23, 59, 59, 999);
-        break;
-      default:
-        throw new Error("Invalid date range");
+
+    if (startDateRange && endDateRange) {
+      startDate = new Date(startDateRange);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(endDateRange);
+      endDate.setHours(23, 59, 59, 999);
+    } else {
+      // Fall back to dateRange string logic
+      const now = new Date();
+      switch (dateRange) {
+        case "today":
+          startDate = new Date(now);
+          startDate.setHours(0, 0, 0, 0);
+          endDate = new Date(now);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case "week":
+          endDate = new Date(now);
+          endDate.setHours(23, 59, 59, 999);
+          startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case "month":
+          endDate = new Date(now);
+          endDate.setHours(23, 59, 59, 999);
+          startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case "custom":
+          if (selectedDate) {
+            startDate = new Date(selectedDate);
+            startDate.setHours(0, 0, 0, 0);
+            endDate = new Date(selectedDate);
+            endDate.setHours(23, 59, 59, 999);
+          }
+          break;
+        default:
+          throw new Error("Invalid date range");
+      }
     }
     const ordersStats = await db("orders")
       .whereBetween("createdAt", [
@@ -419,7 +446,15 @@ export class OrderDatabaseOperations {
             .orWhere("orderId", filter.searchTerm);
         });
       }
-      if (filter.selectedDate) {
+      if (filter.startDateRange && filter.endDateRange) {
+        const startDate = new Date(filter.startDateRange);
+        startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date(filter.endDateRange);
+        endDate.setHours(23, 59, 59, 999);
+        query
+          .andWhere("createdAt", ">=", startDate.toISOString())
+          .andWhere("createdAt", "<=", endDate.toISOString());
+      } else if (filter.selectedDate) {
         const startDate = new Date(filter.selectedDate);
         startDate.setHours(0, 0, 0, 0);
         const endDate = new Date(filter.selectedDate);
@@ -445,6 +480,8 @@ export class OrderDatabaseOperations {
           query.where("customerPhone", customer.phone);
         }
       }
+      const baseQuery = query.clone();
+
       if (
         filter.selectedPaymentStatus.length > 0 &&
         filter.selectedPaymentStatus[0] !== "all"
@@ -452,7 +489,7 @@ export class OrderDatabaseOperations {
         const paymentStatusesArray = filter.selectedPaymentStatus
           .map((s) => `'${s}'`)
           .join(",");
-        const amountPattern = "^[0-9]+(\\.[0-9]*)?$"; // JS string for binding
+        const amountPattern = "^[0-9]+(\\.[0-9]*)?$";
         const sql = `
                 CASE
                     WHEN (
@@ -520,10 +557,11 @@ export class OrderDatabaseOperations {
                     ELSE 'PARTIAL'
                 END = ANY(ARRAY[${paymentStatusesArray}])
             `;
-        query.whereRaw(sql, [amountPattern, amountPattern]);
+        baseQuery.whereRaw(sql, [amountPattern, amountPattern]);
       }
-      const countQuery = query.clone().count("* as count").first();
-      const dataQuery = query
+
+      const countQuery = baseQuery.clone().count("* as count").first();
+      const dataQuery = baseQuery
         .clone()
         .limit(limit)
         .offset(offset)

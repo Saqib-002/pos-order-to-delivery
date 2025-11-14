@@ -58,7 +58,6 @@ export const generateReceiptHTML = (
 ): string => {
   const { nonMenuItems, groups, orderTotal } = calculateOrderTotal(items);
 
-  // START FIX: Define sort function and sort item lists
   const prioritySort = (a: OrderItem, b: OrderItem) =>
     (a.productPriority || 0) - (b.productPriority || 0);
 
@@ -67,7 +66,6 @@ export const generateReceiptHTML = (
     ...group,
     items: group.items.sort(prioritySort),
   }));
-  // END FIX
 
   const now = new Date();
   const dateStr = now.toLocaleDateString("es-ES", {
@@ -81,31 +79,37 @@ export const generateReceiptHTML = (
   });
   const dateTimeStr = `${dateStr} - ${timeStr}`;
 
-  // Simple VAT breakdown (group by tax rate; assumes tax % calculable from items)
-  const taxBreakdown = items.reduce(
-    (acc, item) => {
-      let base = 0;
-      let tax = 0;
-      let rate = 0;
-      if (item.menuId) {
-        base = item.menuPrice || 0;
-        tax = item.menuTax || 0;
-        rate = calculateTaxPercentage(base, tax);
-      } else {
-        base = item.productPrice || 0;
-        tax = item.productTax || 0;
-        rate = calculateTaxPercentage(base, tax);
-      }
-      const rateKey = `${Math.round(rate)}%`;
-      if (!acc[rateKey]) {
-        acc[rateKey] = { base: 0, tax: 0, rate: parseFloat(rateKey) };
-      }
-      acc[rateKey].base += base * item.quantity;
-      acc[rateKey].tax += tax * item.quantity;
-      return acc;
-    },
-    {} as Record<string, { base: number; tax: number; rate: number }>
-  );
+  const taxBreakdown: Record<
+    string,
+    { base: number; tax: number; rate: number }
+  > = {};
+
+  sortedGroups.forEach((group) => {
+    const sectionQty = group.items[0]?.quantity || 1;
+    const base = group.basePrice;
+    const tax = group.taxPerUnit;
+    const rate = calculateTaxPercentage(base, tax);
+    const rateKey = `${Math.round(rate)}%`;
+
+    if (!taxBreakdown[rateKey]) {
+      taxBreakdown[rateKey] = { base: 0, tax: 0, rate: parseFloat(rateKey) };
+    }
+    taxBreakdown[rateKey].base += base * sectionQty;
+    taxBreakdown[rateKey].tax += tax * sectionQty;
+  });
+
+  sortedNonMenuItems.forEach((item) => {
+    const base = item.productPrice || 0;
+    const tax = item.productTax || 0;
+    const rate = calculateTaxPercentage(base, tax);
+    const rateKey = `${Math.round(rate)}%`;
+
+    if (!taxBreakdown[rateKey]) {
+      taxBreakdown[rateKey] = { base: 0, tax: 0, rate: parseFloat(rateKey) };
+    }
+    taxBreakdown[rateKey].base += base * item.quantity;
+    taxBreakdown[rateKey].tax += tax * item.quantity;
+  });
 
   let html = `
     <html>
@@ -162,7 +166,6 @@ export const generateReceiptHTML = (
             <tbody>
     `;
 
-  // Menu groups - MODIFIED to use sortedGroups
   sortedGroups.forEach((group) => {
     const sectionQty = group.items[0]?.quantity || 1;
     const menuPrice = group.basePrice;
@@ -239,9 +242,7 @@ export const generateReceiptHTML = (
     });
   });
 
-  // Non-menu items - MODIFIED to use sortedNonMenuItems
   sortedNonMenuItems.forEach((item) => {
-    // Calculate item total using same logic as orderCalculations
     const complementsTotal = Array.isArray(item.complements)
       ? item.complements.reduce(
           (complementSum, complement) => complementSum + complement.price,

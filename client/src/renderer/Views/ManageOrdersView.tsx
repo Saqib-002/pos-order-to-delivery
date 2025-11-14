@@ -3,8 +3,10 @@ import { Order, Customer } from "@/types/order";
 import { DeliveryPerson } from "@/types/delivery";
 import CustomInput from "../components/shared/CustomInput";
 import { CustomSelect } from "../components/ui/CustomSelect";
+import { DateRangePicker } from "../components/ui/DateRangePicker";
 import { calculateOrderTotal } from "../utils/orderCalculations";
 import { calculatePaymentStatus } from "../utils/paymentStatus";
+import { generateReceiptHTML, groupItemsByPrinter } from "../utils/printer";
 import {
   translateOrderStatus,
   getOrderStatusStyle,
@@ -195,9 +197,83 @@ export const ManageOrdersView = () => {
     setIsOrderDetailsOpen(true);
   };
 
-  const handlePrintOrder = (order: Order) => {
-    // TODO: Implement print order functionality
-    console.log("Print order:", order.id);
+  const handlePrintOrder = async (order: Order) => {
+    try {
+      const printerGroups = groupItemsByPrinter(order.items || []);
+      if (!Object.keys(printerGroups).length) {
+        toast.warn(t("orderCart.warnings.noPrintersAttached"));
+        return;
+      }
+
+      let configs = {
+        name: t("orderCart.pointOfSale"),
+        address: t("orderCart.defaultAddress"),
+        logo: "",
+        id: "",
+        orderPrefix: configurations.orderPrefix || "K",
+      };
+      const configRes = await (window as any).electronAPI.getConfigurations(
+        token
+      );
+      if (!configRes.status) {
+        toast.error(t("orderCart.errors.errorGettingConfigurations"));
+        return;
+      }
+      if (configRes.data) {
+        configs = { ...configs, ...configRes.data };
+      }
+
+      const { orderTotal } = calculateOrderTotal(order.items || []);
+      const { status } = calculatePaymentStatus(
+        order.paymentType || "",
+        orderTotal
+      );
+
+      toast.info(t("orderCart.messages.printingCustomerReceipt"));
+
+      for (const [printer, items] of Object.entries(printerGroups)) {
+        const printerName = printer.split("|")[0];
+        const printerIsMain = printer.split("|")[1];
+
+        if (printerIsMain === "true") {
+          const receiptHTML = generateReceiptHTML(
+            items,
+            configs,
+            order.orderId,
+            order.orderType,
+            user?.role || "",
+            status,
+            t
+          );
+
+          if (!receiptHTML) {
+            continue;
+          }
+
+          const printRes = await (window as any).electronAPI.printToPrinter(
+            token,
+            printerName,
+            { html: receiptHTML }
+          );
+
+          if (!printRes.status) {
+            if (printRes.error === t("orderCart.errors.printerNotFoundError")) {
+              toast.error(
+                t("orderCart.errors.printerNotFound", { printerName })
+              );
+            } else {
+              toast.error(t("orderCart.errors.errorPrintingReceipt"));
+            }
+            return;
+          }
+        }
+      }
+
+      toast.success(t("orderCart.messages.receiptPrintedSuccessfully"));
+    } catch (error) {
+      console.error("Failed to print order:", error);
+      toast.error(t("orderCart.errors.errorPrintingReceipt"));
+    }
   };
 
   const handleCancelOrderClick = (order: Order) => {
@@ -237,12 +313,9 @@ export const ManageOrdersView = () => {
     }
   };
 
-  // Check if user has cancel order permission
   const hasCancelOrderPermission = () => {
     if (!user) return false;
-    // Admins always have permission
     if (user.role === "admin") return true;
-    // Check function permissions
     return user.functionPermissions?.includes(FUNCTIONS.CANCEL_ORDER) || false;
   };
 
@@ -345,19 +418,19 @@ export const ManageOrdersView = () => {
             {/* View Order Button */}
             <button
               onClick={() => handleViewOrder(order)}
-              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 cursor-pointer"
               title={t("manageOrders.actions.viewOrder")}
             >
-              <EyeIcon className="w-4 h-4" />
+              <EyeIcon className="w-5 h-5" />
             </button>
 
             {/* Print Order Button */}
             <button
               onClick={() => handlePrintOrder(order)}
-              className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200"
+              className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200 cursor-pointer"
               title={t("manageOrders.actions.printOrder")}
             >
-              <DocumentIcon className="w-4 h-4" />
+              <DocumentIcon className="w-5 h-5" />
             </button>
 
             {/* Process Payment Button - Only show for UNPAID or PARTIAL orders with remaining amount > 0 */}
@@ -379,10 +452,10 @@ export const ManageOrdersView = () => {
                 return (
                   <button
                     onClick={() => handlePaymentClick(order)}
-                    className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors duration-200"
+                    className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors duration-200 cursor-pointer"
                     title={t("manageOrders.actions.processPayment")}
                   >
-                    <Euro className="w-4 h-4" />
+                    <Euro className="w-5 h-5" />
                   </button>
                 );
               }
@@ -395,12 +468,12 @@ export const ManageOrdersView = () => {
               order.status !== "delivered" && (
                 <button
                   onClick={() => handleCancelOrderClick(order)}
-                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 cursor-pointer"
                   title={
                     t("manageOrders.actions.cancelOrder") || "Cancel Order"
                   }
                 >
-                  <CrossIcon className="w-4 h-4" />
+                  <CrossIcon className="w-5 h-5" />
                 </button>
               )}
           </div>
@@ -500,29 +573,25 @@ export const ManageOrdersView = () => {
                 </div>
               </div>
 
-              {/* Date Filter */}
-              <div className="w-full lg:w-48">
+              {/* Date Range Filter */}
+              <div className="w-full lg:w-64">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <span className="inline w-4 h-4 mr-1">📅</span>
                   {t("manageOrders.filterByDate")}
                 </label>
-                <input
-                  type="date"
-                  value={
-                    filter.selectedDate
-                      ? filter.selectedDate.toISOString().split("T")[0]
-                      : ""
-                  }
-                  onChange={(e) =>
+                <DateRangePicker
+                  startDate={filter.startDateRange}
+                  endDate={filter.endDateRange}
+                  selectedDate={filter.selectedDate}
+                  onChange={(startDate, endDate) => {
                     setFilter((prev) => ({
                       ...prev,
-                      selectedDate: e.target.value
-                        ? new Date(e.target.value)
-                        : null,
+                      startDateRange: startDate,
+                      endDateRange: endDate,
+                      selectedDate: startDate,
                       page: 0,
-                    }))
-                  }
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none"
+                    }));
+                  }}
+                  className="w-full"
                 />
               </div>
 

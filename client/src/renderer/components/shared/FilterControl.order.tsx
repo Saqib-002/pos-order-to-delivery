@@ -1,6 +1,7 @@
 import { SearchIcon } from "@/renderer/public/Svg";
 import { FilterType } from "@/types/order";
 import { useTranslation } from "react-i18next";
+import { DateRangePicker } from "../ui/DateRangePicker";
 interface FilterControlsProps {
   filter: FilterType;
   setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
@@ -25,25 +26,34 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
           className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm"
         />
       </div>
-      <input
-        type="date"
-        value={
-          filter.selectedDate
-            ? filter.selectedDate.toISOString().split("T")[0]
-            : ""
-        }
-        onChange={(e) => {
+      <DateRangePicker
+        startDate={filter.startDateRange}
+        endDate={filter.endDateRange}
+        selectedDate={filter.selectedDate}
+        onChange={(startDate, endDate) => {
           setFilter({
             ...filter,
-            selectedDate: e.target.value ? new Date(e.target.value) : null,
+            startDateRange: startDate,
+            endDateRange: endDate,
+            selectedDate: startDate,
+            page: 0,
           });
         }}
-        className="block w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm"
+        className="w-48"
       />
-      {(filter.searchTerm || filter.selectedDate) && (
+      {(filter.searchTerm ||
+        filter.selectedDate ||
+        filter.startDateRange ||
+        filter.endDateRange) && (
         <button
           onClick={() =>
-            setFilter({ ...filter, searchTerm: "", selectedDate: null })
+            setFilter({
+              ...filter,
+              searchTerm: "",
+              selectedDate: null,
+              startDateRange: null,
+              endDateRange: null,
+            })
           }
           className="px-4 py-2 text-sm text-gray-600 hover:text-black border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150 whitespace-nowrap flex-shrink-0 cursor-pointer"
         >

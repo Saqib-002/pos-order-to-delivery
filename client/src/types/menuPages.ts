@@ -27,7 +27,6 @@ export interface MenuPageAssociation {
   minimum: number;
   maximum: number;
   priority: number;
-  kitchenPriority: string;
   multiple: string;
   createdAt?: string;
   updatedAt?: string;

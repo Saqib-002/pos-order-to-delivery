@@ -4,6 +4,7 @@ import { FilterType } from "@/types/order";
 import { ChevronLeftIcon } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
 import { CustomSelect } from "../ui/CustomSelect";
+import { DateRangePicker } from "../ui/DateRangePicker";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
 import { useTranslation } from "react-i18next";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
@@ -47,20 +48,17 @@ const OrderComponentHeader = () => {
       selectedCustomer: "",
     });
   }, []);
-  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedDate = event.target.value
-      ? new Date(event.target.value)
-      : null;
+  const handleDateRangeChange = (
+    startDate: Date | null,
+    endDate: Date | null
+  ) => {
     setFilter((prev: FilterType) => ({
       ...prev,
-      selectedDate,
+      startDateRange: startDate,
+      endDateRange: endDate,
+      selectedDate: startDate,
       page: 0,
     }));
-  };
-
-  const formatDateForInput = (date: Date | null) => {
-    if (!date) return "";
-    return date.toISOString().split("T")[0];
   };
 
   const handleCombinedFilterChange = (value: string) => {
@@ -147,12 +145,12 @@ const OrderComponentHeader = () => {
         <div className="row-span-1">
           <div className="flex justify-between items-center p-2 gap-2">
             <>
-              <input
-                id="date-filter"
-                type="date"
-                value={formatDateForInput(filter.selectedDate)}
-                onChange={handleDateChange}
-                className="px-3 py-3 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors flex-1"
+              <DateRangePicker
+                startDate={filter.startDateRange}
+                endDate={filter.endDateRange}
+                selectedDate={filter.selectedDate}
+                onChange={handleDateRangeChange}
+                className="flex-1"
               />
               <CustomSelect
                 options={combinedFilterOptions}

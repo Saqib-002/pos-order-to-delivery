@@ -10,7 +10,8 @@
     "update": "Actualizar",
     "close": "Cerrar",
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "apply": "Aplicar"
   },
   "welcome": "Bienvenido a nuestro sitio web.",
 
@@ -435,7 +436,8 @@
     },
     "statuses": {
       "notAssigned": "No asignado",
-      "nA": "N/A"
+      "nA": "N/A",
+      "notSelected": "No Seleccionado"
     },
     "confirmCancelOrder": "¿Estás seguro de que deseas cancelar el pedido {{orderId}}?",
     "errors": {
@@ -457,7 +459,7 @@
   },
   "orderDetailsModal": {
     "title": "Artículos del Pedido - K{{orderId}}",
-    "created": "Creado: {{date}}",
+    "created": "Creado:",
     "customer": "Cliente",
     "deliveryAddress": "Dirección de Entrega",
     "orderType": "Tipo de Pedido",
@@ -491,7 +493,6 @@
     "addOns": "Complementos:",
     "each": "cada uno",
     "noItemsFound": "No se encontraron artículos",
-    "orderNotes": "Notas del Pedido",
     "notRecorded": "No registrado",
     "notAssignedYet": "Aún no asignado"
   },
@@ -657,6 +658,7 @@
   },
   "deliveryView": {
     "title": "Gestión de Entregas",
+    "assignDelivery": "Asignar",
     "subtitle": "Asignar y rastrear entregas de pedidos",
     "readyForDeliveryOrders": "Pedidos Listos para Entrega",
     "noOrdersReady": "No hay pedidos listos para entrega",
@@ -684,6 +686,9 @@
       "outForDelivery": "En Camino"
     },
     "cancelOrder": "Cancelar Pedido",
+    "changeDeliveryPerson": "Cambiar Repartidor",
+    "selectNewDeliveryPerson": "Seleccionar nuevo repartidor",
+    "confirmChange": "Confirmar Cambio",
     "messages": {
       "pleaseEnterDeliveryPersonName": "Por favor ingresa el nombre del repartidor",
       "failedToAssignDeliveryPerson": "Error al asignar repartidor",
@@ -692,7 +697,9 @@
       "orderMarkedAsDelivered": "Pedido marcado como entregado",
       "failedToMarkAsDeliveredRetry": "Error al marcar como entregado. Por favor intenta de nuevo.",
       "failedToCancelOrder": "Error al cancelar el pedido",
-      "orderCancelled": "Pedido cancelado exitosamente"
+      "orderCancelled": "Pedido cancelado exitosamente",
+      "deliveryPersonChanged": "Repartidor cambiado exitosamente",
+      "failedToChangeDeliveryPerson": "Error al cambiar el repartidor"
     }
   },
   "kitchenView": {
@@ -737,6 +744,59 @@
   "filterControls": {
     "searchPlaceholder": "Buscar pedidos...",
     "clearFilters": "Limpiar Filtros"
+  },
+  "dateRangePicker": {
+    "selectDateRange": "Seleccionar Rango de Fechas",
+    "currentSelection": "Selección Actual",
+    "startDate": "Fecha de Inicio",
+    "endDate": "Fecha de Fin",
+    "shortcuts": {
+      "thisWeek": "Esta Semana",
+      "lastWeek": "Semana Pasada",
+      "last7Days": "Últimos 7 Días",
+      "currentMonth": "Mes Actual",
+      "nextMonth": "Próximo Mes",
+      "thisYear": "Este Año",
+      "lastYear": "Año Pasado",
+      "reset": "Restablecer"
+    },
+    "days": {
+      "sunday": "D",
+      "monday": "L",
+      "tuesday": "M",
+      "wednesday": "X",
+      "thursday": "J",
+      "friday": "V",
+      "saturday": "S"
+    },
+    "months": {
+      "january": "Enero",
+      "february": "Febrero",
+      "march": "Marzo",
+      "april": "Abril",
+      "may": "Mayo",
+      "june": "Junio",
+      "july": "Julio",
+      "august": "Agosto",
+      "september": "Septiembre",
+      "october": "Octubre",
+      "november": "Noviembre",
+      "december": "Diciembre"
+    },
+    "monthsShort": {
+      "january": "Ene",
+      "february": "Feb",
+      "march": "Mar",
+      "april": "Abr",
+      "may": "May",
+      "june": "Jun",
+      "july": "Jul",
+      "august": "Ago",
+      "september": "Sep",
+      "october": "Oct",
+      "november": "Nov",
+      "december": "Dic"
+    }
   },
   "menuComponents": {
     "common": {
@@ -1402,5 +1462,10 @@
     "pickup": "Recoger",
     "delivery": "Domicilio",
     "dineIn": "Comer Aquí"
+  },
+  "orderComponent": {
+    "partialPayment": "Pagado: €{{paid}} / €{{total}}",
+    "noOrders": "Sin Pedidos",
+    "noOrdersAvailable": "No hay pedidos disponibles para mostrar"
   }
 }

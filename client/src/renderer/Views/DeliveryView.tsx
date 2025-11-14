@@ -19,9 +19,11 @@ import {
   GroupIcon,
   LightningBoltIcon,
   CrossIcon,
+  EditIcon,
 } from "../public/Svg";
 import { DEFAULT_PAGE_LIMIT, FUNCTIONS } from "@/constants";
 import { CancelOrderModal } from "../components/order/modals/CancelOrderModal";
+import { CustomSelect } from "../components/ui/CustomSelect";
 
 export const DeliveryView = () => {
   const { t } = useTranslation();
@@ -46,6 +48,10 @@ export const DeliveryView = () => {
   const [isCancelOrderModalOpen, setIsCancelOrderModalOpen] = useState(false);
   const [selectedOrderForCancel, setSelectedOrderForCancel] =
     useState<Order | null>(null);
+  const [selectedOrderForChange, setSelectedOrderForChange] =
+    useState<Order | null>(null);
+  const [changeDeliveryPerson, setChangeDeliveryPerson] =
+    useState<DeliveryPerson | null>(null);
 
   useEffect(() => {
     const fetchDeliveryPersons = async () => {
@@ -182,6 +188,59 @@ export const DeliveryView = () => {
     return user.functionPermissions?.includes(FUNCTIONS.CANCEL_ORDER) || false;
   };
 
+  // Check if user has change delivery person permission
+  const hasChangeDeliveryPersonPermission = () => {
+    if (!user) return false;
+    // Admins always have permission
+    if (user.role === "admin") return true;
+    // Check function permissions
+    return (
+      user.functionPermissions?.includes(FUNCTIONS.CHANGE_DELIVERY_PERSON) ||
+      false
+    );
+  };
+
+  const changeDeliveryPersonForOrder = useCallback(
+    async (order: Order, newDeliveryPerson: DeliveryPerson) => {
+      if (!newDeliveryPerson?.name.trim()) {
+        toast.error(t("deliveryView.messages.pleaseEnterDeliveryPersonName"));
+        return;
+      }
+      try {
+        const res = await updateOrder(token, order.id, {
+          deliveryPersonId: newDeliveryPerson.id,
+          deliveryPersonPhone: newDeliveryPerson.phone,
+          deliveryPersonName: newDeliveryPerson.name,
+          deliveryPersonEmail: newDeliveryPerson.email,
+          deliveryPersonVehicleType: newDeliveryPerson.vehicleType,
+          deliveryPersonLicenseNo: newDeliveryPerson.licenseNo,
+          status: "out for delivery",
+        });
+        if (!res) {
+          toast.error(
+            t("deliveryView.messages.failedToChangeDeliveryPerson") ||
+              "Failed to change delivery person"
+          );
+          return;
+        }
+        toast.success(
+          t("deliveryView.messages.deliveryPersonChanged") ||
+            "Delivery person changed successfully"
+        );
+        refreshOrdersCallback();
+        setSelectedOrderForChange(null);
+        setChangeDeliveryPerson(null);
+      } catch (error) {
+        console.error("Failed to change delivery person:", error);
+        toast.error(
+          t("deliveryView.messages.failedToChangeDeliveryPerson") ||
+            "Failed to change delivery person"
+        );
+      }
+    },
+    [token, refreshOrdersCallback, t]
+  );
+
   const stats = useMemo(
     () => [
       {
@@ -285,7 +344,7 @@ export const DeliveryView = () => {
             className="bg-black hover:bg-black disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105"
           >
             <LightningBoltIcon className="size-4" />
-            Assign
+            {t("deliveryView.assignDelivery") || "Assign"}
           </button>
           {/* Cancel Order Button */}
           {hasCancelOrderPermission() && (
@@ -355,23 +414,95 @@ export const DeliveryView = () => {
           </div>
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2 min-w-[180px]">
-        <button
-          onClick={() => markAsDelivered(order.id)}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105"
-        >
-          <CheckIcon className="size-4" />
-          {t("deliveryView.delivered")}
-        </button>
-        {/* Cancel Order Button */}
-        {hasCancelOrderPermission() && (
-          <button
-            onClick={() => handleCancelOrderClick(order)}
-            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
-            title={t("deliveryView.cancelOrder") || "Cancel Order"}
-          >
-            <CrossIcon className="w-4 h-4" />
-          </button>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2 min-w-[280px]">
+        {/* Hide Delivered and Cancel buttons when in edit mode */}
+        {selectedOrderForChange?.id !== order.id && (
+          <>
+            <button
+              onClick={() => markAsDelivered(order.id)}
+              className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105"
+            >
+              <CheckIcon className="size-4" />
+              {t("deliveryView.delivered")}
+            </button>
+            {/* Cancel Order Button */}
+            {hasCancelOrderPermission() && (
+              <button
+                onClick={() => handleCancelOrderClick(order)}
+                className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white p-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-1 text-sm cursor-pointer"
+                title={t("deliveryView.cancelOrder") || "Cancel Order"}
+              >
+                <CrossIcon className="size-4" />
+              </button>
+            )}
+          </>
+        )}
+        {/* Change Delivery Person Button */}
+        {hasChangeDeliveryPersonPermission() && (
+          <div className="flex items-center gap-2">
+            {selectedOrderForChange?.id === order.id ? (
+              <div className="flex items-center gap-2">
+                <CustomSelect
+                  options={deliveryPersons.map((person) => ({
+                    value: person.id || person.name || "",
+                    label: `${person.name} (${person.vehicleType || "N/A"})`,
+                  }))}
+                  value={
+                    changeDeliveryPerson?.id || changeDeliveryPerson?.name || ""
+                  }
+                  onChange={(value) => {
+                    const selectedPerson = deliveryPersons.find(
+                      (p) => (p.id && p.id === value) || p.name === value
+                    );
+                    if (selectedPerson) {
+                      setChangeDeliveryPerson(selectedPerson);
+                    }
+                  }}
+                  placeholder={
+                    t("deliveryView.selectNewDeliveryPerson") ||
+                    "Select new delivery person"
+                  }
+                  className="w-64"
+                />
+                <button
+                  onClick={() => {
+                    if (changeDeliveryPerson) {
+                      changeDeliveryPersonForOrder(order, changeDeliveryPerson);
+                    }
+                  }}
+                  disabled={!changeDeliveryPerson}
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white p-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-1 text-sm cursor-pointer hover:scale-105"
+                  title={t("deliveryView.confirmChange") || "Confirm Change"}
+                >
+                  <CheckIcon className="size-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedOrderForChange(null);
+                    setChangeDeliveryPerson(null);
+                  }}
+                  className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white p-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-1 text-sm cursor-pointer hover:scale-105"
+                  title={t("common.cancel") || "Cancel"}
+                >
+                  <CrossIcon className="size-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setSelectedOrderForChange(order);
+                  setChangeDeliveryPerson(null);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-2 py-2.5 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-1 text-sm cursor-pointer hover:scale-105"
+                title={
+                  t("deliveryView.changeDeliveryPerson") ||
+                  "Change Delivery Person"
+                }
+              >
+                <EditIcon className="size-4" />
+              </button>
+            )}
+          </div>
         )}
       </td>
     </tr>

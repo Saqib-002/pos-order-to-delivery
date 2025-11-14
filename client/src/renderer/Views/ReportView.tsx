@@ -30,6 +30,8 @@ export const ReportView = () => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const [startDateRange, setStartDateRange] = useState<Date | null>(null);
+  const [endDateRange, setEndDateRange] = useState<Date | null>(null);
   const { configurations } = useConfigurations();
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -41,12 +43,14 @@ export const ReportView = () => {
 
   useEffect(() => {
     setCurrentPage(0);
-  }, [dateRange, selectedDate]);
+  }, [dateRange, selectedDate, startDateRange, endDateRange]);
   useEffect(() => {
     const fetchAnalytics = async () => {
       const res = await (window as any).electronAPI.getOrderAnalytics(token, {
         dateRange,
         selectedDate,
+        startDateRange,
+        endDateRange,
         page: currentPage,
         limit: DEFAULT_PAGE_LIMIT,
       });
@@ -59,14 +63,17 @@ export const ReportView = () => {
         res.data.totalDelivered +
         res.data.totalOutForDelivery +
         res.data.totalReadyForDelivery +
-        res.data.totalSentToKitchen+res.data.totalCompleted+res.data.totalPending;
+        res.data.totalSentToKitchen +
+        res.data.totalCompleted +
+        res.data.totalPending;
       setAnalytics({
         ...res.data,
         totalOrders,
         inProgress:
           res.data.totalReadyForDelivery +
           res.data.totalOutForDelivery +
-          res.data.totalSentToKitchen+res.data.pending,
+          res.data.totalSentToKitchen +
+          res.data.pending,
         successRate:
           totalOrders > 0
             ? Math.round((res.data.totalDelivered / totalOrders) * 100)
@@ -74,7 +81,7 @@ export const ReportView = () => {
       });
     };
     fetchAnalytics();
-  }, [dateRange, selectedDate,currentPage]);
+  }, [dateRange, selectedDate, startDateRange, endDateRange, currentPage]);
 
   const renderOrderRow = (order: any) => (
     <tr
@@ -135,6 +142,10 @@ export const ReportView = () => {
         setDateRange={setDateRange}
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
+        startDateRange={startDateRange}
+        endDateRange={endDateRange}
+        setStartDateRange={setStartDateRange}
+        setEndDateRange={setEndDateRange}
       />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-4">
         <StatsCard
@@ -172,18 +183,18 @@ export const ReportView = () => {
         <HourlyDistribution analytics={analytics} />
       </div>
       <div className="flex flex-col gap-4">
-      {analytics?.topItems && analytics.topItems.length > 0 && (
-        <TopItems
-          topItems={analytics?.topItems}
-          title={t("reports.topOrderedItems")}
-        />
-      )}
-      {analytics?.topMenus && analytics.topMenus.length > 0 && (
-        <TopItems
-        topItems={analytics?.topMenus}
-        title={t("reports.topOrderedMenus")}
-        />
-      )}
+        {analytics?.topItems && analytics.topItems.length > 0 && (
+          <TopItems
+            topItems={analytics?.topItems}
+            title={t("reports.topOrderedItems")}
+          />
+        )}
+        {analytics?.topMenus && analytics.topMenus.length > 0 && (
+          <TopItems
+            topItems={analytics?.topMenus}
+            title={t("reports.topOrderedMenus")}
+          />
+        )}
       </div>
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden my-4">
         <OrderTable

@@ -29,7 +29,6 @@ interface MenuPage {
   minComplements: number;
   maxComplements: number;
   priority: number;
-  kitchenPriority: string;
 }
 interface MenuOrderTakingFormProps {
   setCurrentOrderItem: React.Dispatch<React.SetStateAction<any>>;
@@ -123,7 +122,7 @@ const MenuOrderTakingForm = ({
                           discount: product.discount,
                           productPriority: product.priority,
                           imgUrl:
-                            product.imgUrl || product.imageUrl || product.image, // Try multiple possible image field names
+                            product.imgUrl || product.imageUrl || product.image,
                         };
                       }
                     }
@@ -141,21 +140,12 @@ const MenuOrderTakingForm = ({
             minComplements: association?.minimum || 0,
             maxComplements: association?.maximum || 0,
             priority: association?.priority || 0,
-            kitchenPriority: association?.kitchenPriority || "Priority 1",
           };
         })
       );
-      const extractPriorityNumber = (kitchenPriority: string): number => {
-        const match = kitchenPriority.match(/\d+/);
-        return match ? parseInt(match[0], 10) : 999;
-      };
       const validPages = pagesWithProducts
         .filter((page): page is MenuPage => page !== null)
-        .sort((a, b) => {
-          const priorityA = extractPriorityNumber(a.kitchenPriority);
-          const priorityB = extractPriorityNumber(b.kitchenPriority);
-          return priorityA - priorityB;
-        });
+        .sort((a, b) => a.priority - b.priority);
       setMenuPages(validPages);
       setCurrentMenuPageIndex(0);
     } catch (error) {

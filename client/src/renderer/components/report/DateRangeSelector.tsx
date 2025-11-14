@@ -1,12 +1,26 @@
 import { DATE_RANGES } from "@/constants/report";
 import { useTranslation } from "react-i18next";
+import { DateRangePicker } from "../ui/DateRangePicker";
 
 export const DateRangeSelector: React.FC<{
   dateRange: string;
   setDateRange: (range: string) => void;
   selectedDate: string;
   setSelectedDate: (date: string) => void;
-}> = ({ dateRange, setDateRange, selectedDate, setSelectedDate }) => {
+  startDateRange?: Date | null;
+  endDateRange?: Date | null;
+  setStartDateRange?: (date: Date | null) => void;
+  setEndDateRange?: (date: Date | null) => void;
+}> = ({
+  dateRange,
+  setDateRange,
+  selectedDate,
+  setSelectedDate,
+  startDateRange,
+  endDateRange,
+  setStartDateRange,
+  setEndDateRange,
+}) => {
   const { t } = useTranslation();
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -19,10 +33,20 @@ export const DateRangeSelector: React.FC<{
             {DATE_RANGES.map((range) => (
               <button
                 key={range}
-                onClick={() => setDateRange(range)}
+                onClick={() => {
+                  setDateRange(range);
+                  if (
+                    range !== "custom" &&
+                    setStartDateRange &&
+                    setEndDateRange
+                  ) {
+                    setStartDateRange(null);
+                    setEndDateRange(null);
+                  }
+                }}
                 className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
                   dateRange === range
-                    ? "bg-gray-600 text-white"
+                    ? "bg-black text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
@@ -33,11 +57,22 @@ export const DateRangeSelector: React.FC<{
         </div>
         {dateRange === "custom" && (
           <div className="flex items-end">
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-black focus:black"
+            <DateRangePicker
+              startDate={startDateRange || null}
+              endDate={endDateRange || null}
+              selectedDate={selectedDate ? new Date(selectedDate) : null}
+              onChange={(startDate, endDate) => {
+                if (setStartDateRange && setEndDateRange) {
+                  setStartDateRange(startDate);
+                  setEndDateRange(endDate);
+                }
+                if (startDate) {
+                  setSelectedDate(startDate.toISOString().split("T")[0]);
+                } else {
+                  setSelectedDate("");
+                }
+              }}
+              className="w-48"
             />
           </div>
         )}

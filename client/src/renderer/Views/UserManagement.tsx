@@ -391,7 +391,7 @@ export const UserManagement = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-black">
-              Users ({filteredUsers.length})
+              {t("userManagement.table.user")} ({filteredUsers.length})
             </h3>
           </div>
 
