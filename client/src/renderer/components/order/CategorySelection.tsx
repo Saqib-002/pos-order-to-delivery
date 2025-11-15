@@ -46,7 +46,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({
   return (
     <div className="mb-6">
       <h3 className="text-lg font-semibold text-gray-800 mb-3">Categories</h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {categories.map((category) => (
           <div
             key={category.id}

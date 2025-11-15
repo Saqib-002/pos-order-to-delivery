@@ -80,8 +80,8 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     getLeft: (data) => ({
       text: (
         <>
-          <span>{`${data.itemCount || 0} Products`}</span>
-          <span>{`${data.menuCount || 0} Menus`}</span>
+          <span className="truncate">{`${data.itemCount || 0} Products`}</span>
+          <span className="truncate">{`${data.menuCount || 0} Menus`}</span>
         </>
       ),
       className: "text-sm text-white opacity-90 flex flex-col gap-0.5",
@@ -313,7 +313,7 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(({
       {...(type === "product" ? dragListeners : {})}
       onClick={onClick}
       className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${isClickable ? "cursor-pointer" : ""
-        } ${["product", "menu"].includes(type) ? "cursor-grab active:cursor-grabbing" : ""} ${layout === "row" ? "flex flex-row items-center gap-4 !p-2" : ""}`}
+        } ${["product", "menu"].includes(type) ? "cursor-grab active:cursor-grabbing" : ""} ${layout === "row" ? "flex flex-row items-center gap-2 !p-2 w-full min-w-0" : ""}`}
     >
       {['product', 'menu', 'category', 'subcategory'].includes(type) &&
         <img
@@ -324,17 +324,21 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(({
           onDragStart={(e) => e.preventDefault()}
         />
       }
-      <div className={`${layout==="row"?"flex flex-col":""}`}>
-        <div className={`flex items-center justify-between mt-1 ${headerMb} ${layout==="row"?"!m-0":""}`}>
-          <h3 className="font-semibold text-white text-lg truncate">{data.name}</h3>
+      <div className={`${layout === "row" ? "flex flex-col flex-1 min-w-0" : ""}`}>
+        <div className={`flex items-center justify-between ${headerMb} ${layout === "row" ? "!m-0" : "mt-1"}`}>
+          <h3 className={`font-semibold text-white flex-shrink-0 max-w-full line-clamp-2 leading-tight pr-2 ${layout === "row" ? "text-base" : "text-lg"}`}>{data.name}</h3>
           {renderActions()}
         </div>
-        {bodyContent}
-        <div className={`flex items-center justify-between ${footerMb}`}>
-          <div className={`${left.className} w-max ${layout==="row"?"!gap-0":""}`}>{left.text}</div>
+        {bodyContent && (
+          <div className={`mt-1 text-xs text-white opacity-90 line-clamp-2 ${layout === "row" ? "max-w-full" : ""}`}>
+            {bodyContent}
+          </div>
+        )}
+        <div className={`flex items-center justify-between ${footerMb} w-full`}>
+          <div className={`${left.className} truncate ${layout === "row" ? "!gap-0 text-xs" : ""}`}>{left.text}</div>
           {
             layout !== "row" && (
-              <div className="flex items-center gap-2">{rightContent}</div>)
+              <div className="flex items-center gap-2 flex-shrink-0">{rightContent}</div>)
           }
         </div>
       </div>

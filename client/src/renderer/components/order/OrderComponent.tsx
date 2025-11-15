@@ -202,7 +202,7 @@ const OrderComponent = () => {
       ) : (
         <>
           {orders.length > 0 ? (
-            <div className="row-span-11 flex flex-col">
+            <div className=" flex flex-col">
               <div className="overflow-y-auto flex-1">
                 {orders.map((order) => {
                   const { orderTotal } = order.items

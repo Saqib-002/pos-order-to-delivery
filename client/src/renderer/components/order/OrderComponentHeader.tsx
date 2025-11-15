@@ -142,7 +142,7 @@ const OrderComponentHeader = () => {
   return (
     <>
       {!(orderItems.length > 0) && (
-        <div className="row-span-1">
+        <div>
           <div className="flex justify-between items-center p-2 gap-2">
             <>
               <DateRangePicker

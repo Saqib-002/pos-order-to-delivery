@@ -7,7 +7,7 @@ export const OrderView = () => {
   return (
     <OrderProvider>
       <div className="flex size-full">
-        <div className="border-r border-gray-300 grid grid-rows-12 h-screen min-w-[360px]">
+        <div className="border-r border-gray-300 grid grid-rows-[auto_1fr] h-screen min-w-[360px]">
           <OrderComponentHeader />
           <OrderComponent />
         </div>
