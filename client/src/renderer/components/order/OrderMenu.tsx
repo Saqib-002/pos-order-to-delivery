@@ -134,6 +134,7 @@ const OrderMenu = () => {
           selectedCategory={selectedCategory}
           onCategorySelect={handleSelectCategory}
           isLoading={isLoadingCategories}
+          cardLayout={"row"}
         />
 
         {selectedCategory && (
@@ -142,6 +143,7 @@ const OrderMenu = () => {
             selectedSubcategory={selectedSubcategory}
             onSubcategorySelect={handleSelectSubCategory}
             isLoading={isLoadingSubcategories}
+            cardLayout={"row"}
           />
         )}
 
@@ -149,7 +151,7 @@ const OrderMenu = () => {
           <div className="space-y-6">
             {/* Items Section */}
             {(products && products.length > 0) ||
-            (menus && menus.length > 0) ? (
+              (menus && menus.length > 0) ? (
               <div>
                 {/* Products */}
                 {products && products.length > 0 && (
@@ -171,45 +173,45 @@ const OrderMenu = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                       {isLoadingMenus
                         ? [...Array(4)].map((_, index) => (
-                            <div
-                              key={index}
-                              className="transform transition-all duration-200"
-                            >
-                              <div className="bg-gray-500 text-white border-gray-500 rounded-lg p-3 border-2 animate-pulse">
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="h-5 bg-gray-300 rounded w-3/4"></div>
-                                  <div className="h-4 bg-gray-300 rounded w-8"></div>
-                                </div>
-                                <div className="h-3 bg-gray-300 rounded w-full mb-2"></div>
-                                <div className="flex items-center justify-between">
-                                  <div className="h-4 bg-gray-300 rounded w-16"></div>
-                                  <div className="h-5 bg-gray-300 rounded w-12"></div>
-                                </div>
+                          <div
+                            key={index}
+                            className="transform transition-all duration-200"
+                          >
+                            <div className="bg-gray-500 text-white border-gray-500 rounded-lg p-3 border-2 animate-pulse">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="h-5 bg-gray-300 rounded w-3/4"></div>
+                                <div className="h-4 bg-gray-300 rounded w-8"></div>
+                              </div>
+                              <div className="h-3 bg-gray-300 rounded w-full mb-2"></div>
+                              <div className="flex items-center justify-between">
+                                <div className="h-4 bg-gray-300 rounded w-16"></div>
+                                <div className="h-5 bg-gray-300 rounded w-12"></div>
                               </div>
                             </div>
-                          ))
+                          </div>
+                        ))
                         : menus.map((menu) => (
-                            <div
-                              key={menu.id}
-                              className="transform transition-all duration-200"
-                            >
-                              <UnifiedCard
-                                data={{
-                                  id: menu.id,
-                                  name: menu.name,
-                                  imgUrl: menu.imgUrl,
-                                  description: menu.description,
-                                  price: menu.price,
-                                  color: menu.color || "gray",
-                                  isAvailable: true,
-                                }}
-                                type="menu"
-                                onClick={() => handleMenuSelect(menu)}
-                                onEdit={() => {}}
-                                showActions={false}
-                              />
-                            </div>
-                          ))}
+                          <div
+                            key={menu.id}
+                            className="transform transition-all duration-200"
+                          >
+                            <UnifiedCard
+                              data={{
+                                id: menu.id,
+                                name: menu.name,
+                                imgUrl: menu.imgUrl,
+                                description: menu.description,
+                                price: menu.price,
+                                color: menu.color || "gray",
+                                isAvailable: true,
+                              }}
+                              type="menu"
+                              onClick={() => handleMenuSelect(menu)}
+                              onEdit={() => { }}
+                              showActions={false}
+                            />
+                          </div>
+                        ))}
                     </div>
                   </div>
                 )}

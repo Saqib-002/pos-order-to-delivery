@@ -7,12 +7,14 @@ interface CategorySelectionProps {
   selectedCategory: Category | null;
   onCategorySelect: (category: Category) => void;
   isLoading?: boolean;
+  cardLayout?: "row";
 }
 
 const CategorySelection: React.FC<CategorySelectionProps> = ({
   categories,
   selectedCategory,
   onCategorySelect,
+  cardLayout,
   isLoading = false,
 }) => {
   if (isLoading) {
@@ -64,6 +66,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({
               onClick={() => onCategorySelect(category)}
               onEdit={() => {}}
               showActions={false}
+              layout={cardLayout}
             />
             {selectedCategory?.id === category.id && (
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center z-10">

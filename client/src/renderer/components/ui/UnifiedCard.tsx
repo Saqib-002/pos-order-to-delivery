@@ -32,6 +32,7 @@ interface UnifiedCardProps {
   style?: React.CSSProperties;
   dragAttributes?: any;
   dragListeners?: any;
+  layout?: "row";
 }
 
 interface Config {
@@ -259,6 +260,7 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(({
   style,
   dragAttributes,
   dragListeners,
+  layout,
 }, ref) => {
   const colorClasses = getColorClasses(data.color, type);
   const isClickable = !!onClick;
@@ -286,8 +288,8 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(({
         }}
         className={`p-1 rounded-full transition-colors duration-200 cursor-pointer ${hoverClass}`}
         onPointerDown={(e) => {
-            e.stopPropagation();
-          }}
+          e.stopPropagation();
+        }}
         title={title}
       >
         <Icon className={iconSize} />
@@ -309,27 +311,32 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(({
       style={style}
       {...(type === "product" ? dragAttributes : {})}
       {...(type === "product" ? dragListeners : {})}
-      onClick={onClick }
+      onClick={onClick}
       className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${isClickable ? "cursor-pointer" : ""
-        } ${ ["product", "menu"].includes(type) ? "cursor-grab active:cursor-grabbing" : ""}`}
+        } ${["product", "menu"].includes(type) ? "cursor-grab active:cursor-grabbing" : ""} ${layout === "row" ? "flex flex-row items-center gap-4 !p-2" : ""}`}
     >
       {['product', 'menu', 'category', 'subcategory'].includes(type) &&
         <img
           crossOrigin="anonymous"
           src={data.imgUrl || 'pizza.jpg'}
           alt={`${data.name || 'Product'} image`}
-          className="w-full h-34 rounded-md object-cover"
+          className={`rounded-md object-cover ${layout === "row" ? "w-16 h-16" : "w-full h-34"}`}
           onDragStart={(e) => e.preventDefault()}
         />
       }
-      <div className={`flex items-center justify-between mt-1 ${headerMb}`}>
-        <h3 className="font-semibold text-white text-lg truncate">{data.name}</h3>
+      <div className={`${layout==="row"?"flex flex-col":""}`}>
+        <div className={`flex items-center justify-between mt-1 ${headerMb} ${layout==="row"?"!m-0":""}`}>
+          <h3 className="font-semibold text-white text-lg truncate">{data.name}</h3>
           {renderActions()}
-      </div>
-      {bodyContent}
-      <div className={`flex items-center justify-between ${footerMb}`}>
-        <div className={left.className}>{left.text}</div>
-        <div className="flex items-center gap-2">{rightContent}</div>
+        </div>
+        {bodyContent}
+        <div className={`flex items-center justify-between ${footerMb}`}>
+          <div className={`${left.className} w-max ${layout==="row"?"!gap-0":""}`}>{left.text}</div>
+          {
+            layout !== "row" && (
+              <div className="flex items-center gap-2">{rightContent}</div>)
+          }
+        </div>
       </div>
     </div>
   );

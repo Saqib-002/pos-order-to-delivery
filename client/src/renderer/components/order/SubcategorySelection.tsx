@@ -7,12 +7,14 @@ interface SubcategorySelectionProps {
   selectedSubcategory: SubCategory | null;
   onSubcategorySelect: (subcategory: SubCategory) => void;
   isLoading?: boolean;
+  cardLayout?: "row";
 }
 
 const SubcategorySelection: React.FC<SubcategorySelectionProps> = ({
   subcategories,
   selectedSubcategory,
   onSubcategorySelect,
+  cardLayout,
   isLoading = false,
 }) => {
   if (isLoading) {
@@ -71,6 +73,7 @@ const SubcategorySelection: React.FC<SubcategorySelectionProps> = ({
               onClick={() => onSubcategorySelect(subcategory)}
               onEdit={() => {}}
               showActions={false}
+              layout={cardLayout}
             />
             {selectedSubcategory?.id === subcategory.id && (
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center z-10">
