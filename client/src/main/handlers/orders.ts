@@ -262,6 +262,31 @@ export const getOrderAnalytics = async (
     };
   }
 };
+export const duplicateMenuInOrder = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  orderId: string,
+  menuId: string,
+  menuSecondaryId: string
+) => {
+  try {
+    const result = await OrderDatabaseOperations.duplicateMenuInOrder(
+      orderId,
+      menuId,
+      menuSecondaryId
+    );
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};
+
 export const getOrdersByFilter = async (
   event: IpcMainInvokeEvent,
   token: string,

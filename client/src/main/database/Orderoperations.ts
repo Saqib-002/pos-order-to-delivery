@@ -432,6 +432,50 @@ export class OrderDatabaseOperations {
       ordersTotalCount,
     };
   }
+  static async duplicateMenuInOrder(
+    orderId: string,
+    menuId: string,
+    menuSecondaryId: string
+  ): Promise<{ menuId: string; newSecondaryId: number }> {
+    const trx = await db.transaction();
+    try {
+      const itemsToDuplicate = await trx("order_items")
+        .where("orderId", orderId)
+        .andWhere("menuId", menuId)
+        .andWhere("menuSecondaryId", menuSecondaryId);
+
+      if (itemsToDuplicate.length === 0) {
+        throw new Error("No items found in the specified menu group");
+      }
+
+      const maxSecondaryId = await trx("order_items")
+        .where("orderId", orderId)
+        .andWhere("menuId", menuId)
+        .max("menuSecondaryId as maxId")
+        .first();
+
+      const newSecondaryId = (maxSecondaryId?.maxId || 0) + 1;
+      const now = new Date().toISOString();
+
+      for (const item of itemsToDuplicate) {
+        const { id, ...itemData } = item;
+        await trx("order_items").insert({
+          ...itemData,
+          id: randomUUID(),
+          menuSecondaryId: newSecondaryId,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+
+      await trx.commit();
+      return { menuId, newSecondaryId };
+    } catch (error) {
+      await trx.rollback();
+      throw error;
+    }
+  }
+
   static async getOrdersByFilter(
     filter: FilterType
   ): Promise<{ orders: Order[]; totalCount: number }> {
