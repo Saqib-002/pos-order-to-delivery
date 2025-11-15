@@ -1312,6 +1312,7 @@
     "completeMenu": "Menú Completo ({{count}} productos)",
     "previousPage": "Página Anterior",
     "nextPage": "Página Siguiente",
+    "applyChanges": "Aplicar Cambios",
     "loadingMenuPages": "Cargando páginas del menú..."
   },
   "orderUtils": {

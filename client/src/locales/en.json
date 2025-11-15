@@ -1310,6 +1310,7 @@
     "completeMenu": "Complete Menu ({{count}} products)",
     "previousPage": "Previous Page",
     "nextPage": "Next Page",
+    "applyChanges": "Apply Changes",
     "loadingMenuPages": "Loading menu pages..."
   },
   "orderUtils": {
