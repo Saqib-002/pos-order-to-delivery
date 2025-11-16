@@ -1298,7 +1298,18 @@
     "tax": "Impuesto",
     "thankYou": "Gracias por su visita",
     "extra": "Extra",
-    "waiter": "Camarero"
+    "waiter": "Camarero",
+    "address": "Dirección del Cliente",
+    "paymentStatus":{
+      "unpaid":"NO PAGADO",
+      "paid":"PAGADO",
+      "PARTIAL":"PARCIAL"
+    },
+    "orderType":{
+    "dineIn":"EN RESTAURANTE",
+    "pickup":"PARA LLEVAR",
+    "delivery":"A DOMICILIO"
+  }
   },
   "menuOrderTakingForm": {
     "errors": {

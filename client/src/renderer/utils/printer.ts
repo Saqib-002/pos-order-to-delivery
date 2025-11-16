@@ -54,7 +54,8 @@ export const generateReceiptHTML = (
   orderType: string | undefined,
   userRole: string,
   status: string,
-  t: (key: string) => string
+  t: (key: string) => string,
+  customerAddress: string | undefined
 ): string => {
   const { nonMenuItems, groups, orderTotal } = calculateOrderTotal(items);
 
@@ -83,6 +84,28 @@ export const generateReceiptHTML = (
     string,
     { base: number; tax: number; rate: number }
   > = {};
+  switch (status.toUpperCase()){
+    case "PAID":
+      status = t("receipt.paymentStatus.paid");
+      break;
+    case "UNPAID":
+      status = t("receipt.paymentStatus.unpaid");
+      break;
+    case "PARTIAL":
+      status = t("receipt.paymentStatus.PARTIAL");
+      break;
+  }
+  switch (orderType?.toUpperCase()){
+    case "DELIVERY":
+      orderType = t("receipt.orderType.delivery");
+      break;
+    case "PICKUP":
+      orderType = t("receipt.orderType.pickup");
+      break;
+    case "DINE-IN":
+      orderType = t("receipt.orderType.dineIn");
+      break;
+  }
 
   sortedGroups.forEach((group) => {
     const sectionQty = group.items[0]?.quantity || 1;
@@ -152,6 +175,7 @@ export const generateReceiptHTML = (
             <p><span class="bold">${t("receipt.order")}:</span> ${configurations.orderPrefix}${orderId}(${orderType?.toUpperCase() || "N/A"})</p>
             <p><span class="bold">${t("receipt.payment")}:</span> ${status}</p>
             <p><span class="bold">${t("receipt.servedBy")}:</span> ${userRole}</p>
+            <p><span class="bold">${t("receipt.address")}:</span> ${customerAddress}</p>
             <div class="line"></div>
         </div>
         <table>
@@ -192,7 +216,7 @@ export const generateReceiptHTML = (
     const totalGroupPrice = menuGroupPrice + variantsAndComplementsTotal;
 
     html += `
-                <tr>
+                <tr class="bold">
                     <td class="qty-col">${sectionQty}</td>
                     <td class="name-col">${group.menuName}</td>
                     <td class="sub-col">€${menuPrice.toFixed(2)}</td>
@@ -212,7 +236,7 @@ export const generateReceiptHTML = (
                 `
                     : ""
                 }
-                <tr>
+                <tr class="bold">
                     <td class="qty-col"></td>
                     <td class="name-col sub-item">${item.productName} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}</td>
                     <td class="sub-col"></td>
@@ -220,7 +244,7 @@ export const generateReceiptHTML = (
                 </tr>
                 ${
                   item.variantPrice && item.variantPrice > 0
-                    ? `<tr>
+                    ? `<tr class="bold">
                     <td class="qty-col"></td>
                     <td class="name-col sub-item indent">${item.variantName}</td>
                     <td class="sub-col"></td>
@@ -259,18 +283,17 @@ export const generateReceiptHTML = (
     const itemTotal = (subtotal - discountAmount) * item.quantity;
 
     const unitPrice = item.productPrice + item.productTax;
-
     html += `
-            <tr>
+            <tr class="bold">
                 <td class="qty-col">${item.quantity}</td>
-                <td class="name-col">${item.productName}</td>
+                <td class="name-col">${item.productName} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}</td>
                 <td class="sub-col">€${unitPrice.toFixed(2)}</td>
                 <td class="total-col">€${itemTotal.toFixed(2)}</td>
             </tr>
         `;
     if (item.variantPrice && item.variantPrice > 0) {
       html += `
-            <tr>
+            <tr class="bold">
                 <td class="qty-col"></td>
                 <td class="name-col sub-item">${item.variantName}</td>
                 <td class="sub-col"></td>
@@ -341,7 +364,6 @@ export const generateItemsReceiptHTML = (
 ): string => {
   const { nonMenuItems, groups } = calculateOrderTotal(items);
 
-  // START FIX: Define sort function and sort item lists
   const prioritySort = (a: OrderItem, b: OrderItem) =>
     (a.productPriority || 0) - (b.productPriority || 0);
 
@@ -350,7 +372,28 @@ export const generateItemsReceiptHTML = (
     ...group,
     items: group.items.sort(prioritySort),
   }));
-  // END FIX
+  switch (status.toUpperCase()){
+    case "PAID":
+      status = t("receipt.paymentStatus.paid");
+      break;
+    case "UNPAID":
+      status = t("receipt.paymentStatus.unpaid");
+      break;
+    case "PARTIAL":
+      status = t("receipt.paymentStatus.PARTIAL");
+      break;
+  }
+  switch (order.orderType?.toUpperCase()){
+    case "DELIVERY":
+      order.orderType = t("receipt.orderType.delivery");
+      break;
+    case "PICKUP":
+      order.orderType = t("receipt.orderType.pickup");
+      break;
+    case "DINE-IN":
+      order.orderType = t("receipt.orderType.dineIn");
+      break;
+  }
 
   const now = new Date();
   const dateStr = now.toLocaleDateString("es-ES", {

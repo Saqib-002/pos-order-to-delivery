@@ -1296,7 +1296,18 @@
     "tax": "Tax",
     "thankYou": "Thank you for your visit",
     "extra": "Extra",
-    "waiter": "Waiter"
+    "waiter": "Waiter",
+    "address": "Customer Address",
+    "paymentStatus":{
+      "unpaid":"UNPAID",
+      "paid":"PAID",
+      "PARTIAL":"PARTIAL"
+    },
+    "orderType":{
+      "dineIn":"DINE IN",
+      "pickup":"PICKUP",
+      "delivery":"DELIVERY"
+    }
   },
   "menuOrderTakingForm": {
     "errors": {

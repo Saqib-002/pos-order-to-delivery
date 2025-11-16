@@ -27,6 +27,7 @@ import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { useTranslation } from "react-i18next";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
 import { StringToComplements } from "@/renderer/utils/order";
+import { formatAddress } from "@/renderer/utils/utils";
 
 interface OrderCartProps {
   orderId: string;
@@ -83,7 +84,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     if (res.data) {
       configurations = res.data;
     }
-
+    
     toast.info(t("orderCart.messages.printingCustomerReceipt"));
     for (const [printer, items] of Object.entries(printerGroups)) {
       const printerName = printer.split("|")[0];
@@ -101,7 +102,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
           order?.orderType,
           user!.role,
           status,
-          t
+          t,
+          order?.customer.address? formatAddress(order.customer.address) : undefined
         );
       } else {
         receiptHTML = generateItemsReceiptHTML(
@@ -121,7 +123,6 @@ const OrderCart: React.FC<OrderCartProps> = ({
         printerName,
         { html: receiptHTML }
       );
-      console.log(res);
       if (!res.status) {
         if (res.error === t("orderCart.errors.printerNotFoundError")) {
           toast.error(t("orderCart.errors.printerNotFound", { printerName }));
