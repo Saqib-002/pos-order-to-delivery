@@ -325,8 +325,8 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(({
         />
       }
       <div className={`${layout === "row" ? "flex flex-col flex-1 min-w-0" : ""}`}>
-        <div className={`flex items-center justify-between ${headerMb} ${layout === "row" ? "!m-0" : "mt-1"}`}>
-          <h3 className={`font-semibold text-white flex-shrink-0 max-w-full line-clamp-2 leading-tight pr-2 ${layout === "row" ? "text-base" : "text-lg"}`}>{data.name}</h3>
+        <div className={`flex items-center justify-between ${headerMb} ${layout === "row" ? "!m-0" : "mt-1 w-full"}`}>
+          <h3 className={`font-semibold text-white flex-shrink-0 flex-1 max-w-full line-clamp-2 leading-tight pr-2 ${layout === "row" ? "text-base" : "text-lg"}`}>{data.name}</h3>
           {renderActions()}
         </div>
         {bodyContent && (

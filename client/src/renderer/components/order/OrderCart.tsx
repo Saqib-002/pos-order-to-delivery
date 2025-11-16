@@ -316,7 +316,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
         {nonMenuItems.map((item) => (
           <div
             key={item.id}
-            className="bg-white border border-gray-200 rounded-lg p-3"
+            className="bg-white border border-gray-200 rounded-lg p-3 relative"
           >
             <div className="flex justify-between items-start mb-2">
               <div className="flex-1">
@@ -326,12 +326,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 <div className="text-sm text-gray-600 space-y-1">
                   <div className="flex justify-between">
                     <span>
-                      {t("orderCart.itemPrice")} (
-                      {calculateTaxPercentage(
-                        item.productPrice,
-                        item.productTax
-                      )}
-                      % {t("orderCart.taxIncluded")})
+                      {t("orderCart.itemPrice")}
                     </span>
                     <span>
                       €{(item.productPrice + item.productTax).toFixed(2)}
@@ -364,7 +359,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                   </div>
                 )}
               </div>
-              <div className="ml-2 flex gap-2">
+              <div className="ml-2 flex gap-2 absolute top-2 right-4">
                 <CustomButton
                   type="button"
                   onClick={() => handleEditItem(item)}
@@ -485,12 +480,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 <div className="text-sm text-gray-600 space-y-1 mb-3">
                   <div className="flex justify-between">
                     <span>
-                      {t("orderCart.menuPrice")} (
-                      {calculateTaxPercentage(
-                        group.basePrice,
-                        group.taxPerUnit
-                      )}
-                      % {t("orderCart.taxIncluded")})
+                      {t("orderCart.menuPrice")}
                     </span>
                     <span>
                       €{(group.basePrice + group.taxPerUnit).toFixed(2)}

@@ -25,7 +25,7 @@ export class CustomerDatabaseOperations {
   }
   static async getCustomersByPhone(phone: string) {
     try {
-      const customers = await db("customers").whereLike("phone", `%${phone}%`);
+      const customers = await db("customers").whereLike("phone", `%${phone}%`).orWhereLike("name", `%${phone}%`);
       return customers || null;
     } catch (error) {
       throw error;
