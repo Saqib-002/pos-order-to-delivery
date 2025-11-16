@@ -49,12 +49,6 @@ const MenuOrderTakingForm = ({
   const [processedCounts, setProcessedCounts] = useState<
     Record<string, number>
   >({});
-  const [pendingChanges, setPendingChanges] = useState<{
-    added: Array<{ productId: string; menuPageId: string }>;
-    removed: Array<{ productId: string; menuPageId: string }>;
-  }>({ added: [], removed: [] });
-  const [isEditMode, setIsEditMode] = useState(false);
-
   const {
     order,
     removeMenuFromOrder,
@@ -111,33 +105,33 @@ const MenuOrderTakingForm = ({
           ).electronAPI.getMenuPageProducts(token, page.id);
           const productsWithDetails = productsRes.status
             ? await Promise.all(
-              productsRes.data.map(async (menuProduct: any) => {
-                try {
-                  if (allProductsRes.status) {
-                    const product = allProductsRes.data.find(
-                      (p: any) => p.id === menuProduct.productId
-                    );
-                    if (product) {
-                      return {
-                        ...menuProduct,
-                        supplement: parseFloat(menuProduct.supplement),
-                        name: product.name,
-                        description: product.description,
-                        price: product.price,
-                        tax: product.tax,
-                        discount: product.discount,
-                        productPriority: product.priority,
-                        imgUrl:
-                          product.imgUrl || product.imageUrl || product.image,
-                      };
+                productsRes.data.map(async (menuProduct: any) => {
+                  try {
+                    if (allProductsRes.status) {
+                      const product = allProductsRes.data.find(
+                        (p: any) => p.id === menuProduct.productId
+                      );
+                      if (product) {
+                        return {
+                          ...menuProduct,
+                          supplement: parseFloat(menuProduct.supplement),
+                          name: product.name,
+                          description: product.description,
+                          price: product.price,
+                          tax: product.tax,
+                          discount: product.discount,
+                          productPriority: product.priority,
+                          imgUrl:
+                            product.imgUrl || product.imageUrl || product.image,
+                        };
+                      }
                     }
+                    return menuProduct;
+                  } catch (error) {
+                    return menuProduct;
                   }
-                  return menuProduct;
-                } catch (error) {
-                  return menuProduct;
-                }
-              })
-            )
+                })
+              )
             : [];
 
           return {
@@ -176,8 +170,7 @@ const MenuOrderTakingForm = ({
   useEffect(() => {
     fetchMenuPages();
     setMaxSecondaryId(getMaxSecondaryId(selectedMenu.id));
-    setIsEditMode(!!editingGroup);
-  }, [editingGroup]);
+  }, []);
   useEffect(() => {
     if (currentMenuPage && (processedMenuOrderItems || editingGroup)) {
       const orderPairs = new Set([
@@ -188,32 +181,15 @@ const MenuOrderTakingForm = ({
           (item: any) => `${item.productId}-${item.menuPageId}`
         ),
       ]);
-
       const processedProducts = currentMenuPage.products.filter((product) => {
         const pairKey = `${product.productId}-${product.menuPageId}`;
         return orderPairs.has(pairKey);
       });
-
-      let finalProcessedProducts = new Set(processedProducts.map((product) => product.productId));
-
-      // Apply pending changes for UI display
-      if (isEditMode) {
-        pendingChanges.added.forEach(change => {
-          if (change.menuPageId === currentMenuPage.id) {
-            finalProcessedProducts.add(change.productId);
-          }
-        });
-
-        pendingChanges.removed.forEach(change => {
-          if (change.menuPageId === currentMenuPage.id) {
-            finalProcessedProducts.delete(change.productId);
-          }
-        });
-      }
-
-      setProcessedMenuProducts(finalProcessedProducts);
+      setProcessedMenuProducts(
+        new Set(processedProducts.map((product) => product.productId))
+      );
     }
-  }, [processedMenuOrderItems, currentMenuPage, editingGroup, pendingChanges, isEditMode]);
+  }, [processedMenuOrderItems, currentMenuPage, editingGroup]);
   useEffect(() => {
     if (menuPages.length > 0 && (processedMenuOrderItems || editingGroup)) {
       const orderPairs = new Set([
@@ -224,27 +200,18 @@ const MenuOrderTakingForm = ({
           (item: any) => `${item.productId}-${item.menuPageId}`
         ),
       ]);
-
       const counts: Record<string, number> = {};
       menuPages.forEach((page: MenuPage) => {
-        let pageCount = page.products.filter((product: MenuPageProduct) =>
+        const pageCount = page.products.filter((product: MenuPageProduct) =>
           orderPairs.has(`${product.productId}-${page.id}`)
         ).length;
-
-        // Apply pending changes for count calculation
-        if (isEditMode) {
-          const addedForPage = pendingChanges.added.filter(change => change.menuPageId === page.id).length;
-          const removedForPage = pendingChanges.removed.filter(change => change.menuPageId === page.id).length;
-          pageCount = pageCount + addedForPage - removedForPage;
-        }
-
-        counts[page.id] = Math.max(0, pageCount); // Ensure count doesn't go negative
+        counts[page.id] = pageCount;
       });
       setProcessedCounts(counts);
     } else {
       setProcessedCounts({});
     }
-  }, [processedMenuOrderItems, menuPages, editingGroup, pendingChanges, isEditMode]);
+  }, [processedMenuOrderItems, menuPages, editingGroup]);
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -269,19 +236,6 @@ const MenuOrderTakingForm = ({
       toast.warn(t("menuOrderTakingForm.warnings.maximumComplementsReached"));
       return;
     }
-
-    if (isEditMode) {
-      const changeKey = { productId: product.productId, menuPageId: product.menuPageId || currentMenuPage.id };
-      setPendingChanges(prev => ({
-        ...prev,
-        added: [...prev.added, changeKey]
-      }));
-
-      // Update local processed products for UI
-      setProcessedMenuProducts(prev => new Set([...prev, product.productId]));
-      return;
-    }
-
     const res = await (window as any).electronAPI.getProductById(
       token,
       product.productId
@@ -312,88 +266,12 @@ const MenuOrderTakingForm = ({
     setProcessedCounts({});
     setSelectedMenu(null);
     setSelectedProduct(null);
-    setPendingChanges({ added: [], removed: [] });
-  };
-
-  const applyPendingChanges = async () => {
-    if (!isEditMode || (pendingChanges.added.length === 0 && pendingChanges.removed.length === 0)) {
-      return true;
-    }
-
-    try {
-      // Apply removals first
-      for (const change of pendingChanges.removed) {
-        const res = await (window as any).electronAPI.removeMenuItemFromOrder(
-          token,
-          order?.id,
-          selectedMenu.id,
-          editingGroup?.secondaryId || maxSecondaryId,
-          change.productId,
-          change.menuPageId
-        );
-        if (!res.status) {
-          toast.error(t("menuOrderTakingForm.errors.errorRemovingMenuItemFromOrder"));
-          return false;
-        }
-        removeMenuItemFromOrder(
-          selectedMenu.id,
-          editingGroup?.secondaryId || maxSecondaryId,
-          change.productId,
-          change.menuPageId
-        );
-      }
-
-      // Apply additions
-      for (const change of pendingChanges.added) {
-        const res = await (window as any).electronAPI.getProductById(
-          token,
-          change.productId
-        );
-        if (!res.status) {
-          toast.error(t("menuOrderTakingForm.errors.unableToFetchProduct"));
-          return false;
-        }
-
-        const menuPage = menuPages.find(page => page.id === change.menuPageId);
-        const product = menuPage?.products.find(p => p.productId === change.productId);
-
-        if (product && menuPage) {
-          setSelectedProduct(res.data);
-          setEditingProduct(null);
-          setCurrentOrderItem({
-            menuId: selectedMenu.id,
-            menuName: selectedMenu.name,
-            menuDescription: selectedMenu.description,
-            menuDiscount: parseFloat(selectedMenu.discount),
-            menuPrice: parseFloat(selectedMenu.price),
-            menuTax: parseFloat(selectedMenu.tax),
-            menuPageId: change.menuPageId,
-            menuPageName: menuPage.name,
-            supplement: product.supplement,
-            menuSecondaryId: editingGroup?.secondaryId || maxSecondaryId + 1,
-          });
-          setMode("menu");
-          // Wait for the product to be processed before continuing
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-      }
-
-      return true;
-    } catch (error) {
-      toast.error(t("menuOrderTakingForm.errors.failedToApplyChanges"));
-      return false;
-    }
   };
   const handleCancel = async () => {
     if (order && order.deliveryPerson && order.deliveryPerson.id) {
       toast.info(
         t("menuOrderTakingForm.messages.orderAssignedToDeliveryPerson")
       );
-      return;
-    }
-
-    if (isEditMode) {
-      resetMenuProcessing();
       return;
     }
 
@@ -415,29 +293,11 @@ const MenuOrderTakingForm = ({
     }
     resetMenuProcessing();
   };
-
   const handleRemoveMenuItem = async (menuProduct: MenuPageProduct) => {
     if (order && order.deliveryPerson && order.deliveryPerson.id) {
       toast.info(
         t("menuOrderTakingForm.messages.orderAssignedToDeliveryPerson")
       );
-      return;
-    }
-
-    if (isEditMode) {
-      // In edit mode, just track the removal locally
-      const changeKey = { productId: menuProduct.productId, menuPageId: menuProduct.menuPageId || currentMenuPage.id };
-      setPendingChanges(prev => ({
-        ...prev,
-        removed: [...prev.removed, changeKey]
-      }));
-
-      // Update local processed products for UI
-      setProcessedMenuProducts(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(menuProduct.productId);
-        return newSet;
-      });
       return;
     }
 
@@ -512,9 +372,9 @@ const MenuOrderTakingForm = ({
                 <span className="text-sm text-white">
                   {menuPages.length > 0
                     ? t("menuOrderTakingForm.pageOf", {
-                      current: currentMenuPageIndex + 1,
-                      total: menuPages.length,
-                    })
+                        current: currentMenuPageIndex + 1,
+                        total: menuPages.length,
+                      })
                     : t("menuOrderTakingForm.noPagesAvailable")}
                 </span>
                 {menuPages.length > 0 && (
@@ -522,10 +382,11 @@ const MenuOrderTakingForm = ({
                     {menuPages.map((_, index) => (
                       <div
                         key={index}
-                        className={`w-2 h-2 rounded-full ${index === currentMenuPageIndex
+                        className={`w-2 h-2 rounded-full ${
+                          index === currentMenuPageIndex
                             ? "bg-gray-600"
                             : "bg-gray-300"
-                          }`}
+                        }`}
                       />
                     ))}
                   </div>
@@ -624,10 +485,11 @@ const MenuOrderTakingForm = ({
                           handleMenuProductSelect(menuProduct);
                         }
                       }}
-                      className={`group relative touch-manipulation border-2 rounded-xl overflow-hidden transition-all duration-300 transform hover:scale-[1.02] ${processedMenuProducts.has(menuProduct.productId)
+                      className={`group relative touch-manipulation border-2 rounded-xl overflow-hidden transition-all duration-300 transform hover:scale-[1.02] ${
+                        processedMenuProducts.has(menuProduct.productId)
                           ? "border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg shadow-green-100/50"
                           : "border-gray-200 hover:border-gray-300 hover:bg-gradient-to-br hover:from-gray-50 hover:to-gray-100 hover:shadow-xl hover:shadow-gray-100/50 cursor-pointer"
-                        }`}
+                      }`}
                     >
                       {/* Status Badge */}
                       {processedMenuProducts.has(menuProduct.productId) && (
@@ -778,25 +640,15 @@ const MenuOrderTakingForm = ({
                 <div className="flex gap-3">
                   {allPagesComplete ? (
                     <CustomButton
-                      onClick={async () => {
-                        if (isEditMode) {
-                          const success = await applyPendingChanges();
-                          if (success) {
-                            resetMenuProcessing();
-                          }
-                        } else {
-                          resetMenuProcessing();
-                          setProcessedMenuProducts(new Set());
-                        }
+                      onClick={() => {
+                        resetMenuProcessing();
+                        setProcessedMenuProducts(new Set());
                       }}
                       type="button"
                       variant="green"
-                      label={isEditMode
-                        ? t("menuOrderTakingForm.applyChanges")
-                        : t("menuOrderTakingForm.completeMenu", {
-                          count: totalProcessed,
-                        })
-                      }
+                      label={t("menuOrderTakingForm.completeMenu", {
+                        count: totalProcessed,
+                      })}
                     />
                   ) : (
                     <CustomButton
@@ -805,7 +657,7 @@ const MenuOrderTakingForm = ({
                       }}
                       type="button"
                       variant="secondary"
-                      label={isEditMode ? t("common.close") : t("common.cancel")}
+                      label={t("common.cancel")}
                     />
                   )}
                   {currentMenuPageIndex > 0 && (

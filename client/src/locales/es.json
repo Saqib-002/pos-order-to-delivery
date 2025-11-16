@@ -94,6 +94,21 @@
         "permissions": "Permisos",
         "functions": "Funciones"
       },
+      "functionLabels": {
+        "cancel-order": "Cancelar Pedido",
+        "change-delivery-person": "Cambiar Repartidor"
+      },
+      "moduleLabels": {
+        "order": "Pedido",
+        "kitchen": "Cocina",
+        "delivery": "Entrega",
+        "delivery-management": "Gestión de Entrega",
+        "manage-orders": "Gestión de Pedidos",
+        "reports": "Reportes",
+        "menu-structure": "Estructura de Menú",
+        "users": "Usuarios",
+        "configurations": "Configuraciones"
+      },
       "username": "Nombre de usuario",
       "password": "Contraseña",
       "newPassword": "Nueva contraseña",
@@ -141,7 +156,7 @@
     "title": "Análisis e Informes",
     "subtitle": "Información completa sobre el rendimiento de pedidos y tendencias",
     "totalOrders": "Total de Pedidos",
-    "delivered": "Delivered/Completed",
+    "delivered": "Entregado/Completado",
     "avgDeliveryTime": "Tiempo Promedio de Entrega",
     "inProgress": "En Progreso",
     "successRate": "Tasa de Éxito",
@@ -265,6 +280,8 @@
   "orderCart": {
     "yourOrder": "Tu Pedido",
     "selectItemsFromMenu": "Selecciona artículos del menú para agregar a tu pedido",
+    "duplicate": "Duplicar",
+    "duplicateTooltip": "Duplicar este grupo de menú",
     "printOptions": "Opciones de Impresión",
     "clearOrder": "Limpiar Pedido",
     "itemPrice": "Precio del Artículo",
@@ -283,6 +300,7 @@
     },
     "errors": {
       "errorGettingConfigurations": "Error al obtener configuraciones",
+      "errorDuplicatingMenu": "Error al duplicar el menú. Por favor, inténtalo de nuevo.",
       "printerNotFound": "Impresora \"{{printerName}}\" no encontrada",
       "errorPrintingReceipt": "Error al imprimir recibo",
       "errorRemovingItem": "Error al eliminar artículo",
@@ -295,7 +313,8 @@
     },
     "messages": {
       "printingCustomerReceipt": "Imprimiendo recibo del cliente...",
-      "receiptPrintedSuccessfully": "Recibo impreso exitosamente"
+      "receiptPrintedSuccessfully": "Recibo impreso exitosamente",
+      "menuDuplicated": "Menú duplicado correctamente"
     },
     "confirmations": {
       "removeItem": {
@@ -746,7 +765,7 @@
     "clearFilters": "Limpiar Filtros"
   },
   "dateRangePicker": {
-    "selectDateRange": "Seleccionar Rango de Fechas",
+    "selectDateRange": "Rango de Fechas",
     "currentSelection": "Selección Actual",
     "startDate": "Fecha de Inicio",
     "endDate": "Fecha de Fin",

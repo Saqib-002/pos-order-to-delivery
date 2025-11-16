@@ -1,6 +1,7 @@
 import React from "react";
 import { Product } from "@/types/Menu";
 import { UnifiedCard } from "../ui/UnifiedCard";
+import { useTranslation } from "react-i18next";
 
 interface ProductGridProps {
   products: Product[] | null;
@@ -13,10 +14,11 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   onProductSelect,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
   if (isLoading) {
     return (
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">Products</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">{t("menuComponents.products.title")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {[...Array(8)].map((_, index) => (
             <div key={index} className="animate-pulse">
@@ -34,10 +36,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   if (!products || products.length === 0) {
     return (
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">Products</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">{t("menuComponents.products.title")}</h3>
         <div className="text-center py-8 text-gray-500">
           <div className="text-4xl mb-2">🍽️</div>
-          <p>No products available</p>
+          <p>{t("menuComponents.products.noProducts")}</p>
         </div>
       </div>
     );
@@ -45,7 +47,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   return (
     <div className="mb-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-3">Products</h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-3">{t("menuComponents.products.title")}</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {products.map((product) => (
           <div

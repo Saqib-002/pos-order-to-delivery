@@ -13,6 +13,7 @@ import {
   DeleteIcon,
   EditIcon,
   PrinterIcon,
+  CopyIcon,
 } from "@/renderer/public/Svg";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import {
@@ -25,6 +26,7 @@ import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { useTranslation } from "react-i18next";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
+import { StringToComplements } from "@/renderer/utils/order";
 
 interface OrderCartProps {
   orderId: string;
@@ -52,6 +54,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
     setEditingProduct,
     order,
     setMode,
+    clearOrder,
+    addToOrder,
   } = useOrder();
   const confirm = useConfirm();
   const { configurations } = useConfigurations();
@@ -207,6 +211,43 @@ const OrderCart: React.FC<OrderCartProps> = ({
     setSelectedMenu(res.data);
     setSelectedProduct(null);
   };
+
+  const handleDuplicateGroup = async (group: any) => {
+    try {
+      const res = await (window as any).electronAPI.duplicateMenuInOrder(
+        token,
+        orderId,
+        group.menuId,
+        group.secondaryId
+      );
+
+      if (res.status) {
+        toast.success(t("orderCart.messages.menuDuplicated"));
+        const itemsRes = await (window as any).electronAPI.getOrderItems(
+          token,
+          orderId
+        );
+
+        if (itemsRes.status) {
+          clearOrder();
+          itemsRes.data.forEach((item: any) => {
+            addToOrder({
+              ...item,
+              complements: StringToComplements(item.complements),
+            });
+          });
+        } else {
+          throw new Error("Failed to refresh order items");
+        }
+      } else {
+        throw new Error(res.error || "Failed to duplicate menu");
+      }
+    } catch (error) {
+      console.error("Error duplicating menu:", error);
+      toast.error(t("orderCart.errors.errorDuplicatingMenu"));
+    }
+  };
+
   const handleUpdateGroupQuantity = async (group: any, quantity: number) => {
     const res = await (window as any).electronAPI.updateMenuQuantity(
       token,
@@ -465,13 +506,23 @@ const OrderCart: React.FC<OrderCartProps> = ({
                       variant="transparent"
                       Icon={<EditIcon className="size-4" />}
                       className="!p-0"
+                      title={t("common.edit")}
+                    />
+                    <CustomButton
+                      type="button"
+                      onClick={() => handleDuplicateGroup(group)}
+                      variant="transparent"
+                      Icon={<CopyIcon className="size-4" />}
+                      className="!p-0 text-blue-600 hover:text-blue-800"
+                      title={t("common.duplicate")}
                     />
                     <CustomButton
                       type="button"
                       onClick={() => handleRemoveGroup(group)}
-                      className="!p-1 !rounded-full !text-sm ml-2 bg-red-500 text-white hover:!text-gray-100 hover:bg-red-700"
+                      className="!p-1 !rounded-full !text-sm bg-red-500 text-white hover:!text-gray-100 hover:bg-red-700"
                       variant="transparent"
                       Icon={<CrossIcon className="size-4" />}
+                      title={t("common.remove")}
                     />
                   </div>
                 </div>

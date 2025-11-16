@@ -215,6 +215,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("get-orders-by-filter", token, filter),
   getOrderAnalytics: (token: string, filter: any) =>
     ipcRenderer.invoke("get-order-analytics", token, filter),
+  duplicateMenuInOrder: (token: string, orderId: string, menuId: string, menuSecondaryId: string) =>
+    ipcRenderer.invoke("duplicate-menu-in-order", token, orderId, menuId, menuSecondaryId),
 
   // User operations
   registerUser: (

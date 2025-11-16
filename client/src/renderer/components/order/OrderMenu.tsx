@@ -17,8 +17,9 @@ import MenuOrderTakingForm from "./MenuOrderTakingForm";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import { UnifiedCard } from "@/renderer/components/ui/UnifiedCard";
 import { DocumentIcon } from "@/renderer/public/Svg";
-
+import { useTranslation } from "react-i18next"; 
 const OrderMenu = () => {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [subCategories, setSubCategories] = useState<SubCategory[] | null>(
     null
@@ -167,8 +168,8 @@ const OrderMenu = () => {
                 {/* Menus */}
                 {menus && menus.length > 0 && (
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                      Menus
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                      {t("menuComponents.menus.title")}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                       {isLoadingMenus
@@ -223,10 +224,10 @@ const OrderMenu = () => {
                   <DocumentIcon className="size-10 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-medium text-black mb-2">
-                  No Items Available
+                  {t("menuComponents.noItemsAvailable")}
                 </h3>
                 <p className="text-gray-500">
-                  No products or menus available in this subcategory.
+                  {t("menuComponents.noItemsAvailableDescription")}
                 </p>
               </div>
             )}

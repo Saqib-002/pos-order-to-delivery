@@ -68,6 +68,21 @@
         "permissions": "Permissions",
         "functions": "Functions"
       },
+      "functionLabels": {
+        "cancel-order": "Cancel Order",
+        "change-delivery-person": "Change Delivery Person"
+      },
+      "moduleLabels": {
+        "order": "Order",
+        "kitchen": "Kitchen",
+        "delivery": "Delivery",
+        "delivery-management": "Delivery Management",
+        "manage-orders": "Manage Orders",
+        "reports": "Reports",
+        "menu-structure": "Menu Structure",
+        "users": "Users",
+        "configurations": "Configurations"
+      },
       "username": "Username",
       "password": "Password",
       "newPassword": "New Password",
@@ -263,6 +278,8 @@
   "orderCart": {
     "yourOrder": "Your Order",
     "selectItemsFromMenu": "Select items from the menu to add to your order",
+    "duplicate": "Duplicate",
+    "duplicateTooltip": "Duplicate this menu group",
     "printOptions": "Print Options",
     "clearOrder": "Clear Order",
     "itemPrice": "Item Price",
@@ -281,6 +298,7 @@
     },
     "errors": {
       "errorGettingConfigurations": "Error getting configurations",
+      "errorDuplicatingMenu": "Error duplicating menu. Please try again.",
       "printerNotFound": "Printer \"{{printerName}}\" not found",
       "errorPrintingReceipt": "Error printing receipt",
       "errorRemovingItem": "Error removing item",
@@ -293,7 +311,8 @@
     },
     "messages": {
       "printingCustomerReceipt": "Printing customer receipt...",
-      "receiptPrintedSuccessfully": "Receipt printed successfully"
+      "receiptPrintedSuccessfully": "Receipt printed successfully",
+      "menuDuplicated": "Menu duplicated successfully"
     },
     "confirmations": {
       "removeItem": {

@@ -13,6 +13,7 @@ import {
   updateMenuQuantity,
   updateOrder,
   updateOrderItem,
+  duplicateMenuInOrder,
 } from "./handlers/orders.js";
 import {
   deleteUser,
@@ -198,6 +199,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("update-order", updateOrder);
   ipcMain.handle("get-order-analytics", getOrderAnalytics);
   ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
+  ipcMain.handle("duplicate-menu-in-order", duplicateMenuInOrder);
 
   // delivery person handlers
   ipcMain.handle("create-delivery-person", createDeliveryPerson);

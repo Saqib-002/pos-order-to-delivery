@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 interface MenuPage {
   id: string;
@@ -21,6 +22,7 @@ interface MenuDisplayProps {
 }
 
 const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
+  const { t } = useTranslation();
   const [menuPages, setMenuPages] = useState<MenuPage[]>([]);
   const [selectedMenuPage, setSelectedMenuPage] = useState<MenuPage | null>(
     null
@@ -38,12 +40,12 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
       setIsLoading(true);
       const res = await (window as any).electronAPI.getMenuPages(token);
       if (!res.status) {
-        toast.error("Unable to get menu pages");
+        toast.error(t("menuComponents.menuPages.errors.unableToGetMenuPages"));
         return;
       }
       setMenuPages(res.data);
     } catch (error) {
-      toast.error("Failed to fetch menu pages");
+      toast.error(t("menuComponents.menuPages.errors.failedToFetchMenuPages"));
     } finally {
       setIsLoading(false);
     }
@@ -58,12 +60,12 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
         menuPageId
       );
       if (!res.status) {
-        toast.error("Unable to get menu page products");
+        toast.error(t("menuComponents.menuPageProducts.errors.unableToGetMenuPageProducts"));
         return;
       }
       return res.data;
     } catch (error) {
-      toast.error("Failed to fetch menu page products");
+      toast.error(t("menuComponents.menuPageProducts.errors.failedToFetchMenuPageProducts"));
       return [];
     }
   };
@@ -85,7 +87,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading menu...</p>
+          <p className="text-gray-600">{t("menuComponents.menuPages.loading")}</p>
         </div>
       </div>
     );
@@ -113,7 +115,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
                 d="M15 19l-7-7 7-7"
               />
             </svg>
-            Back to Menu Pages
+            {t("menuComponents.menuPages.backToMenuPages")}
           </button>
           <h2 className="text-xl font-semibold text-gray-800">
             {selectedMenuPage.name}
@@ -150,8 +152,8 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
                     </div>
                     <div className="text-sm text-gray-600">
                       {product.supplement > 0
-                        ? "Additional charge"
-                        : "Included"}
+                        ? t("menuComponents.menuPageProducts.additionalCharge")
+                        : t("menuComponents.menuPageProducts.included")}
                     </div>
                   </div>
                 ))
@@ -173,10 +175,10 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
                   </svg>
                 </div>
                 <h3 className="text-lg font-medium text-black mb-2">
-                  No Products
+                  {t("menuComponents.menuPageProducts.noProducts")}
                 </h3>
                 <p className="text-gray-500">
-                  This menu page has no products yet.
+                  {t("menuComponents.menuPageProducts.noProductsDescription")}
                 </p>
               </div>
             )}
@@ -190,8 +192,8 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-800">Menu Pages</h2>
-        <p className="text-gray-600">Select a menu page to view its contents</p>
+        <h2 className="text-xl font-semibold text-gray-800">{t("menuComponents.menuPages.title")}</h2>
+        <p className="text-gray-600">{t("menuComponents.menuPages.selectMenuPage")}</p>
       </div>
 
       {/* Menu Pages Grid */}
@@ -247,10 +249,10 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({ token }) => {
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-black mb-2">
-                No Menu Pages
+                {t("menuComponents.menuPages.noMenuPages")}
               </h3>
               <p className="text-gray-500">
-                No menu pages have been created yet.
+                {t("menuComponents.menuPages.noMenuPagesDescription")}
               </p>
             </div>
           )}
