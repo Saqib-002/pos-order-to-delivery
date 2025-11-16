@@ -2,10 +2,8 @@ import { useState, useEffect } from "react";
 import { User } from "@/types/user";
 import { toast } from "react-toastify";
 import {
-  MODULES,
   MODULE_LABELS,
   AVAILABLE_MODULES,
-  FUNCTIONS,
   FUNCTION_LABELS,
   AVAILABLE_FUNCTIONS,
 } from "@/constants";
@@ -648,11 +646,7 @@ export const UserManagement = () => {
                             className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black accent-black"
                           />
                           <span className="text-sm text-gray-700">
-                            {
-                              MODULE_LABELS[
-                                module as keyof typeof MODULE_LABELS
-                              ]
-                            }
+                            {t(`userManagement.modal.moduleLabels.${module as keyof typeof MODULE_LABELS}`)}
                           </span>
                         </label>
                       ))}
@@ -688,11 +682,9 @@ export const UserManagement = () => {
                             className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black accent-black"
                           />
                           <span className="text-sm text-gray-700">
-                            {
-                              FUNCTION_LABELS[
-                                functionName as keyof typeof FUNCTION_LABELS
-                              ]
-                            }
+                            {t(
+                              `userManagement.modal.functionLabels.${functionName as keyof typeof FUNCTION_LABELS}`
+                            )}
                           </span>
                         </label>
                       ))}

@@ -274,13 +274,6 @@ export const DeliveryManagement = () => {
     setPhoneError("");
   };
 
-  const getVehicleTypeOptions = () => [
-    { value: "bike", label: t("deliveryManagement.bike") },
-    { value: "motorcycle", label: t("deliveryManagement.motorcycle") },
-    { value: "car", label: t("deliveryManagement.car") },
-    { value: "scooter", label: t("deliveryManagement.scooter") },
-  ];
-
   const filteredDeliveryPersons: DeliveryPerson[] = deliveryPersons.filter(
     (person) => {
       const matchesVehicleType =
@@ -293,10 +286,6 @@ export const DeliveryManagement = () => {
       return matchesVehicleType && matchesSearch;
     }
   );
-
-  const getVehicleTypeLabel = (vehicleType: string) => {
-    return vehicleType.charAt(0).toUpperCase() + vehicleType.slice(1);
-  };
 
   const getVehicleTypeBadgeColor = (vehicleType: string) => {
     switch (vehicleType) {
@@ -341,7 +330,7 @@ export const DeliveryManagement = () => {
             person.vehicleType || "bike"
           )}`}
         >
-          {getVehicleTypeLabel(person.vehicleType || "bike")}
+          {t(`deliveryManagement.${person.vehicleType}`)}
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
@@ -481,7 +470,7 @@ export const DeliveryManagement = () => {
                   label={
                     vehicleType === "all"
                       ? t("deliveryManagement.all")
-                      : getVehicleTypeLabel(vehicleType)
+                      : t(`deliveryManagement.${vehicleType}`)
                   }
                   onClick={() => setSelectedVehicleType(vehicleType)}
                   variant={

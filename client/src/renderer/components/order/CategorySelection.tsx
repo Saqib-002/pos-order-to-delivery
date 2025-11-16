@@ -1,6 +1,7 @@
 import React from "react";
 import { Category } from "@/types/categories";
 import { UnifiedCard } from "../ui/UnifiedCard";
+import { useTranslation } from "react-i18next";
 
 interface CategorySelectionProps {
   categories: Category[] | null;
@@ -17,10 +18,11 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({
   cardLayout,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
   if (isLoading) {
     return (
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">Categories</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">{t("menuComponents.categories.title")}</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {[...Array(8)].map((_, index) => (
             <div key={index} className="animate-pulse">
@@ -35,9 +37,9 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({
   if (!categories || categories.length === 0) {
     return (
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">Categories</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">{t("menuComponents.categories.title")}</h3>
         <div className="text-center py-8 text-gray-500">
-          <p>No categories available</p>
+          <p>{t("menuComponents.categories.noCategories")}</p>
         </div>
       </div>
     );
@@ -45,7 +47,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({
 
   return (
     <div className="mb-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-3">Categories</h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-3">{t("menuComponents.categories.title")}</h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {categories.map((category) => (
           <div

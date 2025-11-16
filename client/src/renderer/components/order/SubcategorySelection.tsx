@@ -1,6 +1,7 @@
 import React from "react";
 import { SubCategory } from "@/types/categories";
 import { UnifiedCard } from "../ui/UnifiedCard";
+import { useTranslation } from "react-i18next";
 
 interface SubcategorySelectionProps {
   subcategories: SubCategory[] | null;
@@ -17,11 +18,12 @@ const SubcategorySelection: React.FC<SubcategorySelectionProps> = ({
   cardLayout,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
   if (isLoading) {
     return (
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-3">
-          Subcategories
+          {t("menuComponents.subcategories.title")}
         </h3>
         <div className="flex flex-wrap gap-2">
           {[...Array(6)].map((_, index) => (
@@ -38,10 +40,10 @@ const SubcategorySelection: React.FC<SubcategorySelectionProps> = ({
     return (
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-3">
-          Subcategories
+          {t("menuComponents.subcategories.title")}
         </h3>
         <div className="text-center py-4 text-gray-500">
-          <p>No subcategories available</p>
+          <p>{t("menuComponents.subcategories.noSubcategories")}</p>
         </div>
       </div>
     );
@@ -50,7 +52,7 @@ const SubcategorySelection: React.FC<SubcategorySelectionProps> = ({
   return (
     <div className="mb-6">
       <h3 className="text-lg font-semibold text-gray-800 mb-3">
-        Subcategories
+        {t("menuComponents.subcategories.title")}
       </h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {subcategories.map((subcategory) => (

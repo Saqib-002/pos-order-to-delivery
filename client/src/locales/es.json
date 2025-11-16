@@ -94,6 +94,21 @@
         "permissions": "Permisos",
         "functions": "Funciones"
       },
+      "functionLabels": {
+        "cancel-order": "Cancelar Pedido",
+        "change-delivery-person": "Cambiar Repartidor"
+      },
+      "moduleLabels": {
+        "order": "Pedido",
+        "kitchen": "Cocina",
+        "delivery": "Entrega",
+        "delivery-management": "Gestión de Entrega",
+        "manage-orders": "Gestión de Pedidos",
+        "reports": "Reportes",
+        "menu-structure": "Estructura de Menú",
+        "users": "Usuarios",
+        "configurations": "Configuraciones"
+      },
       "username": "Nombre de usuario",
       "password": "Contraseña",
       "newPassword": "Nueva contraseña",
@@ -141,7 +156,7 @@
     "title": "Análisis e Informes",
     "subtitle": "Información completa sobre el rendimiento de pedidos y tendencias",
     "totalOrders": "Total de Pedidos",
-    "delivered": "Delivered/Completed",
+    "delivered": "Entregado/Completado",
     "avgDeliveryTime": "Tiempo Promedio de Entrega",
     "inProgress": "En Progreso",
     "successRate": "Tasa de Éxito",
@@ -750,7 +765,7 @@
     "clearFilters": "Limpiar Filtros"
   },
   "dateRangePicker": {
-    "selectDateRange": "Seleccionar Rango de Fechas",
+    "selectDateRange": "Rango de Fechas",
     "currentSelection": "Selección Actual",
     "startDate": "Fecha de Inicio",
     "endDate": "Fecha de Fin",

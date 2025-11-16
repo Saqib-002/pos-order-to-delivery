@@ -68,6 +68,21 @@
         "permissions": "Permissions",
         "functions": "Functions"
       },
+      "functionLabels": {
+        "cancel-order": "Cancel Order",
+        "change-delivery-person": "Change Delivery Person"
+      },
+      "moduleLabels": {
+        "order": "Order",
+        "kitchen": "Kitchen",
+        "delivery": "Delivery",
+        "delivery-management": "Delivery Management",
+        "manage-orders": "Manage Orders",
+        "reports": "Reports",
+        "menu-structure": "Menu Structure",
+        "users": "Users",
+        "configurations": "Configurations"
+      },
       "username": "Username",
       "password": "Password",
       "newPassword": "New Password",

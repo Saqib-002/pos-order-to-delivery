@@ -1,5 +1,6 @@
 import React from "react";
 import { Category, SubCategory } from "@/types/categories";
+import { useTranslation } from "react-i18next";
 
 interface BreadcrumbNavigationProps {
   selectedCategory: Category | null;
@@ -14,6 +15,7 @@ const BreadcrumbNavigation: React.FC<BreadcrumbNavigationProps> = ({
   onBackToCategories,
   onBackToSubcategories,
 }) => {
+  const { t } = useTranslation();
   return (
     <nav className="mb-6">
       <div className="flex items-center space-x-2 text-sm">
@@ -21,7 +23,7 @@ const BreadcrumbNavigation: React.FC<BreadcrumbNavigationProps> = ({
           onClick={onBackToCategories}
           className="text-gray-600 hover:text-gray-800 font-medium transition-colors"
         >
-          Categories
+          {t("menuComponents.categories.title")}
         </button>
 
         {selectedCategory && (

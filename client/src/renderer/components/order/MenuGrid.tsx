@@ -1,5 +1,6 @@
 import React from "react";
 import { UnifiedCard } from "../ui/UnifiedCard";
+import { useTranslation } from "react-i18next";
 
 interface Menu {
   id: string;
@@ -20,6 +21,7 @@ const MenuGrid: React.FC<MenuGridProps> = ({
   onMenuSelect,
   isLoading,
 }) => {
+  const { t } = useTranslation();
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -54,8 +56,8 @@ const MenuGrid: React.FC<MenuGridProps> = ({
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-black mb-2">No Menus</h3>
-        <p className="text-gray-500">No menus available in this subcategory.</p>
+        <h3 className="text-lg font-medium text-black mb-2">{t("menuComponents.menus.noMenus")}</h3>
+        <p className="text-gray-500">{t("menuComponents.menus.noMenusInSubcategory")}</p>
       </div>
     );
   }
@@ -95,7 +97,7 @@ const MenuGrid: React.FC<MenuGridProps> = ({
                 d="M9 5l7 7-7 7"
               />
             </svg>
-            Click to view menu pages
+            {t("menuComponents.menus.clickToViewMenuPages")}
           </div>
         </div>
       ))}
