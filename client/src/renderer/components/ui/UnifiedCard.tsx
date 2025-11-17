@@ -1,5 +1,6 @@
-import { DeleteIcon, EditIcon, GrabberIcon } from "@/renderer/public/Svg";
+import { CircleCheckIcon, DeleteIcon, EditIcon, GrabberIcon, NoMenuIcon, UnAvailableIcon } from "@/renderer/public/Svg";
 import React, { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 interface BaseCardData {
   id: string;
@@ -42,9 +43,8 @@ interface Config {
   headerMb: string;
   footerMb: string;
   hasDelete: boolean;
-  getBody: (data: BaseCardData) => React.ReactNode;
-  getLeft: (data: BaseCardData) => { text: ReactNode; className: string };
-  getRight: (data: BaseCardData) => React.ReactNode[];
+  getBody: (data: BaseCardData, t: any) => React.ReactNode;
+  getLeft: (data: BaseCardData, t: any) => { text: ReactNode; className: string };
 }
 
 const configs: Record<UnifiedCardProps["type"], Config> = {
@@ -56,18 +56,10 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     footerMb: "gap-2",
     hasDelete: true,
     getBody: () => null,
-    getLeft: (data) => ({
-      text: `${data.itemCount || 0} Subcategories`,
+    getLeft: (data,t) => ({
+      text: `${data.itemCount || 0} ${t('unifiedCard.catCountText')}`,
       className: "text-xs text-white opacity-90",
     }),
-    getRight: () => [
-      <span
-        key="label"
-        className="text-xs px-2 py-1 rounded-full border border-gray-300"
-      >
-        Category
-      </span>,
-    ],
   },
   subcategory: {
     padding: "p-3",
@@ -77,23 +69,15 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     footerMb: "",
     hasDelete: true,
     getBody: () => null,
-    getLeft: (data) => ({
+    getLeft: (data,t) => ({
       text: (
         <>
-          <span className="truncate">{`${data.itemCount || 0} Products`}</span>
-          <span className="truncate">{`${data.menuCount || 0} Menus`}</span>
+          <span className="truncate">{`${data.itemCount || 0} ${t('unifiedCard.prodCountText')}`}</span>
+          <span className="truncate">{`${data.menuCount || 0} ${t('unifiedCard.menuCountText')}`}</span>
         </>
       ),
       className: "text-sm text-white opacity-90 flex flex-col gap-0.5",
     }),
-    getRight: () => [
-      <span
-        key="label"
-        className="text-xs px-2 py-1 rounded-full border border-gray-300"
-      >
-        Subcategory
-      </span>,
-    ],
   },
   product: {
     padding: "p-2",
@@ -102,29 +86,15 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     headerMb: "mb-0",
     footerMb: "mb-2",
     hasDelete: true,
-    getBody: (data) => (
+    getBody: (data,t) => (
       <p className="text-xs text-white opacity-90 mb-2 line-clamp-2">
-        {data.description}
+        {data.description?.length ? data.description : t('unifiedCard.noDescription')}
       </p>
     ),
-    getLeft: (data) => ({
+    getLeft: (data,t) => ({
       text: `€${Number(data.price || 0).toFixed(2)}`,
       className: "text-lg font-semibold text-white",
     }),
-    getRight: (data) => [
-      <span
-        key="avail"
-        className={`text-xs px-2 py-1 rounded-full ${data.isAvailable ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}
-      >
-        {data.isAvailable ? "Available" : "Unavailable"}
-      </span>,
-      <span
-        key="label"
-        className="text-xs px-2 py-1 rounded-full border border-gray-300"
-      >
-        Product
-      </span>,
-    ],
   },
   group: {
     padding: "p-3",
@@ -134,18 +104,10 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     footerMb: "",
     hasDelete: false,
     getBody: () => null,
-    getLeft: (data) => ({
-      text: `${data.itemCount || 0} items`,
+    getLeft: (data,t) => ({
+      text: `${data.itemCount || 0} ${t('unifiedCard.groupCountText')}`,
       className: "text-sm text-white opacity-90",
     }),
-    getRight: () => [
-      <span
-        key="label"
-        className="text-xs px-2 py-1 rounded-full border border-gray-300"
-      >
-        Group
-      </span>,
-    ],
   },
   variant: {
     padding: "p-3",
@@ -154,24 +116,16 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     headerMb: "mb-2",
     footerMb: "",
     hasDelete: true,
-    getBody: (data) =>
+    getBody: (data,t) =>
       data.groupName ? (
         <p className="text-xs opacity-75 mb-2 truncate">
           Group: {data.groupName}
         </p>
       ) : null,
-    getLeft: (data) => ({
-      text: `${data.variantCount || 0} variants`,
+    getLeft: (data,t) => ({
+      text: `${data.variantCount || 0} ${t('unifiedCard.variantCountText')}`,
       className: "text-sm text-white opacity-90",
     }),
-    getRight: () => [
-      <span
-        key="label"
-        className="text-xs px-2 py-1 rounded-full border border-gray-300"
-      >
-        Variant
-      </span>,
-    ],
   },
   menuPage: {
     padding: "p-2",
@@ -180,23 +134,15 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     headerMb: "mb-0",
     footerMb: "",
     hasDelete: true,
-    getBody: (data) => (
+    getBody: (data,t) => (
       <p className="text-xs text-white opacity-90 mb-0 line-clamp-2">
-        {data.description?.length ? data.description : "No description"}
+        {data.description?.length ? data.description : t('unifiedCard.noDescription')}
       </p>
     ),
-    getLeft: (data) => ({
-      text: `${data.itemCount || 0} products`,
+    getLeft: (data,t) => ({
+      text: `${data.itemCount || 0} ${t('unifiedCard.prodCountText')}`,
       className: "text-sm text-white opacity-90",
     }),
-    getRight: () => [
-      <span
-        key="label"
-        className="text-xs px-2 py-1 rounded-full border border-gray-300"
-      >
-        Menu Page
-      </span>,
-    ],
   },
   menu: {
     padding: "p-2",
@@ -205,29 +151,15 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     headerMb: "mb-0",
     footerMb: "mb-2",
     hasDelete: true,
-    getBody: (data) => (
+    getBody: (data,t) => (
       <p className="text-xs text-white opacity-90 mb-0 line-clamp-2">
-        {data.description}
+        {data.description?.length ? data.description : t('unifiedCard.noDescription')}
       </p>
     ),
-    getLeft: (data) => ({
+    getLeft: (data,t) => ({
       text: `€${Number(data.price || 0).toFixed(2)}`,
       className: "text-lg font-semibold text-white",
     }),
-    getRight: (data) => [
-      <span
-        key="avail"
-        className={`text-xs px-2 py-1 rounded-full ${data.isAvailable ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}
-      >
-        {data.isAvailable ? "Available" : "Unavailable"}
-      </span>,
-      <span
-        key="label"
-        className="text-xs px-2 py-1 rounded-full border border-gray-300"
-      >
-        Menu
-      </span>,
-    ],
   },
 };
 
@@ -262,15 +194,15 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(({
   dragListeners,
   layout,
 }, ref) => {
+  const { t } = useTranslation();
   const colorClasses = getColorClasses(data.color, type);
   const isClickable = !!onClick;
   const config = configs[type];
   if (!config) return null;
 
   const { padding, iconSize, actionsLayout, headerMb, footerMb, hasDelete } = config;
-  const bodyContent = config.getBody(data);
-  const left = config.getLeft(data);
-  const rightContent = config.getRight(data);
+  const bodyContent = config.getBody(data,t);
+  const left = config.getLeft(data,t);
 
   const renderActions = () => {
     if (!showActions) return null;
@@ -336,10 +268,17 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(({
         )}
         <div className={`flex items-center justify-between ${footerMb} w-full`}>
           <div className={`${left.className} truncate ${layout === "row" ? "!gap-0 text-xs" : ""}`}>{left.text}</div>
-          {
-            layout !== "row" && (
-              <div className="flex items-center gap-2 flex-shrink-0">{rightContent}</div>)
-          }
+          {(type === "product" || type === "menu") && (
+            <>
+              {
+                data.isAvailable ? (
+                  <CircleCheckIcon className="size-5 text-green-400" />
+                ) : (
+                  <UnAvailableIcon className="size-5 text-red-600" />
+                )
+              }
+            </>
+          )}
         </div>
       </div>
     </div>

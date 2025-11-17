@@ -24,9 +24,11 @@ import CustomButton from "../components/ui/CustomButton";
 import { StatsCard } from "../components/shared/StatsCard.order";
 import CustomInput from "../components/shared/CustomInput";
 import { useTranslation } from "react-i18next";
+import { useConfirm } from "../hooks/useConfirm";
 
 export const UserManagement = () => {
   const { t } = useTranslation();
+  const confirm = useConfirm();
   const [users, setUsers] = useState<Omit<User, "password">[]>([]);
   const [formData, setFormData] = useState({
     username: "",
@@ -220,7 +222,14 @@ export const UserManagement = () => {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm(t("userManagement.deleteConfirmMessage"))) return;
+    const ok = await confirm({
+      title: t('userManagement.deleteConfirmTitle'),
+      message: t('userManagement.deleteConfirmMessage'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+      type: 'danger',
+    });
+    if (!ok) return;
 
     try {
       const res = await (window as any).electronAPI.deleteUser(token, userId);

@@ -1,1500 +1,1535 @@
 {
-  "common": {
-    "loading": "Loading...",
-    "edit": "Edit",
-    "delete": "Delete",
-    "cancel": "Cancel",
-    "save": "Save",
-    "add": "Add",
-    "create": "Create",
-    "update": "Update",
-    "close": "Close",
-    "yes": "Yes",
-    "no": "No",
-    "apply": "Apply"
-  },
-  "welcome": "Welcome to our website.",
-  "configurations": {
-    "title": "Configurations",
-    "languageLabel": "Language",
-    "languageOptions": {
-      "en": "English",
-      "es": "Spanish"
+    "common": {
+        "loading": "Loading...",
+        "edit": "Edit",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "save": "Save",
+        "add": "Add",
+        "create": "Create",
+        "update": "Update",
+        "close": "Close",
+        "yes": "Yes",
+        "no": "No",
+        "apply": "Apply"
     },
-    "companyName": "Company Name",
-    "companyNamePlaceholder": "Enter company name",
-    "companyAddress": "Company Address",
-    "companyAddressPlaceholder": "Enter company Address",
-    "vatNumber": "VAT Number",
-    "vatNumberPlaceholder": "Enter VAT number",
-    "orderPrefix": "Order Prefix",
-    "orderPrefixPlaceholder": "K",
-    "kitchenPriorityLabel": "Kitchen Priority Time (in minutes)",
-    "lowKitchenPriorityTime": "Low",
-    "mediumKitchenPriorityTime": "Medium",
-    "highKitchenPriorityTime": "High",
-    "companyLogo": "Company Logo",
-    "uploadLogoPrompt": "Upload your company logo",
-    "uploadLogoSub": "PNG, JPG up to 2MB",
-    "clickChangeLogo": "Click to change logo",
-    "save": "Save",
-    "savedSuccess": "Configurations saved successfully",
-    "errorGetting": "Error getting configurations",
-    "errorSaving": "Error saving configurations"
-  },
-  "userManagement": {
-    "title": "User Management",
-    "subtitle": "Manage system users and their roles",
-    "addUser": "Add User",
-    "totalUsers": "Total Users",
-    "admins": "Admins",
-    "staff": "Staff",
-    "kitchenManager": "Kitchen/Manager",
-    "searchPlaceholder": "Search users...",
-    "noUsersTitle": "No users found",
-    "noUsersFirst": "Get started by adding your first user.",
-    "noUsersTry": "Try adjusting your search or role filter.",
-    "table": {
-      "user": "User",
-      "role": "Role",
-      "email": "Email",
-      "actions": "Actions"
+    "welcome": "Welcome to our website.",
+    "configurations": {
+        "title": "Configurations",
+        "languageLabel": "Language",
+        "languageOptions": {
+            "en": "English",
+            "es": "Spanish"
+        },
+        "companyName": "Company Name",
+        "companyNamePlaceholder": "Enter company name",
+        "companyAddress": "Company Address",
+        "companyAddressPlaceholder": "Enter company Address",
+        "vatNumber": "VAT Number",
+        "vatNumberPlaceholder": "Enter VAT number",
+        "orderPrefix": "Order Prefix",
+        "orderPrefixPlaceholder": "K",
+        "kitchenPriorityLabel": "Kitchen Priority Time (in minutes)",
+        "lowKitchenPriorityTime": "Low",
+        "mediumKitchenPriorityTime": "Medium",
+        "highKitchenPriorityTime": "High",
+        "companyLogo": "Company Logo",
+        "uploadLogoPrompt": "Upload your company logo",
+        "uploadLogoSub": "PNG, JPG up to 2MB",
+        "clickChangeLogo": "Click to change logo",
+        "save": "Save",
+        "savedSuccess": "Configurations saved successfully",
+        "errorGetting": "Error getting configurations",
+        "errorSaving": "Error saving configurations"
     },
-    "modal": {
-      "addNew": "Add New User",
-      "edit": "Edit User",
-      "tabs": {
-        "general": "General",
-        "permissions": "Permissions",
-        "functions": "Functions"
-      },
-      "functionLabels": {
-        "cancel-order": "Cancel Order",
-        "change-delivery-person": "Change Delivery Person"
-      },
-      "moduleLabels": {
-        "order": "Order",
-        "kitchen": "Kitchen",
-        "delivery": "Delivery",
-        "delivery-management": "Delivery Management",
-        "manage-orders": "Manage Orders",
+    "userManagement": {
+        "title": "User Management",
+        "subtitle": "Manage system users and their roles",
+        "addUser": "Add User",
+        "totalUsers": "Total Users",
+        "admins": "Admins",
+        "staff": "Staff",
+        "kitchenManager": "Kitchen/Manager",
+        "searchPlaceholder": "Search users...",
+        "noUsersTitle": "No users found",
+        "noUsersFirst": "Get started by adding your first user.",
+        "noUsersTry": "Try adjusting your search or role filter.",
+        "table": {
+            "user": "User",
+            "role": "Role",
+            "email": "Email",
+            "actions": "Actions"
+        },
+        "modal": {
+            "addNew": "Add New User",
+            "edit": "Edit User",
+            "tabs": {
+                "general": "General",
+                "permissions": "Permissions",
+                "functions": "Functions"
+            },
+            "functionLabels": {
+                "cancel-order": "Cancel Order",
+                "change-delivery-person": "Change Delivery Person"
+            },
+            "moduleLabels": {
+                "order": "Order",
+                "kitchen": "Kitchen",
+                "delivery": "Delivery",
+                "delivery-management": "Delivery Management",
+                "manage-orders": "Manage Orders",
+                "reports": "Reports",
+                "menu-structure": "Menu Structure",
+                "users": "Users",
+                "configurations": "Configurations"
+            },
+            "username": "Username",
+            "password": "Password",
+            "newPassword": "New Password",
+            "fullName": "Full Name",
+            "email": "Email",
+            "role": "Role",
+            "modulePermissions": "Module Permissions",
+            "selectModules": "Select which modules this user can access",
+            "functionPermissions": "Function Permissions",
+            "selectFunctions": "Select which functions this user can perform",
+            "cancel": "Cancel",
+            "add": "Add User",
+            "update": "Update User"
+        },
+        "roles": {
+            "all": "All",
+            "admin": "Admin",
+            "staff": "Staff",
+            "kitchen": "Kitchen",
+            "manager": "Manager"
+        },
+        "validation": {
+            "emailRequired": "Email is required",
+            "emailInvalid": "Please enter a valid email address",
+            "usernameRequired": "Please enter a username",
+            "nameRequired": "Please enter a name",
+            "passwordRequired": "Please enter a password"
+        },
+        "messages": {
+            "fetchFailed": "Failed to fetch users",
+            "addFailed": "Failed to add user",
+            "updateFailed": "Failed to update user",
+            "deleteFailed": "Failed to delete user",
+            "usernameTaken": "Username already taken",
+            "added": "User added successfully",
+            "updated": "User updated successfully",
+            "deleted": "User deleted successfully"
+        },
+        "deleteConfirmTitle": "Delete User",
+        "deleteConfirmMessage": "Are you sure you want to delete this user?",
+        "yes": "Yes",
+        "no": "No"
+    },
+    "printers": {
+        "title": "Printers",
+        "subtitle": "Manage Printers",
+        "addPrinter": "Add Printer",
+        "manageDescription": "Add and manage your printers",
+        "connectedPrinters": "Connected Printers",
+        "noPrinters": "No printers connected yet. Add one above.",
+        "table": {
+            "displayName": "Display Name",
+            "printerName": "Printer Name",
+            "createdAt": "Created At",
+            "mainPrinter": "Main Printer",
+            "actions": "Actions"
+        },
+        "deleteTitle": "Delete Printer",
+        "deleteMessage": "Are you sure you want to delete this printer? Every product attached to this printer will be detached.",
+        "deleteConfirm": "Delete",
+        "deleteCancel": "Cancel",
+        "deletedSuccess": "Printer deleted successfully",
+        "deletedFailed": "Failed to delete printer",
+        "deletedError": "An error occurred while deleting the printer",
+        "yes": "Yes",
+        "no": "No"
+    },
+    "reports": {
+        "title": "Analytics & Reports",
+        "subtitle": "Comprehensive insights into order performance and trends",
+        "totalOrders": "Total Orders",
+        "delivered": "Delivered/ Completed",
+        "avgDeliveryTime": "Avg Delivery Time",
+        "inProgress": "In Progress",
+        "successRate": "Success Rate",
+        "minutes": "minutes",
+        "topOrderedItems": "Top Ordered Items",
+        "topOrderedMenus": "Top Ordered Menus",
+        "orderDetails": "Order Details",
+        "orderId": "Order ID",
+        "customer": "Customer",
+        "items": "Items",
+        "status": "Status",
+        "time": "Time",
+        "noOrdersFound": "No orders found",
+        "noOrdersSubtitle": "Try adjusting your date range or period selection.",
+        "showingOrders": "Showing first 20 orders of {{total}} total orders",
+        "statuses": {
+            "delivered": "Delivered",
+            "completed": "Completed",
+            "sentToKitchen": "Sent to Kitchen",
+            "outForDelivery": "Out for Delivery",
+            "pending": "Pending",
+            "cancelled": "Cancelled",
+            "readyForDelivery": "Ready for Delivery"
+        },
+        "errors": {
+            "fetchFailed": "Failed to fetch analytics"
+        },
+        "components": {
+            "statusDistribution": {
+                "title": "Order Status Distribution",
+                "noOrders": "No orders in selected period"
+            },
+            "hourlyDistribution": {
+                "title": "Hourly Order Distribution",
+                "noOrders": "No orders in selected period"
+            },
+            "dateRangeSelector": {
+                "reportPeriod": "Report Period",
+                "periods": {
+                    "today": "Today",
+                    "week": "Week",
+                    "month": "Month",
+                    "custom": "Custom"
+                }
+            },
+            "topItems": {
+                "noItems": "No items ordered in selected period"
+            }
+        }
+    },
+    "login": {
+        "welcomeBack": "Welcome Back",
+        "signInSubtitle": "Sign in to your account to continue",
+        "username": "Username",
+        "password": "Password",
+        "usernamePlaceholder": "Enter your username",
+        "passwordPlaceholder": "Enter your password",
+        "signingIn": "Signing in...",
+        "signIn": "Sign In",
+        "restaurantInterior": "Restaurant Interior",
+        "restaurantLogo": "Restaurant Logo"
+    },
+    "orderManagement": {
+        "filters": {
+            "allOrders": "All Orders",
+            "pending": "📋 Pending",
+            "sentToKitchen": "👨‍🍳 Sent to Kitchen",
+            "readyForDelivery": "✅ Ready for Delivery",
+            "outForDelivery": "🚚 Out for Delivery",
+            "completed": "✅ Completed",
+            "delivered": "📦 Delivered",
+            "cancelled": "❌ Cancelled",
+            "paid": "💚 Paid",
+            "unpaid": "🔴 Unpaid",
+            "partialPayment": "🟡 Partial Payment",
+            "filterOrders": "Filter Orders"
+        }
+    },
+    "orderTakingForm": {
+        "loading": {
+            "title": "Loading Product Details",
+            "description": "Please wait while we fetch the customization options..."
+        },
+        "customizeYourOrder": "Customize your order",
+        "chooseVariant": "Choose Variant",
+        "selectPreferredVariant": "Select your preferred variant for {{productName}}",
+        "variantsDetached": "Variants have been detached from product",
+        "addComplements": "Add Complements",
+        "selected": "Selected",
+        "min": "Min",
+        "max": "Max",
+        "free": "Free",
+        "complementsDetached": "Complements have been detached from product",
+        "quantity": "Quantity",
+        "priceBreakdown": "Price Breakdown",
+        "baseProduct": "Base Product",
+        "tax": "Tax",
+        "variant": "Variant",
+        "total": "Total",
+        "addToOrder": "Add to Order",
+        "errors": {
+            "unableToGetVariants": "Unable to get product's variants",
+            "unableToGetAddonPages": "Unable to get product's addon pages",
+            "unableToGetGroups": "Unable to get groups",
+            "errorLoadingProductData": "Error loading product data",
+            "pleaseSelectVariant": "Please select a variant",
+            "pleaseCompleteRequiredSelections": "Please complete all required selections",
+            "unableToUpdateOrder": "Unable to update order",
+            "unableToSaveOrder": "Unable to save order",
+            "unableToUpdateQuantity": "Unable to update quantity"
+        },
+        "warnings": {
+            "maximumItemsAllowed": "Maximum {{maxComplements}} items allowed for the group"
+        },
+        "messages": {
+            "orderAssignedToDeliveryPerson": "This order is assigned to a delivery person and cannot be edited.",
+            "itemAddedToOrder": "Item added to order!",
+            "quantityUpdated": "Quantity updated! Total: {{newQuantity}}"
+        }
+    },
+    "orderCart": {
+        "yourOrder": "Your Order",
+        "selectItemsFromMenu": "Select items from the menu to add to your order",
+        "duplicate": "Duplicate",
+        "duplicateTooltip": "Duplicate this menu group",
+        "printOptions": "Print Options",
+        "clearOrder": "Clear Order",
+        "itemPrice": "Item Price",
+        "taxIncluded": "tax included",
+        "variant": "Variant",
+        "addOns": "Add-ons",
+        "from": "From",
+        "menuPrice": "Menu Price",
+        "supplements": "Supplements",
+        "total": "Total",
+        "processOrder": "Process Order",
+        "pointOfSale": "Point of Sale",
+        "defaultAddress": "street 123",
+        "warnings": {
+            "noPrintersAttached": "No printers attached"
+        },
+        "errors": {
+            "errorGettingConfigurations": "Error getting configurations",
+            "errorDuplicatingMenu": "Error duplicating menu. Please try again.",
+            "printerNotFound": "Printer \"{{printerName}}\" not found",
+            "errorPrintingReceipt": "Error printing receipt",
+            "errorRemovingItem": "Error removing item",
+            "errorGettingProduct": "Error getting product",
+            "errorGettingMenu": "Error getting menu",
+            "menuHaveBeenDeleted": "Menu have been deleted",
+            "errorUpdatingQuantity": "Error updating quantity",
+            "errorClearingOrder": "Error clearing order",
+            "printerNotFoundError": "Printer not found"
+        },
+        "messages": {
+            "printingCustomerReceipt": "Printing customer receipt...",
+            "receiptPrintedSuccessfully": "Receipt printed successfully",
+            "menuDuplicated": "Menu duplicated successfully"
+        },
+        "confirmations": {
+            "removeItem": {
+                "title": "Remove Item",
+                "message": "Are you sure you want to remove this item from your order?",
+                "confirmText": "Remove Item"
+            },
+            "removeMenu": {
+                "title": "Remove Menu",
+                "message": "Are you sure you want to remove this menu from your order?",
+                "confirmText": "Clear Order"
+            },
+            "clearOrder": {
+                "title": "Clear Order",
+                "message": "Are you sure you want to clear the entire order? This action cannot be undone.",
+                "confirmText": "Clear Order"
+            }
+        }
+    },
+    "paymentProcessingModal": {
+        "title": "Payment Processing",
+        "subtitle": "Select payment methods",
+        "totalAmount": "Total Amount",
+        "alreadyPaid": "Already Paid",
+        "remaining": "Remaining",
+        "amountTendered": "Amount Tendered",
+        "changeToReturn": "Change to Return",
+        "paymentMethod": "Payment Method",
+        "cash": "Cash",
+        "card": "Card",
+        "amount": "Amount",
+        "addPayment": "Add Payment",
+        "addedPayments": "Added Payments",
+        "processPayment": "Process Payment",
+        "errors": {
+            "pleaseEnterValidAmount": "Please enter a valid amount",
+            "pleaseAddPaymentMethod": "Please add at least one payment method"
+        },
+        "messages": {
+            "partialPaymentProcessed": "Partial payment processed: {{paymentString}} (Remaining: €{{remaining}})",
+            "paymentProcessedWithChange": "Payment processed: {{paymentString}} (Change: €{{change}})",
+            "paymentProcessed": "Payment processed: {{paymentString}}"
+        }
+    },
+    "customerModal": {
+        "title": "Add Customer",
+        "phone": "Phone",
+        "name": "Name",
+        "cifDni": "CIF/DNI",
+        "email": "Email",
+        "comments": "Comments",
+        "address": "Address",
+        "postalCode": "Postal Code",
+        "city": "City",
+        "province": "Province",
+        "addCustomer": "Add Customer",
+        "placeholders": {
+            "phone": "Enter phone number",
+            "name": "Enter name",
+            "cifDni": "Enter CIF/DNI",
+            "email": "Enter email address",
+            "comments": "Enter comments",
+            "address": "Enter address",
+            "postalCode": "Enter postal code",
+            "city": "Enter city",
+            "province": "Enter province"
+        },
+        "errors": {
+            "customerAlreadyExists": "Customer already exists",
+            "failedToEditCustomer": "Failed to edit customer",
+            "failedToAddCustomer": "Failed to add customer",
+            "phoneRequired": "Phone number is required",
+            "addressRequired": "Address is required",
+            "postalCodeRequired": "Postal code is required",
+            "cityRequired": "City is required"
+        }
+    },
+    "printerModal": {
+        "viewPrinter": "View Printer",
+        "editPrinter": "Edit Printer",
+        "addNewPrinter": "Add New Printer",
+        "displayName": "Display Name *",
+        "enterDisplayName": "Enter display name",
+        "mainPrinter": "Main Printer",
+        "printer": "Printer",
+        "selectPrinter": "Select printer",
+        "updatePrinter": "Update Printer",
+        "addPrinter": "Add Printer",
+        "errors": {
+            "pleaseSelectPrinter": "Please select a printer",
+            "pleaseEnterDisplayName": "Please enter display name",
+            "unableToAddPrinter": "Unable to add printer",
+            "unableToUpdatePrinter": "Unable to update printer",
+            "anErrorOccurred": "An error occurred"
+        },
+        "warnings": {
+            "printerAlreadyAdded": "This printer already added!"
+        },
+        "messages": {
+            "printerAddedSuccessfully": "Printer added successfully",
+            "printerUpdatedSuccessfully": "Printer updated successfully"
+        }
+    },
+    "manageOrders": {
+        "title": "Manage Orders",
+        "subtitle": "View and manage all orders with advanced filtering options",
+        "searchOrders": "Search Orders",
+        "searchPlaceholder": "Search by order number...",
+        "filterByDate": "Filter by Date",
+        "customer": "Customer",
+        "allCustomers": "All Customers",
+        "deliveryPerson": "Delivery Person",
+        "paymentStatus": "Payment Status",
+        "allDeliveryPersons": "All Delivery Persons",
+        "allPaymentStatuses": "All Payment Statuses",
+        "clearAllFilters": "Clear All Filters",
+        "bulkPayment": "Bulk Payment",
+        "showingOrders": "Showing {{filtered}} of {{total}} orders",
+        "lastUpdated": "Last updated: {{time}}",
+        "noOrdersMatch": "No orders match your filters",
+        "noOrdersFound": "No orders found",
+        "table": {
+            "orderNumber": "Order #",
+            "customer": "Customer",
+            "orderType": "Order Type",
+            "status": "Status",
+            "paymentStatus": "Payment Status",
+            "deliveryPerson": "Delivery Person",
+            "total": "Total",
+            "created": "Created",
+            "actions": "Actions"
+        },
+        "actions": {
+            "viewOrder": "View Order",
+            "printOrder": "Print Order",
+            "processPayment": "Process Payment",
+            "cancelOrder": "Cancel Order"
+        },
+        "statuses": {
+            "notAssigned": "Not assigned",
+            "nA": "N/A",
+            "notSelected": "Not Selected"
+        },
+        "confirmCancelOrder": "Are you sure you want to cancel order {{orderId}}?",
+        "errors": {
+            "cancelFailed": "Failed to cancel order"
+        },
+        "messages": {
+            "orderCancelled": "Order cancelled successfully"
+        }
+    },
+    "cancelOrderModal": {
+        "title": "Cancel Order",
+        "orderNumber": "Order Number",
+        "customer": "Customer",
+        "cancelNote": "Cancellation Note *",
+        "cancelNotePlaceholder": "Enter reason for cancellation...",
+        "noteRequired": "A cancellation note is required",
+        "cancel": "Cancel",
+        "confirm": "Confirm Cancellation"
+    },
+    "orderDetailsModal": {
+        "title": "Order Items - K{{orderId}}",
+        "created": "Created:",
+        "customer": "Customer",
+        "deliveryAddress": "Delivery Address",
+        "orderType": "Order Type",
+        "paymentStatus": "Payment Status",
+        "deliveryPerson": "Delivery Person",
+        "items": "Items",
+        "quantity": "Qty",
+        "price": "Price",
+        "total": "Total",
+        "orderNotes": "Order Notes",
+        "cancelled": "CANCELLED",
+        "subtotal": "Subtotal",
+        "tax": "Tax",
+        "deliveryFee": "Delivery Fee",
+        "grandTotal": "Grand Total",
+        "close": "Close",
+        "customerInformation": "Customer Information",
+        "name": "Name",
+        "phone": "Phone",
+        "address": "Address",
+        "orderInformation": "Order Information",
+        "status": "Status",
+        "updated": "Updated",
+        "paymentInformation": "Payment Information",
+        "totalAmount": "Total Amount",
+        "deliveryInformation": "Delivery Information",
+        "vehicleType": "Vehicle Type",
+        "assignedAt": "Assigned At",
+        "deliveredAt": "Delivered At",
+        "orderItems": "Order Items",
+        "addOns": "Add-ons:",
+        "each": "each",
+        "noItemsFound": "No items found",
+        "notRecorded": "Not recorded",
+        "notAssignedYet": "Not assigned yet"
+    },
+    "bulkPaymentModal": {
+        "title": "Bulk Payment Processing",
+        "subtitle": "Process payments for multiple delivered orders by delivery person",
+        "selectDeliveryPerson": "Select Delivery Person",
+        "chooseDeliveryPerson": "Choose a delivery person...",
+        "pleaseSelectDeliveryPerson": "Please select a delivery person",
+        "allDeliveryPersons": "All Delivery Persons",
+        "paymentMethod": "Payment Method",
+        "amount": "Amount",
+        "addPayment": "Add",
+        "removePayment": "Remove",
+        "totalAmount": "Total Amount",
+        "processPayments": "Process Bulk Payment",
+        "cancel": "Cancel",
+        "processing": "Processing...",
+        "success": "Payments processed successfully",
+        "error": "Failed to process payments",
+        "allPayments": "All Payments:",
+        "pending": "PENDING",
+        "readyToProcess": "Ready to process payment",
+        "ordersSummary": "Orders Summary",
+        "deliveryPerson": "Delivery Person",
+        "ordersCount": "Orders Count",
+        "totalAmountDue": "Total Amount Due",
+        "remainingAmount": "Remaining Amount",
+        "amountTendered": "Amount Tendered",
+        "changeToReturn": "Change to Return",
+        "orders": "orders",
+        "paymentMethods": "Payment Methods",
+        "total": "Total: €{{paid}} / €{{total}}",
+        "cash": "Cash",
+        "card": "Card",
+        "add": "Add"
+    },
+    "individualPaymentModal": {
+        "title": "Process Payment",
+        "subtitle": "Complete the payment for this order",
+        "orderDetails": "Order Details",
+        "orderId": "Order ID",
+        "customer": "Customer",
+        "totalAmount": "Total Amount",
+        "remainingAmount": "Remaining Amount",
+        "amountTendered": "Amount Tendered",
+        "changeToReturn": "Change to Return",
+        "deliveryPerson": "Delivery Person",
+        "paymentMethods": "Payment Methods",
+        "total": "Total: €{{paid}} / €{{total}}",
+        "paymentMethod": "Payment Method",
+        "cash": "Cash",
+        "card": "Card",
+        "amount": "Amount",
+        "addPayment": "Add",
+        "removePayment": "Remove",
+        "processPayment": "Process Payment",
+        "cancel": "Cancel",
+        "processing": "Processing...",
+        "allPayments": "All Payments:",
+        "pending": "PENDING",
+        "readyToProcess": "Ready to process payment",
+        "noDeliveryPersonAssigned": "No delivery person assigned",
+        "pleaseAddPaymentMethod": "Please add at least one payment method",
+        "errors": {
+            "enterValidAmount": "Please enter a valid amount",
+            "noOrderSelected": "No order selected",
+            "totalExceedsOrder": "Total payment cannot exceed order total",
+            "addPaymentMethod": "Please add at least one payment method",
+            "updateFailed": "Failed to update payment. Please try again.",
+            "processingError": "An error occurred while processing the payment. Please try again.",
+            "selectDeliveryPerson": "Please select a delivery person first",
+            "totalExceedsRemaining": "Total payment cannot exceed remaining amount",
+            "noOrdersFound": "No orders found for this delivery person",
+            "bulkProcessingError": "An error occurred while processing the bulk payment. Please try again."
+        },
+        "success": {
+            "paymentCompleted": "Payment completed successfully: {{paymentString}}",
+            "partialPayment": "Partial payment recorded: {{paymentString}}. Remaining: €{{remaining}}",
+            "bulkPaymentSuccess": "Bulk payment processed successfully for {{count}} orders: {{paymentString}}",
+            "bulkPaymentPartial": "Payment processed for {{successCount}} out of {{totalCount}} orders"
+        }
+    },
+    "deliveryManagement": {
+        "title": "Delivery Management",
+        "subtitle": "Manage delivery personnel and their vehicle information",
+        "deliveryPersonnel": "Delivery Personnel",
+        "addAndManageStaff": "Add and manage delivery staff",
+        "addDeliveryPerson": "Add Delivery Person",
+        "deliveryPersonnelCount": "Delivery Personnel",
+        "bikes": "Bikes",
+        "motorcycles": "Motorcycles",
+        "cars": "Cars",
+        "scooters": "Scooters",
+        "searchDeliveryPersonnel": "Search delivery personnel...",
+        "all": "All",
+        "bike": "Bike",
+        "motorcycle": "Motorcycle",
+        "car": "Car",
+        "scooter": "Scooter",
+        "deliveryPersonnelTable": "Delivery Personnel ({{count}})",
+        "getStartedMessage": "Get started by adding your first delivery person.",
+        "adjustFiltersMessage": "Try adjusting your search or vehicle filter.",
+        "noDeliveryPersonnelFound": "No delivery personnel found",
+        "deliveryPerson": "Delivery Person",
+        "vehicle": "Vehicle",
+        "contact": "Contact",
+        "license": "License",
+        "totalAssigned": "Total Assigned",
+        "totalDelivered": "Total Delivered",
+        "totalCancelled": "Total Cancelled",
+        "avgDeliveryTime": "Avg. Delivery Time",
+        "actions": "Actions",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deliveryPersonnelLabel": "Delivery Personnel",
+        "minutes": "min",
+        "errors": {
+            "fetchFailed": "Failed to fetch delivery personnel",
+            "enterName": "Please enter a name",
+            "enterLicenseNumber": "Please enter a license number",
+            "emailRequired": "Email is required",
+            "validEmail": "Please enter a valid email address",
+            "phoneRequired": "Phone number is required",
+            "validPhone": "Please enter a valid phone number",
+            "phoneMinDigits": "Phone number must have at least 9 digits",
+            "phoneMaxDigits": "Phone number cannot exceed 9 digits",
+            "emailExists": "Email already exists",
+            "updateFailed": "Failed to update delivery person",
+            "addFailed": "Failed to add delivery person",
+            "deleteConfirm": "Are you sure you want to delete this delivery person?",
+            "deleteConfirmTitle": "Delete Delivery Person",
+            "fetchStatsFailed": "Failed to fetch delivery person stats",
+            "cannotDeleteWithOrders": "Cannot delete delivery person with {{count}} assigned orders",
+            "deleteFailed": "Failed to delete delivery person"
+        },
+        "success": {
+            "updated": "Delivery person updated successfully",
+            "added": "Delivery person added successfully",
+            "deleted": "Delivery person deleted successfully"
+        }
+    },
+    "deliveryPersonModal": {
+        "editTitle": "Edit Delivery Person",
+        "addTitle": "Add New Delivery Person",
+        "fullName": "Full Name *",
+        "fullNamePlaceholder": "Enter full name",
+        "email": "Email *",
+        "emailPlaceholder": "Enter email address",
+        "phoneNumber": "Phone Number",
+        "phoneNumberPlaceholder": "Enter phone number",
+        "licenseNumber": "License Number *",
+        "licenseNumberPlaceholder": "Enter license number",
+        "vehicleType": "Vehicle Type",
+        "selectVehicleType": "Select vehicle type",
+        "cancel": "Cancel",
+        "updateDeliveryPerson": "Update Delivery Person",
+        "addDeliveryPerson": "Add Delivery Person"
+    },
+    "deliveryPersonInput": {
+        "selectDeliveryPerson": "Select Delivery Person",
+        "chooseDeliveryPerson": "Choose a delivery person...",
+        "quickAssign": "Quick Assign"
+    },
+    "deliveryView": {
+        "title": "Delivery Management",
+        "subtitle": "Assign and track order deliveries",
+        "readyForDeliveryOrders": "Ready for Delivery Orders",
+        "noOrdersReady": "No orders ready for delivery",
+        "delivered": "Delivered",
+        "assignDelivery": "Assign",
+        "stats": {
+            "readyForDelivery": "Ready for Delivery",
+            "outForDelivery": "Out for Delivery",
+            "deliveredToday": "Delivered Today",
+            "activeDrivers": "Active Drivers"
+        },
+        "descriptions": {
+            "ordersReadyToAssign": "Orders ready to be assigned for delivery",
+            "allOrdersInKitchenOrAssigned": "All orders are either in kitchen or already assigned for delivery.",
+            "ordersCurrentlyBeingDelivered": "Orders currently being delivered"
+        },
+        "table": {
+            "orderId": "Order ID",
+            "customer": "Customer",
+            "contact": "Contact",
+            "address": "Address",
+            "items": "Items",
+            "readySince": "Ready Since",
+            "driver": "Driver",
+            "actions": "Actions",
+            "outForDelivery": "Out for Delivery"
+        },
+        "cancelOrder": "Cancel Order",
+        "changeDeliveryPerson": "Change Delivery Person",
+        "selectNewDeliveryPerson": "Select new delivery person",
+        "confirmChange": "Confirm Change",
+        "messages": {
+            "pleaseEnterDeliveryPersonName": "Please enter delivery person name",
+            "failedToAssignDeliveryPerson": "Failed to assign delivery person",
+            "failedToAssignDelivery": "Failed to assign delivery. Please try again.",
+            "failedToMarkAsDelivered": "Failed to mark as delivered",
+            "orderMarkedAsDelivered": "Order marked as delivered",
+            "failedToMarkAsDeliveredRetry": "Failed to mark as delivered. Please try again.",
+            "failedToCancelOrder": "Failed to cancel order",
+            "orderCancelled": "Order cancelled successfully",
+            "deliveryPersonChanged": "Delivery person changed successfully",
+            "failedToChangeDeliveryPerson": "Failed to change delivery person"
+        }
+    },
+    "kitchenView": {
+        "title": "Kitchen Management",
+        "subtitle": "Monitor and manage orders in preparation",
+        "stats": {
+            "ordersInKitchen": "Orders in Kitchen",
+            "highPriority": "High Priority",
+            "avgPrepTime": "Avg Prep Time",
+            "avgPrepTimeValue": "~25 min"
+        },
+        "table": {
+            "priority": "Priority",
+            "orderId": "Order ID",
+            "customer": "Customer",
+            "items": "Items",
+            "timeInKitchen": "Time in Kitchen",
+            "actions": "Actions",
+            "kitchenOrders": "Kitchen Orders",
+            "noOrdersMatch": "No orders match your search"
+        },
+        "priority": {
+            "high": "High",
+            "medium": "Medium",
+            "low": "Low"
+        },
+        "actions": {
+            "viewOrderDetails": "View Order Details",
+            "markAsReady": "Mark as Ready"
+        },
+        "addOns": "Add-ons:",
+        "timeFormat": {
+            "hours": "h",
+            "minutes": "m"
+        },
+        "messages": {
+            "orderMarkedAsReady": "Order marked as ready",
+            "orderMarkedAsCompleted": "Order marked as completed",
+            "failedToUpdateOrder": "Failed to update order"
+        }
+    },
+    "filterControls": {
+        "searchPlaceholder": "Search orders...",
+        "clearFilters": "Clear Filters"
+    },
+    "dateRangePicker": {
+        "selectDateRange": "Select Date Range",
+        "currentSelection": "Current Selection",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "shortcuts": {
+            "thisWeek": "This Week",
+            "lastWeek": "Last Week",
+            "last7Days": "Last 7 Days",
+            "currentMonth": "Current Month",
+            "nextMonth": "Next Month",
+            "thisYear": "This Year",
+            "lastYear": "Last Year",
+            "reset": "Reset"
+        },
+        "days": {
+            "sunday": "S",
+            "monday": "M",
+            "tuesday": "T",
+            "wednesday": "W",
+            "thursday": "T",
+            "friday": "F",
+            "saturday": "S"
+        },
+        "months": {
+            "january": "January",
+            "february": "February",
+            "march": "March",
+            "april": "April",
+            "may": "May",
+            "june": "June",
+            "july": "July",
+            "august": "August",
+            "september": "September",
+            "october": "October",
+            "november": "November",
+            "december": "December"
+        },
+        "monthsShort": {
+            "january": "Jan",
+            "february": "Feb",
+            "march": "Mar",
+            "april": "Apr",
+            "may": "May",
+            "june": "Jun",
+            "july": "Jul",
+            "august": "Aug",
+            "september": "Sep",
+            "october": "Oct",
+            "november": "Nov",
+            "december": "Dec"
+        }
+    },
+    "menuComponents": {
+        "common": {
+            "add": "Add",
+            "create": "Create",
+            "edit": "Edit",
+            "update": "Update",
+            "save": "Save",
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "name": "Name",
+            "description": "Description",
+            "price": "Price",
+            "priority": "Priority",
+            "tax": "Tax",
+            "discount": "Discount",
+            "select": "Select",
+            "enter": "Enter",
+            "required": "Required",
+            "words":{
+              "with": "with",
+              "variants":"variants",
+              "products": "products",
+              "complements":"Complements",
+              "menus":"menus",
+              "attachVariants": "This variant is attached to",
+              "attachGroup": "This group is attached to",
+              "attachMenu":"This menu page is attached to",
+              "willBeDetached": "They will be detached!",
+              "MenuPagesAttached": "Menu Pages attached",
+              "areYouSure": "Are you sure you want to delete"
+            }
+        },
+        "categories": {
+            "title": "Categories",
+            "addCategory": "Add Category",
+            "categoryName": "Category Name",
+            "enterCategoryName": "Enter category name",
+            "noCategories": "No categories found",
+            "createFirst": "Create your first category to get started"
+        },
+        "subcategories": {
+            "title": "Subcategories",
+            "addSubcategory": "Add Subcategory",
+            "subcategoryName": "Subcategory Name",
+            "enterSubcategoryName": "Enter subcategory name",
+            "selectCategory": "Select a category",
+            "noSubcategories": "No subcategories found",
+            "createFirst": "Create your first subcategory to get started"
+        },
+        "products": {
+            "title": "Products",
+            "addProduct": "Add Product",
+            "productName": "Product Name",
+            "enterProductName": "Enter product name",
+            "selectCategory": "Select category",
+            "selectSubcategory": "Select subcategory",
+            "writeDescription": "Write a description (Max 150 characters)",
+            "enterPrice": "Enter price",
+            "enterPriority": "Enter priority",
+            "enterTax": "Enter tax percentage",
+            "enterDiscount": "Enter discount",
+            "selectVariant": "Select a variant",
+            "addPage": "Add Page",
+            "minComplements": "Minimum number of complements",
+            "maxComplements": "Maximum number of complements",
+            "freeAddons": "Number of free add-ons",
+            "noProducts": "No products found",
+            "createFirst": "Create your first product to get started"
+        },
+        "menuPages": {
+            "title": "Menu Pages",
+            "addMenuPage": "Add Menu Page",
+            "pageName": "Page Name",
+            "enterPageName": "Enter page name",
+            "enterDescription": "Brief description (maximum 40 characters)",
+            "noMenuPages": "No menu pages found",
+            "createFirst": "Create your first menu page to get started"
+        },
+        "menus": {
+            "title": "Menus",
+            "addMenu": "Add Menu",
+            "noMenus": "No menus found",
+            "createFirst": "Create your first menu to get started"
+        },
+        "groups": {
+            "title": "Groups",
+            "addGroup": "Add Group",
+            "noGroups": "No groups found",
+            "createFirst": "Create your first group to get started"
+        },
+        "variants": {
+            "title": "Variants",
+            "addVariant": "Add Variant",
+            "noVariants": "No variants found",
+            "createFirst": "Create your first variant to get started"
+        },
+        "messages": {
+            "success": {
+                "categoryCreated": "Category created successfully",
+                "categoryUpdated": "Category updated successfully",
+                "categoryDeleted": "Category deleted successfully",
+                "subcategoryCreated": "Subcategory created successfully",
+                "subcategoryUpdated": "Subcategory updated successfully",
+                "subcategoryDeleted": "Subcategory deleted successfully",
+                "productCreated": "Product created successfully",
+                "productUpdated": "Product updated successfully",
+                "productDeleted": "Product deleted successfully",
+                "menuPageCreated": "Menu page created successfully",
+                "menuPageUpdated": "Menu page updated successfully",
+                "menuPageDeleted": "Menu page deleted successfully",
+                "menuCreated": "Menu created successfully",
+                "menuUpdated": "Menu updated successfully",
+                "menuDeleted": "Menu deleted successfully",
+                "groupCreated": "Group created successfully",
+                "groupUpdated": "Group updated successfully",
+                "groupDeleted": "Group deleted successfully",
+                "variantCreated": "Variant created successfully",
+                "variantUpdated": "Variant updated successfully",
+                "variantDeleted": "Variant deleted successfully"
+            },
+            "errors": {
+                "categoryNameRequired": "Please enter a category name",
+                "subcategoryNameRequired": "Please enter a subcategory name",
+                "subcategoryCategoryRequired": "Please select a category",
+                "productNameRequired": "Please enter a product name",
+                "productCategoryRequired": "Please select a category",
+                "productPriceRequired": "Please enter a product price",
+                "menuPageNameRequired": "Please enter a page name",
+                "failedToFetch": "Failed to fetch data",
+                "failedToCreate": "Failed to create",
+                "failedToUpdate": "Failed to update",
+                "failedToDelete": "Failed to delete"
+            },
+            "specialNotes": {
+                "variantDeleteWarning": "Deleting this variant will also remove it from all associated products.",
+                "menuPageDeleteWarning": "Deleting this menu page will also remove it from all associated menus.",
+                "productDeleteWarning": "Removing this product will also remove it from all associated menu pages"
+            }
+        },
+        "modals": {
+            "categoryModal": {
+                "title": "Create New Category",
+                "editTitle": "Edit Category",
+                "categoryName": "Category Name",
+                "enterCategoryName": "Enter category name",
+                "image": "IMAGE",
+                "color": "Color",
+                "cancel": "Cancel",
+                "create": "Create",
+                "update": "Update",
+                "errors": {
+                    "nameRequired": "Please enter a category name",
+                    "failedToEdit": "Failed to edit category",
+                    "failedToSave": "Failed to save category"
+                },
+                "success": {
+                    "updated": "Category updated successfully",
+                    "created": "Category created successfully"
+                }
+            },
+            "subcategoryModal": {
+                "title": "Create New Subcategory",
+                "editTitle": "Edit Subcategory",
+                "subcategoryName": "Subcategory Name",
+                "enterSubcategoryName": "Enter subcategory name",
+                "parentCategory": "Parent Category",
+                "selectCategory": "Select a category",
+                "image": "IMAGE",
+                "color": "Color",
+                "cancel": "Cancel",
+                "create": "Create",
+                "update": "Update",
+                "errors": {
+                    "nameRequired": "Please enter a subcategory name",
+                    "categoryRequired": "Please select a category",
+                    "failedToEdit": "Failed to edit subcategory",
+                    "failedToSave": "Failed to save subcategory"
+                },
+                "success": {
+                    "updated": "Subcategory updated successfully",
+                    "created": "Subcategory created successfully"
+                }
+            },
+            "productModal": {
+                "title": "CREATE PRODUCT",
+                "editTitle": "EDIT PRODUCT",
+                "tabs": {
+                    "general": "GENERAL",
+                    "variants": "VARIANTS AND ADD-ONS",
+                    "printers": "PRINTERS"
+                },
+                "productStatus": "Product Status",
+                "activated": "Activated",
+                "outOfStock": "Product out of stock",
+                "basicInfo": "Basic Product Information",
+                "name": "NAME *",
+                "enterProductName": "Enter product name",
+                "associatedCategory": "ASSOCIATED CATEGORY *",
+                "selectCategory": "Select category",
+                "associatedSubcategory": "ASSOCIATED SUBCATEGORY *",
+                "selectSubcategory": "Select subcategory",
+                "selectCategoryFirst": "Select a category first",
+                "productImage": "PRODUCT IMAGE",
+                "uploadProductImage": "Upload product image",
+                "clickToChange": "Click to change",
+                "description": "DESCRIPTION",
+                "writeDescription": "Write a description (Max 150 characters)",
+                "pricingFinancials": "Pricing and Financials",
+                "price": "PRICE *",
+                "priority": "PRIORITY",
+                "tax": "TAX (%)",
+                "discount": "DISCOUNT",
+                "subtotal": "Subtotal:",
+                "taxAmount": "Tax",
+                "discountAmount": "Discount:",
+                "total": "Total:",
+                "productAttributes": "Product Attributes",
+                "isDrink": "It is a drink",
+                "isByWeight": "Product by weight",
+                "isPerDiner": "Product per diner",
+                "isOutstanding": "Outstanding",
+                "isPlus18": "Product +18",
+                "isForMenu": "Is for Menu",
+                "assignVariants": "ASSIGN VARIANTS",
+                "selectVariant": "Select a variant",
+                "variantItemsPricing": "Variant Items and Pricing",
+                "selectAddonsPage": "SELECT ADD-ONS PAGE",
+                "addPage": "Add Page",
+                "pageSetup": "PAGE SETUP",
+                "minComplements": "Minimum number of complements",
+                "maxComplements": "Maximum number of complements",
+                "freeAddons": "Number of free add-ons",
+                "addPluginGroup": "ADD PLUGIN GROUP FOR PAGE",
+                "availableItems": "Available items:",
+                "printers": "Printers",
+                "configurePrinters": "Configure printer settings here.",
+                "cancel": "Cancel",
+                "saveChanges": "Save Changes",
+                "createProduct": "Create Product",
+                "errors": {
+                    "nameRequired": "Product name is required.",
+                    "categoryRequired": "Please select a category.",
+                    "subcategoryRequired": "Please select a subcategory.",
+                    "variantRequired": "Please add at least one variant.",
+                    "addonPageRequired": "Please add at least one addon page with a selected group.",
+                    "failedToCreate": "Failed to create product.",
+                    "failedToUpdate": "Failed to update product.",
+                    "unableToGetVariant": "Unable to get product's variant",
+                    "unableToGetAddons": "Unable to get product's addon pages",
+                    "unableToGetPrinters": "Unable to get product's printers"
+                },
+                "success": {
+                    "created": "Product created successfully!",
+                    "updated": "Product updated successfully!"
+                }
+            },
+            "menuPageModal": {
+                "title": "Create Menu Page",
+                "editTitle": "Edit Menu Page",
+                "pageName": "Page Name",
+                "enterPageName": "Enter page name",
+                "description": "Description",
+                "enterDescription": "Brief description (maximum 40 characters)",
+                "products": "Products",
+                "product": "Product",
+                "selectProduct": "Select a product",
+                "noProductsAvailable": "No products available",
+                "supplement": "Supplement",
+                "enterSupplement": "Enter supplement",
+                "priority": "Priority",
+                "enterPriority": "Enter priority",
+                "add": "Add",
+                "eliminate": "Eliminate",
+                "cancel": "Cancel",
+                "create": "Create",
+                "update": "Update",
+                "errors": {
+                    "nameRequired": "Please enter a page name",
+                    "descriptionTooLong": "Description must be 40 characters or less",
+                    "addProductRequired": "Please add at least one product to the menu page",
+                    "selectProduct": "Please select a product",
+                    "noProductsAvailable": "No products available to add",
+                    "failedToCreate": "Failed to create menu page",
+                    "failedToUpdate": "Failed to update menu page",
+                    "failedToDelete": "Failed to delete menu page",
+                    "failedToSave": "Failed to save menu page",
+                    "failedToFetch": "Failed to fetch products"
+                },
+                "success": {
+                    "created": "Menu page created successfully",
+                    "updated": "Menu page updated successfully",
+                    "deleted": "Menu page deleted successfully"
+                },
+                "confirmDelete": "Are you sure you want to delete this menu page?"
+            },
+            "menuModal": {
+                "title": "Create Menu",
+                "editTitle": "Edit Menu",
+                "basicInformation": "Basic Information",
+                "menuName": "Menu Name",
+                "enterMenuName": "Enter menu name",
+                "description": "Description",
+                "writeDescription": "Write a description (Max 150 characters)",
+                "subcategory": "Subcategory",
+                "selectSubcategory": "Select subcategory",
+                "image": "Menu Image",
+                "uploadImage": "Upload menu image",
+                "clickToChange": "Click to change",
+                "financialDetails": "Financial Details",
+                "price": "Price",
+                "enterPrice": "Enter price",
+                "priority": "Priority",
+                "tax": "Tax",
+                "discount": "Discount",
+                "priceBreakdown": "Price Breakdown",
+                "subtotal": "Subtotal",
+                "total": "Total",
+                "visualAttributes": "Visual Attributes",
+                "outstanding": "Outstanding",
+                "addPages": "Add Pages",
+                "selectMenuPage": "Select Menu Page",
+                "products": "Products",
+                "noMenuPagesAvailable": "No menu pages available",
+                "minimum": "Minimum",
+                "maximum": "Maximum",
+                "kitchenPriority": "Kitchen Priority",
+                "selectPriority": "Select priority",
+                "page": "Page",
+                "actions": "Actions",
+                "add": "Add",
+                "eliminate": "Eliminate",
+                "cancel": "Cancel",
+                "create": "Create",
+                "update": "Update",
+                "errors": {
+                    "nameRequired": "Please enter a menu name",
+                    "subcategoryRequired": "Please select a subcategory",
+                    "descriptionTooLong": "Description must be 150 characters or less",
+                    "addMenuPageRequired": "Please add at least one menu page to the menu",
+                    "selectMenuPage": "Please select a menu page",
+                    "noMenuPagesAvailable": "No menu pages available to add",
+                    "menuPageNotFound": "Selected menu page not found",
+                    "fixValidationErrors": "Please fix the validation errors before adding the page",
+                    "failedToCreate": "Failed to create menu",
+                    "failedToUpdate": "Failed to update menu",
+                    "failedToDelete": "Failed to delete menu",
+                    "failedToSave": "Failed to save menu",
+                    "failedToFetch": "Failed to fetch data"
+                },
+                "success": {
+                    "created": "Menu created successfully",
+                    "updated": "Menu updated successfully",
+                    "deleted": "Menu deleted successfully"
+                },
+                "confirmDelete": "Are you sure you want to delete this menu?"
+            },
+            "createVariantModal": {
+                "title": "Create Variant",
+                "editTitle": "Edit Variant",
+                "variantName": "Variant Name",
+                "enterVariantName": "Enter variant name",
+                "color": "Color",
+                "variantItems": "Variant Items",
+                "addItem": "Add Item",
+                "itemName": "Item Name",
+                "enterItemName": "Enter item name",
+                "name": "Name",
+                "priority": "Priority",
+                "enterPriority": "Enter priority",
+                "image": "Image",
+                "remove": "Remove",
+                "associatedProducts": "Associated Products",
+                "seeAssociatedProducts": "See associated products",
+                "noProducts": "No associated products found",
+                "productName": "Product Name",
+                "price": "Price",
+                "subcategory": "Subcategory",
+                "close": "Close",
+                "cancel": "Cancel",
+                "create": "Create",
+                "update": "Update",
+                "errors": {
+                    "nameRequired": "Please enter a variant name",
+                    "itemNameRequired": "Please enter an item name",
+                    "failedToCreate": "Failed to create variant",
+                    "failedToUpdate": "Failed to update variant",
+                    "failedToFetch": "Failed to fetch associated products"
+                },
+                "success": {
+                    "created": "Variant created successfully",
+                    "updated": "Variant updated successfully"
+                }
+            },
+            "createGroupModal": {
+                "title": "Create Group",
+                "editTitle": "Edit Group",
+                "groupName": "Group Name",
+                "enterGroupName": "Enter group name",
+                "color": "Color",
+                "groupItems": "Group Items",
+                "addItem": "Add Item",
+                "itemName": "Item Name",
+                "enterItemName": "Enter item name",
+                "addNewComplement": "Add New Complement",
+                "complementName": "Complement Name",
+                "enterComplementName": "Enter complement name",
+                "price": "Price",
+                "priority": "Priority",
+                "image": "Image",
+                "complements": "Complements",
+                "actions": "Actions",
+                "remove": "Remove",
+                "associatedProducts": "Associated Products",
+                "seeAssociatedProducts": "See associated products",
+                "noProducts": "No associated products found",
+                "productName": "Product Name",
+                "subcategory": "Subcategory",
+                "add": "Add",
+                "eliminate": "Eliminate",
+                "close": "Close",
+                "cancel": "Cancel",
+                "create": "Create",
+                "update": "Update",
+                "deleteTitle": "Delete Group",
+                "deleteMessage": "Are you sure you want to delete this",
+                "deleteConfirm": "Delete Group",
+                "specialNote": "If you delete this group you can no longer edit this group in any attached order!",
+                "errors": {
+                    "nameRequired": "Please enter a group name",
+                    "itemNameRequired": "Please enter an item name",
+                    "failedToCreate": "Failed to create group",
+                    "failedToUpdate": "Failed to update group",
+                    "failedToDelete": "Failed to delete group",
+                    "failedToFetch": "Failed to fetch associated products"
+                },
+                "success": {
+                    "created": "Group created successfully",
+                    "updated": "Group updated successfully",
+                    "deleted": "Group deleted successfully"
+                }
+            },
+            "specialNotes": {
+                "productDeleteWarning": "If you delete this product you can no longer edit this product in order!",
+                "menuPageDeleteWarning": "If you delete this menu page you can no longer edit this menu page in any attached order!",
+                "variantDeleteWarning": "If you delete this variant you can no longer edit this variant in any attached order!"
+            }
+        }
+    },
+    "menuView": {
+        "titles": {
+            "menu": "Menus",
+            "menuStructure": "Menu Structure",
+            "group": "Groups",
+            "variant": "Variants"
+        },
+        "descriptions": {
+            "menu": "Create and manage categories, subcategories, and products.",
+            "menuStructure": "Create menus and menu pages.",
+            "group": "Create and manage menu groups and options.",
+            "variant": "Create and manage product variants and options."
+        },
+        "buttons": {
+            "menu": "Menus",
+            "menuStructure": "Menu Structure",
+            "group": "Groups",
+            "variant": "Variants"
+        }
+    },
+    "navigation": {
+        "defaultCompanyName": "Delivery System",
+        "logout": "Logout",
+        "toggleSidebar": "Toggle Sidebar",
+        "orders": "Orders",
+        "kitchenView": "Kitchen View",
+        "deliveryView": "Delivery View",
+        "deliveryManagement": "Delivery Management",
+        "manageOrders": "Manage Orders",
         "reports": "Reports",
-        "menu-structure": "Menu Structure",
+        "menuStructure": "Menu Structure",
         "users": "Users",
         "configurations": "Configurations"
-      },
-      "username": "Username",
-      "password": "Password",
-      "newPassword": "New Password",
-      "fullName": "Full Name",
-      "email": "Email",
-      "role": "Role",
-      "modulePermissions": "Module Permissions",
-      "selectModules": "Select which modules this user can access",
-      "functionPermissions": "Function Permissions",
-      "selectFunctions": "Select which functions this user can perform",
-      "cancel": "Cancel",
-      "add": "Add User",
-      "update": "Update User"
     },
-    "roles": {
-      "all": "All",
-      "admin": "Admin",
-      "staff": "Staff",
-      "kitchen": "Kitchen",
-      "manager": "Manager"
+    "printerUtils": {
+        "unableToGetPrinters": "Unable to get printers"
     },
-    "validation": {
-      "emailRequired": "Email is required",
-      "emailInvalid": "Please enter a valid email address",
-      "usernameRequired": "Please enter a username",
-      "nameRequired": "Please enter a name",
-      "passwordRequired": "Please enter a password"
-    },
-    "messages": {
-      "fetchFailed": "Failed to fetch users",
-      "addFailed": "Failed to add user",
-      "updateFailed": "Failed to update user",
-      "deleteFailed": "Failed to delete user",
-      "usernameTaken": "Username already taken",
-      "added": "User added successfully",
-      "updated": "User updated successfully",
-      "deleted": "User deleted successfully"
-    },
-    "deleteConfirmTitle": "Delete User",
-    "deleteConfirmMessage": "Are you sure you want to delete this user?",
-    "yes": "Yes",
-    "no": "No"
-  },
-  "printers": {
-    "title": "Printers",
-    "subtitle": "Manage Printers",
-    "addPrinter": "Add Printer",
-    "manageDescription": "Add and manage your printers",
-    "connectedPrinters": "Connected Printers",
-    "noPrinters": "No printers connected yet. Add one above.",
-    "table": {
-      "displayName": "Display Name",
-      "printerName": "Printer Name",
-      "createdAt": "Created At",
-      "mainPrinter": "Main Printer",
-      "actions": "Actions"
-    },
-    "deleteTitle": "Delete Printer",
-    "deleteMessage": "Are you sure you want to delete this printer? Every product attached to this printer will be detached.",
-    "deleteConfirm": "Delete",
-    "deleteCancel": "Cancel",
-    "deletedSuccess": "Printer deleted successfully",
-    "deletedFailed": "Failed to delete printer",
-    "deletedError": "An error occurred while deleting the printer",
-    "yes": "Yes",
-    "no": "No"
-  },
-  "reports": {
-    "title": "Analytics & Reports",
-    "subtitle": "Comprehensive insights into order performance and trends",
-    "totalOrders": "Total Orders",
-    "delivered": "Delivered/Completed",
-    "avgDeliveryTime": "Avg Delivery Time",
-    "inProgress": "In Progress",
-    "successRate": "Success Rate",
-    "minutes": "minutes",
-    "topOrderedItems": "Top Ordered Items",
-    "topOrderedMenus": "Top Ordered Menus",
-    "orderDetails": "Order Details",
-    "orderId": "Order ID",
-    "customer": "Customer",
-    "items": "Items",
-    "status": "Status",
-    "time": "Time",
-    "noOrdersFound": "No orders found",
-    "noOrdersSubtitle": "Try adjusting your date range or period selection.",
-    "showingOrders": "Showing first 20 orders of {{total}} total orders",
-    "statuses": {
-      "delivered": "Delivered",
-      "completed": "Completed",
-      "sentToKitchen": "Sent to Kitchen",
-      "outForDelivery": "Out for Delivery",
-      "pending": "Pending",
-      "cancelled": "Cancelled",
-      "readyForDelivery": "Ready for Delivery"
-    },
-    "errors": {
-      "fetchFailed": "Failed to fetch analytics"
-    },
-    "components": {
-      "statusDistribution": {
-        "title": "Order Status Distribution",
-        "noOrders": "No orders in selected period"
-      },
-      "hourlyDistribution": {
-        "title": "Hourly Order Distribution",
-        "noOrders": "No orders in selected period"
-      },
-      "dateRangeSelector": {
-        "reportPeriod": "Report Period",
-        "periods": {
-          "today": "Today",
-          "week": "Week",
-          "month": "Month",
-          "custom": "Custom"
-        }
-      },
-      "topItems": {
-        "noItems": "No items ordered in selected period"
-      }
-    }
-  },
-  "login": {
-    "welcomeBack": "Welcome Back",
-    "signInSubtitle": "Sign in to your account to continue",
-    "username": "Username",
-    "password": "Password",
-    "usernamePlaceholder": "Enter your username",
-    "passwordPlaceholder": "Enter your password",
-    "signingIn": "Signing in...",
-    "signIn": "Sign In",
-    "restaurantInterior": "Restaurant Interior",
-    "restaurantLogo": "Restaurant Logo"
-  },
-  "orderManagement": {
-    "filters": {
-      "allOrders": "All Orders",
-      "pending": "📋 Pending",
-      "sentToKitchen": "👨‍🍳 Sent to Kitchen",
-      "readyForDelivery": "✅ Ready for Delivery",
-      "outForDelivery": "🚚 Out for Delivery",
-      "completed": "✅ Completed",
-      "delivered": "📦 Delivered",
-      "cancelled": "❌ Cancelled",
-      "paid": "💚 Paid",
-      "unpaid": "🔴 Unpaid",
-      "partialPayment": "🟡 Partial Payment",
-      "filterOrders": "Filter Orders"
-    }
-  },
-  "orderTakingForm": {
-    "loading": {
-      "title": "Loading Product Details",
-      "description": "Please wait while we fetch the customization options..."
-    },
-    "customizeYourOrder": "Customize your order",
-    "chooseVariant": "Choose Variant",
-    "selectPreferredVariant": "Select your preferred variant for {{productName}}",
-    "variantsDetached": "Variants have been detached from product",
-    "addComplements": "Add Complements",
-    "selected": "Selected",
-    "min": "Min",
-    "max": "Max",
-    "free": "Free",
-    "complementsDetached": "Complements have been detached from product",
-    "quantity": "Quantity",
-    "priceBreakdown": "Price Breakdown",
-    "baseProduct": "Base Product",
-    "tax": "Tax",
-    "variant": "Variant",
-    "total": "Total",
-    "addToOrder": "Add to Order",
-    "errors": {
-      "unableToGetVariants": "Unable to get product's variants",
-      "unableToGetAddonPages": "Unable to get product's addon pages",
-      "unableToGetGroups": "Unable to get groups",
-      "errorLoadingProductData": "Error loading product data",
-      "pleaseSelectVariant": "Please select a variant",
-      "pleaseCompleteRequiredSelections": "Please complete all required selections",
-      "unableToUpdateOrder": "Unable to update order",
-      "unableToSaveOrder": "Unable to save order",
-      "unableToUpdateQuantity": "Unable to update quantity"
-    },
-    "warnings": {
-      "maximumItemsAllowed": "Maximum {{maxComplements}} items allowed for the group"
-    },
-    "messages": {
-      "orderAssignedToDeliveryPerson": "This order is assigned to a delivery person and cannot be edited.",
-      "itemAddedToOrder": "Item added to order!",
-      "quantityUpdated": "Quantity updated! Total: {{newQuantity}}"
-    }
-  },
-  "orderCart": {
-    "yourOrder": "Your Order",
-    "selectItemsFromMenu": "Select items from the menu to add to your order",
-    "duplicate": "Duplicate",
-    "duplicateTooltip": "Duplicate this menu group",
-    "printOptions": "Print Options",
-    "clearOrder": "Clear Order",
-    "itemPrice": "Item Price",
-    "taxIncluded": "tax included",
-    "variant": "Variant",
-    "addOns": "Add-ons",
-    "from": "From",
-    "menuPrice": "Menu Price",
-    "supplements": "Supplements",
-    "total": "Total",
-    "processOrder": "Process Order",
-    "pointOfSale": "Point of Sale",
-    "defaultAddress": "street 123",
-    "warnings": {
-      "noPrintersAttached": "No printers attached"
-    },
-    "errors": {
-      "errorGettingConfigurations": "Error getting configurations",
-      "errorDuplicatingMenu": "Error duplicating menu. Please try again.",
-      "printerNotFound": "Printer \"{{printerName}}\" not found",
-      "errorPrintingReceipt": "Error printing receipt",
-      "errorRemovingItem": "Error removing item",
-      "errorGettingProduct": "Error getting product",
-      "errorGettingMenu": "Error getting menu",
-      "menuHaveBeenDeleted": "Menu have been deleted",
-      "errorUpdatingQuantity": "Error updating quantity",
-      "errorClearingOrder": "Error clearing order",
-      "printerNotFoundError": "Printer not found"
-    },
-    "messages": {
-      "printingCustomerReceipt": "Printing customer receipt...",
-      "receiptPrintedSuccessfully": "Receipt printed successfully",
-      "menuDuplicated": "Menu duplicated successfully"
-    },
-    "confirmations": {
-      "removeItem": {
-        "title": "Remove Item",
-        "message": "Are you sure you want to remove this item from your order?",
-        "confirmText": "Remove Item"
-      },
-      "removeMenu": {
-        "title": "Remove Menu",
-        "message": "Are you sure you want to remove this menu from your order?",
-        "confirmText": "Clear Order"
-      },
-      "clearOrder": {
-        "title": "Clear Order",
-        "message": "Are you sure you want to clear the entire order? This action cannot be undone.",
-        "confirmText": "Clear Order"
-      }
-    }
-  },
-  "paymentProcessingModal": {
-    "title": "Payment Processing",
-    "subtitle": "Select payment methods",
-    "totalAmount": "Total Amount",
-    "alreadyPaid": "Already Paid",
-    "remaining": "Remaining",
-    "amountTendered": "Amount Tendered",
-    "changeToReturn": "Change to Return",
-    "paymentMethod": "Payment Method",
-    "cash": "Cash",
-    "card": "Card",
-    "amount": "Amount",
-    "addPayment": "Add Payment",
-    "addedPayments": "Added Payments",
-    "processPayment": "Process Payment",
-    "errors": {
-      "pleaseEnterValidAmount": "Please enter a valid amount",
-      "pleaseAddPaymentMethod": "Please add at least one payment method"
-    },
-    "messages": {
-      "partialPaymentProcessed": "Partial payment processed: {{paymentString}} (Remaining: €{{remaining}})",
-      "paymentProcessedWithChange": "Payment processed: {{paymentString}} (Change: €{{change}})",
-      "paymentProcessed": "Payment processed: {{paymentString}}"
-    }
-  },
-  "customerModal": {
-    "title": "Add Customer",
-    "phone": "Phone",
-    "name": "Name",
-    "cifDni": "CIF/DNI",
-    "email": "Email",
-    "comments": "Comments",
-    "address": "Address",
-    "postalCode": "Postal Code",
-    "city": "City",
-    "province": "Province",
-    "addCustomer": "Add Customer",
-    "placeholders": {
-      "phone": "Enter phone number",
-      "name": "Enter name",
-      "cifDni": "Enter CIF/DNI",
-      "email": "Enter email address",
-      "comments": "Enter comments",
-      "address": "Enter address",
-      "postalCode": "Enter postal code",
-      "city": "Enter city",
-      "province": "Enter province"
-    },
-    "errors": {
-      "customerAlreadyExists": "Customer already exists",
-      "failedToEditCustomer": "Failed to edit customer",
-      "failedToAddCustomer": "Failed to add customer",
-      "phoneRequired": "Phone number is required",
-      "addressRequired": "Address is required",
-      "postalCodeRequired": "Postal code is required",
-      "cityRequired": "City is required"
-    }
-  },
-  "printerModal": {
-    "viewPrinter": "View Printer",
-    "editPrinter": "Edit Printer",
-    "addNewPrinter": "Add New Printer",
-    "displayName": "Display Name *",
-    "enterDisplayName": "Enter display name",
-    "mainPrinter": "Main Printer",
-    "printer": "Printer",
-    "selectPrinter": "Select printer",
-    "updatePrinter": "Update Printer",
-    "addPrinter": "Add Printer",
-    "errors": {
-      "pleaseSelectPrinter": "Please select a printer",
-      "pleaseEnterDisplayName": "Please enter display name",
-      "unableToAddPrinter": "Unable to add printer",
-      "unableToUpdatePrinter": "Unable to update printer",
-      "anErrorOccurred": "An error occurred"
-    },
-    "warnings": {
-      "printerAlreadyAdded": "This printer already added!"
-    },
-    "messages": {
-      "printerAddedSuccessfully": "Printer added successfully",
-      "printerUpdatedSuccessfully": "Printer updated successfully"
-    }
-  },
-  "manageOrders": {
-    "title": "Manage Orders",
-    "subtitle": "View and manage all orders with advanced filtering options",
-    "searchOrders": "Search Orders",
-    "searchPlaceholder": "Search by order number...",
-    "filterByDate": "Filter by Date",
-    "customer": "Customer",
-    "allCustomers": "All Customers",
-    "deliveryPerson": "Delivery Person",
-    "paymentStatus": "Payment Status",
-    "allDeliveryPersons": "All Delivery Persons",
-    "allPaymentStatuses": "All Payment Statuses",
-    "clearAllFilters": "Clear All Filters",
-    "bulkPayment": "Bulk Payment",
-    "showingOrders": "Showing {{filtered}} of {{total}} orders",
-    "lastUpdated": "Last updated: {{time}}",
-    "noOrdersMatch": "No orders match your filters",
-    "noOrdersFound": "No orders found",
-    "table": {
-      "orderNumber": "Order #",
-      "customer": "Customer",
-      "orderType": "Order Type",
-      "status": "Status",
-      "paymentStatus": "Payment Status",
-      "deliveryPerson": "Delivery Person",
-      "total": "Total",
-      "created": "Created",
-      "actions": "Actions"
-    },
-    "actions": {
-      "viewOrder": "View Order",
-      "printOrder": "Print Order",
-      "processPayment": "Process Payment",
-      "cancelOrder": "Cancel Order"
-    },
-    "statuses": {
-      "notAssigned": "Not assigned",
-      "nA": "N/A",
-      "notSelected": "Not Selected"
-    },
-    "confirmCancelOrder": "Are you sure you want to cancel order {{orderId}}?",
-    "errors": {
-      "cancelFailed": "Failed to cancel order"
-    },
-    "messages": {
-      "orderCancelled": "Order cancelled successfully"
-    }
-  },
-  "cancelOrderModal": {
-    "title": "Cancel Order",
-    "orderNumber": "Order Number",
-    "customer": "Customer",
-    "cancelNote": "Cancellation Note *",
-    "cancelNotePlaceholder": "Enter reason for cancellation...",
-    "noteRequired": "A cancellation note is required",
-    "cancel": "Cancel",
-    "confirm": "Confirm Cancellation"
-  },
-  "orderDetailsModal": {
-    "title": "Order Items - K{{orderId}}",
-    "created": "Created:",
-    "customer": "Customer",
-    "deliveryAddress": "Delivery Address",
-    "orderType": "Order Type",
-    "paymentStatus": "Payment Status",
-    "deliveryPerson": "Delivery Person",
-    "items": "Items",
-    "quantity": "Qty",
-    "price": "Price",
-    "total": "Total",
-    "orderNotes": "Order Notes",
-    "cancelled": "CANCELLED",
-    "subtotal": "Subtotal",
-    "tax": "Tax",
-    "deliveryFee": "Delivery Fee",
-    "grandTotal": "Grand Total",
-    "close": "Close",
-    "customerInformation": "Customer Information",
-    "name": "Name",
-    "phone": "Phone",
-    "address": "Address",
-    "orderInformation": "Order Information",
-    "status": "Status",
-    "updated": "Updated",
-    "paymentInformation": "Payment Information",
-    "totalAmount": "Total Amount",
-    "deliveryInformation": "Delivery Information",
-    "vehicleType": "Vehicle Type",
-    "assignedAt": "Assigned At",
-    "deliveredAt": "Delivered At",
-    "orderItems": "Order Items",
-    "addOns": "Add-ons:",
-    "each": "each",
-    "noItemsFound": "No items found",
-    "notRecorded": "Not recorded",
-    "notAssignedYet": "Not assigned yet"
-  },
-  "bulkPaymentModal": {
-    "title": "Bulk Payment Processing",
-    "subtitle": "Process payments for multiple delivered orders by delivery person",
-    "selectDeliveryPerson": "Select Delivery Person",
-    "chooseDeliveryPerson": "Choose a delivery person...",
-    "pleaseSelectDeliveryPerson": "Please select a delivery person",
-    "allDeliveryPersons": "All Delivery Persons",
-    "paymentMethod": "Payment Method",
-    "amount": "Amount",
-    "addPayment": "Add",
-    "removePayment": "Remove",
-    "totalAmount": "Total Amount",
-    "processPayments": "Process Bulk Payment",
-    "cancel": "Cancel",
-    "processing": "Processing...",
-    "success": "Payments processed successfully",
-    "error": "Failed to process payments",
-    "allPayments": "All Payments:",
-    "pending": "PENDING",
-    "readyToProcess": "Ready to process payment",
-    "ordersSummary": "Orders Summary",
-    "deliveryPerson": "Delivery Person",
-    "ordersCount": "Orders Count",
-    "totalAmountDue": "Total Amount Due",
-    "remainingAmount": "Remaining Amount",
-    "amountTendered": "Amount Tendered",
-    "changeToReturn": "Change to Return",
-    "orders": "orders",
-    "paymentMethods": "Payment Methods",
-    "total": "Total: €{{paid}} / €{{total}}",
-    "cash": "Cash",
-    "card": "Card",
-    "add": "Add"
-  },
-  "individualPaymentModal": {
-    "title": "Process Payment",
-    "subtitle": "Complete the payment for this order",
-    "orderDetails": "Order Details",
-    "orderId": "Order ID",
-    "customer": "Customer",
-    "totalAmount": "Total Amount",
-    "remainingAmount": "Remaining Amount",
-    "amountTendered": "Amount Tendered",
-    "changeToReturn": "Change to Return",
-    "deliveryPerson": "Delivery Person",
-    "paymentMethods": "Payment Methods",
-    "total": "Total: €{{paid}} / €{{total}}",
-    "paymentMethod": "Payment Method",
-    "cash": "Cash",
-    "card": "Card",
-    "amount": "Amount",
-    "addPayment": "Add",
-    "removePayment": "Remove",
-    "processPayment": "Process Payment",
-    "cancel": "Cancel",
-    "processing": "Processing...",
-    "allPayments": "All Payments:",
-    "pending": "PENDING",
-    "readyToProcess": "Ready to process payment",
-    "noDeliveryPersonAssigned": "No delivery person assigned",
-    "pleaseAddPaymentMethod": "Please add at least one payment method",
-    "errors": {
-      "enterValidAmount": "Please enter a valid amount",
-      "noOrderSelected": "No order selected",
-      "totalExceedsOrder": "Total payment cannot exceed order total",
-      "addPaymentMethod": "Please add at least one payment method",
-      "updateFailed": "Failed to update payment. Please try again.",
-      "processingError": "An error occurred while processing the payment. Please try again.",
-      "selectDeliveryPerson": "Please select a delivery person first",
-      "totalExceedsRemaining": "Total payment cannot exceed remaining amount",
-      "noOrdersFound": "No orders found for this delivery person",
-      "bulkProcessingError": "An error occurred while processing the bulk payment. Please try again."
-    },
-    "success": {
-      "paymentCompleted": "Payment completed successfully: {{paymentString}}",
-      "partialPayment": "Partial payment recorded: {{paymentString}}. Remaining: €{{remaining}}",
-      "bulkPaymentSuccess": "Bulk payment processed successfully for {{count}} orders: {{paymentString}}",
-      "bulkPaymentPartial": "Payment processed for {{successCount}} out of {{totalCount}} orders"
-    }
-  },
-  "deliveryManagement": {
-    "title": "Delivery Management",
-    "subtitle": "Manage delivery personnel and their vehicle information",
-    "deliveryPersonnel": "Delivery Personnel",
-    "addAndManageStaff": "Add and manage delivery staff",
-    "addDeliveryPerson": "Add Delivery Person",
-    "deliveryPersonnelCount": "Delivery Personnel",
-    "bikes": "Bikes",
-    "motorcycles": "Motorcycles",
-    "cars": "Cars",
-    "scooters": "Scooters",
-    "searchDeliveryPersonnel": "Search delivery personnel...",
-    "all": "All",
-    "bike": "Bike",
-    "motorcycle": "Motorcycle",
-    "car": "Car",
-    "scooter": "Scooter",
-    "deliveryPersonnelTable": "Delivery Personnel ({{count}})",
-    "getStartedMessage": "Get started by adding your first delivery person.",
-    "adjustFiltersMessage": "Try adjusting your search or vehicle filter.",
-    "noDeliveryPersonnelFound": "No delivery personnel found",
-    "deliveryPerson": "Delivery Person",
-    "vehicle": "Vehicle",
-    "contact": "Contact",
-    "license": "License",
-    "totalAssigned": "Total Assigned",
-    "totalDelivered": "Total Delivered",
-    "totalCancelled": "Total Cancelled",
-    "avgDeliveryTime": "Avg. Delivery Time",
-    "actions": "Actions",
-    "edit": "Edit",
-    "delete": "Delete",
-    "deliveryPersonnelLabel": "Delivery Personnel",
-    "minutes": "min",
-    "errors": {
-      "fetchFailed": "Failed to fetch delivery personnel",
-      "enterName": "Please enter a name",
-      "enterLicenseNumber": "Please enter a license number",
-      "emailRequired": "Email is required",
-      "validEmail": "Please enter a valid email address",
-      "phoneRequired": "Phone number is required",
-      "validPhone": "Please enter a valid phone number",
-      "phoneMinDigits": "Phone number must have at least 9 digits",
-      "phoneMaxDigits": "Phone number cannot exceed 9 digits",
-      "emailExists": "Email already exists",
-      "updateFailed": "Failed to update delivery person",
-      "addFailed": "Failed to add delivery person",
-      "deleteConfirm": "Are you sure you want to delete this delivery person?",
-      "fetchStatsFailed": "Failed to fetch delivery person stats",
-      "cannotDeleteWithOrders": "Cannot delete delivery person with {{count}} assigned orders",
-      "deleteFailed": "Failed to delete delivery person"
-    },
-    "success": {
-      "updated": "Delivery person updated successfully",
-      "added": "Delivery person added successfully",
-      "deleted": "Delivery person deleted successfully"
-    }
-  },
-  "deliveryPersonModal": {
-    "editTitle": "Edit Delivery Person",
-    "addTitle": "Add New Delivery Person",
-    "fullName": "Full Name *",
-    "fullNamePlaceholder": "Enter full name",
-    "email": "Email *",
-    "emailPlaceholder": "Enter email address",
-    "phoneNumber": "Phone Number",
-    "phoneNumberPlaceholder": "Enter phone number",
-    "licenseNumber": "License Number *",
-    "licenseNumberPlaceholder": "Enter license number",
-    "vehicleType": "Vehicle Type",
-    "selectVehicleType": "Select vehicle type",
-    "cancel": "Cancel",
-    "updateDeliveryPerson": "Update Delivery Person",
-    "addDeliveryPerson": "Add Delivery Person"
-  },
-  "deliveryPersonInput": {
-    "selectDeliveryPerson": "Select Delivery Person",
-    "chooseDeliveryPerson": "Choose a delivery person...",
-    "quickAssign": "Quick Assign"
-  },
-  "deliveryView": {
-    "title": "Delivery Management",
-    "subtitle": "Assign and track order deliveries",
-    "readyForDeliveryOrders": "Ready for Delivery Orders",
-    "noOrdersReady": "No orders ready for delivery",
-    "delivered": "Delivered",
-    "assignDelivery": "Assign",
-    "stats": {
-      "readyForDelivery": "Ready for Delivery",
-      "outForDelivery": "Out for Delivery",
-      "deliveredToday": "Delivered Today",
-      "activeDrivers": "Active Drivers"
-    },
-    "descriptions": {
-      "ordersReadyToAssign": "Orders ready to be assigned for delivery",
-      "allOrdersInKitchenOrAssigned": "All orders are either in kitchen or already assigned for delivery.",
-      "ordersCurrentlyBeingDelivered": "Orders currently being delivered"
-    },
-    "table": {
-      "orderId": "Order ID",
-      "customer": "Customer",
-      "contact": "Contact",
-      "address": "Address",
-      "items": "Items",
-      "readySince": "Ready Since",
-      "driver": "Driver",
-      "actions": "Actions",
-      "outForDelivery": "Out for Delivery"
-    },
-    "cancelOrder": "Cancel Order",
-    "changeDeliveryPerson": "Change Delivery Person",
-    "selectNewDeliveryPerson": "Select new delivery person",
-    "confirmChange": "Confirm Change",
-    "messages": {
-      "pleaseEnterDeliveryPersonName": "Please enter delivery person name",
-      "failedToAssignDeliveryPerson": "Failed to assign delivery person",
-      "failedToAssignDelivery": "Failed to assign delivery. Please try again.",
-      "failedToMarkAsDelivered": "Failed to mark as delivered",
-      "orderMarkedAsDelivered": "Order marked as delivered",
-      "failedToMarkAsDeliveredRetry": "Failed to mark as delivered. Please try again.",
-      "failedToCancelOrder": "Failed to cancel order",
-      "orderCancelled": "Order cancelled successfully",
-      "deliveryPersonChanged": "Delivery person changed successfully",
-      "failedToChangeDeliveryPerson": "Failed to change delivery person"
-    }
-  },
-  "kitchenView": {
-    "title": "Kitchen Management",
-    "subtitle": "Monitor and manage orders in preparation",
-    "stats": {
-      "ordersInKitchen": "Orders in Kitchen",
-      "highPriority": "High Priority",
-      "avgPrepTime": "Avg Prep Time",
-      "avgPrepTimeValue": "~25 min"
-    },
-    "table": {
-      "priority": "Priority",
-      "orderId": "Order ID",
-      "customer": "Customer",
-      "items": "Items",
-      "timeInKitchen": "Time in Kitchen",
-      "actions": "Actions",
-      "kitchenOrders": "Kitchen Orders",
-      "noOrdersMatch": "No orders match your search"
-    },
-    "priority": {
-      "high": "High",
-      "medium": "Medium",
-      "low": "Low"
-    },
-    "actions": {
-      "viewOrderDetails": "View Order Details",
-      "markAsReady": "Mark as Ready"
-    },
-    "addOns": "Add-ons:",
-    "timeFormat": {
-      "hours": "h",
-      "minutes": "m"
-    },
-    "messages": {
-      "orderMarkedAsReady": "Order marked as ready",
-      "orderMarkedAsCompleted": "Order marked as completed",
-      "failedToUpdateOrder": "Failed to update order"
-    }
-  },
-  "filterControls": {
-    "searchPlaceholder": "Search orders...",
-    "clearFilters": "Clear Filters"
-  },
-  "dateRangePicker": {
-    "selectDateRange": "Select Date Range",
-    "currentSelection": "Current Selection",
-    "startDate": "Start Date",
-    "endDate": "End Date",
-    "shortcuts": {
-      "thisWeek": "This Week",
-      "lastWeek": "Last Week",
-      "last7Days": "Last 7 Days",
-      "currentMonth": "Current Month",
-      "nextMonth": "Next Month",
-      "thisYear": "This Year",
-      "lastYear": "Last Year",
-      "reset": "Reset"
-    },
-    "days": {
-      "sunday": "S",
-      "monday": "M",
-      "tuesday": "T",
-      "wednesday": "W",
-      "thursday": "T",
-      "friday": "F",
-      "saturday": "S"
-    },
-    "months": {
-      "january": "January",
-      "february": "February",
-      "march": "March",
-      "april": "April",
-      "may": "May",
-      "june": "June",
-      "july": "July",
-      "august": "August",
-      "september": "September",
-      "october": "October",
-      "november": "November",
-      "december": "December"
-    },
-    "monthsShort": {
-      "january": "Jan",
-      "february": "Feb",
-      "march": "Mar",
-      "april": "Apr",
-      "may": "May",
-      "june": "Jun",
-      "july": "Jul",
-      "august": "Aug",
-      "september": "Sep",
-      "october": "Oct",
-      "november": "Nov",
-      "december": "Dec"
-    }
-  },
-  "menuComponents": {
-    "common": {
-      "add": "Add",
-      "create": "Create",
-      "edit": "Edit",
-      "update": "Update",
-      "save": "Save",
-      "cancel": "Cancel",
-      "delete": "Delete",
-      "name": "Name",
-      "description": "Description",
-      "price": "Price",
-      "priority": "Priority",
-      "tax": "Tax",
-      "discount": "Discount",
-      "select": "Select",
-      "enter": "Enter",
-      "required": "Required"
-    },
-    "categories": {
-      "title": "Categories",
-      "addCategory": "Add Category",
-      "categoryName": "Category Name",
-      "enterCategoryName": "Enter category name",
-      "noCategories": "No categories found",
-      "createFirst": "Create your first category to get started"
-    },
-    "subcategories": {
-      "title": "Subcategories",
-      "addSubcategory": "Add Subcategory",
-      "subcategoryName": "Subcategory Name",
-      "enterSubcategoryName": "Enter subcategory name",
-      "selectCategory": "Select a category",
-      "noSubcategories": "No subcategories found",
-      "createFirst": "Create your first subcategory to get started"
-    },
-    "products": {
-      "title": "Products",
-      "addProduct": "Add Product",
-      "productName": "Product Name",
-      "enterProductName": "Enter product name",
-      "selectCategory": "Select category",
-      "selectSubcategory": "Select subcategory",
-      "writeDescription": "Write a description (Max 150 characters)",
-      "enterPrice": "Enter price",
-      "enterPriority": "Enter priority",
-      "enterTax": "Enter tax percentage",
-      "enterDiscount": "Enter discount",
-      "selectVariant": "Select a variant",
-      "addPage": "Add Page",
-      "minComplements": "Minimum number of complements",
-      "maxComplements": "Maximum number of complements",
-      "freeAddons": "Number of free add-ons",
-      "noProducts": "No products found",
-      "createFirst": "Create your first product to get started"
-    },
-    "menuPages": {
-      "title": "Menu Pages",
-      "addMenuPage": "Add Menu Page",
-      "pageName": "Page Name",
-      "enterPageName": "Enter page name",
-      "enterDescription": "Brief description (maximum 40 characters)",
-      "noMenuPages": "No menu pages found",
-      "createFirst": "Create your first menu page to get started"
-    },
-    "menus": {
-      "title": "Menus",
-      "addMenu": "Add Menu",
-      "noMenus": "No menus found",
-      "createFirst": "Create your first menu to get started"
-    },
-    "groups": {
-      "title": "Groups",
-      "addGroup": "Add Group",
-      "noGroups": "No groups found",
-      "createFirst": "Create your first group to get started"
-    },
-    "variants": {
-      "title": "Variants",
-      "addVariant": "Add Variant",
-      "noVariants": "No variants found",
-      "createFirst": "Create your first variant to get started"
-    },
-    "messages": {
-      "success": {
-        "categoryCreated": "Category created successfully",
-        "categoryUpdated": "Category updated successfully",
-        "categoryDeleted": "Category deleted successfully",
-        "subcategoryCreated": "Subcategory created successfully",
-        "subcategoryUpdated": "Subcategory updated successfully",
-        "subcategoryDeleted": "Subcategory deleted successfully",
-        "productCreated": "Product created successfully",
-        "productUpdated": "Product updated successfully",
-        "productDeleted": "Product deleted successfully",
-        "menuPageCreated": "Menu page created successfully",
-        "menuPageUpdated": "Menu page updated successfully",
-        "menuPageDeleted": "Menu page deleted successfully",
-        "menuCreated": "Menu created successfully",
-        "menuUpdated": "Menu updated successfully",
-        "menuDeleted": "Menu deleted successfully",
-        "groupCreated": "Group created successfully",
-        "groupUpdated": "Group updated successfully",
-        "groupDeleted": "Group deleted successfully",
-        "variantCreated": "Variant created successfully",
-        "variantUpdated": "Variant updated successfully",
-        "variantDeleted": "Variant deleted successfully"
-      },
-      "errors": {
-        "categoryNameRequired": "Please enter a category name",
-        "subcategoryNameRequired": "Please enter a subcategory name",
-        "subcategoryCategoryRequired": "Please select a category",
-        "productNameRequired": "Please enter a product name",
-        "productCategoryRequired": "Please select a category",
-        "productPriceRequired": "Please enter a product price",
-        "menuPageNameRequired": "Please enter a page name",
-        "failedToFetch": "Failed to fetch data",
-        "failedToCreate": "Failed to create",
-        "failedToUpdate": "Failed to update",
-        "failedToDelete": "Failed to delete"
-      }
-    },
-    "modals": {
-      "categoryModal": {
-        "title": "Create New Category",
-        "editTitle": "Edit Category",
-        "categoryName": "Category Name",
-        "enterCategoryName": "Enter category name",
-        "image": "IMAGE",
-        "color": "Color",
-        "cancel": "Cancel",
-        "create": "Create",
-        "update": "Update",
-        "errors": {
-          "nameRequired": "Please enter a category name",
-          "failedToEdit": "Failed to edit category",
-          "failedToSave": "Failed to save category"
-        },
-        "success": {
-          "updated": "Category updated successfully",
-          "created": "Category created successfully"
-        }
-      },
-      "subcategoryModal": {
-        "title": "Create New Subcategory",
-        "editTitle": "Edit Subcategory",
-        "subcategoryName": "Subcategory Name",
-        "enterSubcategoryName": "Enter subcategory name",
-        "parentCategory": "Parent Category",
-        "selectCategory": "Select a category",
-        "image": "IMAGE",
-        "color": "Color",
-        "cancel": "Cancel",
-        "create": "Create",
-        "update": "Update",
-        "errors": {
-          "nameRequired": "Please enter a subcategory name",
-          "categoryRequired": "Please select a category",
-          "failedToEdit": "Failed to edit subcategory",
-          "failedToSave": "Failed to save subcategory"
-        },
-        "success": {
-          "updated": "Subcategory updated successfully",
-          "created": "Subcategory created successfully"
-        }
-      },
-      "productModal": {
-        "title": "CREATE PRODUCT",
-        "editTitle": "EDIT PRODUCT",
-        "tabs": {
-          "general": "GENERAL",
-          "variants": "VARIANTS AND ADD-ONS",
-          "printers": "PRINTERS"
-        },
-        "productStatus": "Product Status",
-        "activated": "Activated",
-        "outOfStock": "Product out of stock",
-        "basicInfo": "Basic Product Information",
-        "name": "NAME *",
-        "enterProductName": "Enter product name",
-        "associatedCategory": "ASSOCIATED CATEGORY *",
-        "selectCategory": "Select category",
-        "associatedSubcategory": "ASSOCIATED SUBCATEGORY *",
-        "selectSubcategory": "Select subcategory",
-        "selectCategoryFirst": "Select a category first",
-        "productImage": "PRODUCT IMAGE",
-        "uploadProductImage": "Upload product image",
-        "clickToChange": "Click to change",
-        "description": "DESCRIPTION",
-        "writeDescription": "Write a description (Max 150 characters)",
-        "pricingFinancials": "Pricing and Financials",
-        "price": "PRICE *",
-        "priority": "PRIORITY",
-        "tax": "TAX (%)",
-        "discount": "DISCOUNT",
-        "subtotal": "Subtotal:",
-        "taxAmount": "Tax",
-        "discountAmount": "Discount:",
-        "total": "Total:",
-        "productAttributes": "Product Attributes",
-        "isDrink": "It is a drink",
-        "isByWeight": "Product by weight",
-        "isPerDiner": "Product per diner",
-        "isOutstanding": "Outstanding",
-        "isPlus18": "Product +18",
-        "isForMenu": "Is for Menu",
-        "assignVariants": "ASSIGN VARIANTS",
-        "selectVariant": "Select a variant",
-        "variantItemsPricing": "Variant Items and Pricing",
-        "selectAddonsPage": "SELECT ADD-ONS PAGE",
-        "addPage": "Add Page",
-        "pageSetup": "PAGE SETUP",
-        "minComplements": "Minimum number of complements",
-        "maxComplements": "Maximum number of complements",
-        "freeAddons": "Number of free add-ons",
-        "addPluginGroup": "ADD PLUGIN GROUP FOR PAGE",
-        "availableItems": "Available items:",
-        "printers": "Printers",
-        "configurePrinters": "Configure printer settings here.",
-        "cancel": "Cancel",
-        "saveChanges": "Save Changes",
-        "createProduct": "Create Product",
-        "errors": {
-          "nameRequired": "Product name is required.",
-          "categoryRequired": "Please select a category.",
-          "subcategoryRequired": "Please select a subcategory.",
-          "variantRequired": "Please add at least one variant.",
-          "addonPageRequired": "Please add at least one addon page with a selected group.",
-          "failedToCreate": "Failed to create product.",
-          "failedToUpdate": "Failed to update product.",
-          "unableToGetVariant": "Unable to get product's variant",
-          "unableToGetAddons": "Unable to get product's addon pages",
-          "unableToGetPrinters": "Unable to get product's printers"
-        },
-        "success": {
-          "created": "Product created successfully!",
-          "updated": "Product updated successfully!"
-        }
-      },
-      "menuPageModal": {
-        "title": "Create Menu Page",
-        "editTitle": "Edit Menu Page",
-        "pageName": "Page Name",
-        "enterPageName": "Enter page name",
-        "description": "Description",
-        "enterDescription": "Brief description (maximum 40 characters)",
-        "products": "Products",
-        "product": "Product",
-        "selectProduct": "Select a product",
-        "noProductsAvailable": "No products available",
-        "supplement": "Supplement",
-        "enterSupplement": "Enter supplement",
-        "priority": "Priority",
-        "enterPriority": "Enter priority",
-        "add": "Add",
-        "eliminate": "Eliminate",
-        "cancel": "Cancel",
-        "create": "Create",
-        "update": "Update",
-        "errors": {
-          "nameRequired": "Please enter a page name",
-          "descriptionTooLong": "Description must be 40 characters or less",
-          "addProductRequired": "Please add at least one product to the menu page",
-          "selectProduct": "Please select a product",
-          "noProductsAvailable": "No products available to add",
-          "failedToCreate": "Failed to create menu page",
-          "failedToUpdate": "Failed to update menu page",
-          "failedToDelete": "Failed to delete menu page",
-          "failedToSave": "Failed to save menu page",
-          "failedToFetch": "Failed to fetch products"
-        },
-        "success": {
-          "created": "Menu page created successfully",
-          "updated": "Menu page updated successfully",
-          "deleted": "Menu page deleted successfully"
-        },
-        "confirmDelete": "Are you sure you want to delete this menu page?"
-      },
-      "menuModal": {
-        "title": "Create Menu",
-        "editTitle": "Edit Menu",
-        "basicInformation": "Basic Information",
-        "menuName": "Menu Name",
-        "enterMenuName": "Enter menu name",
-        "description": "Description",
-        "writeDescription": "Write a description (Max 150 characters)",
-        "subcategory": "Subcategory",
-        "selectSubcategory": "Select subcategory",
-        "image": "Menu Image",
-        "uploadImage": "Upload menu image",
-        "clickToChange": "Click to change",
-        "financialDetails": "Financial Details",
-        "price": "Price",
-        "enterPrice": "Enter price",
-        "priority": "Priority",
-        "tax": "Tax",
-        "discount": "Discount",
-        "priceBreakdown": "Price Breakdown",
-        "subtotal": "Subtotal",
-        "total": "Total",
-        "visualAttributes": "Visual Attributes",
-        "outstanding": "Outstanding",
-        "addPages": "Add Pages",
-        "selectMenuPage": "Select Menu Page",
-        "products": "Products",
-        "noMenuPagesAvailable": "No menu pages available",
-        "minimum": "Minimum",
-        "maximum": "Maximum",
-        "kitchenPriority": "Kitchen Priority",
-        "selectPriority": "Select priority",
-        "page": "Page",
-        "actions": "Actions",
-        "add": "Add",
-        "eliminate": "Eliminate",
-        "cancel": "Cancel",
-        "create": "Create",
-        "update": "Update",
-        "errors": {
-          "nameRequired": "Please enter a menu name",
-          "subcategoryRequired": "Please select a subcategory",
-          "descriptionTooLong": "Description must be 150 characters or less",
-          "addMenuPageRequired": "Please add at least one menu page to the menu",
-          "selectMenuPage": "Please select a menu page",
-          "noMenuPagesAvailable": "No menu pages available to add",
-          "menuPageNotFound": "Selected menu page not found",
-          "fixValidationErrors": "Please fix the validation errors before adding the page",
-          "failedToCreate": "Failed to create menu",
-          "failedToUpdate": "Failed to update menu",
-          "failedToDelete": "Failed to delete menu",
-          "failedToSave": "Failed to save menu",
-          "failedToFetch": "Failed to fetch data"
-        },
-        "success": {
-          "created": "Menu created successfully",
-          "updated": "Menu updated successfully",
-          "deleted": "Menu deleted successfully"
-        },
-        "confirmDelete": "Are you sure you want to delete this menu?"
-      },
-      "createVariantModal": {
-        "title": "Create Variant",
-        "editTitle": "Edit Variant",
-        "variantName": "Variant Name",
-        "enterVariantName": "Enter variant name",
-        "color": "Color",
-        "variantItems": "Variant Items",
-        "addItem": "Add Item",
-        "itemName": "Item Name",
-        "enterItemName": "Enter item name",
+    "receipt": {
+        "date": "Date",
+        "order": "Order",
+        "payment": "Payment",
+        "servedBy": "Served By",
+        "quantity": "Qty.",
         "name": "Name",
-        "priority": "Priority",
-        "enterPriority": "Enter priority",
-        "image": "Image",
-        "remove": "Remove",
-        "associatedProducts": "Associated Products",
-        "seeAssociatedProducts": "See associated products",
-        "noProducts": "No associated products found",
-        "productName": "Product Name",
-        "price": "Price",
-        "subcategory": "Subcategory",
-        "close": "Close",
-        "cancel": "Cancel",
-        "create": "Create",
-        "update": "Update",
-        "errors": {
-          "nameRequired": "Please enter a variant name",
-          "itemNameRequired": "Please enter an item name",
-          "failedToCreate": "Failed to create variant",
-          "failedToUpdate": "Failed to update variant",
-          "failedToFetch": "Failed to fetch associated products"
+        "subtotal": "Subtotal",
+        "total": "TOTAL",
+        "vat": "VAT",
+        "base": "Base",
+        "tax": "Tax",
+        "thankYou": "Thank you for your visit",
+        "extra": "Extra",
+        "waiter": "Waiter",
+        "address": "Customer Address",
+        "paymentStatus": {
+            "unpaid": "UNPAID",
+            "paid": "PAID",
+            "PARTIAL": "PARTIAL"
         },
-        "success": {
-          "created": "Variant created successfully",
-          "updated": "Variant updated successfully"
+        "orderType": {
+            "dineIn": "DINE IN",
+            "pickup": "PICKUP",
+            "delivery": "DELIVERY"
         }
-      },
-      "createGroupModal": {
-        "title": "Create Group",
-        "editTitle": "Edit Group",
-        "groupName": "Group Name",
-        "enterGroupName": "Enter group name",
-        "color": "Color",
-        "groupItems": "Group Items",
-        "addItem": "Add Item",
-        "itemName": "Item Name",
-        "enterItemName": "Enter item name",
-        "addNewComplement": "Add New Complement",
-        "complementName": "Complement Name",
-        "enterComplementName": "Enter complement name",
-        "price": "Price",
-        "priority": "Priority",
-        "image": "Image",
-        "complements": "Complements",
-        "actions": "Actions",
-        "remove": "Remove",
-        "associatedProducts": "Associated Products",
-        "seeAssociatedProducts": "See associated products",
-        "noProducts": "No associated products found",
-        "productName": "Product Name",
-        "subcategory": "Subcategory",
-        "add": "Add",
-        "eliminate": "Eliminate",
-        "close": "Close",
-        "cancel": "Cancel",
-        "create": "Create",
-        "update": "Update",
-        "deleteTitle": "Delete Group",
-        "deleteMessage": "Are you sure you want to delete this",
-        "deleteConfirm": "Delete Group",
-        "specialNote": "If you delete this group you can no longer edit this group in any attached order!",
+    },
+    "menuOrderTakingForm": {
         "errors": {
-          "nameRequired": "Please enter a group name",
-          "itemNameRequired": "Please enter an item name",
-          "failedToCreate": "Failed to create group",
-          "failedToUpdate": "Failed to update group",
-          "failedToDelete": "Failed to delete group",
-          "failedToFetch": "Failed to fetch associated products"
+            "unableToGetMenuPageAssociations": "Unable to get menu page associations",
+            "unableToGetMenuPages": "Unable to get menu pages",
+            "failedToFetchMenuPages": "Failed to fetch menu pages",
+            "unableToFetchProduct": "Unable to fetch product",
+            "errorRemovingMenuFromOrder": "Error removing menu from order",
+            "errorRemovingMenuItemFromOrder": "Error removing menu item from order",
+            "errorGettingProduct": "Error getting product"
         },
-        "success": {
-          "created": "Group created successfully",
-          "updated": "Group updated successfully",
-          "deleted": "Group deleted successfully"
+        "messages": {
+            "orderAssignedToDeliveryPerson": "This order is assigned to a delivery person and cannot be edited."
+        },
+        "warnings": {
+            "maximumComplementsReached": "You have reached the maximum number of complements for this menu page"
+        },
+        "pageOf": "Page {{current}} of {{total}}",
+        "noPagesAvailable": "No pages available",
+        "noMenuPages": "No Menu Pages",
+        "noMenuPagesDescription": "No menu pages are available for this menu.",
+        "selectionProgress": "Selection Progress",
+        "selectMoreProducts": "Select {{count}} more product(s) to continue.",
+        "selectionComplete": "Selection complete! You can now proceed.",
+        "selectProductsToGetStarted": "Select {{min, plural, =0 {any products} other {at least # product}} to get started",
+        "noImage": "No Image",
+        "processed": "Processed",
+        "clickToSelect": "Click to select",
+        "clickOnAnyProductToProcess": "Click on any product to process it",
+        "completeMenu": "Complete Menu ({{count}} products)",
+        "previousPage": "Previous Page",
+        "nextPage": "Next Page",
+        "applyChanges": "Apply Changes",
+        "loadingMenuPages": "Loading menu pages..."
+    },
+    "orderUtils": {
+        "orderDeleted": "Order #{{orderId}} has been deleted",
+        "newOrderReceived": "New order #{{orderId}} received",
+        "orderStatusChanged": "Order #{{orderId}} status changed to: {{status}}",
+        "orderSynchronized": "Order #{{orderId}} synchronized",
+        "unrecognizedChangeType": "Unrecognized change type, refreshing orders",
+        "errorFetchingOrders": "Error fetching orders"
+    },
+    "menuUtils": {
+        "unableToGetVariants": "Unable to get variants",
+        "unableToGetGroups": "Unable to get groups",
+        "unableToGetCategories": "Unable to get categories",
+        "failedToFetchCategories": "Failed to fetch categories",
+        "unableToGetSubcategories": "Unable to get subcategories",
+        "failedToFetchSubcategories": "Failed to fetch subcategories",
+        "unableToGetProducts": "Unable to get products",
+        "failedToFetchProducts": "Failed to fetch products",
+        "unableToGetMenus": "Unable to get menus",
+        "failedToFetchMenus": "Failed to fetch menus",
+        "failedToFetchAssociatedProducts": "Failed to fetch associated products"
+    },
+    "reportUtils": {
+        "orders": "Orders"
+    },
+    "paymentStatusUtils": {
+        "invalidPaymentAmount": "Invalid payment amount: {{amount}}",
+        "errorParsingPaymentString": "Error parsing payment string:",
+        "statuses": {
+            "paid": "Paid",
+            "unpaid": "Unpaid",
+            "partial": "Partial Payment",
+            "pending": "Pending"
         }
-      },
-      "specialNotes": {
-        "productDeleteWarning": "If you delete this product you can no longer edit this product in order!",
-        "menuPageDeleteWarning": "If you delete this menu page you can no longer edit this menu page in any attached order!",
-        "variantDeleteWarning": "If you delete this variant you can no longer edit this variant in any attached order!"
-      }
+    },
+    "orderProcessingModal": {
+        "title": "Process Order",
+        "subtitle": "Complete order details",
+        "customerSearch": {
+            "title": "Customer Search",
+            "titleOptional": "Customer Search (Optional)",
+            "titleRequired": "Customer Search *",
+            "placeholder": "Type customer name or phone to search...",
+            "addNew": "Add New",
+            "selectedCustomer": "Selected Customer",
+            "change": "Change",
+            "name": "Name:",
+            "phone": "Phone:",
+            "email": "Email:",
+            "address": "Address"
+        },
+        "customerDetails": {
+            "title": "Customer Details",
+            "titleOptional": "Customer Details (Optional)",
+            "titleRequired": "Customer Details *",
+            "customerName": "Customer Name",
+            "enterCustomerName": "Enter customer name...",
+            "phoneNumber": "Phone Number",
+            "enterPhoneNumber": "Enter phone number...",
+            "deliveryAddress": "Delivery Address",
+            "enterDeliveryAddress": "Enter delivery address...",
+            "descriptionOptional": "Enter customer details to personalize the order (optional)",
+            "descriptionRequired": "Customer details including address are required for delivery orders"
+        },
+        "orderType": {
+            "title": "Order Type",
+            "pickup": {
+                "title": "Pickup",
+                "description": "Customer pickup"
+            },
+            "delivery": {
+                "title": "Delivery",
+                "description": "Home delivery"
+            },
+            "dineIn": {
+                "title": "Dine In",
+                "description": "In restaurant"
+            }
+        },
+        "pickupTime": {
+            "title": "Pickup Time",
+            "placeholder": "Select pickup time",
+            "description": "When should the order be ready for pickup?"
+        },
+        "deliveryAddress": {
+            "title": "Delivery Address"
+        },
+        "paymentStatus": {
+            "title": "Payment Status",
+            "description": "Payment will be collected upon delivery (Cash on Delivery)"
+        },
+        "orderNotes": {
+            "title": "Order Notes",
+            "placeholder": "Any special instructions or notes..."
+        },
+        "orderSummary": {
+            "title": "Order Summary",
+            "variant": "Variant:",
+            "addOns": "Add-ons:",
+            "total": "Total:"
+        },
+        "buttons": {
+            "cancel": "Cancel",
+            "proceedOrder": "Proceed Order"
+        },
+        "errors": {
+            "customerNamePhoneRequired": "Please enter customer name and phone number for delivery orders",
+            "customerNoAddress": "Selected customer has no address. Please select a different customer or change to pickup.",
+            "customerDetailsRequired": "Please select a customer or enter customer details including address for delivery orders",
+            "orderAlreadyPaid": "Order is already paid. Processing with existing payment information."
+        },
+        "defaultCustomers": {
+            "dineInCustomer": "Dine-in Customer",
+            "walkInCustomer": "Walk-in Customer",
+            "dineIn": "Dine-in",
+            "inStore": "In-store"
+        }
+    },
+    "paymentOptionModal": {
+        "title": "Payment Option",
+        "pickupOrder": "Pickup Order",
+        "dineInOrder": "Dine-in Order",
+        "choosePaymentMethod": "Choose how you would like to handle payment for this order",
+        "payNow": {
+            "title": "Pay Now",
+            "description": "Process payment immediately and send to kitchen"
+        },
+        "payLater": {
+            "title": "Pay Later",
+            "description": "Send to kitchen now, collect payment later"
+        },
+        "cancel": "Cancel"
+    },
+    "orderStatuses": {
+        "pending": "Pending",
+        "sentToKitchen": "Sent to Kitchen",
+        "readyForDelivery": "Ready for Delivery",
+        "outForDelivery": "Out for Delivery",
+        "completed": "Completed",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled"
+    },
+    "orderTable": {
+        "noDataFound": "No data found"
+    },
+    "orderTypes": {
+        "pickup": "Pickup",
+        "delivery": "Delivery",
+        "dineIn": "Dine In"
+    },
+    "orderComponent": {
+        "partialPayment": "Paid: €{{paid}} / €{{total}}",
+        "noOrders": "No Orders",
+        "noOrdersAvailable": "No orders available to display"
+    },
+    "unifiedCard": {
+        "catCountText": "Categories",
+        "subCatCountText": "Subcategories",
+        "prodCountText": "Products",
+        "menuCountText": "Menus",
+        "groupCountText": "complements",
+        "variantCountText": "Variants",
+        "noDescription": "No description"
+    },
+    "confirmationModal": {
+        "subtitle": "Please confirm your action",
+        "dangerWarningTitle": "This action cannot be undone",
+        "specialNote": "Once deleted, this item will be permanently removed from the system.",
+        "confirmAction": "Confirm Action"
+
     }
-  },
-  "menuView": {
-    "titles": {
-      "menu": "Menus",
-      "menuStructure": "Menu Structure",
-      "group": "Groups",
-      "variant": "Variants"
-    },
-    "descriptions": {
-      "menu": "Create and manage categories, subcategories, and products.",
-      "menuStructure": "Create menus and menu pages.",
-      "group": "Create and manage menu groups and options.",
-      "variant": "Create and manage product variants and options."
-    },
-    "buttons": {
-      "menu": "Menus",
-      "menuStructure": "Menu Structure",
-      "group": "Groups",
-      "variant": "Variants"
-    }
-  },
-  "navigation": {
-    "defaultCompanyName": "Delivery System",
-    "logout": "Logout",
-    "toggleSidebar": "Toggle Sidebar",
-    "orders": "Orders",
-    "kitchenView": "Kitchen View",
-    "deliveryView": "Delivery View",
-    "deliveryManagement": "Delivery Management",
-    "manageOrders": "Manage Orders",
-    "reports": "Reports",
-    "menuStructure": "Menu Structure",
-    "users": "Users",
-    "configurations": "Configurations"
-  },
-  "printerUtils": {
-    "unableToGetPrinters": "Unable to get printers"
-  },
-  "receipt": {
-    "date": "Date",
-    "order": "Order",
-    "payment": "Payment",
-    "servedBy": "Served By",
-    "quantity": "Qty.",
-    "name": "Name",
-    "subtotal": "Subtotal",
-    "total": "TOTAL",
-    "vat": "VAT",
-    "base": "Base",
-    "tax": "Tax",
-    "thankYou": "Thank you for your visit",
-    "extra": "Extra",
-    "waiter": "Waiter",
-    "address": "Customer Address",
-    "paymentStatus":{
-      "unpaid":"UNPAID",
-      "paid":"PAID",
-      "PARTIAL":"PARTIAL"
-    },
-    "orderType":{
-      "dineIn":"DINE IN",
-      "pickup":"PICKUP",
-      "delivery":"DELIVERY"
-    }
-  },
-  "menuOrderTakingForm": {
-    "errors": {
-      "unableToGetMenuPageAssociations": "Unable to get menu page associations",
-      "unableToGetMenuPages": "Unable to get menu pages",
-      "failedToFetchMenuPages": "Failed to fetch menu pages",
-      "unableToFetchProduct": "Unable to fetch product",
-      "errorRemovingMenuFromOrder": "Error removing menu from order",
-      "errorRemovingMenuItemFromOrder": "Error removing menu item from order",
-      "errorGettingProduct": "Error getting product"
-    },
-    "messages": {
-      "orderAssignedToDeliveryPerson": "This order is assigned to a delivery person and cannot be edited."
-    },
-    "warnings": {
-      "maximumComplementsReached": "You have reached the maximum number of complements for this menu page"
-    },
-    "pageOf": "Page {{current}} of {{total}}",
-    "noPagesAvailable": "No pages available",
-    "noMenuPages": "No Menu Pages",
-    "noMenuPagesDescription": "No menu pages are available for this menu.",
-    "selectionProgress": "Selection Progress",
-    "selectMoreProducts": "Select {{count}} more product(s) to continue.",
-    "selectionComplete": "Selection complete! You can now proceed.",
-    "selectProductsToGetStarted": "Select {{min, plural, =0 {any products} other {at least # product}} to get started",
-    "noImage": "No Image",
-    "processed": "Processed",
-    "clickToSelect": "Click to select",
-    "clickOnAnyProductToProcess": "Click on any product to process it",
-    "completeMenu": "Complete Menu ({{count}} products)",
-    "previousPage": "Previous Page",
-    "nextPage": "Next Page",
-    "applyChanges": "Apply Changes",
-    "loadingMenuPages": "Loading menu pages..."
-  },
-  "orderUtils": {
-    "orderDeleted": "Order #{{orderId}} has been deleted",
-    "newOrderReceived": "New order #{{orderId}} received",
-    "orderStatusChanged": "Order #{{orderId}} status changed to: {{status}}",
-    "orderSynchronized": "Order #{{orderId}} synchronized",
-    "unrecognizedChangeType": "Unrecognized change type, refreshing orders",
-    "errorFetchingOrders": "Error fetching orders"
-  },
-  "menuUtils": {
-    "unableToGetVariants": "Unable to get variants",
-    "unableToGetGroups": "Unable to get groups",
-    "unableToGetCategories": "Unable to get categories",
-    "failedToFetchCategories": "Failed to fetch categories",
-    "unableToGetSubcategories": "Unable to get subcategories",
-    "failedToFetchSubcategories": "Failed to fetch subcategories",
-    "unableToGetProducts": "Unable to get products",
-    "failedToFetchProducts": "Failed to fetch products",
-    "unableToGetMenus": "Unable to get menus",
-    "failedToFetchMenus": "Failed to fetch menus",
-    "failedToFetchAssociatedProducts": "Failed to fetch associated products"
-  },
-  "reportUtils": {
-    "orders": "Orders"
-  },
-  "paymentStatusUtils": {
-    "invalidPaymentAmount": "Invalid payment amount: {{amount}}",
-    "errorParsingPaymentString": "Error parsing payment string:",
-    "statuses": {
-      "paid": "Paid",
-      "unpaid": "Unpaid",
-      "partial": "Partial Payment",
-      "pending": "Pending"
-    }
-  },
-  "orderProcessingModal": {
-    "title": "Process Order",
-    "subtitle": "Complete order details",
-    "customerSearch": {
-      "title": "Customer Search",
-      "titleOptional": "Customer Search (Optional)",
-      "titleRequired": "Customer Search *",
-      "placeholder": "Type customer name or phone to search...",
-      "addNew": "Add New",
-      "selectedCustomer": "Selected Customer",
-      "change": "Change",
-      "name": "Name:",
-      "phone": "Phone:",
-      "email": "Email:",
-      "address": "Address"
-    },
-    "customerDetails": {
-      "title": "Customer Details",
-      "titleOptional": "Customer Details (Optional)",
-      "titleRequired": "Customer Details *",
-      "customerName": "Customer Name",
-      "enterCustomerName": "Enter customer name...",
-      "phoneNumber": "Phone Number",
-      "enterPhoneNumber": "Enter phone number...",
-      "deliveryAddress": "Delivery Address",
-      "enterDeliveryAddress": "Enter delivery address...",
-      "descriptionOptional": "Enter customer details to personalize the order (optional)",
-      "descriptionRequired": "Customer details including address are required for delivery orders"
-    },
-    "orderType": {
-      "title": "Order Type",
-      "pickup": {
-        "title": "Pickup",
-        "description": "Customer pickup"
-      },
-      "delivery": {
-        "title": "Delivery",
-        "description": "Home delivery"
-      },
-      "dineIn": {
-        "title": "Dine In",
-        "description": "In restaurant"
-      }
-    },
-    "pickupTime": {
-      "title": "Pickup Time",
-      "placeholder": "Select pickup time",
-      "description": "When should the order be ready for pickup?"
-    },
-    "deliveryAddress": {
-      "title": "Delivery Address"
-    },
-    "paymentStatus": {
-      "title": "Payment Status",
-      "description": "Payment will be collected upon delivery (Cash on Delivery)"
-    },
-    "orderNotes": {
-      "title": "Order Notes",
-      "placeholder": "Any special instructions or notes..."
-    },
-    "orderSummary": {
-      "title": "Order Summary",
-      "variant": "Variant:",
-      "addOns": "Add-ons:",
-      "total": "Total:"
-    },
-    "buttons": {
-      "cancel": "Cancel",
-      "proceedOrder": "Proceed Order"
-    },
-    "errors": {
-      "customerNamePhoneRequired": "Please enter customer name and phone number for delivery orders",
-      "customerNoAddress": "Selected customer has no address. Please select a different customer or change to pickup.",
-      "customerDetailsRequired": "Please select a customer or enter customer details including address for delivery orders",
-      "orderAlreadyPaid": "Order is already paid. Processing with existing payment information."
-    },
-    "defaultCustomers": {
-      "dineInCustomer": "Dine-in Customer",
-      "walkInCustomer": "Walk-in Customer",
-      "dineIn": "Dine-in",
-      "inStore": "In-store"
-    }
-  },
-  "paymentOptionModal": {
-    "title": "Payment Option",
-    "pickupOrder": "Pickup Order",
-    "dineInOrder": "Dine-in Order",
-    "choosePaymentMethod": "Choose how you would like to handle payment for this order",
-    "payNow": {
-      "title": "Pay Now",
-      "description": "Process payment immediately and send to kitchen"
-    },
-    "payLater": {
-      "title": "Pay Later",
-      "description": "Send to kitchen now, collect payment later"
-    },
-    "cancel": "Cancel"
-  },
-  "orderStatuses": {
-    "pending": "Pending",
-    "sentToKitchen": "Sent to Kitchen",
-    "readyForDelivery": "Ready for Delivery",
-    "outForDelivery": "Out for Delivery",
-    "completed": "Completed",
-    "delivered": "Delivered",
-    "cancelled": "Cancelled"
-  },
-  "orderTable": {
-    "noDataFound": "No data found"
-  },
-  "orderTypes": {
-    "pickup": "Pickup",
-    "delivery": "Delivery",
-    "dineIn": "Dine In"
-  },
-  "orderComponent": {
-    "partialPayment": "Paid: €{{paid}} / €{{total}}",
-    "noOrders": "No Orders",
-    "noOrdersAvailable": "No orders available to display"
-  }
 }

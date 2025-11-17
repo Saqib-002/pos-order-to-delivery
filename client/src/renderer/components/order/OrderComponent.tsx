@@ -26,6 +26,7 @@ import { useOrderManagementContext } from "@/renderer/contexts/orderManagementCo
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
 import Pagination from "../shared/Pagination";
+import { formatAddress } from "@/renderer/utils/utils";
 
 const OrderComponent = () => {
   const { t } = useTranslation();
@@ -118,7 +119,8 @@ const OrderComponent = () => {
             orderData.orderType,
             user!.role,
             status,
-            t
+            t,
+            order?.customer.address? formatAddress(order.customer.address) : undefined
           );
         } else {
           receiptHTML = generateItemsReceiptHTML(

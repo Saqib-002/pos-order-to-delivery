@@ -144,7 +144,7 @@ export const MenuStructureComponent = () => {
     }
     const ok = await confirm({
       title: t("menuComponents.common.delete"),
-      message: `${t("menuComponents.common.delete")} "${menuPage.name}"? This menu page is attached to ${res.data.length} menus. They will be detached!`,
+      message: `${t("menuComponents.common.delete")} "${menuPage.name}"? ${t("menuComponents.common.words.attachMenu")} ${res.data.length} ${t("menuComponents.common.words.menus")}. ${t("menuComponents.common.words.willBeDetached")}`,
       confirmText: t("menuComponents.common.delete"),
       cancelText: t("menuComponents.common.cancel"),
       type: "danger",
@@ -173,7 +173,7 @@ export const MenuStructureComponent = () => {
   const handleDeleteMenu = async (menu: Menu) => {
     const ok = await confirm({
       title: "Delete Menu",
-      message: `Are you sure you want to delete "${menu.name}"?`,
+      message: `${t("menuComponents.common.words.areYouSure")} "${menu.name}"?`,
       confirmText: "Delete",
       cancelText: "Cancel",
       type: "danger",

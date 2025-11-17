@@ -169,7 +169,7 @@ export const MenuComponent = () => {
     }
     const ok = await confirm({
       title: t("menuComponents.common.delete"),
-      message: `${t("menuComponents.common.delete")} "${product.name}"? ${menuRes.data.length} menu pages are attached`,
+      message: `${t("menuComponents.common.delete")} "${product.name}"? ${menuRes.data.length} ${t("menuComponents.common.words.MenuPagesAttached")}`,
       confirmText: t("menuComponents.common.delete"),
       cancelText: t("menuComponents.common.cancel"),
       type: "danger",

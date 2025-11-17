@@ -54,7 +54,7 @@ export const VariantView = () => {
     if (!res?.status) return;
     const ok = await confirm({
       title: t("menuComponents.common.delete"),
-      message: `${t("menuComponents.common.delete")} "${variant.name !== "" ? variant.name : variant.items.map((i) => i.name).join("-")}" with "${variant.items.length} variants"? This variant is attached to ${res.data.length} products. They will be detached!`,
+      message: `${t("menuComponents.common.delete")} "${variant.name !== "" ? variant.name : variant.items.map((i) => i.name).join("-")}" ${t("menuComponents.common.words.with")} "${variant.items.length} ${t("menuComponents.common.words.variants")}"? ${t("menuComponents.common.words.attachVariants")} ${res.data.length} ${t("menuComponents.common.words.products")}. ${t("menuComponents.common.words.willBeDetached")}`,
       type: "danger",
       confirmText: t("menuComponents.common.delete"),
       cancelText: t("menuComponents.common.cancel"),

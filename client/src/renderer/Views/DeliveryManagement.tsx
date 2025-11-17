@@ -20,9 +20,11 @@ import {
 } from "../public/Svg";
 import { StatsCard } from "../components/shared/StatsCard.order";
 import CustomInput from "../components/shared/CustomInput";
+import { useConfirm } from "../hooks/useConfirm";
 
 export const DeliveryManagement = () => {
   const { t } = useTranslation();
+  const confirm=useConfirm();
   const [deliveryPersons, setDeliveryPersons] = useState<DeliveryPerson[]>([]);
   const [currentDeliveryPerson, setCurrentDeliveryPerson] =
     useState<DeliveryPerson | null>(null);
@@ -210,7 +212,11 @@ export const DeliveryManagement = () => {
   };
 
   const handleDeleteDeliveryPerson = async (userId: string) => {
-    if (!confirm(t("deliveryManagement.errors.deleteConfirm"))) return;
+    const ok=await confirm({
+      title:t("deliveryManagement.errors.deleteConfirm"),
+      message:t("deliveryManagement.errors.deleteConfirmTitle"),
+    });
+    if(!ok) return;
     try {
       const statsRes = await (window as any).electronAPI.getDeliveryPersonStats(
         token,

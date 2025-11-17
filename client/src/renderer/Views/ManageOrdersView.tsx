@@ -40,6 +40,7 @@ import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 import { DEFAULT_PAGE_LIMIT, FUNCTIONS } from "@/constants";
 import Pagination from "../components/shared/Pagination";
+import { formatAddress } from "../utils/utils";
 
 export const ManageOrdersView = () => {
   const { t } = useTranslation();
@@ -243,7 +244,8 @@ export const ManageOrdersView = () => {
             order.orderType,
             user?.role || "",
             status,
-            t
+            t,
+            order?.customer.address? formatAddress(order.customer.address) : undefined
           );
 
           if (!receiptHTML) {

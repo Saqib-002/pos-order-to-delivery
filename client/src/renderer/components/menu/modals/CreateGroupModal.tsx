@@ -234,7 +234,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   const handleDeleteGroup = async (id: string, name: string) => {
     const ok = await confirm({
       title: t("menuComponents.modals.createGroupModal.deleteTitle"),
-      message: `${t("menuComponents.modals.createGroupModal.deleteMessage")} "${editingGroup?.name}" with ${complements.length} items? This group is attached to ${associatedProducts ? associatedProducts.length : 0} products. They will be detached!`,
+      message: `${t("menuComponents.modals.createGroupModal.deleteMessage")} "${editingGroup?.name}" ${t("menuComponents.common.words.with")} ${complements.length} ${t("menuComponents.common.words.complements")}? This group is attached to ${associatedProducts ? associatedProducts.length : 0} ${t("menuComponents.common.words.products")}. ${t("menuComponents.common.words.willBeDetached")}`,
       itemName: name,
       type: "danger",
       confirmText: t("menuComponents.modals.createGroupModal.deleteConfirm"),

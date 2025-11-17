@@ -4,11 +4,13 @@ import { CheckIcon, CrossIcon, ExclamationIcon, InfoIcon } from "../public/Svg";
 import CustomButton from "../components/ui/CustomButton";
 import { ConfirmOptions } from "@/types/confirm";
 import { ConfirmContext } from "../hooks/useConfirm";
+import { useTranslation } from "react-i18next";
 
 
 export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
     const [options, setOptions] = useState<ConfirmOptions | null>(null);
     const [resolver, setResolver] = useState<(value: boolean) => void>();
+    const {t}=useTranslation();
 
     const confirm = (options: ConfirmOptions) => {
         setOptions(options);
@@ -42,9 +44,10 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
                                     </div>
                                     <div>
                                         <h2 className="text-xl font-bold">
-                                            {options.title || "Confirm Action"}
+                                            {options.title || t("confirmationModal.confirmAction")}
                                         </h2>
-                                        <p className="text-white/80 text-sm">Please confirm your action</p>
+                                        <p className="text-white/80 text-sm">
+                                        {t("confirmationModal.subtitle")}</p>
                                     </div>
                                 </div>
                                 <button
@@ -73,10 +76,10 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
                                                 <ExclamationIcon className="size-5 text-red-600 mt-1" />
                                                 <div>
                                                     <p className="text-sm font-medium text-red-800">
-                                                        This action cannot be undone
+                                                        {t("confirmationModal.dangerWarningTitle")}
                                                     </p>
                                                     <p className="text-sm text-red-700 mt-1">
-                                                        {options.specialNote?options.specialNote:"Once deleted, this item will be permanently removed from the system."}
+                                                        {options.specialNote?options.specialNote:t("confirmationModal.specialNote")}
                                                     </p>
                                                 </div>
                                             </div>
