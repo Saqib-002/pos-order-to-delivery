@@ -18,6 +18,7 @@ import Configurations from "./Views/Configurations";
 import { OrderManagementProvider } from "./contexts/orderManagementContext";
 import i18n from "@/i18n";
 import { useConfigurations } from "./contexts/configurationContext";
+import { DatabaseSetupView } from "./Views/DatabaseSetupView";
 
 interface ViewConfig {
   component: JSX.Element;
@@ -28,6 +29,24 @@ const App: React.FC = () => {
   const [view, setView] = useState<string>(VIEWS.LOGIN);
   const { auth, logout, setAuth } = useAuth();
   const { setLanguage } = useConfigurations();
+  const [isDbConnected, setIsDbConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const checkDbStatus = async () => {
+    setLoading(true);
+    const credentials = await (window as any).electronAPI.getDbCredentials();
+    if (!credentials) {
+      setLoading(false);
+      return; // No credentials, show setup form
+    }
+
+    // Credentials exist, try to connect
+    const result = await (window as any).electronAPI.saveAndInitDb(credentials);
+    if (result.success) {
+      setIsDbConnected(true);
+    }
+    setLoading(false);
+  };
 
   const handleLogout = useCallback(
     async (showToast = true) => {
@@ -49,7 +68,11 @@ const App: React.FC = () => {
       i18n.changeLanguage(savedLanguage);
       setLanguage(savedLanguage as "en" | "es");
     }
+    checkDbStatus();
   }, []);
+  const handleSetupSuccess = () => {
+    setIsDbConnected(true);
+  };
   useEffect(() => {
     const handleTokenExpired = async () => {
       if (!auth.token) return;
@@ -69,6 +92,13 @@ const App: React.FC = () => {
       );
     };
   }, [handleLogout]);
+  if (loading) {
+    return <div>Loading...</div>; // Or a splash screen
+  }
+
+  if (!isDbConnected) {
+    return <DatabaseSetupView onSuccess={handleSetupSuccess} />;
+  }
   const handleLogin = () => {
     setView(VIEWS.ORDER);
   };

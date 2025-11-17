@@ -6,9 +6,6 @@ import Logger from "electron-log";
 import path from "path";
 app.whenReady().then(async () => {
     try {
-        // Initialize the database
-        await initDatabase();
-
         // Register all IPC handlers
         registerIpcHandlers();
         const iconPath = path.join(app.getAppPath(), 'logo.png');

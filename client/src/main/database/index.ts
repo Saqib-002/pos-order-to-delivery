@@ -1,47 +1,47 @@
 import knex, { Knex } from "knex";
 import knexConfig from "../../knexfile.js";
 import Logger from "electron-log";
-import dotenv from "dotenv";
 import path from "path";
 import { app } from "electron";
-import { fileURLToPath } from "url";
 
 export let db: Knex;
+interface DbCredentials {
+    host: string;
+    port: number;
+    database: string;
+    user: string;
+    password: string;
+}
 
-export async function initDatabase(): Promise<void> {
+export async function initDatabase(credentials: DbCredentials): Promise<void> {
     try {
-      const isPackaged = app.isPackaged;
-        if (isPackaged) {
-            Logger.info("Running in production mode",path.join(process.resourcesPath, '.env'));
-            dotenv.config({ path: path.join(process.resourcesPath, '.env') });
-        } else {
-            dotenv.config();
+        if (db) {
+            await db.destroy();
         }
-        let config =
+        const isPackaged = app.isPackaged;
+        let configBase =
             process.env.NODE_ENV === "production"
                 ? knexConfig.production
                 : knexConfig.development;
-        const getDirname = () => {
-            if (typeof __dirname !== "undefined") return __dirname;
-            return path.dirname(fileURLToPath(import.meta.url));
+        const dynamicConfig: Knex.Config = {
+            ...configBase,
+            client: "pg",
+            connection: {
+                host: credentials.host,
+                port: Number(credentials.port),
+                database: credentials.database,
+                user: credentials.user,
+                password: credentials.password,
+            },
+            pool: { min: 2, max: 10 },
         };
-        if (process.env.NODE_ENV === "production" && app.isPackaged) {
-            config = {
-                ...config,
-                connection: {
-                    host: process.env.PG_HOST || 'localhost',
-                    port: process.env.PG_PORT || 5432,
-                    database: process.env.PG_DATABASE || 'restaurant_pos',
-                    user: process.env.PG_USER || 'pos_admin',
-                    password: process.env.PG_PASSWORD || 'your_secure_password_here'
-                    },
-                migrations: {
-                    ...config.migrations,
-                    directory: path.join(process.resourcesPath, "migrations"),
-                },
+        if (isPackaged) {
+            dynamicConfig.migrations = {
+                ...dynamicConfig.migrations,
+                directory: path.join(process.resourcesPath, "migrations"),
             };
         }
-        db = knex(config);
+        db = knex(dynamicConfig);
         Logger.info("PostgreSQL database initialized");
 
         // Test connection

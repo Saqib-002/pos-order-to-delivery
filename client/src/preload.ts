@@ -29,6 +29,10 @@ const syncStatusCallbacks = new Set<(status: any) => void>();
 const orderChangeCallbacks = new Set<(change: any, event: any) => void>();
 
 contextBridge.exposeInMainWorld("electronAPI", {
+  // db
+  getDbCredentials: () => ipcRenderer.invoke("get-db-credentials"),
+  saveAndInitDb: (credentials:any) =>
+    ipcRenderer.invoke("save-and-init-db", credentials),
   // categories
   createCategory: (token: string, category: any) =>
     ipcRenderer.invoke("create-category", token, category),

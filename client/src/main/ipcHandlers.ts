@@ -106,8 +106,52 @@ import {
   getConfigurations,
   updateConfigurations,
 } from "./handlers/configurations.js";
+import Store from "electron-store";
+import { initDatabase } from "./database/index.js";
+interface DbCredentials {
+  host: string;
+  port: number;
+  database: string;
+  user: string;
+  password: string;
+}
+interface StoreSchema {
+  dbCredentials: DbCredentials;
+}
+const store = new Store<StoreSchema>({
+  defaults: {
+    dbCredentials: {
+      host: "localhost",
+      port: 5432,
+      database: "restaurant_pos",
+      user: "pos_admin",
+      password: "",
+    },
+  },
+});
 
 export function registerIpcHandlers() {
+  // db handlers
+  ipcMain.handle("get-db-credentials", async () => {
+    return store.get("dbCredentials");
+  });
+  ipcMain.handle(
+    "save-and-init-db",
+    async (event, credentials: DbCredentials) => {
+      try {
+        // 1. Try to initialize the database with the new credentials
+        await initDatabase(credentials);
+
+        // 2. If successful, save them to the store
+        store.set("dbCredentials", credentials);
+
+        return { success: true };
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
+    }
+  );
+
   // categories handlers
   ipcMain.handle("create-category", createCategory);
   ipcMain.handle("get-categories", getCategories);
