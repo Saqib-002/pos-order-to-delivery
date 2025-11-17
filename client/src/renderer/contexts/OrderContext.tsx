@@ -100,6 +100,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
           ? {
               ...item,
               quantity,
+              isKitchenPrinted: false
             }
           : item
       )

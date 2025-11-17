@@ -65,7 +65,6 @@ const OrderCart: React.FC<OrderCartProps> = ({
     auth: { user, token },
   } = useAuth();
   const handlePrint = async () => {
-    console.log(orderItems);
     const printerGroups = groupItemsByPrinter(orderItems);
     if (!Object.keys(printerGroups).length) {
       toast.warn(t("orderCart.warnings.noPrintersAttached"));
@@ -91,7 +90,6 @@ const OrderCart: React.FC<OrderCartProps> = ({
       const printerName = printer.split("|")[0];
       const printerIsMain = printer.split("|")[1];
       let receiptHTML = "";
-      console.log("Printing to printer:", items);
       const { status } = calculatePaymentStatus(
         order?.paymentType || "",
         orderTotal
