@@ -13,6 +13,7 @@ export class OrderDatabaseOperations {
             const todayDate = new Date().toLocaleDateString('sv-SE', {
               timeZone: targetTimezone,
             });
+            console.log("Today Date:", todayDate);
             const countResult = await trx("orders")
                     .whereRaw(`DATE("createdAt" AT TIME ZONE ?) = ?`, [targetTimezone, todayDate])
                 .count("* as count")
@@ -32,6 +33,7 @@ export class OrderDatabaseOperations {
                 printers: item.printers.join("="),
                 id: randomUUID(),
                 orderId: newOrder.id,
+                isKitchenPrinted: false,
                 createdAt: now,
                 updatedAt: now,
             };
@@ -56,6 +58,7 @@ export class OrderDatabaseOperations {
                 orderId,
                 createdAt: now,
                 updatedAt: now,
+                isKitchenPrinted: false,
             };
             await db("order_items").insert(orderItem);
             return { itemId: orderItem.id };
@@ -150,11 +153,12 @@ export class OrderDatabaseOperations {
         quantity: number
     ): Promise<any> {
         try {
+            const now = new Date().toISOString();
             return db("order_items")
                 .where("orderId", orderId)
                 .andWhere("menuId", menuId)
                 .andWhere("menuSecondaryId", menuSecondaryId)
-                .update({ quantity });
+                .update({ quantity, isKitchenPrinted: false,updatedAt: now, });
         } catch (error) {
             throw error;
         }
@@ -167,6 +171,7 @@ export class OrderDatabaseOperations {
             const now = new Date().toISOString();
             await db("order_items").where("id", itemId).update({
                 quantity,
+                isKitchenPrinted: false,
                 updatedAt: now,
             });
             return { itemId };
@@ -184,10 +189,32 @@ export class OrderDatabaseOperations {
                 .where("id", itemId)
                 .update({
                     ...itemData,
+                    isKitchenPrinted: false,
                     updatedAt: now,
                 });
             return { itemId };
         } catch (error) {
+            throw error;
+        }
+    }
+    static async updateOrderItems(
+        items: { itemId: string; itemData: Partial<OrderItem> }[]
+    ): Promise<any> {
+        const trx = await db.transaction();
+        try {
+            const now = new Date().toISOString();
+            for (const { itemId, itemData } of items) {
+                await trx("order_items")
+                    .where("id", itemId)
+                    .update({
+                        ...itemData,
+                        updatedAt: now,
+                    });
+            }
+            await trx.commit();
+            return { items };
+        } catch (error) {
+            await trx.rollback();
             throw error;
         }
     }

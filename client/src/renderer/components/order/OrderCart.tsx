@@ -65,6 +65,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     auth: { user, token },
   } = useAuth();
   const handlePrint = async () => {
+    console.log(orderItems);
     const printerGroups = groupItemsByPrinter(orderItems);
     if (!Object.keys(printerGroups).length) {
       toast.warn(t("orderCart.warnings.noPrintersAttached"));
@@ -84,12 +85,13 @@ const OrderCart: React.FC<OrderCartProps> = ({
     if (res.data) {
       configurations = res.data;
     }
-    
+
     toast.info(t("orderCart.messages.printingCustomerReceipt"));
     for (const [printer, items] of Object.entries(printerGroups)) {
       const printerName = printer.split("|")[0];
       const printerIsMain = printer.split("|")[1];
       let receiptHTML = "";
+      console.log("Printing to printer:", items);
       const { status } = calculatePaymentStatus(
         order?.paymentType || "",
         orderTotal
@@ -103,11 +105,17 @@ const OrderCart: React.FC<OrderCartProps> = ({
           user!.role,
           status,
           t,
-          order?.customer.address? formatAddress(order.customer.address) : undefined
+          order?.customer.address ? formatAddress(order.customer.address) : undefined
         );
       } else {
+        const unprintedItems = items.filter(
+          (item: OrderItem) => !item.isKitchenPrinted
+        );
+        if (unprintedItems.length === 0) {
+          continue;
+        }
         receiptHTML = generateItemsReceiptHTML(
-          items,
+          unprintedItems,
           configurations,
           order,
           user!.role,
@@ -130,6 +138,19 @@ const OrderCart: React.FC<OrderCartProps> = ({
           toast.error(t("orderCart.errors.errorPrintingReceipt"));
         }
         return;
+      }
+      const updateRes= await (window as any).electronAPI.updateOrderItems(token, items.map((item: OrderItem) => ({ itemId: item.id, itemData:{isKitchenPrinted: true} })));
+      if(updateRes.status){
+        const res= await (window as any).electronAPI.getOrderItems(token, orderId);
+        if(res.status){
+          clearOrder();
+          res.data.forEach((item: any) => {
+            addToOrder({
+              ...item,
+              complements: StringToComplements(item.complements),
+            });
+          })
+        }
       }
     }
     toast.success(t("orderCart.messages.receiptPrintedSuccessfully"));
@@ -455,9 +476,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
                     item.variantPrice +
                     (Array.isArray(item.complements)
                       ? item.complements.reduce(
-                          (sum, complement) => sum + complement.price,
-                          0
-                        )
+                        (sum, complement) => sum + complement.price,
+                        0
+                      )
                       : 0)) *
                   item.quantity
                 ).toFixed(2)}
@@ -476,9 +497,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
             (itemTotal, item) => {
               const complementsTotal = Array.isArray(item.complements)
                 ? item.complements.reduce(
-                    (sum, complement) => sum + complement.price,
-                    0
-                  )
+                  (sum, complement) => sum + complement.price,
+                  0
+                )
                 : 0;
 
               return (

@@ -31,6 +31,7 @@ export interface OrderItem {
   menuPageId?: string;
   menuPageName?: string;
   supplement?: number;
+  isKitchenPrinted?: boolean;
 }
 export interface Customer {
   id?: string;

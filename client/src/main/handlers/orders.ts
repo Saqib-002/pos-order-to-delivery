@@ -153,6 +153,24 @@ export const updateOrderItem = async (
     };
   }
 };
+export const updateOrderItems = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  items: { itemId: string; itemData: Partial<OrderItem> }[]
+) => {
+  try {
+    const result = await OrderDatabaseOperations.updateOrderItems(items);
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};
 export const getOrderItems = async (
   event: IpcMainInvokeEvent,
   token: string,

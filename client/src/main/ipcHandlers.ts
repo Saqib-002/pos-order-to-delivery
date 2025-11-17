@@ -14,6 +14,7 @@ import {
   updateOrder,
   updateOrderItem,
   duplicateMenuInOrder,
+  updateOrderItems,
 } from "./handlers/orders.js";
 import {
   deleteUser,
@@ -239,6 +240,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("update-item-quantity", updateItemQuantity);
   ipcMain.handle("update-menu-quantity", updateMenuQuantity);
   ipcMain.handle("update-order-item", updateOrderItem);
+  ipcMain.handle("update-order-items", updateOrderItems);
   ipcMain.handle("get-order-items", getOrderItems);
   ipcMain.handle("update-order", updateOrder);
   ipcMain.handle("get-order-analytics", getOrderAnalytics);
