@@ -32,6 +32,7 @@ interface OrderContextType {
   ) => void;
   processedMenuOrderItems: OrderItem[];
   addToProcessedMenuOrderItems: (item: OrderItem) => void;
+  removeProcessedMenuOrderItem: (itemId: string | undefined) => void;
   clearProcessedMenuOrderItems: () => void;
   getMaxSecondaryId: (menuId: string) => number;
   editOrderItem: (itemId: string, item: Partial<OrderItem>) => void;
@@ -62,6 +63,13 @@ export const useOrder = () => {
 interface OrderProviderProps {
   children: ReactNode;
 }
+
+const generateTempId = () =>
+  typeof globalThis !== "undefined" &&
+  globalThis.crypto &&
+  "randomUUID" in globalThis.crypto
+    ? globalThis.crypto.randomUUID()
+    : Math.random().toString(36).substring(2, 11);
 
 export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
   const [processedMenuOrderItems, setProcessedMenuOrderItems] = useState<
@@ -109,6 +117,12 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 
   const clearOrder = () => {
     setOrderItems([]);
+    setOrder(null);
+    setProcessedMenuOrderItems([]);
+    setSelectedMenu(null);
+    setSelectedProduct(null);
+    setEditingGroup(null);
+    setEditingProduct(null);
   };
 
   const findExactProductMatch = (
@@ -126,7 +140,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     return (
       orderItems.find((item) => {
         if (item.menuId || item.productId !== productId) return false;
-        if (variantId && (item.variantId !== variantId)) return false;
+        if (variantId && item.variantId !== variantId) return false;
 
         if (item.complements.length !== complements.length) return false;
         const itemComplements = item.complements.sort(
@@ -230,7 +244,24 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     }
   };
   const addToProcessedMenuOrderItems = (newItem: OrderItem) => {
-    setProcessedMenuOrderItems((prev) => [...prev, newItem]);
+    setProcessedMenuOrderItems((prev) => {
+      if (!newItem.id) {
+        return [...prev, { ...newItem, id: generateTempId() }];
+      }
+      const index = prev.findIndex((item) => item.id === newItem.id);
+      if (index !== -1) {
+        const updated = [...prev];
+        updated[index] = newItem;
+        return updated;
+      }
+      return [...prev, newItem];
+    });
+  };
+  const removeProcessedMenuOrderItem = (itemId: string | undefined) => {
+    if (!itemId) return;
+    setProcessedMenuOrderItems((prev) =>
+      prev.filter((item) => item.id !== itemId)
+    );
   };
   const clearProcessedMenuOrderItems = () => {
     setProcessedMenuOrderItems([]);
@@ -260,6 +291,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     clearOrder,
     processedMenuOrderItems,
     addToProcessedMenuOrderItems,
+    removeProcessedMenuOrderItem,
     clearProcessedMenuOrderItems,
     getMaxSecondaryId,
     editOrderItem,

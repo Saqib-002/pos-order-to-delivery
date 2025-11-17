@@ -224,10 +224,10 @@ const OrderMenu = () => {
                   <DocumentIcon className="size-10 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-medium text-black mb-2">
-                  {t("menuComponents.noItemsAvailable")}
+                  {t("menuComponents.emptyMessages.noItemsAvailable")}
                 </h3>
                 <p className="text-gray-500">
-                  {t("menuComponents.noItemsAvailableDescription")}
+                  {t("menuComponents.emptyMessages.noItemsAvailableDescription")}
                 </p>
               </div>
             )}

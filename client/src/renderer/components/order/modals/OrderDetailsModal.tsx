@@ -39,7 +39,304 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   view = "kitchen",
 }) => {
   const { t } = useTranslation();
-  const { configurations } = useConfigurations();
+
+  const receipt = () => {
+    const { nonMenuItems, groups, orderTotal } = calculateOrderTotal(
+      order.items || []
+    );
+
+    // Sort items by priority
+    const prioritySort = (a: any, b: any) =>
+      (a.productPriority || 0) - (b.productPriority || 0);
+    const sortedNonMenuItems = nonMenuItems.sort(prioritySort);
+    const sortedGroups = groups.map((group) => ({
+      ...group,
+      items: group.items.sort(prioritySort),
+    }));
+
+    const taxBreakdown: Record<
+      string,
+      { base: number; tax: number; rate: number }
+    > = {};
+
+    sortedGroups.forEach((group) => {
+      const sectionQty = group.items[0]?.quantity || 1;
+      const base = group.basePrice;
+      const tax = group.taxPerUnit;
+      const rate = calculateTaxPercentage(base, tax);
+      const rateKey = `${Math.round(rate)}%`;
+
+      if (!taxBreakdown[rateKey]) {
+        taxBreakdown[rateKey] = {
+          base: 0,
+          tax: 0,
+          rate: parseFloat(rateKey),
+        };
+      }
+      taxBreakdown[rateKey].base += base * sectionQty;
+      taxBreakdown[rateKey].tax += tax * sectionQty;
+    });
+    sortedNonMenuItems.forEach((item) => {
+      const base = item.productPrice || 0;
+      const tax = item.productTax || 0;
+      const rate = calculateTaxPercentage(base, tax);
+      const rateKey = `${Math.round(rate)}%`;
+
+      if (!taxBreakdown[rateKey]) {
+        taxBreakdown[rateKey] = {
+          base: 0,
+          tax: 0,
+          rate: parseFloat(rateKey),
+        };
+      }
+      taxBreakdown[rateKey].base += base * item.quantity;
+      taxBreakdown[rateKey].tax += tax * item.quantity;
+    });
+
+    return (
+      <div
+        className="space-y-4"
+        style={{ fontFamily: "'Courier New', monospace" }}
+      >
+        <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
+          {t("orderDetailsModal.orderItems")}
+        </h3>
+
+        {/* Receipt Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-base">
+            <thead className="border-b border-black">
+              <tr>
+                <th className="w-[10%] text-center py-2 font-semibold">
+                  {t("receipt.quantity")}
+                </th>
+                <th className="w-[50%] text-left py-2 font-semibold">
+                  {t("receipt.name")}
+                </th>
+                <th className="w-[20%] text-right py-2 font-semibold">
+                  {t("receipt.subtotal")}
+                </th>
+                <th className="w-[20%] text-right py-2 font-semibold">
+                  {t("receipt.total")}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* Menu Groups */}
+              {sortedGroups.map((group, groupIndex) => {
+                const sectionQty = group.items[0]?.quantity || 1;
+                const menuPrice = group.basePrice;
+                const menuTax = group.taxPerUnit;
+                const supplementTotal = group.supplementTotal;
+                const menuGroupPrice =
+                  (menuPrice + menuTax + supplementTotal) * sectionQty;
+                const variantsAndComplementsTotal = group.items.reduce(
+                  (itemTotal, item) => {
+                    const complementsTotal = Array.isArray(item.complements)
+                      ? item.complements.reduce(
+                          (sum, complement) => sum + complement.price,
+                          0
+                        )
+                      : 0;
+                    return (
+                      itemTotal +
+                      ((item.variantPrice || 0) + complementsTotal) *
+                        item.quantity
+                    );
+                  },
+                  0
+                );
+                const totalGroupPrice =
+                  menuGroupPrice + variantsAndComplementsTotal;
+
+                return (
+                  <React.Fragment key={groupIndex}>
+                    <tr>
+                      <td className="text-center py-1">{sectionQty}</td>
+                      <td className="text-left py-1 font-bold">
+                        {group.menuName}
+                      </td>
+                      <td className="text-right py-1">
+                        €{menuPrice.toFixed(2)}
+                      </td>
+                      <td className="text-right py-1 font-bold">
+                        €{totalGroupPrice.toFixed(2)}
+                      </td>
+                    </tr>
+                    {group.items.map((item, itemIndex) => {
+                      const parsedComplements = parseComplements(
+                        item.complements
+                      );
+                      return (
+                        <React.Fragment key={itemIndex}>
+                          <tr>
+                            <td></td>
+                            <td className="pl-5 text-base">
+                              {item.productName}{" "}
+                              {item.variantName &&
+                              item.variantId &&
+                              item.variantName !== "0"
+                                ? `(${item.variantName})`
+                                : ""}
+                            </td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          {item.supplement != null && item.supplement > 0 && (
+                            <tr>
+                              <td></td>
+                              <td className="pl-8 text-base">
+                                {t("receipt.extra")}: {item.supplement}
+                              </td>
+                              <td></td>
+                              <td className="text-right">
+                                €{item.supplement.toFixed(2)}
+                              </td>
+                            </tr>
+                          )}
+                          {Number(item.variantPrice) > 0 &&
+                            item.variantName &&
+                            String(item.variantName).trim() !== "0" && (
+                              <tr>
+                                <td></td>
+                                <td className="pl-8 text-base">
+                                  {item.variantName}
+                                </td>
+                                <td></td>
+                                <td className="text-right">
+                                  €{item.variantPrice.toFixed(2)}
+                                </td>
+                              </tr>
+                            )}
+
+                          {parsedComplements.map((comp, compIndex) => (
+                            <tr key={compIndex}>
+                              <td></td>
+                              <td className="pl-8 text-base">
+                                {comp.itemName}
+                              </td>
+                              <td></td>
+                              <td className="text-right">
+                                €{comp.price.toFixed(2)}
+                              </td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      );
+                    })}
+                  </React.Fragment>
+                );
+              })}
+
+              {/* Non-Menu Items */}
+              {sortedNonMenuItems.map((item, index) => {
+                const parsedComplements = parseComplements(item.complements);
+                const complementsTotal = Array.isArray(item.complements)
+                  ? item.complements.reduce(
+                      (complementSum, complement) =>
+                        complementSum + complement.price,
+                      0
+                    )
+                  : 0;
+                const subtotal =
+                  item.productPrice +
+                  item.productTax +
+                  item.variantPrice +
+                  complementsTotal;
+                const discountAmount = (subtotal * item.productDiscount) / 100;
+                const itemTotal = (subtotal - discountAmount) * item.quantity;
+                const unitPrice = item.productPrice + item.productTax;
+
+                return (
+                  <React.Fragment key={index}>
+                    <tr>
+                      <td className="text-center py-1">{item.quantity}</td>
+                      <td className="text-left py-1 font-bold">
+                        {item.productName}
+                      </td>
+                      <td className="text-right py-1">
+                        €{unitPrice.toFixed(2)}
+                      </td>
+                      <td className="text-right py-1 font-bold">
+                        €{itemTotal.toFixed(2)}
+                      </td>
+                    </tr>
+                    {item.variantPrice && item.variantPrice > 0 && (
+                      <tr>
+                        <td></td>
+                        <td className="pl-5 text-base">{item.variantName}</td>
+                        <td></td>
+                        <td className="text-right">
+                          €{item.variantPrice.toFixed(2)}
+                        </td>
+                      </tr>
+                    )}
+                    {parsedComplements.map((comp, compIndex) => (
+                      <tr key={compIndex}>
+                        <td></td>
+                        <td className="pl-5 text-base">{comp.itemName}</td>
+                        <td></td>
+                        <td className="text-right">€{comp.price.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+
+          {/* Total Row */}
+          <div className="border-t-2 border-black mt-4">
+            <table className="w-full">
+              <tr>
+                <td className="w-[10%]"></td>
+                <td className="w-[50%]"></td>
+                <td className="w-[20%] text-right font-bold py-2">
+                  {t("receipt.total")}
+                </td>
+                <td className="w-[20%] text-right font-bold py-2">
+                  €{orderTotal.toFixed(2)}
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          {/* VAT Breakdown */}
+          {Object.keys(taxBreakdown).length > 0 && (
+            <>
+              <div className="w-full h-px bg-black my-4"></div>
+              <table className="w-full text-base">
+                <thead className="border-b border-black">
+                  <tr>
+                    <th className="w-[50%] text-left py-2 font-semibold">
+                      {t("receipt.vat")}
+                    </th>
+                    <th className="w-[25%] text-right py-2 font-semibold">
+                      {t("receipt.base")}
+                    </th>
+                    <th className="w-[25%] text-right py-2 font-semibold">
+                      {t("receipt.tax")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(taxBreakdown).map(
+                    ([rateKey, { base, tax }]) => (
+                      <tr key={rateKey}>
+                        <td className="text-left py-1">{rateKey}</td>
+                        <td className="text-right py-1">€{base.toFixed(2)}</td>
+                        <td className="text-right py-1">€{tax.toFixed(2)}</td>
+                      </tr>
+                    )
+                  )}
+                </tbody>
+              </table>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const formatOrderNotes = (notes: string) => {
     if (!notes) return null;
@@ -302,328 +599,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               )}
 
               {/* Order Items - Receipt Style */}
-              {(() => {
-                const { nonMenuItems, groups, orderTotal } =
-                  calculateOrderTotal(order.items || []);
-
-                // Sort items by priority
-                const prioritySort = (a: any, b: any) =>
-                  (a.productPriority || 0) - (b.productPriority || 0);
-                const sortedNonMenuItems = nonMenuItems.sort(prioritySort);
-                const sortedGroups = groups.map((group) => ({
-                  ...group,
-                  items: group.items.sort(prioritySort),
-                }));
-
-                const taxBreakdown: Record<
-                  string,
-                  { base: number; tax: number; rate: number }
-                > = {};
-
-                sortedGroups.forEach((group) => {
-                  const sectionQty = group.items[0]?.quantity || 1;
-                  const base = group.basePrice;
-                  const tax = group.taxPerUnit;
-                  const rate = calculateTaxPercentage(base, tax);
-                  const rateKey = `${Math.round(rate)}%`;
-
-                  if (!taxBreakdown[rateKey]) {
-                    taxBreakdown[rateKey] = {
-                      base: 0,
-                      tax: 0,
-                      rate: parseFloat(rateKey),
-                    };
-                  }
-                  taxBreakdown[rateKey].base += base * sectionQty;
-                  taxBreakdown[rateKey].tax += tax * sectionQty;
-                });
-                sortedNonMenuItems.forEach((item) => {
-                  const base = item.productPrice || 0;
-                  const tax = item.productTax || 0;
-                  const rate = calculateTaxPercentage(base, tax);
-                  const rateKey = `${Math.round(rate)}%`;
-
-                  if (!taxBreakdown[rateKey]) {
-                    taxBreakdown[rateKey] = {
-                      base: 0,
-                      tax: 0,
-                      rate: parseFloat(rateKey),
-                    };
-                  }
-                  taxBreakdown[rateKey].base += base * item.quantity;
-                  taxBreakdown[rateKey].tax += tax * item.quantity;
-                });
-
-                return (
-                  <div
-                    className="space-y-4"
-                    style={{ fontFamily: "'Courier New', monospace" }}
-                  >
-                    <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
-                      {t("orderDetailsModal.orderItems")}
-                    </h3>
-
-                    {/* Receipt Table */}
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse text-base">
-                        <thead className="border-b border-black">
-                          <tr>
-                            <th className="w-[10%] text-center py-2 font-semibold">
-                              {t("receipt.quantity")}
-                            </th>
-                            <th className="w-[50%] text-left py-2 font-semibold">
-                              {t("receipt.name")}
-                            </th>
-                            <th className="w-[20%] text-right py-2 font-semibold">
-                              {t("receipt.subtotal")}
-                            </th>
-                            <th className="w-[20%] text-right py-2 font-semibold">
-                              {t("receipt.total")}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {/* Menu Groups */}
-                          {sortedGroups.map((group, groupIndex) => {
-                            const sectionQty = group.items[0]?.quantity || 1;
-                            const menuPrice = group.basePrice;
-                            const menuTax = group.taxPerUnit;
-                            const supplementTotal = group.supplementTotal;
-                            const menuGroupPrice =
-                              (menuPrice + menuTax + supplementTotal) *
-                              sectionQty;
-                            const variantsAndComplementsTotal =
-                              group.items.reduce((itemTotal, item) => {
-                                const complementsTotal = Array.isArray(
-                                  item.complements
-                                )
-                                  ? item.complements.reduce(
-                                      (sum, complement) =>
-                                        sum + complement.price,
-                                      0
-                                    )
-                                  : 0;
-                                return (
-                                  itemTotal +
-                                  ((item.variantPrice || 0) +
-                                    complementsTotal) *
-                                    item.quantity
-                                );
-                              }, 0);
-                            const totalGroupPrice =
-                              menuGroupPrice + variantsAndComplementsTotal;
-
-                            return (
-                              <React.Fragment key={groupIndex}>
-                                <tr>
-                                  <td className="text-center py-1">
-                                    {sectionQty}
-                                  </td>
-                                  <td className="text-left py-1 font-bold">
-                                    {group.menuName}
-                                  </td>
-                                  <td className="text-right py-1">
-                                    €{menuPrice.toFixed(2)}
-                                  </td>
-                                  <td className="text-right py-1 font-bold">
-                                    €{totalGroupPrice.toFixed(2)}
-                                  </td>
-                                </tr>
-                                {group.items.map((item, itemIndex) => {
-                                  const parsedComplements = parseComplements(
-                                    item.complements
-                                  );
-                                  return (
-                                    <React.Fragment key={itemIndex}>
-                                      {item.supplement != null &&
-                                        item.supplement > 0 && (
-                                          <tr>
-                                            <td></td>
-                                            <td className="pl-5 text-base">
-                                              {t("receipt.extra")}:{" "}
-                                              {item.supplement}
-                                            </td>
-                                            <td></td>
-                                            <td className="text-right">
-                                              €{item.supplement.toFixed(2)}
-                                            </td>
-                                          </tr>
-                                        )}
-                                      <tr>
-                                        <td></td>
-                                        <td className="pl-5 text-base">
-                                          {item.productName}{" "}
-                                          {item.variantName && item.variantId
-                                            ? `(${item.variantName})`
-                                            : ""}
-                                        </td>
-                                        <td></td>
-                                        <td></td>
-                                      </tr>
-                                      {item.variantPrice &&
-                                        item.variantPrice > 0 && (
-                                          <tr>
-                                            <td></td>
-                                            <td className="pl-8 text-base">
-                                              {item.variantName}
-                                            </td>
-                                            <td></td>
-                                            <td className="text-right">
-                                              €{item.variantPrice.toFixed(2)}
-                                            </td>
-                                          </tr>
-                                        )}
-                                      {parsedComplements.map(
-                                        (comp, compIndex) => (
-                                          <tr key={compIndex}>
-                                            <td></td>
-                                            <td className="pl-8 text-base">
-                                              {comp.itemName}
-                                            </td>
-                                            <td></td>
-                                            <td className="text-right">
-                                              €{comp.price.toFixed(2)}
-                                            </td>
-                                          </tr>
-                                        )
-                                      )}
-                                    </React.Fragment>
-                                  );
-                                })}
-                              </React.Fragment>
-                            );
-                          })}
-
-                          {/* Non-Menu Items */}
-                          {sortedNonMenuItems.map((item, index) => {
-                            const parsedComplements = parseComplements(
-                              item.complements
-                            );
-                            const complementsTotal = Array.isArray(
-                              item.complements
-                            )
-                              ? item.complements.reduce(
-                                  (complementSum, complement) =>
-                                    complementSum + complement.price,
-                                  0
-                                )
-                              : 0;
-                            const subtotal =
-                              item.productPrice +
-                              item.productTax +
-                              item.variantPrice +
-                              complementsTotal;
-                            const discountAmount =
-                              (subtotal * item.productDiscount) / 100;
-                            const itemTotal =
-                              (subtotal - discountAmount) * item.quantity;
-                            const unitPrice =
-                              item.productPrice + item.productTax;
-
-                            return (
-                              <React.Fragment key={index}>
-                                <tr>
-                                  <td className="text-center py-1">
-                                    {item.quantity}
-                                  </td>
-                                  <td className="text-left py-1 font-bold">
-                                    {item.productName}
-                                  </td>
-                                  <td className="text-right py-1">
-                                    €{unitPrice.toFixed(2)}
-                                  </td>
-                                  <td className="text-right py-1 font-bold">
-                                    €{itemTotal.toFixed(2)}
-                                  </td>
-                                </tr>
-                                {item.variantPrice && item.variantPrice > 0 && (
-                                  <tr>
-                                    <td></td>
-                                    <td className="pl-5 text-base">
-                                      {item.variantName}
-                                    </td>
-                                    <td></td>
-                                    <td className="text-right">
-                                      €{item.variantPrice.toFixed(2)}
-                                    </td>
-                                  </tr>
-                                )}
-                                {parsedComplements.map((comp, compIndex) => (
-                                  <tr key={compIndex}>
-                                    <td></td>
-                                    <td className="pl-5 text-base">
-                                      {comp.itemName}
-                                    </td>
-                                    <td></td>
-                                    <td className="text-right">
-                                      €{comp.price.toFixed(2)}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </React.Fragment>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-
-                      {/* Total Row */}
-                      <div className="border-t-2 border-black mt-4">
-                        <table className="w-full">
-                          <tr>
-                            <td className="w-[10%]"></td>
-                            <td className="w-[50%]"></td>
-                            <td className="w-[20%] text-right font-bold py-2">
-                              {t("receipt.total")}
-                            </td>
-                            <td className="w-[20%] text-right font-bold py-2">
-                              €{orderTotal.toFixed(2)}
-                            </td>
-                          </tr>
-                        </table>
-                      </div>
-
-                      {/* VAT Breakdown */}
-                      {Object.keys(taxBreakdown).length > 0 && (
-                        <>
-                          <div className="w-full h-px bg-black my-4"></div>
-                          <table className="w-full text-base">
-                            <thead className="border-b border-black">
-                              <tr>
-                                <th className="w-[50%] text-left py-2 font-semibold">
-                                  {t("receipt.vat")}
-                                </th>
-                                <th className="w-[25%] text-right py-2 font-semibold">
-                                  {t("receipt.base")}
-                                </th>
-                                <th className="w-[25%] text-right py-2 font-semibold">
-                                  {t("receipt.tax")}
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {Object.entries(taxBreakdown).map(
-                                ([rateKey, { base, tax }]) => (
-                                  <tr key={rateKey}>
-                                    <td className="text-left py-1">
-                                      {rateKey}
-                                    </td>
-                                    <td className="text-right py-1">
-                                      €{base.toFixed(2)}
-                                    </td>
-                                    <td className="text-right py-1">
-                                      €{tax.toFixed(2)}
-                                    </td>
-                                  </tr>
-                                )
-                              )}
-                            </tbody>
-                          </table>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              })()}
+              {(() => receipt())()}
 
               {/* Notes */}
               {order.notes && (
@@ -639,132 +615,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             </div>
           ) : (
             // Kitchen view - receipt style
-            (() => {
-              const { nonMenuItems, groups } = calculateOrderTotal(
-                order.items || []
-              );
-              const { orderTotal } = calculateOrderTotal(order.items || []);
-              const paymentStatus = calculatePaymentStatus(
-                order.paymentType || "",
-                orderTotal
-              );
-
-              // Sort items by priority
-              const prioritySort = (a: any, b: any) =>
-                (a.productPriority || 0) - (b.productPriority || 0);
-              const sortedNonMenuItems = nonMenuItems.sort(prioritySort);
-              const sortedGroups = groups.map((group) => ({
-                ...group,
-                items: group.items.sort(prioritySort),
-              }));
-
-              const orderDate = new Date(order.createdAt || "");
-              const dateStr = orderDate.toLocaleDateString("es-ES", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              });
-              const timeStr = orderDate.toLocaleTimeString("es-ES", {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
-              const dateTimeStr = `${dateStr} - ${timeStr}`;
-
-              return (
-                <div
-                  className="space-y-4"
-                  style={{ fontFamily: "'Courier New', monospace" }}
-                >
-                  {/* Order Header - Receipt Style */}
-                  <div className="text-center mb-6">
-                    <h1 className="font-bold mb-1" style={{ fontSize: "30px" }}>
-                      {configurations.orderPrefix || "K"}
-                      {order.orderId}
-                    </h1>
-                    <h2 className="font-bold mb-1" style={{ fontSize: "20px" }}>
-                      {order.orderType ? order.orderType.toUpperCase() : "N/A"}
-                    </h2>
-                    <p className="text-base">{dateTimeStr}</p>
-                    <p className="text-base">{paymentStatus.status}</p>
-                  </div>
-
-                  {/* Horizontal Line */}
-                  <div className="w-full h-px bg-black my-2"></div>
-
-                  {/* Items Section */}
-                  <div className="space-y-3">
-                    {/* Menu Groups */}
-                    {sortedGroups.map((group, groupIndex) => (
-                      <div key={groupIndex} className="space-y-1">
-                        <div className="font-bold text-lg">
-                          {group.menuName}
-                        </div>
-                        {group.items.map((item, itemIndex) => {
-                          const parsedComplements = parseComplements(
-                            item.complements
-                          );
-                          return (
-                            <div key={itemIndex} className="space-y-1">
-                              <div className="font-bold pl-5 text-base">
-                                {item.productName}
-                                {item.variantId && item.variantName
-                                  ? ` - (${item.variantName})`
-                                  : ""}
-                              </div>
-                              {parsedComplements.map((comp, compIndex) => (
-                                <div key={compIndex} className="pl-8 text-base">
-                                  {comp.itemName}
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ))}
-
-                    {/* Non-Menu Items */}
-                    {sortedNonMenuItems.map((item, index) => {
-                      const parsedComplements = parseComplements(
-                        item.complements
-                      );
-                      return (
-                        <div key={index} className="space-y-1">
-                          <div className="font-bold text-lg">
-                            {item.productName}
-                            {item.variantId && item.variantName
-                              ? ` - (${item.variantName})`
-                              : ""}
-                          </div>
-                          {parsedComplements.map((comp, compIndex) => (
-                            <div key={compIndex} className="pl-5 text-base">
-                              {comp.itemName}
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })}
-
-                    {sortedGroups.length === 0 &&
-                      sortedNonMenuItems.length === 0 && (
-                        <p className="text-center py-4 text-gray-500">
-                          {t("orderDetailsModal.noItemsFound")}
-                        </p>
-                      )}
-                  </div>
-
-                  {/* Horizontal Line */}
-                  <div className="w-full h-px bg-black my-2"></div>
-
-                  {/* Order Footer */}
-                  <div className="text-base space-y-1">
-                    <div>
-                      {t("receipt.order")} {configurations.orderPrefix || "K"}
-                      {order.orderId} - {dateTimeStr}
-                    </div>
-                  </div>
-                </div>
-              );
-            })()
+            (() => receipt())()
           )}
         </div>
 

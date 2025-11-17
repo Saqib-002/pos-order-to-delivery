@@ -1228,7 +1228,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setSelectedAddonPage(page.pageNo)}
-                          className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                          className={`cursor-pointer px-5 py-3 rounded-md text-sm font-medium transition-colors duration-200 ml-1 ${
                             selectedAddonPage === page.pageNo
                               ? "bg-black text-white"
                               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -1256,8 +1256,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         onClick={addAddonPage}
                         variant="transparent"
                         label={t("menuComponents.modals.productModal.addPage")}
-                        Icon={<AddIcon />}
-                        className="border-2 border-dashed border-gray-300 text-gray-600 hover:border-black hover:text-black"
+                        Icon={<AddIcon className="size-6" />}
+                        className="border-2 border-dashed border-gray-300 text-gray-600 hover:border-black hover:text-black ml-1"
                       />
                     )}
                   </div>

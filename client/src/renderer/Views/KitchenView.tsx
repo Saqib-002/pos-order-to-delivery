@@ -192,7 +192,7 @@ export const KitchenView = () => {
                       <div className="flex-1">
                         <div className="font-medium text-black">
                           {item.quantity}x {item.productName}
-                          {item.variantName && (
+                          {item.variantName && item.variantId &&  (
                             <span className="text-gray-600">
                               {" "}
                               ({item.variantName})
