@@ -955,6 +955,10 @@
                 "variantDeleteWarning": "Eliminar esta variante también la eliminará de todos los productos asociados.",
                 "menuPageDeleteWarning": "Eliminar esta página de menú también la eliminará de todos los menús asociados.",
                 "productDeleteWarning": "Eliminar este producto también lo eliminará de todas las páginas de menú asociadas."
+            },
+            "emptyMessages": {
+                "noItemsAvailable": "No hay productos disponibles",
+                "noItemsAvailableDescription": "Por favor agregue productos para colocar un pedido"
             }
         },
         "modals": {

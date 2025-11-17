@@ -550,9 +550,9 @@ export const ManageOrdersView = () => {
             <div className="flex flex-col lg:flex-row gap-4 items-end min-w-max">
               {/* Search Input */}
               <div className="w-full lg:w-80">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <span className="inline w-4 h-4 mr-1">🔍</span>
-                  {t("manageOrders.searchOrders")}
+                <label className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2">
+                  {/* <SearchIcon className="size-4" /> */}
+                  <span>{t("manageOrders.searchOrders")}</span>
                 </label>
                 <div className="relative">
                   <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -600,7 +600,7 @@ export const ManageOrdersView = () => {
               {/* Customer Filter */}
               <div className="w-full lg:w-48">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <PersonIcon className="inline w-4 h-4 mr-1" />
+                  {/* <PersonIcon className="inline w-4 h-4 mr-1" /> */}
                   {t("manageOrders.customer")}
                 </label>
                 <CustomSelect
@@ -635,7 +635,7 @@ export const ManageOrdersView = () => {
               {/* Delivery Person Filter */}
               <div className="w-full lg:w-48">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <PersonIcon className="inline w-4 h-4 mr-1" />
+                  {/* <PersonIcon className="inline w-4 h-4 mr-1" /> */}
                   {t("manageOrders.deliveryPerson")}
                 </label>
                 <CustomSelect

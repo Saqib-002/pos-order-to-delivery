@@ -953,6 +953,10 @@
                 "variantDeleteWarning": "Deleting this variant will also remove it from all associated products.",
                 "menuPageDeleteWarning": "Deleting this menu page will also remove it from all associated menus.",
                 "productDeleteWarning": "Removing this product will also remove it from all associated menu pages"
+            },
+            "emptyMessages": {
+                "noItemsAvailable": "No Products Available",
+                "noItemsAvailableDescription": "Please add products to place order"
             }
         },
         "modals": {

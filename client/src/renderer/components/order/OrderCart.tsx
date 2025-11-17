@@ -57,6 +57,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
     setMode,
     clearOrder,
     addToOrder,
+    addToProcessedMenuOrderItems,
+    clearProcessedMenuOrderItems,
   } = useOrder();
   const confirm = useConfirm();
   const { configurations } = useConfigurations();
@@ -105,7 +107,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
           user!.role,
           status,
           t,
-          order?.customer.address ? formatAddress(order.customer.address) : undefined
+          order?.customer.address
+            ? formatAddress(order.customer.address)
+            : undefined
         );
       } else {
         const unprintedItems = items.filter(
@@ -139,17 +143,26 @@ const OrderCart: React.FC<OrderCartProps> = ({
         }
         return;
       }
-      const updateRes= await (window as any).electronAPI.updateOrderItems(token, items.map((item: OrderItem) => ({ itemId: item.id, itemData:{isKitchenPrinted: true} })));
-      if(updateRes.status){
-        const res= await (window as any).electronAPI.getOrderItems(token, orderId);
-        if(res.status){
+      const updateRes = await (window as any).electronAPI.updateOrderItems(
+        token,
+        items.map((item: OrderItem) => ({
+          itemId: item.id,
+          itemData: { isKitchenPrinted: true },
+        }))
+      );
+      if (updateRes.status) {
+        const res = await (window as any).electronAPI.getOrderItems(
+          token,
+          orderId
+        );
+        if (res.status) {
           clearOrder();
           res.data.forEach((item: any) => {
             addToOrder({
               ...item,
               complements: StringToComplements(item.complements),
             });
-          })
+          });
         }
       }
     }
@@ -228,6 +241,13 @@ const OrderCart: React.FC<OrderCartProps> = ({
       toast.error(t("orderCart.errors.menuHaveBeenDeleted"));
       return;
     }
+    clearProcessedMenuOrderItems();
+    group.items.forEach((item: OrderItem) => {
+      addToProcessedMenuOrderItems({
+        ...item,
+        complements: Array.isArray(item.complements) ? item.complements : [],
+      });
+    });
     setMode("menu");
     setEditingGroup(group);
     setSelectedMenu(res.data);
@@ -388,9 +408,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 </h3>
                 <div className="text-sm text-gray-600 space-y-1">
                   <div className="flex justify-between">
-                    <span>
-                      {t("orderCart.itemPrice")}
-                    </span>
+                    <span>{t("orderCart.itemPrice")}</span>
                     <span>
                       €{(item.productPrice + item.productTax).toFixed(2)}
                     </span>
@@ -476,9 +494,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
                     item.variantPrice +
                     (Array.isArray(item.complements)
                       ? item.complements.reduce(
-                        (sum, complement) => sum + complement.price,
-                        0
-                      )
+                          (sum, complement) => sum + complement.price,
+                          0
+                        )
                       : 0)) *
                   item.quantity
                 ).toFixed(2)}
@@ -497,9 +515,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
             (itemTotal, item) => {
               const complementsTotal = Array.isArray(item.complements)
                 ? item.complements.reduce(
-                  (sum, complement) => sum + complement.price,
-                  0
-                )
+                    (sum, complement) => sum + complement.price,
+                    0
+                  )
                 : 0;
 
               return (
@@ -552,9 +570,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 {/* Price Breakdown */}
                 <div className="text-sm text-gray-600 space-y-1 mb-3">
                   <div className="flex justify-between">
-                    <span>
-                      {t("orderCart.menuPrice")}
-                    </span>
+                    <span>{t("orderCart.menuPrice")}</span>
                     <span>
                       €{(group.basePrice + group.taxPerUnit).toFixed(2)}
                     </span>
@@ -628,12 +644,14 @@ const OrderCart: React.FC<OrderCartProps> = ({
                             <span>Tax</span>
                             <span>€{item.productTax.toFixed(2)}</span>
                           </div> */}
-                          <div className="flex justify-between">
-                            <span>
-                              {t("orderCart.variant")}: {item.variantName}
-                            </span>
-                            <span>€{item.variantPrice.toFixed(2)}</span>
-                          </div>
+                          {item.variantName && item.variantId && (
+                            <div className="flex justify-between">
+                              <span>
+                                {t("orderCart.variant")}: {item.variantName}
+                              </span>
+                              <span>€{item.variantPrice.toFixed(2)}</span>
+                            </div>
+                          )}
                         </div>
                         {item.complements.length > 0 && (
                           <div className="mt-2">

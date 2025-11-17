@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import CustomButton from "../ui/CustomButton";
 import { useTranslation } from "react-i18next";
+import { OrderItem } from "@/types/order";
+import { ComplementsToString } from "@/renderer/utils/order";
 
 interface MenuPageProduct {
   id: string;
@@ -49,17 +51,22 @@ const MenuOrderTakingForm = ({
   const [processedCounts, setProcessedCounts] = useState<
     Record<string, number>
   >({});
+  const [isCompleting, setIsCompleting] = useState(false);
   const {
     order,
+    addToOrder,
+    setOrder,
     removeMenuFromOrder,
     setSelectedProduct,
-    removeMenuItemFromOrder,
     processedMenuOrderItems,
+    removeProcessedMenuOrderItem,
+    clearProcessedMenuOrderItems,
     getMaxSecondaryId,
     selectedMenu,
     setSelectedMenu,
     setMode,
     editingGroup,
+    setEditingGroup,
     setEditingProduct,
   } = useOrder();
   const [maxSecondaryId, setMaxSecondaryId] = useState(0);
@@ -172,46 +179,41 @@ const MenuOrderTakingForm = ({
     setMaxSecondaryId(getMaxSecondaryId(selectedMenu.id));
   }, []);
   useEffect(() => {
-    if (currentMenuPage && (processedMenuOrderItems || editingGroup)) {
-      const orderPairs = new Set([
-        ...processedMenuOrderItems.map(
-          (item) => `${item.productId}-${item.menuPageId}`
-        ),
-        ...(editingGroup?.items || []).map(
-          (item: any) => `${item.productId}-${item.menuPageId}`
-        ),
-      ]);
-      const processedProducts = currentMenuPage.products.filter((product) => {
-        const pairKey = `${product.productId}-${product.menuPageId}`;
-        return orderPairs.has(pairKey);
-      });
-      setProcessedMenuProducts(
-        new Set(processedProducts.map((product) => product.productId))
-      );
+    if (!currentMenuPage || !selectedMenu) {
+      setProcessedMenuProducts(new Set());
+      return;
     }
-  }, [processedMenuOrderItems, currentMenuPage, editingGroup]);
+    const orderPairs = new Set(
+      processedMenuOrderItems
+        .filter(
+          (item) =>
+            item.menuId === selectedMenu.id && item.menuPageId !== undefined
+        )
+        .map((item) => `${item.productId}-${item.menuPageId}`)
+    );
+    const processedProducts = currentMenuPage.products.filter((product) => {
+      const pageId = product.menuPageId || currentMenuPage.id;
+      const pairKey = `${product.productId}-${pageId}`;
+      return orderPairs.has(pairKey);
+    });
+    setProcessedMenuProducts(
+      new Set(processedProducts.map((product) => product.productId))
+    );
+  }, [processedMenuOrderItems, currentMenuPage, selectedMenu]);
   useEffect(() => {
-    if (menuPages.length > 0 && (processedMenuOrderItems || editingGroup)) {
-      const orderPairs = new Set([
-        ...processedMenuOrderItems.map(
-          (item) => `${item.productId}-${item.menuPageId}`
-        ),
-        ...(editingGroup?.items || []).map(
-          (item: any) => `${item.productId}-${item.menuPageId}`
-        ),
-      ]);
-      const counts: Record<string, number> = {};
-      menuPages.forEach((page: MenuPage) => {
-        const pageCount = page.products.filter((product: MenuPageProduct) =>
-          orderPairs.has(`${product.productId}-${page.id}`)
-        ).length;
-        counts[page.id] = pageCount;
-      });
-      setProcessedCounts(counts);
-    } else {
+    if (!menuPages.length || !selectedMenu) {
       setProcessedCounts({});
+      return;
     }
-  }, [processedMenuOrderItems, menuPages, editingGroup]);
+    const counts: Record<string, number> = {};
+    menuPages.forEach((page: MenuPage) => {
+      const pageCount = processedMenuOrderItems.filter(
+        (item) => item.menuId === selectedMenu.id && item.menuPageId === page.id
+      ).length;
+      counts[page.id] = pageCount;
+    });
+    setProcessedCounts(counts);
+  }, [processedMenuOrderItems, menuPages, selectedMenu]);
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -264,95 +266,178 @@ const MenuOrderTakingForm = ({
     setProcessedMenuProducts(new Set());
     setCurrentMenuPageIndex(0);
     setProcessedCounts({});
+    clearProcessedMenuOrderItems();
     setSelectedMenu(null);
     setSelectedProduct(null);
+    setEditingProduct(null);
+    setEditingGroup(null);
+    setMode("product");
   };
   const handleCancel = async () => {
-    if (order && order.deliveryPerson && order.deliveryPerson.id) {
-      toast.info(
-        t("menuOrderTakingForm.messages.orderAssignedToDeliveryPerson")
-      );
-      return;
-    }
-
-    if (totalProcessed !== 0) {
-      const res = await (window as any).electronAPI.removeMenuFromOrder(
-        token,
-        order?.id,
-        selectedMenu.id,
-        editingGroup?.secondaryId || maxSecondaryId
-      );
-      if (!res.status) {
-        toast.error(t("menuOrderTakingForm.errors.errorRemovingMenuFromOrder"));
-        return;
-      }
-      removeMenuFromOrder(
-        selectedMenu.id,
-        editingGroup?.secondaryId || maxSecondaryId
-      );
-    }
     resetMenuProcessing();
   };
   const handleRemoveMenuItem = async (menuProduct: MenuPageProduct) => {
-    if (order && order.deliveryPerson && order.deliveryPerson.id) {
-      toast.info(
-        t("menuOrderTakingForm.messages.orderAssignedToDeliveryPerson")
+    const targetPageId = menuProduct.menuPageId || currentMenuPage?.id;
+    if (!targetPageId || !selectedMenu) {
+      toast.error(
+        t("menuOrderTakingForm.errors.errorRemovingMenuItemFromOrder")
       );
       return;
     }
 
-    if (menuProduct.menuPageId !== undefined) {
-      const res = await (window as any).electronAPI.removeMenuItemFromOrder(
-        token,
-        order?.id,
-        selectedMenu.id,
-        editingGroup?.secondaryId || maxSecondaryId,
-        menuProduct.productId,
-        menuProduct.menuPageId
+    const stagedItem = processedMenuOrderItems.find(
+      (item) =>
+        item.productId === menuProduct.productId &&
+        item.menuPageId === targetPageId &&
+        item.menuId === selectedMenu.id
+    );
+    if (!stagedItem) {
+      toast.error(
+        t("menuOrderTakingForm.errors.errorRemovingMenuItemFromOrder")
       );
-      if (!res.status) {
-        toast.error(
-          t("menuOrderTakingForm.errors.errorRemovingMenuItemFromOrder")
-        );
-        return;
-      }
-      removeMenuItemFromOrder(
-        selectedMenu.id,
-        editingGroup?.secondaryId || maxSecondaryId,
-        menuProduct.productId,
-        menuProduct.menuPageId
-      );
+      return;
     }
+
+    removeProcessedMenuOrderItem(stagedItem.id);
+    setProcessedMenuProducts((prev) => {
+      const updated = new Set(prev);
+      updated.delete(menuProduct.productId);
+      return updated;
+    });
+    setProcessedCounts((prev) => {
+      const currentCount = prev[targetPageId] || 0;
+      return {
+        ...prev,
+        [targetPageId]: currentCount > 0 ? currentCount - 1 : 0,
+      };
+    });
   };
   const handleEditMenuItem = async (menuProduct: MenuPageProduct) => {
-    if (menuProduct.menuPageId !== undefined) {
-      const editingItem = editingGroup.items.find(
-        (item: any) =>
-          item.productId === menuProduct.productId &&
-          item.menuPageId === menuProduct.menuPageId
+    const targetPageId = menuProduct.menuPageId || currentMenuPage?.id;
+    if (!targetPageId || !selectedMenu) {
+      return;
+    }
+    const editingItem = processedMenuOrderItems.find(
+      (item) =>
+        item.productId === menuProduct.productId &&
+        item.menuPageId === targetPageId &&
+        item.menuId === selectedMenu.id
+    );
+    if (!editingItem) {
+      toast.error(t("menuOrderTakingForm.errors.errorGettingProduct"));
+      return;
+    }
+    const res = await (window as any).electronAPI.getProductById(
+      token,
+      menuProduct.productId
+    );
+    if (!res.status) {
+      toast.error(t("menuOrderTakingForm.errors.errorGettingProduct"));
+      return;
+    }
+    setSelectedProduct(res.data);
+    setEditingProduct(editingItem);
+    setCurrentOrderItem({
+      menuId: selectedMenu.id,
+      menuName: selectedMenu.name,
+      menuDescription: selectedMenu.description,
+      menuDiscount: parseFloat(selectedMenu.discount),
+      menuPrice: parseFloat(selectedMenu.price),
+      menuTax: parseFloat(selectedMenu.tax),
+      menuPageId: currentMenuPage.id,
+      menuPageName: currentMenuPage.name,
+      supplement: menuProduct.supplement,
+      menuSecondaryId: editingItem.menuSecondaryId,
+    });
+  };
+  const handleCompleteMenu = async () => {
+    if (!selectedMenu) {
+      return;
+    }
+    if (processedMenuOrderItems.length === 0) {
+      toast.warn(
+        t("menuOrderTakingForm.selectProductsToGetStarted", {
+          min: currentMin,
+        })
       );
-      const res = await (window as any).electronAPI.getProductById(
-        token,
-        menuProduct.productId
+      return;
+    }
+    const stagedItems = processedMenuOrderItems.filter(
+      (item) => item.menuId === selectedMenu.id
+    );
+    if (!stagedItems.length) {
+      toast.warn(
+        t("menuOrderTakingForm.selectProductsToGetStarted", {
+          min: currentMin,
+        })
       );
-      if (!res.status) {
-        toast.error(t("menuOrderTakingForm.errors.errorGettingProduct"));
-        return;
+      return;
+    }
+    const secondaryId = editingGroup?.secondaryId || maxSecondaryId + 1;
+    let currentOrderId = order?.id;
+    try {
+      setIsCompleting(true);
+      if (editingGroup && order) {
+        const res = await (window as any).electronAPI.removeMenuFromOrder(
+          token,
+          order.id,
+          selectedMenu.id,
+          secondaryId
+        );
+        if (!res.status) {
+          toast.error(
+            t("menuOrderTakingForm.errors.errorRemovingMenuFromOrder")
+          );
+          return;
+        }
+        removeMenuFromOrder(selectedMenu.id, secondaryId);
       }
-      setSelectedProduct(res.data);
-      setEditingProduct(editingItem);
-      setCurrentOrderItem({
-        menuId: selectedMenu.id,
-        menuName: selectedMenu.name,
-        menuDescription: selectedMenu.description,
-        menuDiscount: parseFloat(selectedMenu.discount),
-        menuPrice: parseFloat(selectedMenu.price),
-        menuTax: parseFloat(selectedMenu.tax),
-        menuPageId: currentMenuPage.id,
-        menuPageName: currentMenuPage.name,
-        supplement: menuProduct.supplement,
-        menuSecondaryId: editingGroup?.secondaryId || maxSecondaryId + 1,
-      });
+
+      for (const item of stagedItems) {
+        const payload = {
+          ...item,
+          menuSecondaryId: secondaryId,
+          complements: ComplementsToString(item.complements),
+        };
+        let response;
+        if (!currentOrderId) {
+          response = await (window as any).electronAPI.saveOrder(
+            token,
+            payload
+          );
+          if (!response.status) {
+            toast.error(t("orderTakingForm.errors.unableToSaveOrder"));
+            return;
+          }
+          currentOrderId = response.data.order.id;
+          setOrder(response.data.order);
+        } else {
+          response = await (window as any).electronAPI.addItemToOrder(
+            token,
+            currentOrderId,
+            payload
+          );
+          if (!response.status) {
+            toast.error(t("orderTakingForm.errors.unableToSaveOrder"));
+            return;
+          }
+        }
+        addToOrder({
+          ...item,
+          id: response.data.itemId,
+          menuSecondaryId: secondaryId,
+        });
+      }
+
+      toast.success(
+        t("menuOrderTakingForm.completeMenu", { count: stagedItems.length })
+      );
+      resetMenuProcessing();
+    } catch (error) {
+      console.error(error);
+      toast.error(t("orderTakingForm.errors.unableToSaveOrder"));
+    } finally {
+      setIsCompleting(false);
     }
   };
   return (
@@ -640,21 +725,17 @@ const MenuOrderTakingForm = ({
                 <div className="flex gap-3">
                   {allPagesComplete ? (
                     <CustomButton
-                      onClick={() => {
-                        resetMenuProcessing();
-                        setProcessedMenuProducts(new Set());
-                      }}
+                      onClick={handleCompleteMenu}
                       type="button"
                       variant="green"
+                      disabled={isCompleting}
                       label={t("menuOrderTakingForm.completeMenu", {
                         count: totalProcessed,
                       })}
                     />
                   ) : (
                     <CustomButton
-                      onClick={() => {
-                        handleCancel();
-                      }}
+                      onClick={handleCancel}
                       type="button"
                       variant="secondary"
                       label={t("common.cancel")}

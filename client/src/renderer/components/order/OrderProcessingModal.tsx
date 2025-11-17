@@ -194,7 +194,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       setIsPaymentOptionModalOpen(true);
     } else {
       handlePaymentConfirm({
-        paymentType: "pending",
+        paymentType:
+          order?.paymentType && order.paymentType.trim() !== ""
+            ? order.paymentType
+            : "pending",
         totalAmount: orderTotal,
       });
     }
@@ -208,7 +211,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const handlePayLater = () => {
     setIsPaymentOptionModalOpen(false);
     handlePaymentConfirm({
-      paymentType: "pending",
+      paymentType:
+        order?.paymentType && order.paymentType.trim() !== ""
+          ? order.paymentType
+          : "pending",
       totalAmount: orderTotal,
     });
   };
@@ -238,6 +244,18 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     const customerAddress =
       selectedCustomer?.address || customCustomerAddress.trim();
 
+    const existingPaymentType = order?.paymentType?.trim();
+    const preserveExistingPaymentType =
+      existingPaymentType &&
+      existingPaymentType.length > 0 &&
+      existingPaymentType.toLowerCase() !== "pending";
+    const resolvedPaymentType =
+      preserveExistingPaymentType &&
+      (!paymentData.paymentType ||
+        paymentData.paymentType.trim().toLowerCase() === "pending")
+        ? existingPaymentType
+        : paymentData.paymentType || existingPaymentType || "pending";
+
     const orderData = {
       customerName,
       customerPhone,
@@ -251,8 +269,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             ? t("orderProcessingModal.defaultCustomers.dineIn")
             : t("orderProcessingModal.defaultCustomers.inStore"),
       orderType,
-      paymentType:
-        orderType === "delivery" ? "pending" : paymentData.paymentType,
+      paymentType: resolvedPaymentType,
       status:
         order?.status === "pending"
           ? "sent to kitchen"
@@ -768,10 +785,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     <div className="font-semibold text-black text-lg">
                       {item.quantity}x {item.productName}
                     </div>
+                    {item.variantName && item.variantId && (
                     <div className="text-sm text-gray-600 mt-1">
-                      {t("orderProcessingModal.orderSummary.variant")}{" "}
-                      {item.variantName}
-                    </div>
+                        {t("orderProcessingModal.orderSummary.variant")}{" "}
+                        {item.variantName}
+                      </div>
+                    )}
                     {item.complements.length > 0 && (
                       <div className="text-xs text-gray-500 mt-2 flex flex-wrap gap-1">
                         <span className="font-medium">
@@ -867,6 +886,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                                     )}
                                 </div> */}
                               </div>
+                              {item.variantName && item.variantId && (
                               <div className="text-sm text-gray-600">
                                 <div className="flex justify-between">
                                   <span>
@@ -877,6 +897,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                                   </span>
                                 </div>
                               </div>
+                              )}
                               {item.complements.length > 0 && (
                                 <div className="mt-2">
                                   <p className="text-xs text-gray-500 font-medium">
