@@ -19,6 +19,7 @@ import { OrderManagementProvider } from "./contexts/orderManagementContext";
 import i18n from "@/i18n";
 import { useConfigurations } from "./contexts/configurationContext";
 import { DatabaseSetupView } from "./Views/DatabaseSetupView";
+import { hasModuleAccess } from "./utils/permissions";
 
 interface ViewConfig {
   component: JSX.Element;
@@ -145,7 +146,12 @@ const App: React.FC = () => {
     if (!currentView) return <PageNotFound />;
     if (
       currentView.roles &&
-      !currentView.roles.includes(auth.user?.role || "")
+      !hasModuleAccess(
+        view,
+        auth.user?.modulePermissions,
+        auth.user?.role,
+        currentView.roles
+      )
     ) {
       return (
         <AccessDenied
