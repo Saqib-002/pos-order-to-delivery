@@ -6,48 +6,42 @@ import { calculatePaymentStatus } from "../../renderer/utils/paymentStatus.js";
 
 export class OrderDatabaseOperations {
     static async saveOrder(item: any): Promise<any> {
-        const trx = await db.transaction();
-        try {
-            const now = new Date().toISOString();
-            const targetTimezone = 'Europe/Madrid';
-            const todayDate = new Date().toLocaleDateString('sv-SE', {
-              timeZone: targetTimezone,
-            });
-            console.log("Today Date:", todayDate);
-            const countResult = await trx("orders")
-                    .whereRaw(`DATE("createdAt" AT TIME ZONE ?) = ?`, [targetTimezone, todayDate])
-                .count("* as count")
-                .first();
-            const newDailyOrderId =
-                (Number((countResult as any).count) || 0) + 1;
-            const newOrder = {
-                id: randomUUID(),
-                status: "pending",
-                orderId: newDailyOrderId,
-                createdAt: now,
-                updatedAt: now,
-            };
-            const order = await trx("orders").insert(newOrder).returning("*");
-            const orderItem = {
-                ...item,
-                printers: item.printers.join("="),
-                id: randomUUID(),
-                orderId: newOrder.id,
-                isKitchenPrinted: false,
-                createdAt: now,
-                updatedAt: now,
-            };
-            await trx("order_items").insert(orderItem);
-            await trx.commit();
-            return {
-                order: order[0],
-                itemId: orderItem.id,
-            };
-        } catch (error) {
-            await trx.rollback();
-            throw error;
-        }
+    const trx = await db.transaction();
+    try {
+      const now = new Date().toISOString();
+      const todayDate = now.slice(0, 10);
+      const countResult = await trx("orders")
+        .whereRaw(`"createdAt"::date = ?`, [todayDate])
+        .count("* as count")
+        .first();
+      const newDailyOrderId = (Number((countResult as any).count) || 0) + 1;
+      const newOrder = {
+        id: randomUUID(),
+        status: "pending",
+        orderId: newDailyOrderId,
+        createdAt: now,
+        updatedAt: now,
+      };
+      const order = await trx("orders").insert(newOrder).returning("*");
+      const orderItem = {
+        ...item,
+        printers: item.printers.join("="),
+        id: randomUUID(),
+        orderId: newOrder.id,
+        createdAt: now,
+        updatedAt: now,
+      };
+      await trx("order_items").insert(orderItem);
+      await trx.commit();
+      return {
+        order: order[0],
+        itemId: orderItem.id,
+      };
+    } catch (error) {
+      await trx.rollback();
+      throw error;
     }
+  }
     static async addItemToOrder(orderId: string, item: any): Promise<any> {
         try {
             const now = new Date().toISOString();
