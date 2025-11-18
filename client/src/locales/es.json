@@ -1,1540 +1,1541 @@
 {
-    "common": {
-        "loading": "Cargando...",
-        "edit": "Editar",
-        "delete": "Eliminar",
-        "cancel": "Cancelar",
-        "save": "Guardar",
-        "add": "Agregar",
-        "create": "Crear",
-        "update": "Actualizar",
-        "close": "Cerrar",
-        "yes": "Sí",
-        "no": "No",
-        "apply": "Aplicar"
-    },
-    "welcome": "Bienvenido a nuestro sitio web.",
+  "common": {
+    "loading": "Cargando...",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "add": "Agregar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "close": "Cerrar",
+    "yes": "Sí",
+    "no": "No",
+    "apply": "Aplicar"
+  },
+  "welcome": "Bienvenido a nuestro sitio web.",
 
-    "configurations": {
-        "title": "Configuraciones",
-        "languageLabel": "Idioma",
-        "languageOptions": {
-            "en": "Inglés",
-            "es": "Español"
-        },
-        "companyName": "Nombre de la empresa",
-        "companyNamePlaceholder": "Ingrese el nombre de la empresa",
-        "companyAddress": "Dirección de la empresa",
-        "companyAddressPlaceholder": "Ingrese la dirección de la empresa",
-        "vatNumber": "Número de IVA",
-        "vatNumberPlaceholder": "Ingrese el número de IVA",
-        "orderPrefix": "prefijo de orden",
-        "orderPrefixPlaceholder": "K",
-        "kitchenPriorityLabel": "Tiempo de prioridad en la cocina (en minutos)",
-        "lowKitchenPriorityTime": "Bajo",
-        "mediumKitchenPriorityTime": "Medio",
-        "highKitchenPriorityTime": "Alto",
-        "companyLogo": "Logo de la empresa",
-        "uploadLogoPrompt": "Sube el logo de tu empresa",
-        "uploadLogoSub": "PNG, JPG hasta 2MB",
-        "clickChangeLogo": "Haz clic para cambiar el logo",
-        "save": "Guardar",
-        "savedSuccess": "Configuraciones guardadas correctamente",
-        "errorGetting": "Error al obtener las configuraciones",
-        "errorSaving": "Error al guardar las configuraciones"
+  "configurations": {
+    "title": "Configuraciones",
+    "languageLabel": "Idioma",
+    "languageOptions": {
+      "en": "Inglés",
+      "es": "Español"
     },
+    "companyName": "Nombre de la empresa",
+    "companyNamePlaceholder": "Ingrese el nombre de la empresa",
+    "companyAddress": "Dirección de la empresa",
+    "companyAddressPlaceholder": "Ingrese la dirección de la empresa",
+    "vatNumber": "Número de IVA",
+    "vatNumberPlaceholder": "Ingrese el número de IVA",
+    "orderPrefix": "prefijo de orden",
+    "orderPrefixPlaceholder": "K",
+    "kitchenPriorityLabel": "Tiempo de prioridad en la cocina (en minutos)",
+    "lowKitchenPriorityTime": "Bajo",
+    "mediumKitchenPriorityTime": "Medio",
+    "highKitchenPriorityTime": "Alto",
+    "companyLogo": "Logo de la empresa",
+    "uploadLogoPrompt": "Sube el logo de tu empresa",
+    "uploadLogoSub": "PNG, JPG hasta 2MB",
+    "clickChangeLogo": "Haz clic para cambiar el logo",
+    "save": "Guardar",
+    "savedSuccess": "Configuraciones guardadas correctamente",
+    "errorGetting": "Error al obtener las configuraciones",
+    "errorSaving": "Error al guardar las configuraciones"
+  },
 
-    "printers": {
-        "title": "Impresoras",
-        "subtitle": "Administrar impresoras",
-        "addPrinter": "Agregar impresora",
-        "manageDescription": "Agrega y administra tus impresoras",
-        "connectedPrinters": "Impresoras conectadas",
-        "noPrinters": "Aún no hay impresoras conectadas. Agrega una arriba.",
-        "table": {
-            "displayName": "Nombre para mostrar",
-            "printerName": "Nombre de la impresora",
-            "createdAt": "Creado el",
-            "mainPrinter": "Impresora principal",
-            "actions": "Acciones"
-        },
-        "deleteTitle": "Eliminar impresora",
-        "deleteMessage": "¿Estás seguro de que deseas eliminar esta impresora? Cada producto asociado a esta impresora será desvinculado.",
-        "deleteConfirm": "Eliminar",
-        "deleteCancel": "Cancelar",
-        "deletedSuccess": "Impresora eliminada correctamente",
-        "deletedFailed": "No se pudo eliminar la impresora",
-        "deletedError": "Ocurrió un error al eliminar la impresora",
-        "yes": "Sí",
-        "no": "No"
+  "printers": {
+    "title": "Impresoras",
+    "subtitle": "Administrar impresoras",
+    "addPrinter": "Agregar impresora",
+    "manageDescription": "Agrega y administra tus impresoras",
+    "connectedPrinters": "Impresoras conectadas",
+    "noPrinters": "Aún no hay impresoras conectadas. Agrega una arriba.",
+    "table": {
+      "displayName": "Nombre para mostrar",
+      "printerName": "Nombre de la impresora",
+      "createdAt": "Creado el",
+      "mainPrinter": "Impresora principal",
+      "actions": "Acciones"
     },
-    "userManagement": {
-        "title": "Administración de usuarios",
-        "subtitle": "Administra los usuarios del sistema y sus roles",
-        "addUser": "Agregar usuario",
-        "totalUsers": "Usuarios totales",
-        "admins": "Admins",
-        "staff": "Personal",
-        "kitchenManager": "Cocina/Gerente",
-        "searchPlaceholder": "Buscar usuarios...",
-        "noUsersTitle": "No se encontraron usuarios",
-        "noUsersFirst": "Comienza agregando tu primer usuario.",
-        "noUsersTry": "Intenta ajustar tu búsqueda o filtro de roles.",
-        "table": {
-            "user": "Usuario",
-            "role": "Rol",
-            "email": "Correo electrónico",
-            "actions": "Acciones"
-        },
-        "modal": {
-            "addNew": "Agregar nuevo usuario",
-            "edit": "Editar usuario",
-            "tabs": {
-                "general": "General",
-                "permissions": "Permisos",
-                "functions": "Funciones"
-            },
-            "functionLabels": {
-                "cancel-order": "Cancelar Pedido",
-                "change-delivery-person": "Cambiar Repartidor"
-            },
-            "moduleLabels": {
-                "order": "Pedido",
-                "kitchen": "Cocina",
-                "delivery": "Entrega",
-                "delivery-management": "Gestión de Entrega",
-                "manage-orders": "Gestión de Pedidos",
-                "reports": "Reportes",
-                "menu-structure": "Estructura de Menú",
-                "users": "Usuarios",
-                "configurations": "Configuraciones"
-            },
-            "username": "Nombre de usuario",
-            "password": "Contraseña",
-            "newPassword": "Nueva contraseña",
-            "fullName": "Nombre completo",
-            "email": "Correo electrónico",
-            "role": "Rol",
-            "modulePermissions": "Permisos de Módulos",
-            "selectModules": "Selecciona qué módulos puede acceder este usuario",
-            "functionPermissions": "Permisos de Funciones",
-            "selectFunctions": "Selecciona qué funciones puede realizar este usuario",
-            "cancel": "Cancelar",
-            "add": "Agregar usuario",
-            "update": "Actualizar usuario"
-        },
-        "roles": {
-            "all": "Todos",
-            "admin": "Admin",
-            "staff": "Personal",
-            "kitchen": "Cocina",
-            "manager": "Gerente"
-        },
-        "validation": {
-            "emailRequired": "El correo es obligatorio",
-            "emailInvalid": "Por favor ingresa una dirección de correo válida",
-            "usernameRequired": "Por favor ingresa un nombre de usuario",
-            "nameRequired": "Por favor ingresa un nombre",
-            "passwordRequired": "Por favor ingresa una contraseña"
-        },
-        "messages": {
-            "fetchFailed": "Error al obtener usuarios",
-            "addFailed": "Error al agregar usuario",
-            "updateFailed": "Error al actualizar usuario",
-            "deleteFailed": "Error al eliminar usuario",
-            "usernameTaken": "Nombre de usuario ya en uso",
-            "added": "Usuario agregado correctamente",
-            "updated": "Usuario actualizado correctamente",
-            "deleted": "Usuario eliminado correctamente"
-        },
-        "deleteConfirmTitle": "Eliminar usuario",
-        "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar este usuario?",
-        "yes": "Sí",
-        "no": "No"
+    "deleteTitle": "Eliminar impresora",
+    "deleteMessage": "¿Estás seguro de que deseas eliminar esta impresora? Cada producto asociado a esta impresora será desvinculado.",
+    "deleteConfirm": "Eliminar",
+    "deleteCancel": "Cancelar",
+    "deletedSuccess": "Impresora eliminada correctamente",
+    "deletedFailed": "No se pudo eliminar la impresora",
+    "deletedError": "Ocurrió un error al eliminar la impresora",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "userManagement": {
+    "title": "Administración de usuarios",
+    "subtitle": "Administra los usuarios del sistema y sus roles",
+    "addUser": "Agregar usuario",
+    "totalUsers": "Usuarios totales",
+    "admins": "Admins",
+    "staff": "Personal",
+    "kitchenManager": "Cocina/Gerente",
+    "searchPlaceholder": "Buscar usuarios...",
+    "noUsersTitle": "No se encontraron usuarios",
+    "noUsersFirst": "Comienza agregando tu primer usuario.",
+    "noUsersTry": "Intenta ajustar tu búsqueda o filtro de roles.",
+    "table": {
+      "user": "Usuario",
+      "role": "Rol",
+      "email": "Correo electrónico",
+      "actions": "Acciones"
     },
-    "reports": {
-        "title": "Análisis e Informes",
-        "subtitle": "Información completa sobre el rendimiento de pedidos y tendencias",
-        "totalOrders": "Total de Pedidos",
-        "delivered": "Entregado/ Completado",
-        "avgDeliveryTime": "Tiempo Promedio de Entrega",
-        "inProgress": "En Progreso",
-        "successRate": "Tasa de Éxito",
-        "minutes": "minutos",
-        "topOrderedItems": "Artículos Más Pedidos",
-        "topOrderedMenus": "Menús Más Pedidos",
-        "orderDetails": "Detalles del Pedido",
-        "orderId": "ID del Pedido",
-        "customer": "Cliente",
-        "items": "Artículos",
-        "status": "Estado",
-        "time": "Hora",
-        "noOrdersFound": "No se encontraron pedidos",
-        "noOrdersSubtitle": "Intenta ajustar tu rango de fechas o selección de período.",
-        "showingOrders": "Mostrando los primeros 20 pedidos de {{total}} pedidos totales",
-        "statuses": {
-            "completed": "Completado",
-            "delivered": "Entregado",
-            "sentToKitchen": "Enviado a Cocina",
-            "pending": "Pendiente",
-            "outForDelivery": "En Camino",
-            "cancelled": "Cancelado",
-            "readyForDelivery": "Listo para Entrega"
-        },
-        "errors": {
-            "fetchFailed": "Error al obtener análisis"
-        },
-        "components": {
-            "statusDistribution": {
-                "title": "Distribución de Estado de Pedidos",
-                "noOrders": "No hay pedidos en el período seleccionado"
-            },
-            "hourlyDistribution": {
-                "title": "Distribución Horaria de Pedidos",
-                "noOrders": "No hay pedidos en el período seleccionado"
-            },
-            "dateRangeSelector": {
-                "reportPeriod": "Período del Informe",
-                "periods": {
-                    "today": "Hoy",
-                    "week": "Semana",
-                    "month": "Mes",
-                    "custom": "Personalizado"
-                }
-            },
-            "topItems": {
-                "noItems": "No se ordenaron artículos en el período seleccionado"
-            }
-        }
-    },
-    "login": {
-        "welcomeBack": "Bienvenido de Nuevo",
-        "signInSubtitle": "Inicia sesión en tu cuenta para continuar",
-        "username": "Nombre de Usuario",
-        "password": "Contraseña",
-        "usernamePlaceholder": "Ingresa tu nombre de usuario",
-        "passwordPlaceholder": "Ingresa tu contraseña",
-        "signingIn": "Iniciando sesión...",
-        "signIn": "Iniciar Sesión",
-        "restaurantInterior": "Interior del Restaurante",
-        "restaurantLogo": "Logo del Restaurante"
-    },
-    "orderManagement": {
-        "filters": {
-            "allOrders": "Todos los Pedidos",
-            "pending": "📋 Pendiente",
-            "sentToKitchen": "👨‍🍳 Enviado a Cocina",
-            "readyForDelivery": "✅ Listo para Entrega",
-            "outForDelivery": "🚚 En Camino",
-            "completed": "✅ Completado",
-            "delivered": "📦 Entregado",
-            "cancelled": "❌ Cancelado",
-            "paid": "💚 Pagado",
-            "unpaid": "🔴 No Pagado",
-            "partialPayment": "🟡 Pago Parcial",
-            "filterOrders": "Filtrar Pedidos"
-        }
-    },
-    "orderTakingForm": {
-        "loading": {
-            "title": "Cargando Detalles del Producto",
-            "description": "Por favor espera mientras obtenemos las opciones de personalización..."
-        },
-        "customizeYourOrder": "Personaliza tu pedido",
-        "chooseVariant": "Elegir Variante",
-        "selectPreferredVariant": "Selecciona tu variante preferida para {{productName}}",
-        "variantsDetached": "Las variantes han sido desvinculadas del producto",
-        "addComplements": "Agregar Complementos",
-        "selected": "Seleccionado",
-        "min": "Mín",
-        "max": "Máx",
-        "free": "Gratis",
-        "complementsDetached": "Los complementos han sido desvinculados del producto",
-        "quantity": "Cantidad",
-        "priceBreakdown": "Desglose de Precios",
-        "baseProduct": "Producto Base",
-        "tax": "Impuesto",
-        "variant": "Variante",
-        "total": "Total",
-        "addToOrder": "Agregar al Pedido",
-        "errors": {
-            "unableToGetVariants": "No se pudieron obtener las variantes del producto",
-            "unableToGetAddonPages": "No se pudieron obtener las páginas de complementos del producto",
-            "unableToGetGroups": "No se pudieron obtener los grupos",
-            "errorLoadingProductData": "Error al cargar los datos del producto",
-            "pleaseSelectVariant": "Por favor selecciona una variante",
-            "pleaseCompleteRequiredSelections": "Por favor completa todas las selecciones requeridas",
-            "unableToUpdateOrder": "No se pudo actualizar el pedido",
-            "unableToSaveOrder": "No se pudo guardar el pedido",
-            "unableToUpdateQuantity": "No se pudo actualizar la cantidad"
-        },
-        "warnings": {
-            "maximumItemsAllowed": "Máximo {{maxComplements}} elementos permitidos para el grupo"
-        },
-        "messages": {
-            "orderAssignedToDeliveryPerson": "Este pedido está asignado a un repartidor y no se puede editar.",
-            "itemAddedToOrder": "¡Artículo agregado al pedido!",
-            "quantityUpdated": "¡Cantidad actualizada! Total: {{newQuantity}}"
-        }
-    },
-    "orderCart": {
-        "yourOrder": "Tu Pedido",
-        "selectItemsFromMenu": "Selecciona artículos del menú para agregar a tu pedido",
-        "duplicate": "Duplicar",
-        "duplicateTooltip": "Duplicar este grupo de menú",
-        "printOptions": "Opciones de Impresión",
-        "clearOrder": "Limpiar Pedido",
-        "itemPrice": "Precio del Artículo",
-        "taxIncluded": "impuesto incluido",
-        "variant": "Variante",
-        "addOns": "Complementos",
-        "from": "De",
-        "menuPrice": "Precio del Menú",
-        "supplements": "Suplementos",
-        "total": "Total",
-        "processOrder": "Procesar Pedido",
-        "pointOfSale": "Punto de Venta",
-        "defaultAddress": "calle 123",
-        "warnings": {
-            "noPrintersAttached": "No hay impresoras conectadas"
-        },
-        "errors": {
-            "errorGettingConfigurations": "Error al obtener configuraciones",
-            "errorDuplicatingMenu": "Error al duplicar el menú. Por favor, inténtalo de nuevo.",
-            "printerNotFound": "Impresora \"{{printerName}}\" no encontrada",
-            "errorPrintingReceipt": "Error al imprimir recibo",
-            "errorRemovingItem": "Error al eliminar artículo",
-            "errorGettingProduct": "Error al obtener producto",
-            "errorGettingMenu": "Error al obtener menú",
-            "menuHaveBeenDeleted": "El menú ha sido eliminado",
-            "errorUpdatingQuantity": "Error al actualizar cantidad",
-            "errorClearingOrder": "Error al limpiar pedido",
-            "printerNotFoundError": "Impresora no encontrada"
-        },
-        "messages": {
-            "printingCustomerReceipt": "Imprimiendo recibo del cliente...",
-            "receiptPrintedSuccessfully": "Recibo impreso exitosamente",
-            "menuDuplicated": "Menú duplicado correctamente"
-        },
-        "confirmations": {
-            "removeItem": {
-                "title": "Eliminar Artículo",
-                "message": "¿Estás seguro de que quieres eliminar este artículo de tu pedido?",
-                "confirmText": "Eliminar Artículo"
-            },
-            "removeMenu": {
-                "title": "Eliminar Menú",
-                "message": "¿Estás seguro de que quieres eliminar este menú de tu pedido?",
-                "confirmText": "Limpiar Pedido"
-            },
-            "clearOrder": {
-                "title": "Limpiar Pedido",
-                "message": "¿Estás seguro de que quieres limpiar todo el pedido? Esta acción no se puede deshacer.",
-                "confirmText": "Limpiar Pedido"
-            }
-        }
-    },
-    "paymentProcessingModal": {
-        "title": "Procesamiento de Pago",
-        "subtitle": "Seleccionar métodos de pago",
-        "totalAmount": "Cantidad Total",
-        "alreadyPaid": "Ya Pagado",
-        "remaining": "Restante",
-        "amountTendered": "Cantidad Entregada",
-        "changeToReturn": "Cambio a Devolver",
-        "paymentMethod": "Método de Pago",
-        "cash": "Efectivo",
-        "card": "Tarjeta",
-        "amount": "Cantidad",
-        "addPayment": "Agregar Pago",
-        "addedPayments": "Pagos Agregados",
-        "processPayment": "Procesar Pago",
-        "errors": {
-            "pleaseEnterValidAmount": "Por favor ingresa una cantidad válida",
-            "pleaseAddPaymentMethod": "Por favor agrega al menos un método de pago"
-        },
-        "messages": {
-            "partialPaymentProcessed": "Pago parcial procesado: {{paymentString}} (Restante: €{{remaining}})",
-            "paymentProcessedWithChange": "Pago procesado: {{paymentString}} (Cambio: €{{change}})",
-            "paymentProcessed": "Pago procesado: {{paymentString}}"
-        }
-    },
-    "customerModal": {
-        "title": "Agregar Cliente",
-        "phone": "Teléfono",
-        "name": "Nombre",
-        "cifDni": "CIF/DNI",
-        "email": "Correo Electrónico",
-        "comments": "Comentarios",
-        "address": "Dirección",
-        "postalCode": "Código Postal",
-        "city": "Ciudad",
-        "province": "Provincia",
-        "addCustomer": "Agregar Cliente",
-        "placeholders": {
-            "phone": "Ingrese número de teléfono",
-            "name": "Ingrese nombre",
-            "cifDni": "Ingrese CIF/DNI",
-            "email": "Ingrese correo electrónico",
-            "comments": "Ingrese comentarios",
-            "address": "Ingrese dirección",
-            "postalCode": "Ingrese código postal",
-            "city": "Ingrese ciudad",
-            "province": "Ingrese provincia"
-        },
-        "errors": {
-            "customerAlreadyExists": "El cliente ya existe",
-            "failedToEditCustomer": "Error al editar cliente",
-            "failedToAddCustomer": "Error al agregar cliente",
-            "phoneRequired": "El número de teléfono es obligatorio",
-            "addressRequired": "La dirección es obligatoria",
-            "postalCodeRequired": "El código postal es obligatorio",
-            "cityRequired": "La ciudad es obligatoria"
-        }
-    },
-    "printerModal": {
-        "viewPrinter": "Ver Impresora",
-        "editPrinter": "Editar Impresora",
-        "addNewPrinter": "Agregar Nueva Impresora",
-        "displayName": "Nombre para Mostrar *",
-        "enterDisplayName": "Ingrese nombre para mostrar",
-        "mainPrinter": "Impresora Principal",
-        "printer": "Impresora",
-        "selectPrinter": "Seleccionar impresora",
-        "updatePrinter": "Actualizar Impresora",
-        "addPrinter": "Agregar Impresora",
-        "errors": {
-            "pleaseSelectPrinter": "Por favor selecciona una impresora",
-            "pleaseEnterDisplayName": "Por favor ingresa el nombre para mostrar",
-            "unableToAddPrinter": "No se pudo agregar la impresora",
-            "unableToUpdatePrinter": "No se pudo actualizar la impresora",
-            "anErrorOccurred": "Ocurrió un error"
-        },
-        "warnings": {
-            "printerAlreadyAdded": "¡Esta impresora ya está agregada!"
-        },
-        "messages": {
-            "printerAddedSuccessfully": "Impresora agregada exitosamente",
-            "printerUpdatedSuccessfully": "Impresora actualizada exitosamente"
-        }
-    },
-    "manageOrders": {
-        "title": "Administrar Pedidos",
-        "subtitle": "Ver y administrar todos los pedidos con opciones de filtrado avanzadas",
-        "searchOrders": "Buscar Pedidos",
-        "searchPlaceholder": "Buscar por número de pedido...",
-        "filterByDate": "Filtrar por Fecha",
-        "customer": "Cliente",
-        "allCustomers": "Todos los Clientes",
-        "deliveryPerson": "Repartidor",
-        "paymentStatus": "Estado de Pago",
-        "allDeliveryPersons": "Todos los Repartidores",
-        "allPaymentStatuses": "Todos los Estados de Pago",
-        "clearAllFilters": "Limpiar Todos los Filtros",
-        "bulkPayment": "Pago Masivo",
-        "showingOrders": "Mostrando {{filtered}} de {{total}} pedidos",
-        "lastUpdated": "Última actualización: {{time}}",
-        "noOrdersMatch": "No hay pedidos que coincidan con tus filtros",
-        "noOrdersFound": "No se encontraron pedidos",
-        "table": {
-            "orderNumber": "Pedido #",
-            "customer": "Cliente",
-            "orderType": "Tipo de Pedido",
-            "status": "Estado",
-            "paymentStatus": "Estado de Pago",
-            "deliveryPerson": "Repartidor",
-            "total": "Total",
-            "created": "Creado",
-            "actions": "Acciones"
-        },
-        "actions": {
-            "viewOrder": "Ver Pedido",
-            "printOrder": "Imprimir Pedido",
-            "processPayment": "Procesar Pago",
-            "cancelOrder": "Cancelar Pedido"
-        },
-        "statuses": {
-            "notAssigned": "No asignado",
-            "nA": "N/A",
-            "notSelected": "No Seleccionado"
-        },
-        "confirmCancelOrder": "¿Estás seguro de que deseas cancelar el pedido {{orderId}}?",
-        "errors": {
-            "cancelFailed": "Error al cancelar el pedido"
-        },
-        "messages": {
-            "orderCancelled": "Pedido cancelado exitosamente"
-        }
-    },
-    "cancelOrderModal": {
-        "title": "Cancelar Pedido",
-        "orderNumber": "Número de Pedido",
-        "customer": "Cliente",
-        "cancelNote": "Nota de Cancelación *",
-        "cancelNotePlaceholder": "Ingresa el motivo de la cancelación...",
-        "noteRequired": "Se requiere una nota de cancelación",
-        "cancel": "Cancelar",
-        "confirm": "Confirmar Cancelación"
-    },
-    "orderDetailsModal": {
-        "title": "Artículos del Pedido - K{{orderId}}",
-        "created": "Creado:",
-        "customer": "Cliente",
-        "deliveryAddress": "Dirección de Entrega",
-        "orderType": "Tipo de Pedido",
-        "paymentStatus": "Estado de Pago",
-        "deliveryPerson": "Repartidor",
-        "items": "Artículos",
-        "quantity": "Cant",
-        "price": "Precio",
-        "total": "Total",
-        "orderNotes": "Notas del Pedido",
-        "cancelled": "CANCELADO",
-        "subtotal": "Subtotal",
-        "tax": "Impuesto",
-        "deliveryFee": "Tarifa de Entrega",
-        "grandTotal": "Total General",
-        "close": "Cerrar",
-        "customerInformation": "Información del Cliente",
-        "name": "Nombre",
-        "phone": "Teléfono",
-        "address": "Dirección",
-        "orderInformation": "Información del Pedido",
-        "status": "Estado",
-        "updated": "Actualizado",
-        "paymentInformation": "Información de Pago",
-        "totalAmount": "Cantidad Total",
-        "deliveryInformation": "Información de Entrega",
-        "vehicleType": "Tipo de Vehículo",
-        "assignedAt": "Asignado el",
-        "deliveredAt": "Entregado el",
-        "orderItems": "Artículos del Pedido",
-        "addOns": "Complementos:",
-        "each": "cada uno",
-        "noItemsFound": "No se encontraron artículos",
-        "notRecorded": "No registrado",
-        "notAssignedYet": "Aún no asignado"
-    },
-    "bulkPaymentModal": {
-        "title": "Procesamiento de Pagos Masivos",
-        "subtitle": "Procesar pagos para múltiples pedidos entregados por repartidor",
-        "selectDeliveryPerson": "Seleccionar Repartidor",
-        "chooseDeliveryPerson": "Elige un repartidor...",
-        "pleaseSelectDeliveryPerson": "Por favor selecciona un repartidor",
-        "allDeliveryPersons": "Todos los Repartidores",
-        "paymentMethod": "Método de Pago",
-        "amount": "Cantidad",
-        "addPayment": "Agregar",
-        "removePayment": "Eliminar",
-        "totalAmount": "Cantidad Total",
-        "processPayments": "Procesar Pago Masivo",
-        "cancel": "Cancelar",
-        "processing": "Procesando...",
-        "success": "Pagos procesados correctamente",
-        "error": "Error al procesar pagos",
-        "allPayments": "Todos los Pagos:",
-        "pending": "PENDIENTE",
-        "readyToProcess": "Listo para procesar pago",
-        "ordersSummary": "Resumen de Pedidos",
-        "deliveryPerson": "Repartidor",
-        "ordersCount": "Cantidad de Pedidos",
-        "totalAmountDue": "Cantidad Total Debida",
-        "remainingAmount": "Cantidad Restante",
-        "amountTendered": "Cantidad Entregada",
-        "changeToReturn": "Cambio a Devolver",
-        "orders": "pedidos",
-        "paymentMethods": "Métodos de Pago",
-        "total": "Total: €{{paid}} / €{{total}}",
-        "cash": "Efectivo",
-        "card": "Tarjeta",
-        "add": "Agregar"
-    },
-    "individualPaymentModal": {
-        "title": "Procesar Pago",
-        "subtitle": "Completar el pago para este pedido",
-        "orderDetails": "Detalles del Pedido",
-        "orderId": "ID del Pedido",
-        "customer": "Cliente",
-        "totalAmount": "Cantidad Total",
-        "remainingAmount": "Cantidad Restante",
-        "amountTendered": "Cantidad Entregada",
-        "changeToReturn": "Cambio a Devolver",
-        "deliveryPerson": "Repartidor",
-        "paymentMethods": "Métodos de Pago",
-        "total": "Total: €{{paid}} / €{{total}}",
-        "paymentMethod": "Método de Pago",
-        "cash": "Efectivo",
-        "card": "Tarjeta",
-        "amount": "Cantidad",
-        "addPayment": "Agregar",
-        "removePayment": "Eliminar",
-        "processPayment": "Procesar Pago",
-        "cancel": "Cancelar",
-        "processing": "Procesando...",
-        "allPayments": "Todos los Pagos:",
-        "pending": "PENDIENTE",
-        "readyToProcess": "Listo para procesar pago",
-        "noDeliveryPersonAssigned": "No hay repartidor asignado",
-        "pleaseAddPaymentMethod": "Por favor agrega al menos un método de pago",
-        "errors": {
-            "enterValidAmount": "Por favor ingresa una cantidad válida",
-            "noOrderSelected": "No hay pedido seleccionado",
-            "totalExceedsOrder": "El pago total no puede exceder el total del pedido",
-            "addPaymentMethod": "Por favor agrega al menos un método de pago",
-            "updateFailed": "Error al actualizar el pago. Por favor intenta de nuevo.",
-            "processingError": "Ocurrió un error al procesar el pago. Por favor intenta de nuevo.",
-            "selectDeliveryPerson": "Por favor selecciona un repartidor primero",
-            "totalExceedsRemaining": "El pago total no puede exceder la cantidad restante",
-            "noOrdersFound": "No se encontraron pedidos para este repartidor",
-            "bulkProcessingError": "Ocurrió un error al procesar el pago masivo. Por favor intenta de nuevo."
-        },
-        "success": {
-            "paymentCompleted": "Pago completado exitosamente: {{paymentString}}",
-            "partialPayment": "Pago parcial registrado: {{paymentString}}. Restante: €{{remaining}}",
-            "bulkPaymentSuccess": "Pago masivo procesado exitosamente para {{count}} pedidos: {{paymentString}}",
-            "bulkPaymentPartial": "Pago procesado para {{successCount}} de {{totalCount}} pedidos"
-        }
-    },
-    "deliveryManagement": {
-        "title": "Gestión de Entregas",
-        "subtitle": "Gestionar personal de entrega y su información de vehículos",
-        "deliveryPersonnel": "Personal de Entrega",
-        "addAndManageStaff": "Agregar y gestionar personal de entrega",
-        "addDeliveryPerson": "Agregar Repartidor",
-        "deliveryPersonnelCount": "Personal de Entrega",
-        "bikes": "Bicicletas",
-        "motorcycles": "Motocicletas",
-        "cars": "Autos",
-        "scooters": "Scooters",
-        "searchDeliveryPersonnel": "Buscar personal de entrega...",
-        "all": "Todos",
-        "bike": "Bicicleta",
-        "motorcycle": "Motocicleta",
-        "car": "Auto",
-        "scooter": "Scooter",
-        "deliveryPersonnelTable": "Personal de Entrega ({{count}})",
-        "getStartedMessage": "Comienza agregando tu primer repartidor.",
-        "adjustFiltersMessage": "Intenta ajustar tu búsqueda o filtro de vehículo.",
-        "noDeliveryPersonnelFound": "No se encontró personal de entrega",
-        "deliveryPerson": "Repartidor",
-        "vehicle": "Vehículo",
-        "contact": "Contacto",
-        "license": "Licencia",
-        "totalAssigned": "Total Asignados",
-        "totalDelivered": "Total Entregados",
-        "totalCancelled": "Total Cancelados",
-        "avgDeliveryTime": "Tiempo Promedio de Entrega",
-        "actions": "Acciones",
-        "edit": "Editar",
-        "delete": "Eliminar",
-        "deliveryPersonnelLabel": "Personal de Entrega",
-        "minutes": "min",
-        "errors": {
-            "fetchFailed": "Error al obtener personal de entrega",
-            "enterName": "Por favor ingresa un nombre",
-            "enterLicenseNumber": "Por favor ingresa un número de licencia",
-            "emailRequired": "El email es requerido",
-            "validEmail": "Por favor ingresa una dirección de email válida",
-            "phoneRequired": "El número de teléfono es requerido",
-            "validPhone": "Por favor ingresa un número de teléfono válido",
-            "phoneMinDigits": "El número de teléfono debe tener al menos 9 dígitos",
-            "phoneMaxDigits": "El número de teléfono no puede exceder 9 dígitos",
-            "emailExists": "El email ya existe",
-            "updateFailed": "Error al actualizar repartidor",
-            "addFailed": "Error al agregar repartidor",
-            "deleteConfirm": "¿Estás seguro de que quieres eliminar este repartidor?",
-            "deleteConfirmTitle": "Eliminar persona de entrega",
-            "fetchStatsFailed": "Error al obtener estadísticas del repartidor",
-            "cannotDeleteWithOrders": "No se puede eliminar repartidor con {{count}} pedidos asignados",
-            "deleteFailed": "Error al eliminar repartidor"
-        },
-        "success": {
-            "updated": "Repartidor actualizado exitosamente",
-            "added": "Repartidor agregado exitosamente",
-            "deleted": "Repartidor eliminado exitosamente"
-        }
-    },
-    "deliveryPersonModal": {
-        "editTitle": "Editar Repartidor",
-        "addTitle": "Agregar Nuevo Repartidor",
-        "fullName": "Nombre Completo *",
-        "fullNamePlaceholder": "Ingresa nombre completo",
-        "email": "Email *",
-        "emailPlaceholder": "Ingresa dirección de email",
-        "phoneNumber": "Número de Teléfono",
-        "phoneNumberPlaceholder": "Ingresa número de teléfono",
-        "licenseNumber": "Número de Licencia *",
-        "licenseNumberPlaceholder": "Ingresa número de licencia",
-        "vehicleType": "Tipo de Vehículo",
-        "selectVehicleType": "Selecciona tipo de vehículo",
-        "cancel": "Cancelar",
-        "updateDeliveryPerson": "Actualizar Repartidor",
-        "addDeliveryPerson": "Agregar Repartidor"
-    },
-    "deliveryPersonInput": {
-        "selectDeliveryPerson": "Seleccionar Repartidor",
-        "chooseDeliveryPerson": "Elige un repartidor...",
-        "quickAssign": "Asignación Rápida"
-    },
-    "deliveryView": {
-        "title": "Gestión de Entregas",
-        "assignDelivery": "Asignar",
-        "subtitle": "Asignar y rastrear entregas de pedidos",
-        "readyForDeliveryOrders": "Pedidos Listos para Entrega",
-        "noOrdersReady": "No hay pedidos listos para entrega",
-        "delivered": "Entregado",
-        "stats": {
-            "readyForDelivery": "Listo para Entrega",
-            "outForDelivery": "En Camino",
-            "deliveredToday": "Entregado Hoy",
-            "activeDrivers": "Conductores Activos"
-        },
-        "descriptions": {
-            "ordersReadyToAssign": "Pedidos listos para ser asignados para entrega",
-            "allOrdersInKitchenOrAssigned": "Todos los pedidos están en cocina o ya asignados para entrega.",
-            "ordersCurrentlyBeingDelivered": "Pedidos siendo entregados actualmente"
-        },
-        "table": {
-            "orderId": "ID del Pedido",
-            "customer": "Cliente",
-            "contact": "Contacto",
-            "address": "Dirección",
-            "items": "Artículos",
-            "readySince": "Listo Desde",
-            "driver": "Conductor",
-            "actions": "Acciones",
-            "outForDelivery": "En Camino"
-        },
-        "cancelOrder": "Cancelar Pedido",
-        "changeDeliveryPerson": "Cambiar Repartidor",
-        "selectNewDeliveryPerson": "Seleccionar nuevo repartidor",
-        "confirmChange": "Confirmar Cambio",
-        "messages": {
-            "pleaseEnterDeliveryPersonName": "Por favor ingresa el nombre del repartidor",
-            "failedToAssignDeliveryPerson": "Error al asignar repartidor",
-            "failedToAssignDelivery": "Error al asignar entrega. Por favor intenta de nuevo.",
-            "failedToMarkAsDelivered": "Error al marcar como entregado",
-            "orderMarkedAsDelivered": "Pedido marcado como entregado",
-            "failedToMarkAsDeliveredRetry": "Error al marcar como entregado. Por favor intenta de nuevo.",
-            "failedToCancelOrder": "Error al cancelar el pedido",
-            "orderCancelled": "Pedido cancelado exitosamente",
-            "deliveryPersonChanged": "Repartidor cambiado exitosamente",
-            "failedToChangeDeliveryPerson": "Error al cambiar el repartidor"
-        }
-    },
-    "kitchenView": {
-        "title": "Gestión de Cocina",
-        "subtitle": "Monitorear y gestionar pedidos en preparación",
-        "stats": {
-            "ordersInKitchen": "Pedidos en Cocina",
-            "highPriority": "Alta Prioridad",
-            "avgPrepTime": "Tiempo Promedio de Prep",
-            "avgPrepTimeValue": "~25 min"
-        },
-        "table": {
-            "priority": "Prioridad",
-            "orderId": "ID del Pedido",
-            "customer": "Cliente",
-            "items": "Artículos",
-            "timeInKitchen": "Tiempo en Cocina",
-            "actions": "Acciones",
-            "kitchenOrders": "Pedidos de Cocina",
-            "noOrdersMatch": "No hay pedidos que coincidan con tu búsqueda"
-        },
-        "priority": {
-            "high": "Alta",
-            "medium": "Media",
-            "low": "Baja"
-        },
-        "actions": {
-            "viewOrderDetails": "Ver Detalles del Pedido",
-            "markAsReady": "Marcar como Listo"
-        },
-        "addOns": "Complementos:",
-        "timeFormat": {
-            "hours": "h",
-            "minutes": "m"
-        },
-        "messages": {
-            "orderMarkedAsReady": "Pedido marcado como listo",
-            "orderMarkedAsCompleted": "Pedido marcado como completado",
-            "failedToUpdateOrder": "Error al actualizar el pedido"
-        }
-    },
-    "filterControls": {
-        "searchPlaceholder": "Buscar pedidos...",
-        "clearFilters": "Limpiar Filtros"
-    },
-    "dateRangePicker": {
-        "selectDateRange": "Rango de Fechas",
-        "currentSelection": "Selección Actual",
-        "startDate": "Fecha de Inicio",
-        "endDate": "Fecha de Fin",
-        "shortcuts": {
-            "thisWeek": "Esta Semana",
-            "lastWeek": "Semana Pasada",
-            "last7Days": "Últimos 7 Días",
-            "currentMonth": "Mes Actual",
-            "nextMonth": "Próximo Mes",
-            "thisYear": "Este Año",
-            "lastYear": "Año Pasado",
-            "reset": "Restablecer"
-        },
-        "days": {
-            "sunday": "D",
-            "monday": "L",
-            "tuesday": "M",
-            "wednesday": "X",
-            "thursday": "J",
-            "friday": "V",
-            "saturday": "S"
-        },
-        "months": {
-            "january": "Enero",
-            "february": "Febrero",
-            "march": "Marzo",
-            "april": "Abril",
-            "may": "Mayo",
-            "june": "Junio",
-            "july": "Julio",
-            "august": "Agosto",
-            "september": "Septiembre",
-            "october": "Octubre",
-            "november": "Noviembre",
-            "december": "Diciembre"
-        },
-        "monthsShort": {
-            "january": "Ene",
-            "february": "Feb",
-            "march": "Mar",
-            "april": "Abr",
-            "may": "May",
-            "june": "Jun",
-            "july": "Jul",
-            "august": "Ago",
-            "september": "Sep",
-            "october": "Oct",
-            "november": "Nov",
-            "december": "Dic"
-        }
-    },
-    "menuComponents": {
-        "common": {
-            "add": "Agregar",
-            "create": "Crear",
-            "edit": "Editar",
-            "update": "Actualizar",
-            "save": "Guardar",
-            "cancel": "Cancelar",
-            "delete": "Eliminar",
-            "name": "Nombre",
-            "description": "Descripción",
-            "price": "Precio",
-            "priority": "Prioridad",
-            "tax": "Impuesto",
-            "discount": "Descuento",
-            "select": "Seleccionar",
-            "enter": "Ingresar",
-            "required": "Requerido",
-            "words":{
-              "with": "con",
-              "variants":"variantes",
-              "products": "productos",
-              "complements":"Complementos",
-              "menus":"menús",
-              "attachVariants": "Esta variante está adjunta a",
-              "attachGroup": "Este grupo está vinculado a",
-              "attachMenu":"Esta página de menú está adjunta a",
-              "MenuPagesAttached": "Páginas de menú adjuntas",
-              "willBeDetached": "Estos se desvincularán!",
-              "areYouSure":"¿Estás segura de que quieres eliminarlo?"
-            }
-        },
-        "categories": {
-            "title": "Categorías",
-            "addCategory": "Agregar Categoría",
-            "categoryName": "Nombre de Categoría",
-            "enterCategoryName": "Ingrese nombre de categoría",
-            "noCategories": "No se encontraron categorías",
-            "createFirst": "Crea tu primera categoría para comenzar"
-        },
-        "subcategories": {
-            "title": "Subcategorías",
-            "addSubcategory": "Agregar Subcategoría",
-            "subcategoryName": "Nombre de Subcategoría",
-            "enterSubcategoryName": "Ingrese nombre de subcategoría",
-            "selectCategory": "Seleccione una categoría",
-            "noSubcategories": "No se encontraron subcategorías",
-            "createFirst": "Crea tu primera subcategoría para comenzar"
-        },
-        "products": {
-            "title": "Productos",
-            "addProduct": "Agregar Producto",
-            "productName": "Nombre del Producto",
-            "enterProductName": "Ingrese nombre del producto",
-            "selectCategory": "Seleccionar categoría",
-            "selectSubcategory": "Seleccionar subcategoría",
-            "writeDescription": "Escriba una descripción (Máx. 150 caracteres)",
-            "enterPrice": "Ingrese precio",
-            "enterPriority": "Ingrese prioridad",
-            "enterTax": "Ingrese porcentaje de impuesto",
-            "enterDiscount": "Ingrese descuento",
-            "selectVariant": "Seleccione una variante",
-            "addPage": "Agregar Página",
-            "minComplements": "Número mínimo de complementos",
-            "maxComplements": "Número máximo de complementos",
-            "freeAddons": "Número de complementos gratuitos",
-            "noProducts": "No se encontraron productos",
-            "createFirst": "Crea tu primer producto para comenzar"
-        },
-        "menuPages": {
-            "title": "Páginas de Menú",
-            "addMenuPage": "Agregar Página de Menú",
-            "pageName": "Nombre de Página",
-            "enterPageName": "Ingrese nombre de página",
-            "enterDescription": "Descripción breve (máximo 40 caracteres)",
-            "noMenuPages": "No se encontraron páginas de menú",
-            "createFirst": "Crea tu primera página de menú para comenzar"
-        },
-        "menus": {
-            "title": "Menús",
-            "addMenu": "Agregar Menú",
-            "noMenus": "No se encontraron menús",
-            "createFirst": "Crea tu primer menú para comenzar"
-        },
-        "groups": {
-            "title": "Grupos",
-            "addGroup": "Agregar Grupo",
-            "noGroups": "No se encontraron grupos",
-            "createFirst": "Crea tu primer grupo para comenzar"
-        },
-        "variants": {
-            "title": "Variantes",
-            "addVariant": "Agregar Variante",
-            "noVariants": "No se encontraron variantes",
-            "createFirst": "Crea tu primera variante para comenzar"
-        },
-        "messages": {
-            "success": {
-                "categoryCreated": "Categoría creada exitosamente",
-                "categoryUpdated": "Categoría actualizada exitosamente",
-                "categoryDeleted": "Categoría eliminada exitosamente",
-                "subcategoryCreated": "Subcategoría creada exitosamente",
-                "subcategoryUpdated": "Subcategoría actualizada exitosamente",
-                "subcategoryDeleted": "Subcategoría eliminada exitosamente",
-                "productCreated": "Producto creado exitosamente",
-                "productUpdated": "Producto actualizado exitosamente",
-                "productDeleted": "Producto eliminado exitosamente",
-                "menuPageCreated": "Página de menú creada exitosamente",
-                "menuPageUpdated": "Página de menú actualizada exitosamente",
-                "menuPageDeleted": "Página de menú eliminada exitosamente",
-                "menuCreated": "Menú creado exitosamente",
-                "menuUpdated": "Menú actualizado exitosamente",
-                "menuDeleted": "Menú eliminado exitosamente",
-                "groupCreated": "Grupo creado exitosamente",
-                "groupUpdated": "Grupo actualizado exitosamente",
-                "groupDeleted": "Grupo eliminado exitosamente",
-                "variantCreated": "Variante creada exitosamente",
-                "variantUpdated": "Variante actualizada exitosamente",
-                "variantDeleted": "Variante eliminada exitosamente"
-            },
-            "errors": {
-                "categoryNameRequired": "Por favor ingrese un nombre de categoría",
-                "subcategoryNameRequired": "Por favor ingrese un nombre de subcategoría",
-                "subcategoryCategoryRequired": "Por favor seleccione una categoría",
-                "productNameRequired": "Por favor ingrese un nombre de producto",
-                "productCategoryRequired": "Por favor seleccione una categoría",
-                "productPriceRequired": "Por favor ingrese un precio de producto",
-                "menuPageNameRequired": "Por favor ingrese un nombre de página",
-                "failedToFetch": "Error al obtener datos",
-                "failedToCreate": "Error al crear",
-                "failedToUpdate": "Error al actualizar",
-                "failedToDelete": "Error al eliminar"
-            },
-            "specialNotes": {
-                "variantDeleteWarning": "Eliminar esta variante también la eliminará de todos los productos asociados.",
-                "menuPageDeleteWarning": "Eliminar esta página de menú también la eliminará de todos los menús asociados.",
-                "productDeleteWarning": "Eliminar este producto también lo eliminará de todas las páginas de menú asociadas."
-            },
-            "emptyMessages": {
-                "noItemsAvailable": "No hay productos disponibles",
-                "noItemsAvailableDescription": "Por favor agregue productos para colocar un pedido"
-            }
-        },
-        "modals": {
-            "categoryModal": {
-                "title": "Crear Nueva Categoría",
-                "editTitle": "Editar Categoría",
-                "categoryName": "Nombre de Categoría",
-                "enterCategoryName": "Ingrese nombre de categoría",
-                "image": "IMAGEN",
-                "color": "Color",
-                "cancel": "Cancelar",
-                "create": "Crear",
-                "update": "Actualizar",
-                "errors": {
-                    "nameRequired": "Por favor ingrese un nombre de categoría",
-                    "failedToEdit": "Error al editar categoría",
-                    "failedToSave": "Error al guardar categoría"
-                },
-                "success": {
-                    "updated": "Categoría actualizada exitosamente",
-                    "created": "Categoría creada exitosamente"
-                }
-            },
-            "subcategoryModal": {
-                "title": "Crear Nueva Subcategoría",
-                "editTitle": "Editar Subcategoría",
-                "subcategoryName": "Nombre de Subcategoría",
-                "enterSubcategoryName": "Ingrese nombre de subcategoría",
-                "parentCategory": "Categoría Padre",
-                "selectCategory": "Seleccione una categoría",
-                "image": "IMAGEN",
-                "color": "Color",
-                "cancel": "Cancelar",
-                "create": "Crear",
-                "update": "Actualizar",
-                "errors": {
-                    "nameRequired": "Por favor ingrese un nombre de subcategoría",
-                    "categoryRequired": "Por favor seleccione una categoría",
-                    "failedToEdit": "Error al editar subcategoría",
-                    "failedToSave": "Error al guardar subcategoría"
-                },
-                "success": {
-                    "updated": "Subcategoría actualizada exitosamente",
-                    "created": "Subcategoría creada exitosamente"
-                }
-            },
-            "productModal": {
-                "title": "CREAR PRODUCTO",
-                "editTitle": "EDITAR PRODUCTO",
-                "tabs": {
-                    "general": "GENERAL",
-                    "variants": "VARIANTES Y COMPLEMENTOS",
-                    "printers": "IMPRESORAS"
-                },
-                "productStatus": "Estado del Producto",
-                "activated": "Activado",
-                "outOfStock": "Producto agotado",
-                "basicInfo": "Información Básica del Producto",
-                "name": "NOMBRE *",
-                "enterProductName": "Ingrese nombre del producto",
-                "associatedCategory": "CATEGORÍA ASOCIADA *",
-                "selectCategory": "Seleccionar categoría",
-                "associatedSubcategory": "SUBCATEGORÍA ASOCIADA *",
-                "selectSubcategory": "Seleccionar subcategoría",
-                "selectCategoryFirst": "Seleccione una categoría primero",
-                "productImage": "IMAGEN DEL PRODUCTO",
-                "uploadProductImage": "Subir imagen del producto",
-                "clickToChange": "Hacer clic para cambiar",
-                "description": "DESCRIPCIÓN",
-                "writeDescription": "Escriba una descripción (Máx. 150 caracteres)",
-                "pricingFinancials": "Precios y Finanzas",
-                "price": "PRECIO *",
-                "priority": "PRIORIDAD",
-                "tax": "IMPUESTO (%)",
-                "discount": "DESCUENTO",
-                "subtotal": "Subtotal:",
-                "taxAmount": "Impuesto",
-                "discountAmount": "Descuento:",
-                "total": "Total:",
-                "productAttributes": "Atributos del Producto",
-                "isDrink": "Es una bebida",
-                "isByWeight": "Producto por peso",
-                "isPerDiner": "Producto por comensal",
-                "isOutstanding": "Destacado",
-                "isPlus18": "Producto +18",
-                "isForMenu": "Es para Menú",
-                "assignVariants": "ASIGNAR VARIANTES",
-                "selectVariant": "Seleccione una variante",
-                "variantItemsPricing": "Elementos de Variante y Precios",
-                "selectAddonsPage": "SELECCIONAR PÁGINA DE COMPLEMENTOS",
-                "addPage": "Agregar Página",
-                "pageSetup": "CONFIGURACIÓN DE PÁGINA",
-                "minComplements": "Número mínimo de complementos",
-                "maxComplements": "Número máximo de complementos",
-                "freeAddons": "Número de complementos gratuitos",
-                "addPluginGroup": "AGREGAR GRUPO DE PLUGIN PARA PÁGINA",
-                "availableItems": "Elementos disponibles:",
-                "printers": "Impresoras",
-                "configurePrinters": "Configure la configuración de impresora aquí.",
-                "cancel": "Cancelar",
-                "saveChanges": "Guardar Cambios",
-                "createProduct": "Crear Producto",
-                "errors": {
-                    "nameRequired": "El nombre del producto es requerido.",
-                    "categoryRequired": "Por favor seleccione una categoría.",
-                    "subcategoryRequired": "Por favor seleccione una subcategoría.",
-                    "variantRequired": "Por favor agregue al menos una variante.",
-                    "addonPageRequired": "Por favor agregue al menos una página de complementos con un grupo seleccionado.",
-                    "failedToCreate": "Error al crear producto.",
-                    "failedToUpdate": "Error al actualizar producto.",
-                    "unableToGetVariant": "No se pudo obtener la variante del producto",
-                    "unableToGetAddons": "No se pudieron obtener las páginas de complementos del producto",
-                    "unableToGetPrinters": "No se pudieron obtener las impresoras del producto"
-                },
-                "success": {
-                    "created": "¡Producto creado exitosamente!",
-                    "updated": "¡Producto actualizado exitosamente!"
-                }
-            },
-            "menuPageModal": {
-                "title": "Crear Página de Menú",
-                "editTitle": "Editar Página de Menú",
-                "pageName": "Nombre de Página",
-                "enterPageName": "Ingrese nombre de página",
-                "description": "Descripción",
-                "enterDescription": "Descripción breve (máximo 40 caracteres)",
-                "products": "Productos",
-                "product": "Producto",
-                "selectProduct": "Seleccione un producto",
-                "noProductsAvailable": "No hay productos disponibles",
-                "supplement": "Suplemento",
-                "enterSupplement": "Ingrese suplemento",
-                "priority": "Prioridad",
-                "enterPriority": "Ingrese prioridad",
-                "add": "Agregar",
-                "eliminate": "Eliminar",
-                "cancel": "Cancelar",
-                "create": "Crear",
-                "update": "Actualizar",
-                "errors": {
-                    "nameRequired": "Por favor ingrese un nombre de página",
-                    "descriptionTooLong": "La descripción debe tener 40 caracteres o menos",
-                    "addProductRequired": "Por favor agregue al menos un producto a la página de menú",
-                    "selectProduct": "Por favor seleccione un producto",
-                    "noProductsAvailable": "No hay productos disponibles para agregar",
-                    "failedToCreate": "Error al crear página de menú",
-                    "failedToUpdate": "Error al actualizar página de menú",
-                    "failedToDelete": "Error al eliminar página de menú",
-                    "failedToSave": "Error al guardar página de menú",
-                    "failedToFetch": "Error al obtener productos"
-                },
-                "success": {
-                    "created": "Página de menú creada exitosamente",
-                    "updated": "Página de menú actualizada exitosamente",
-                    "deleted": "Página de menú eliminada exitosamente"
-                },
-                "confirmDelete": "¿Estás seguro de que quieres eliminar esta página de menú?"
-            },
-            "menuModal": {
-                "title": "Crear Menú",
-                "editTitle": "Editar Menú",
-                "basicInformation": "Información Básica",
-                "menuName": "Nombre del Menú",
-                "enterMenuName": "Ingrese nombre del menú",
-                "description": "Descripción",
-                "writeDescription": "Escriba una descripción (Máx. 150 caracteres)",
-                "subcategory": "Subcategoría",
-                "selectSubcategory": "Seleccionar subcategoría",
-                "image": "Imagen del Menú",
-                "uploadImage": "Subir imagen del menú",
-                "clickToChange": "Hacer clic para cambiar",
-                "financialDetails": "Detalles Financieros",
-                "price": "Precio",
-                "enterPrice": "Ingrese precio",
-                "priority": "Prioridad",
-                "tax": "Impuesto",
-                "discount": "Descuento",
-                "priceBreakdown": "Desglose de Precios",
-                "subtotal": "Subtotal",
-                "total": "Total",
-                "visualAttributes": "Atributos Visuales",
-                "outstanding": "Destacado",
-                "addPages": "Agregar Páginas",
-                "selectMenuPage": "Seleccionar Página de Menú",
-                "products": "Productos",
-                "noMenuPagesAvailable": "No hay páginas de menú disponibles",
-                "minimum": "Mínimo",
-                "maximum": "Máximo",
-                "kitchenPriority": "Prioridad de Cocina",
-                "selectPriority": "Seleccionar prioridad",
-                "page": "Página",
-                "actions": "Acciones",
-                "add": "Agregar",
-                "eliminate": "Eliminar",
-                "cancel": "Cancelar",
-                "create": "Crear",
-                "update": "Actualizar",
-                "errors": {
-                    "nameRequired": "Por favor ingrese un nombre de menú",
-                    "subcategoryRequired": "Por favor seleccione una subcategoría",
-                    "descriptionTooLong": "La descripción debe tener 150 caracteres o menos",
-                    "addMenuPageRequired": "Por favor agregue al menos una página de menú al menú",
-                    "selectMenuPage": "Por favor seleccione una página de menú",
-                    "noMenuPagesAvailable": "No hay páginas de menú disponibles para agregar",
-                    "menuPageNotFound": "Página de menú seleccionada no encontrada",
-                    "fixValidationErrors": "Por favor corrija los errores de validación antes de agregar la página",
-                    "failedToCreate": "Error al crear menú",
-                    "failedToUpdate": "Error al actualizar menú",
-                    "failedToDelete": "Error al eliminar menú",
-                    "failedToSave": "Error al guardar menú",
-                    "failedToFetch": "Error al obtener datos"
-                },
-                "success": {
-                    "created": "Menú creado exitosamente",
-                    "updated": "Menú actualizado exitosamente",
-                    "deleted": "Menú eliminado exitosamente"
-                },
-                "confirmDelete": "¿Estás seguro de que quieres eliminar este menú?"
-            },
-            "createVariantModal": {
-                "title": "Crear Variante",
-                "editTitle": "Editar Variante",
-                "variantName": "Nombre de Variante",
-                "enterVariantName": "Ingrese nombre de variante",
-                "color": "Color",
-                "variantItems": "Elementos de Variante",
-                "addItem": "Agregar Elemento",
-                "itemName": "Nombre del Elemento",
-                "enterItemName": "Ingrese nombre del elemento",
-                "name": "Nombre",
-                "priority": "Prioridad",
-                "enterPriority": "Ingrese prioridad",
-                "image": "Imagen",
-                "remove": "Eliminar",
-                "associatedProducts": "Productos Asociados",
-                "seeAssociatedProducts": "Ver productos asociados",
-                "noProducts": "No se encontraron productos asociados",
-                "productName": "Nombre del Producto",
-                "price": "Precio",
-                "subcategory": "Subcategoría",
-                "close": "Cerrar",
-                "cancel": "Cancelar",
-                "create": "Crear",
-                "update": "Actualizar",
-                "errors": {
-                    "nameRequired": "Por favor ingrese un nombre de variante",
-                    "itemNameRequired": "Por favor ingrese un nombre de elemento",
-                    "failedToCreate": "Error al crear variante",
-                    "failedToUpdate": "Error al actualizar variante",
-                    "failedToFetch": "Error al obtener productos asociados"
-                },
-                "success": {
-                    "created": "Variante creada exitosamente",
-                    "updated": "Variante actualizada exitosamente"
-                }
-            },
-            "createGroupModal": {
-                "title": "Crear Grupo",
-                "editTitle": "Editar Grupo",
-                "groupName": "Nombre del Grupo",
-                "enterGroupName": "Ingrese nombre del grupo",
-                "color": "Color",
-                "groupItems": "Elementos del Grupo",
-                "addItem": "Agregar Elemento",
-                "itemName": "Nombre del Elemento",
-                "enterItemName": "Ingrese nombre del elemento",
-                "addNewComplement": "Agregar Nuevo Complemento",
-                "complementName": "Nombre del Complemento",
-                "enterComplementName": "Ingrese nombre del complemento",
-                "price": "Precio",
-                "priority": "Prioridad",
-                "image": "Imagen",
-                "complements": "Complementos",
-                "actions": "Acciones",
-                "remove": "Eliminar",
-                "associatedProducts": "Productos Asociados",
-                "seeAssociatedProducts": "Ver productos asociados",
-                "noProducts": "No se encontraron productos asociados",
-                "productName": "Nombre del Producto",
-                "subcategory": "Subcategoría",
-                "add": "Agregar",
-                "eliminate": "Eliminar",
-                "close": "Cerrar",
-                "cancel": "Cancelar",
-                "create": "Crear",
-                "update": "Actualizar",
-                "deleteTitle": "Eliminar Grupo",
-                "deleteMessage": "¿Estás seguro de que quieres eliminar este",
-                "deleteConfirm": "Eliminar Grupo",
-                "specialNote": "Si eliminas este grupo ya no podrás editarlo en ningún pedido adjunto.",
-                "errors": {
-                    "nameRequired": "Por favor ingrese un nombre de grupo",
-                    "itemNameRequired": "Por favor ingrese un nombre de elemento",
-                    "failedToCreate": "Error al crear grupo",
-                    "failedToUpdate": "Error al actualizar grupo",
-                    "failedToDelete": "Error al eliminar grupo",
-                    "failedToFetch": "Error al obtener productos asociados"
-                },
-                "success": {
-                    "created": "Grupo creado exitosamente",
-                    "updated": "Grupo actualizado exitosamente",
-                    "deleted": "Grupo eliminado exitosamente"
-                }
-            },
-            "specialNotes": {
-                "productDeleteWarning": "Si eliminas este producto ya no podrás editarlo en ningún pedido.",
-                "menuPageDeleteWarning": "Si eliminas esta página de menú ya no podrás editarla en ningún pedido adjunto.",
-                "variantDeleteWarning": "Si eliminas esta variante ya no podrás editarla en ningún pedido adjunto."
-            }
-        }
-    },
-    "menuView": {
-        "titles": {
-            "menu": "Menús",
-            "menuStructure": "Estructura del Menú",
-            "group": "Grupos",
-            "variant": "Variantes"
-        },
-        "descriptions": {
-            "menu": "Crear y gestionar categorías, subcategorías y productos.",
-            "menuStructure": "Crear menús y páginas de menú.",
-            "group": "Crear y gestionar grupos de menú y opciones.",
-            "variant": "Crear y gestionar variantes de productos y opciones."
-        },
-        "buttons": {
-            "menu": "Menús",
-            "menuStructure": "Estructura del Menú",
-            "group": "Grupos",
-            "variant": "Variantes"
-        }
-    },
-    "navigation": {
-        "defaultCompanyName": "Sistema de Entrega",
-        "logout": "Cerrar Sesión",
-        "toggleSidebar": "Alternar Barra Lateral",
-        "orders": "Pedidos",
-        "kitchenView": "Vista de Cocina",
-        "deliveryView": "Vista de Entrega",
-        "deliveryManagement": "Gestión de Entregas",
-        "manageOrders": "Administrar Pedidos",
-        "reports": "Informes",
-        "menuStructure": "Estructura del Menú",
+    "modal": {
+      "addNew": "Agregar nuevo usuario",
+      "edit": "Editar usuario",
+      "tabs": {
+        "general": "General",
+        "permissions": "Permisos",
+        "functions": "Funciones"
+      },
+      "functionLabels": {
+        "cancel-order": "Cancelar Pedido",
+        "change-delivery-person": "Cambiar Repartidor"
+      },
+      "moduleLabels": {
+        "order": "Pedido",
+        "kitchen": "Cocina",
+        "delivery": "Entrega",
+        "delivery-management": "Gestión de Entrega",
+        "manage-orders": "Gestión de Pedidos",
+        "reports": "Reportes",
+        "menu-structure": "Estructura de Menú",
         "users": "Usuarios",
         "configurations": "Configuraciones"
+      },
+      "username": "Nombre de usuario",
+      "password": "Contraseña",
+      "newPassword": "Nueva contraseña",
+      "fullName": "Nombre completo",
+      "email": "Correo electrónico",
+      "role": "Rol",
+      "modulePermissions": "Permisos de Módulos",
+      "selectModules": "Selecciona qué módulos puede acceder este usuario",
+      "functionPermissions": "Permisos de Funciones",
+      "selectFunctions": "Selecciona qué funciones puede realizar este usuario",
+      "cancel": "Cancelar",
+      "add": "Agregar usuario",
+      "update": "Actualizar usuario"
     },
-    "printerUtils": {
-        "unableToGetPrinters": "No se pudieron obtener las impresoras"
+    "roles": {
+      "all": "Todos",
+      "admin": "Admin",
+      "staff": "Personal",
+      "kitchen": "Cocina",
+      "manager": "Gerente"
     },
-    "receipt": {
-        "date": "Fecha",
-        "order": "Pedido",
-        "payment": "Pago",
-        "servedBy": "Atendido Por",
-        "quantity": "Cant.",
-        "name": "Nombre",
-        "subtotal": "Subtotal",
-        "total": "TOTAL",
-        "vat": "IVA",
-        "base": "Base",
-        "tax": "Impuesto",
-        "thankYou": "Gracias por su visita",
-        "extra": "Extra",
-        "waiter": "Camarero",
-        "address": "Dirección del Cliente",
-        "paymentStatus": {
-            "unpaid": "NO PAGADO",
-            "paid": "PAGADO",
-            "PARTIAL": "PARCIAL"
-        },
-        "orderType": {
-            "dineIn": "EN RESTAURANTE",
-            "pickup": "PARA LLEVAR",
-            "delivery": "A DOMICILIO"
+    "validation": {
+      "emailRequired": "El correo es obligatorio",
+      "emailInvalid": "Por favor ingresa una dirección de correo válida",
+      "usernameRequired": "Por favor ingresa un nombre de usuario",
+      "nameRequired": "Por favor ingresa un nombre",
+      "passwordRequired": "Por favor ingresa una contraseña"
+    },
+    "messages": {
+      "fetchFailed": "Error al obtener usuarios",
+      "addFailed": "Error al agregar usuario",
+      "updateFailed": "Error al actualizar usuario",
+      "deleteFailed": "Error al eliminar usuario",
+      "usernameTaken": "Nombre de usuario ya en uso",
+      "added": "Usuario agregado correctamente",
+      "updated": "Usuario actualizado correctamente",
+      "deleted": "Usuario eliminado correctamente"
+    },
+    "deleteConfirmTitle": "Eliminar usuario",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar este usuario?",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "reports": {
+    "title": "Análisis e Informes",
+    "subtitle": "Información completa sobre el rendimiento de pedidos y tendencias",
+    "totalOrders": "Total de Pedidos",
+    "delivered": "Entregado/ Completado",
+    "avgDeliveryTime": "Tiempo Promedio de Entrega",
+    "inProgress": "En Progreso",
+    "successRate": "Tasa de Éxito",
+    "minutes": "minutos",
+    "topOrderedItems": "Artículos Más Pedidos",
+    "topOrderedMenus": "Menús Más Pedidos",
+    "orderDetails": "Detalles del Pedido",
+    "orderId": "ID del Pedido",
+    "customer": "Cliente",
+    "items": "Artículos",
+    "status": "Estado",
+    "time": "Hora",
+    "noOrdersFound": "No se encontraron pedidos",
+    "noOrdersSubtitle": "Intenta ajustar tu rango de fechas o selección de período.",
+    "showingOrders": "Mostrando los primeros 20 pedidos de {{total}} pedidos totales",
+    "statuses": {
+      "completed": "Completado",
+      "delivered": "Entregado",
+      "sentToKitchen": "Enviado a Cocina",
+      "pending": "Pendiente",
+      "outForDelivery": "En Camino",
+      "cancelled": "Cancelado",
+      "readyForDelivery": "Listo para Entrega"
+    },
+    "errors": {
+      "fetchFailed": "Error al obtener análisis"
+    },
+    "components": {
+      "statusDistribution": {
+        "title": "Distribución de Estado de Pedidos",
+        "noOrders": "No hay pedidos en el período seleccionado"
+      },
+      "hourlyDistribution": {
+        "title": "Distribución Horaria de Pedidos",
+        "noOrders": "No hay pedidos en el período seleccionado"
+      },
+      "dateRangeSelector": {
+        "reportPeriod": "Período del Informe",
+        "periods": {
+          "today": "Hoy",
+          "week": "Semana",
+          "month": "Mes",
+          "custom": "Personalizado"
         }
-    },
-    "menuOrderTakingForm": {
-        "errors": {
-            "unableToGetMenuPageAssociations": "No se pudieron obtener las asociaciones de páginas del menú",
-            "unableToGetMenuPages": "No se pudieron obtener las páginas del menú",
-            "failedToFetchMenuPages": "Error al obtener las páginas del menú",
-            "unableToFetchProduct": "No se pudo obtener el producto",
-            "errorRemovingMenuFromOrder": "Error al eliminar el menú del pedido",
-            "errorRemovingMenuItemFromOrder": "Error al eliminar el elemento del menú del pedido",
-            "errorGettingProduct": "Error al obtener el producto"
-        },
-        "messages": {
-            "orderAssignedToDeliveryPerson": "Este pedido está asignado a un repartidor y no se puede editar."
-        },
-        "warnings": {
-            "maximumComplementsReached": "Has alcanzado el número máximo de complementos para esta página del menú"
-        },
-        "pageOf": "Página {{current}} de {{total}}",
-        "noPagesAvailable": "No hay páginas disponibles",
-        "noMenuPages": "Sin Páginas de Menú",
-        "noMenuPagesDescription": "No hay páginas de menú disponibles para este menú.",
-        "selectionProgress": "Progreso de Selección",
-        "selectMoreProducts": "Selecciona {{count}} producto(s) más para continuar.",
-        "selectionComplete": "¡Selección completa! Ahora puedes proceder.",
-        "selectProductsToGetStarted": "Selecciona {{min, plural, =0 {cualquier producto} other {al menos # producto}} para comenzar",
-        "noImage": "Sin Imagen",
-        "processed": "Procesado",
-        "clickToSelect": "Haz clic para seleccionar",
-        "clickOnAnyProductToProcess": "Haz clic en cualquier producto para procesarlo",
-        "completeMenu": "Menú Completo ({{count}} productos)",
-        "previousPage": "Página Anterior",
-        "nextPage": "Página Siguiente",
-        "applyChanges": "Aplicar Cambios",
-        "loadingMenuPages": "Cargando páginas del menú..."
-    },
-    "orderUtils": {
-        "orderDeleted": "El pedido #{{orderId}} ha sido eliminado",
-        "newOrderReceived": "Nuevo pedido #{{orderId}} recibido",
-        "orderStatusChanged": "El pedido #{{orderId}} cambió de estado a: {{status}}",
-        "orderSynchronized": "El pedido #{{orderId}} sincronizado",
-        "unrecognizedChangeType": "Tipo de cambio no reconocido, actualizando pedidos",
-        "errorFetchingOrders": "Error al obtener pedidos"
-    },
-    "menuUtils": {
-        "unableToGetVariants": "No se pudieron obtener las variantes",
-        "unableToGetGroups": "No se pudieron obtener los grupos",
-        "unableToGetCategories": "No se pudieron obtener las categorías",
-        "failedToFetchCategories": "Error al obtener las categorías",
-        "unableToGetSubcategories": "No se pudieron obtener las subcategorías",
-        "failedToFetchSubcategories": "Error al obtener las subcategorías",
-        "unableToGetProducts": "No se pudieron obtener los productos",
-        "failedToFetchProducts": "Error al obtener los productos",
-        "unableToGetMenus": "No se pudieron obtener los menús",
-        "failedToFetchMenus": "Error al obtener los menús",
-        "failedToFetchAssociatedProducts": "Error al obtener los productos asociados"
-    },
-    "reportUtils": {
-        "orders": "Pedidos"
-    },
-    "paymentStatusUtils": {
-        "invalidPaymentAmount": "Cantidad de pago inválida: {{amount}}",
-        "errorParsingPaymentString": "Error al analizar la cadena de pago:",
-        "statuses": {
-            "paid": "Pagado",
-            "unpaid": "Sin Pagar",
-            "partial": "Pago Parcial",
-            "pending": "Pendiente"
-        }
-    },
-    "orderProcessingModal": {
-        "title": "Procesar Pedido",
-        "subtitle": "Completar detalles del pedido",
-        "customerSearch": {
-            "title": "Búsqueda de Cliente",
-            "titleOptional": "Búsqueda de Cliente (Opcional)",
-            "titleRequired": "Búsqueda de Cliente *",
-            "placeholder": "Escriba el nombre o teléfono del cliente para buscar...",
-            "addNew": "Agregar Nuevo",
-            "selectedCustomer": "Cliente Seleccionado",
-            "change": "Cambiar",
-            "name": "Nombre:",
-            "phone": "Teléfono:",
-            "email": "Correo:",
-            "address": "Dirección"
-        },
-        "customerDetails": {
-            "title": "Detalles del Cliente",
-            "titleOptional": "Detalles del Cliente (Opcional)",
-            "titleRequired": "Detalles del Cliente *",
-            "customerName": "Nombre del Cliente",
-            "enterCustomerName": "Ingrese el nombre del cliente...",
-            "phoneNumber": "Número de Teléfono",
-            "enterPhoneNumber": "Ingrese el número de teléfono...",
-            "deliveryAddress": "Dirección de Entrega",
-            "enterDeliveryAddress": "Ingrese la dirección de entrega...",
-            "descriptionOptional": "Ingrese los detalles del cliente para personalizar el pedido (opcional)",
-            "descriptionRequired": "Los detalles del cliente incluyendo la dirección son requeridos para pedidos de entrega"
-        },
-        "orderType": {
-            "title": "Tipo de Pedido",
-            "pickup": {
-                "title": "Recogida",
-                "description": "Recogida por el cliente"
-            },
-            "delivery": {
-                "title": "Entrega",
-                "description": "Entrega a domicilio"
-            },
-            "dineIn": {
-                "title": "Comer en el Local",
-                "description": "En el restaurante"
-            }
-        },
-        "pickupTime": {
-            "title": "Hora de Recogida",
-            "placeholder": "Seleccionar hora de recogida",
-            "description": "¿Cuándo debería estar listo el pedido para recoger?"
-        },
-        "deliveryAddress": {
-            "title": "Dirección de Entrega"
-        },
-        "paymentStatus": {
-            "title": "Estado del Pago",
-            "description": "El pago se cobrará al momento de la entrega (Pago contra entrega)"
-        },
-        "orderNotes": {
-            "title": "Notas del Pedido",
-            "placeholder": "Cualquier instrucción especial o nota..."
-        },
-        "orderSummary": {
-            "title": "Resumen del Pedido",
-            "variant": "Variante:",
-            "addOns": "Complementos:",
-            "total": "Total:"
-        },
-        "buttons": {
-            "cancel": "Cancelar",
-            "proceedOrder": "Procesar Pedido"
-        },
-        "errors": {
-            "customerNamePhoneRequired": "Por favor ingrese el nombre y número de teléfono del cliente para pedidos de entrega",
-            "customerNoAddress": "El cliente seleccionado no tiene dirección. Por favor seleccione un cliente diferente o cambie a recogida.",
-            "customerDetailsRequired": "Por favor seleccione un cliente o ingrese los detalles del cliente incluyendo la dirección para pedidos de entrega",
-            "orderAlreadyPaid": "El pedido ya está pagado. Procesando con la información de pago existente."
-        },
-        "defaultCustomers": {
-            "dineInCustomer": "Cliente de Comedor",
-            "walkInCustomer": "Cliente de Pasada",
-            "dineIn": "Comedor",
-            "inStore": "En Tienda"
-        }
-    },
-    "paymentOptionModal": {
-        "title": "Opción de Pago",
-        "pickupOrder": "Pedido para Recoger",
-        "dineInOrder": "Pedido para Comer en el Local",
-        "choosePaymentMethod": "Elija cómo desea manejar el pago para este pedido",
-        "payNow": {
-            "title": "Pagar Ahora",
-            "description": "Procesar el pago inmediatamente y enviar a cocina"
-        },
-        "payLater": {
-            "title": "Pagar Después",
-            "description": "Enviar a cocina ahora, cobrar el pago después"
-        },
-        "cancel": "Cancelar"
-    },
-    "orderStatuses": {
-        "pending": "Pendiente",
-        "sentToKitchen": "Enviado a Cocina",
-        "readyForDelivery": "Listo para Entrega",
-        "outForDelivery": "En Camino",
-        "completed": "Completado",
-        "delivered": "Entregado",
-        "cancelled": "Cancelado"
-    },
-    "orderTable": {
-        "noDataFound": "No se encontraron datos"
-    },
-    "orderTypes": {
-        "pickup": "Recoger",
-        "delivery": "Domicilio",
-        "dineIn": "Comer Aquí"
-    },
-    "orderComponent": {
-        "partialPayment": "Pagado: €{{paid}} / €{{total}}",
-        "noOrders": "Sin Pedidos",
-        "noOrdersAvailable": "No hay pedidos disponibles para mostrar"
-    },
-    "unifiedCard": {
-        "catCountText": "Categorías",
-        "subCatCountText": "Subcategorías",
-        "prodCountText": "Productos",
-        "menuCountText": "Menús",
-        "groupCountText": "complementos",
-        "variantCountText": "Variantes",
-        "noDescription": "Sin descripción"
-    },
-    "confirmationModal": {
-        "subtitle": "Por favor, confirma tu acción",
-        "dangerWarningTitle": "Esta acción no se puede deshacer",
-        "specialNote": "Una vez eliminado, este elemento se borrará permanentemente del sistema.",
-        "confirmAction": "Confirmar Acción"
+      },
+      "topItems": {
+        "noItems": "No se ordenaron artículos en el período seleccionado"
+      }
     }
+  },
+  "login": {
+    "welcomeBack": "Bienvenido de Nuevo",
+    "signInSubtitle": "Inicia sesión en tu cuenta para continuar",
+    "username": "Nombre de Usuario",
+    "password": "Contraseña",
+    "usernamePlaceholder": "Ingresa tu nombre de usuario",
+    "passwordPlaceholder": "Ingresa tu contraseña",
+    "signingIn": "Iniciando sesión...",
+    "signIn": "Iniciar Sesión",
+    "restaurantInterior": "Interior del Restaurante",
+    "restaurantLogo": "Logo del Restaurante"
+  },
+  "orderManagement": {
+    "filters": {
+      "allOrders": "Todos los Pedidos",
+      "pending": "📋 Pendiente",
+      "sentToKitchen": "👨‍🍳 Enviado a Cocina",
+      "readyForDelivery": "✅ Listo para Entrega",
+      "outForDelivery": "🚚 En Camino",
+      "completed": "✅ Completado",
+      "delivered": "📦 Entregado",
+      "cancelled": "❌ Cancelado",
+      "paid": "💚 Pagado",
+      "unpaid": "🔴 No Pagado",
+      "partialPayment": "🟡 Pago Parcial",
+      "filterOrders": "Filtrar Pedidos"
+    }
+  },
+  "orderTakingForm": {
+    "loading": {
+      "title": "Cargando Detalles del Producto",
+      "description": "Por favor espera mientras obtenemos las opciones de personalización..."
+    },
+    "customizeYourOrder": "Personaliza tu pedido",
+    "chooseVariant": "Elegir Variante",
+    "selectPreferredVariant": "Selecciona tu variante preferida para {{productName}}",
+    "variantsDetached": "Las variantes han sido desvinculadas del producto",
+    "addComplements": "Agregar Complementos",
+    "selected": "Seleccionado",
+    "min": "Mín",
+    "max": "Máx",
+    "free": "Gratis",
+    "complementsDetached": "Los complementos han sido desvinculados del producto",
+    "quantity": "Cantidad",
+    "priceBreakdown": "Desglose de Precios",
+    "baseProduct": "Producto Base",
+    "tax": "Impuesto",
+    "variant": "Variante",
+    "total": "Total",
+    "addToOrder": "Agregar al Pedido",
+    "errors": {
+      "unableToGetVariants": "No se pudieron obtener las variantes del producto",
+      "unableToGetAddonPages": "No se pudieron obtener las páginas de complementos del producto",
+      "unableToGetGroups": "No se pudieron obtener los grupos",
+      "errorLoadingProductData": "Error al cargar los datos del producto",
+      "pleaseSelectVariant": "Por favor selecciona una variante",
+      "pleaseCompleteRequiredSelections": "Por favor completa todas las selecciones requeridas",
+      "unableToUpdateOrder": "No se pudo actualizar el pedido",
+      "unableToSaveOrder": "No se pudo guardar el pedido",
+      "unableToUpdateQuantity": "No se pudo actualizar la cantidad"
+    },
+    "warnings": {
+      "maximumItemsAllowed": "Máximo {{maxComplements}} elementos permitidos para el grupo"
+    },
+    "messages": {
+      "orderAssignedToDeliveryPerson": "Este pedido está asignado a un repartidor y no se puede editar.",
+      "itemAddedToOrder": "¡Artículo agregado al pedido!",
+      "quantityUpdated": "¡Cantidad actualizada! Total: {{newQuantity}}"
+    }
+  },
+  "orderCart": {
+    "yourOrder": "Tu Pedido",
+    "selectItemsFromMenu": "Selecciona artículos del menú para agregar a tu pedido",
+    "duplicate": "Duplicar",
+    "duplicateTooltip": "Duplicar este grupo de menú",
+    "printOptions": "Opciones de Impresión",
+    "clearOrder": "Limpiar Pedido",
+    "itemPrice": "Precio del Artículo",
+    "taxIncluded": "impuesto incluido",
+    "variant": "Variante",
+    "addOns": "Complementos",
+    "from": "De",
+    "menuPrice": "Precio del Menú",
+    "supplements": "Suplementos",
+    "total": "Total",
+    "processOrder": "Procesar Pedido",
+    "pointOfSale": "Punto de Venta",
+    "defaultAddress": "calle 123",
+    "warnings": {
+      "noPrintersAttached": "No hay impresoras conectadas"
+    },
+    "errors": {
+      "errorGettingConfigurations": "Error al obtener configuraciones",
+      "errorDuplicatingMenu": "Error al duplicar el menú. Por favor, inténtalo de nuevo.",
+      "printerNotFound": "Impresora \"{{printerName}}\" no encontrada",
+      "errorPrintingReceipt": "Error al imprimir recibo",
+      "errorRemovingItem": "Error al eliminar artículo",
+      "errorGettingProduct": "Error al obtener producto",
+      "errorGettingMenu": "Error al obtener menú",
+      "menuHaveBeenDeleted": "El menú ha sido eliminado",
+      "errorUpdatingQuantity": "Error al actualizar cantidad",
+      "errorClearingOrder": "Error al limpiar pedido",
+      "printerNotFoundError": "Impresora no encontrada"
+    },
+    "messages": {
+      "printingCustomerReceipt": "Imprimiendo recibo del cliente...",
+      "receiptPrintedSuccessfully": "Recibo impreso exitosamente",
+      "menuDuplicated": "Menú duplicado correctamente"
+    },
+    "confirmations": {
+      "removeItem": {
+        "title": "Eliminar Artículo",
+        "message": "¿Estás seguro de que quieres eliminar este artículo de tu pedido?",
+        "confirmText": "Eliminar Artículo"
+      },
+      "removeMenu": {
+        "title": "Eliminar Menú",
+        "message": "¿Estás seguro de que quieres eliminar este menú de tu pedido?",
+        "confirmText": "Limpiar Pedido"
+      },
+      "clearOrder": {
+        "title": "Limpiar Pedido",
+        "message": "¿Estás seguro de que quieres limpiar todo el pedido? Esta acción no se puede deshacer.",
+        "confirmText": "Limpiar Pedido"
+      }
+    }
+  },
+  "paymentProcessingModal": {
+    "title": "Procesamiento de Pago",
+    "subtitle": "Seleccionar métodos de pago",
+    "totalAmount": "Cantidad Total",
+    "alreadyPaid": "Ya Pagado",
+    "remaining": "Restante",
+    "amountTendered": "Cantidad Entregada",
+    "changeToReturn": "Cambio a Devolver",
+    "paymentMethod": "Método de Pago",
+    "cash": "Efectivo",
+    "card": "Tarjeta",
+    "amount": "Cantidad",
+    "addPayment": "Agregar Pago",
+    "addedPayments": "Pagos Agregados",
+    "processPayment": "Procesar Pago",
+    "errors": {
+      "pleaseEnterValidAmount": "Por favor ingresa una cantidad válida",
+      "pleaseAddPaymentMethod": "Por favor agrega al menos un método de pago"
+    },
+    "messages": {
+      "partialPaymentProcessed": "Pago parcial procesado: {{paymentString}} (Restante: €{{remaining}})",
+      "paymentProcessedWithChange": "Pago procesado: {{paymentString}} (Cambio: €{{change}})",
+      "paymentProcessed": "Pago procesado: {{paymentString}}"
+    }
+  },
+  "customerModal": {
+    "title": "Agregar Cliente",
+    "phone": "Teléfono",
+    "name": "Nombre",
+    "cifDni": "CIF/DNI",
+    "email": "Correo Electrónico",
+    "comments": "Comentarios",
+    "address": "Dirección",
+    "postalCode": "Código Postal",
+    "city": "Ciudad",
+    "province": "Provincia",
+    "addCustomer": "Agregar Cliente",
+    "placeholders": {
+      "phone": "Ingrese número de teléfono",
+      "name": "Ingrese nombre",
+      "cifDni": "Ingrese CIF/DNI",
+      "email": "Ingrese correo electrónico",
+      "comments": "Ingrese comentarios",
+      "address": "Ingrese dirección",
+      "postalCode": "Ingrese código postal",
+      "city": "Ingrese ciudad",
+      "province": "Ingrese provincia"
+    },
+    "errors": {
+      "customerAlreadyExists": "El cliente ya existe",
+      "failedToEditCustomer": "Error al editar cliente",
+      "failedToAddCustomer": "Error al agregar cliente",
+      "phoneRequired": "El número de teléfono es obligatorio",
+      "addressRequired": "La dirección es obligatoria",
+      "postalCodeRequired": "El código postal es obligatorio",
+      "cityRequired": "La ciudad es obligatoria"
+    }
+  },
+  "printerModal": {
+    "viewPrinter": "Ver Impresora",
+    "editPrinter": "Editar Impresora",
+    "addNewPrinter": "Agregar Nueva Impresora",
+    "displayName": "Nombre para Mostrar *",
+    "enterDisplayName": "Ingrese nombre para mostrar",
+    "mainPrinter": "Impresora Principal",
+    "printer": "Impresora",
+    "selectPrinter": "Seleccionar impresora",
+    "updatePrinter": "Actualizar Impresora",
+    "addPrinter": "Agregar Impresora",
+    "errors": {
+      "pleaseSelectPrinter": "Por favor selecciona una impresora",
+      "pleaseEnterDisplayName": "Por favor ingresa el nombre para mostrar",
+      "unableToAddPrinter": "No se pudo agregar la impresora",
+      "unableToUpdatePrinter": "No se pudo actualizar la impresora",
+      "anErrorOccurred": "Ocurrió un error"
+    },
+    "warnings": {
+      "printerAlreadyAdded": "¡Esta impresora ya está agregada!"
+    },
+    "messages": {
+      "printerAddedSuccessfully": "Impresora agregada exitosamente",
+      "printerUpdatedSuccessfully": "Impresora actualizada exitosamente"
+    }
+  },
+  "manageOrders": {
+    "title": "Administrar Pedidos",
+    "subtitle": "Ver y administrar todos los pedidos con opciones de filtrado avanzadas",
+    "searchOrders": "Buscar Pedidos",
+    "searchPlaceholder": "Buscar por número de pedido...",
+    "filterByDate": "Filtrar por Fecha",
+    "customer": "Cliente",
+    "allCustomers": "Todos los Clientes",
+    "deliveryPerson": "Repartidor",
+    "paymentStatus": "Estado de Pago",
+    "allDeliveryPersons": "Todos los Repartidores",
+    "allPaymentStatuses": "Todos los Estados de Pago",
+    "clearAllFilters": "Limpiar Todos los Filtros",
+    "bulkPayment": "Pago Masivo",
+    "showingOrders": "Mostrando {{filtered}} de {{total}} pedidos",
+    "lastUpdated": "Última actualización: {{time}}",
+    "noOrdersMatch": "No hay pedidos que coincidan con tus filtros",
+    "noOrdersFound": "No se encontraron pedidos",
+    "table": {
+      "orderNumber": "Pedido #",
+      "customer": "Cliente",
+      "orderType": "Tipo de Pedido",
+      "status": "Estado",
+      "paymentStatus": "Estado de Pago",
+      "deliveryPerson": "Repartidor",
+      "total": "Total",
+      "created": "Creado",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "viewOrder": "Ver Pedido",
+      "printOrder": "Imprimir Pedido",
+      "processPayment": "Procesar Pago",
+      "cancelOrder": "Cancelar Pedido"
+    },
+    "statuses": {
+      "notAssigned": "No asignado",
+      "nA": "N/A",
+      "notSelected": "No Seleccionado"
+    },
+    "confirmCancelOrder": "¿Estás seguro de que deseas cancelar el pedido {{orderId}}?",
+    "errors": {
+      "cancelFailed": "Error al cancelar el pedido"
+    },
+    "messages": {
+      "orderCancelled": "Pedido cancelado exitosamente"
+    }
+  },
+  "cancelOrderModal": {
+    "title": "Cancelar Pedido",
+    "orderNumber": "Número de Pedido",
+    "customer": "Cliente",
+    "cancelNote": "Nota de Cancelación *",
+    "cancelNotePlaceholder": "Ingresa el motivo de la cancelación...",
+    "noteRequired": "Se requiere una nota de cancelación",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar Cancelación"
+  },
+  "orderDetailsModal": {
+    "title": "Artículos del Pedido - K{{orderId}}",
+    "created": "Creado:",
+    "customer": "Cliente",
+    "deliveryAddress": "Dirección de Entrega",
+    "orderType": "Tipo de Pedido",
+    "paymentStatus": "Estado de Pago",
+    "deliveryPerson": "Repartidor",
+    "items": "Artículos",
+    "quantity": "Cant",
+    "price": "Precio",
+    "total": "Total",
+    "orderNotes": "Notas del Pedido",
+    "cancelled": "CANCELADO",
+    "subtotal": "Subtotal",
+    "tax": "Impuesto",
+    "deliveryFee": "Tarifa de Entrega",
+    "grandTotal": "Total General",
+    "close": "Cerrar",
+    "customerInformation": "Información del Cliente",
+    "name": "Nombre",
+    "phone": "Teléfono",
+    "address": "Dirección",
+    "orderInformation": "Información del Pedido",
+    "status": "Estado",
+    "updated": "Actualizado",
+    "paymentInformation": "Información de Pago",
+    "totalAmount": "Cantidad Total",
+    "deliveryInformation": "Información de Entrega",
+    "vehicleType": "Tipo de Vehículo",
+    "assignedAt": "Asignado el",
+    "deliveredAt": "Entregado el",
+    "orderItems": "Artículos del Pedido",
+    "addOns": "Complementos:",
+    "each": "cada uno",
+    "noItemsFound": "No se encontraron artículos",
+    "notRecorded": "No registrado",
+    "notAssignedYet": "Aún no asignado"
+  },
+  "bulkPaymentModal": {
+    "title": "Procesamiento de Pagos Masivos",
+    "subtitle": "Procesar pagos para múltiples pedidos entregados por repartidor",
+    "selectDeliveryPerson": "Seleccionar Repartidor",
+    "chooseDeliveryPerson": "Elige un repartidor...",
+    "pleaseSelectDeliveryPerson": "Por favor selecciona un repartidor",
+    "allDeliveryPersons": "Todos los Repartidores",
+    "paymentMethod": "Método de Pago",
+    "amount": "Cantidad",
+    "addPayment": "Agregar",
+    "removePayment": "Eliminar",
+    "totalAmount": "Cantidad Total",
+    "processPayments": "Procesar Pago Masivo",
+    "cancel": "Cancelar",
+    "processing": "Procesando...",
+    "success": "Pagos procesados correctamente",
+    "error": "Error al procesar pagos",
+    "allPayments": "Todos los Pagos:",
+    "pending": "PENDIENTE",
+    "readyToProcess": "Listo para procesar pago",
+    "ordersSummary": "Resumen de Pedidos",
+    "deliveryPerson": "Repartidor",
+    "ordersCount": "Cantidad de Pedidos",
+    "totalAmountDue": "Cantidad Total Debida",
+    "remainingAmount": "Cantidad Restante",
+    "amountTendered": "Cantidad Entregada",
+    "changeToReturn": "Cambio a Devolver",
+    "orders": "pedidos",
+    "paymentMethods": "Métodos de Pago",
+    "total": "Total: €{{paid}} / €{{total}}",
+    "cash": "Efectivo",
+    "card": "Tarjeta",
+    "add": "Agregar"
+  },
+  "individualPaymentModal": {
+    "title": "Procesar Pago",
+    "subtitle": "Completar el pago para este pedido",
+    "orderDetails": "Detalles del Pedido",
+    "orderId": "ID del Pedido",
+    "customer": "Cliente",
+    "totalAmount": "Cantidad Total",
+    "remainingAmount": "Cantidad Restante",
+    "amountTendered": "Cantidad Entregada",
+    "changeToReturn": "Cambio a Devolver",
+    "deliveryPerson": "Repartidor",
+    "paymentMethods": "Métodos de Pago",
+    "total": "Total: €{{paid}} / €{{total}}",
+    "paymentMethod": "Método de Pago",
+    "cash": "Efectivo",
+    "card": "Tarjeta",
+    "amount": "Cantidad",
+    "addPayment": "Agregar",
+    "removePayment": "Eliminar",
+    "processPayment": "Procesar Pago",
+    "cancel": "Cancelar",
+    "processing": "Procesando...",
+    "allPayments": "Todos los Pagos:",
+    "pending": "PENDIENTE",
+    "readyToProcess": "Listo para procesar pago",
+    "noDeliveryPersonAssigned": "No hay repartidor asignado",
+    "pleaseAddPaymentMethod": "Por favor agrega al menos un método de pago",
+    "errors": {
+      "enterValidAmount": "Por favor ingresa una cantidad válida",
+      "noOrderSelected": "No hay pedido seleccionado",
+      "totalExceedsOrder": "El pago total no puede exceder el total del pedido",
+      "addPaymentMethod": "Por favor agrega al menos un método de pago",
+      "updateFailed": "Error al actualizar el pago. Por favor intenta de nuevo.",
+      "processingError": "Ocurrió un error al procesar el pago. Por favor intenta de nuevo.",
+      "selectDeliveryPerson": "Por favor selecciona un repartidor primero",
+      "totalExceedsRemaining": "El pago total no puede exceder la cantidad restante",
+      "noOrdersFound": "No se encontraron pedidos para este repartidor",
+      "bulkProcessingError": "Ocurrió un error al procesar el pago masivo. Por favor intenta de nuevo."
+    },
+    "success": {
+      "paymentCompleted": "Pago completado exitosamente: {{paymentString}}",
+      "partialPayment": "Pago parcial registrado: {{paymentString}}. Restante: €{{remaining}}",
+      "bulkPaymentSuccess": "Pago masivo procesado exitosamente para {{count}} pedidos: {{paymentString}}",
+      "bulkPaymentPartial": "Pago procesado para {{successCount}} de {{totalCount}} pedidos"
+    }
+  },
+  "deliveryManagement": {
+    "title": "Gestión de Entregas",
+    "subtitle": "Gestionar personal de entrega y su información de vehículos",
+    "deliveryPersonnel": "Personal de Entrega",
+    "addAndManageStaff": "Agregar y gestionar personal de entrega",
+    "addDeliveryPerson": "Agregar Repartidor",
+    "deliveryPersonnelCount": "Personal de Entrega",
+    "bikes": "Bicicletas",
+    "motorcycles": "Motocicletas",
+    "cars": "Autos",
+    "scooters": "Scooters",
+    "searchDeliveryPersonnel": "Buscar personal de entrega...",
+    "all": "Todos",
+    "bike": "Bicicleta",
+    "motorcycle": "Motocicleta",
+    "car": "Auto",
+    "scooter": "Scooter",
+    "deliveryPersonnelTable": "Personal de Entrega ({{count}})",
+    "getStartedMessage": "Comienza agregando tu primer repartidor.",
+    "adjustFiltersMessage": "Intenta ajustar tu búsqueda o filtro de vehículo.",
+    "noDeliveryPersonnelFound": "No se encontró personal de entrega",
+    "deliveryPerson": "Repartidor",
+    "vehicle": "Vehículo",
+    "contact": "Contacto",
+    "license": "Licencia",
+    "totalAssigned": "Total Asignados",
+    "totalDelivered": "Total Entregados",
+    "totalCancelled": "Total Cancelados",
+    "avgDeliveryTime": "Tiempo Promedio de Entrega",
+    "actions": "Acciones",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deliveryPersonnelLabel": "Personal de Entrega",
+    "minutes": "min",
+    "errors": {
+      "fetchFailed": "Error al obtener personal de entrega",
+      "enterName": "Por favor ingresa un nombre",
+      "enterLicenseNumber": "Por favor ingresa un número de licencia",
+      "emailRequired": "El email es requerido",
+      "validEmail": "Por favor ingresa una dirección de email válida",
+      "phoneRequired": "El número de teléfono es requerido",
+      "validPhone": "Por favor ingresa un número de teléfono válido",
+      "phoneMinDigits": "El número de teléfono debe tener al menos 9 dígitos",
+      "phoneMaxDigits": "El número de teléfono no puede exceder 9 dígitos",
+      "emailExists": "El email ya existe",
+      "updateFailed": "Error al actualizar repartidor",
+      "addFailed": "Error al agregar repartidor",
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar este repartidor?",
+      "deleteConfirmTitle": "Eliminar persona de entrega",
+      "fetchStatsFailed": "Error al obtener estadísticas del repartidor",
+      "cannotDeleteWithOrders": "No se puede eliminar repartidor con {{count}} pedidos asignados",
+      "deleteFailed": "Error al eliminar repartidor"
+    },
+    "success": {
+      "updated": "Repartidor actualizado exitosamente",
+      "added": "Repartidor agregado exitosamente",
+      "deleted": "Repartidor eliminado exitosamente"
+    }
+  },
+  "deliveryPersonModal": {
+    "editTitle": "Editar Repartidor",
+    "addTitle": "Agregar Nuevo Repartidor",
+    "fullName": "Nombre Completo *",
+    "fullNamePlaceholder": "Ingresa nombre completo",
+    "email": "Email *",
+    "emailPlaceholder": "Ingresa dirección de email",
+    "phoneNumber": "Número de Teléfono",
+    "phoneNumberPlaceholder": "Ingresa número de teléfono",
+    "licenseNumber": "Número de Licencia *",
+    "licenseNumberPlaceholder": "Ingresa número de licencia",
+    "vehicleType": "Tipo de Vehículo",
+    "selectVehicleType": "Selecciona tipo de vehículo",
+    "cancel": "Cancelar",
+    "updateDeliveryPerson": "Actualizar Repartidor",
+    "addDeliveryPerson": "Agregar Repartidor"
+  },
+  "deliveryPersonInput": {
+    "selectDeliveryPerson": "Seleccionar Repartidor",
+    "chooseDeliveryPerson": "Elige un repartidor...",
+    "quickAssign": "Asignación Rápida"
+  },
+  "deliveryView": {
+    "title": "Gestión de Entregas",
+    "assignDelivery": "Asignar",
+    "subtitle": "Asignar y rastrear entregas de pedidos",
+    "readyForDeliveryOrders": "Pedidos Listos para Entrega",
+    "noOrdersReady": "No hay pedidos listos para entrega",
+    "delivered": "Entregado",
+    "stats": {
+      "readyForDelivery": "Listo para Entrega",
+      "outForDelivery": "En Camino",
+      "deliveredToday": "Entregado Hoy",
+      "activeDrivers": "Conductores Activos"
+    },
+    "descriptions": {
+      "ordersReadyToAssign": "Pedidos listos para ser asignados para entrega",
+      "allOrdersInKitchenOrAssigned": "Todos los pedidos están en cocina o ya asignados para entrega.",
+      "ordersCurrentlyBeingDelivered": "Pedidos siendo entregados actualmente"
+    },
+    "table": {
+      "orderId": "ID del Pedido",
+      "customer": "Cliente",
+      "contact": "Contacto",
+      "address": "Dirección",
+      "items": "Artículos",
+      "readySince": "Listo Desde",
+      "driver": "Conductor",
+      "actions": "Acciones",
+      "outForDelivery": "En Camino"
+    },
+    "cancelOrder": "Cancelar Pedido",
+    "changeDeliveryPerson": "Cambiar Repartidor",
+    "selectNewDeliveryPerson": "Seleccionar nuevo repartidor",
+    "confirmChange": "Confirmar Cambio",
+    "messages": {
+      "pleaseEnterDeliveryPersonName": "Por favor ingresa el nombre del repartidor",
+      "failedToAssignDeliveryPerson": "Error al asignar repartidor",
+      "failedToAssignDelivery": "Error al asignar entrega. Por favor intenta de nuevo.",
+      "failedToMarkAsDelivered": "Error al marcar como entregado",
+      "orderMarkedAsDelivered": "Pedido marcado como entregado",
+      "failedToMarkAsDeliveredRetry": "Error al marcar como entregado. Por favor intenta de nuevo.",
+      "failedToCancelOrder": "Error al cancelar el pedido",
+      "orderCancelled": "Pedido cancelado exitosamente",
+      "deliveryPersonChanged": "Repartidor cambiado exitosamente",
+      "failedToChangeDeliveryPerson": "Error al cambiar el repartidor"
+    }
+  },
+  "kitchenView": {
+    "title": "Gestión de Cocina",
+    "subtitle": "Monitorear y gestionar pedidos en preparación",
+    "stats": {
+      "ordersInKitchen": "Pedidos en Cocina",
+      "highPriority": "Alta Prioridad",
+      "avgPrepTime": "Tiempo Promedio de Prep",
+      "avgPrepTimeValue": "~25 min"
+    },
+    "table": {
+      "priority": "Prioridad",
+      "orderId": "ID del Pedido",
+      "customer": "Cliente",
+      "items": "Artículos",
+      "timeInKitchen": "Tiempo en Cocina",
+      "actions": "Acciones",
+      "kitchenOrders": "Pedidos de Cocina",
+      "noOrdersMatch": "No hay pedidos que coincidan con tu búsqueda"
+    },
+    "priority": {
+      "high": "Alta",
+      "medium": "Media",
+      "low": "Baja"
+    },
+    "actions": {
+      "viewOrderDetails": "Ver Detalles del Pedido",
+      "markAsReady": "Marcar como Listo"
+    },
+    "addOns": "Complementos:",
+    "timeFormat": {
+      "hours": "h",
+      "minutes": "m"
+    },
+    "messages": {
+      "orderMarkedAsReady": "Pedido marcado como listo",
+      "orderMarkedAsCompleted": "Pedido marcado como completado",
+      "failedToUpdateOrder": "Error al actualizar el pedido"
+    }
+  },
+  "filterControls": {
+    "searchPlaceholder": "Buscar pedidos...",
+    "clearFilters": "Limpiar Filtros"
+  },
+  "dateRangePicker": {
+    "selectDateRange": "Rango de Fechas",
+    "currentSelection": "Selección Actual",
+    "startDate": "Fecha de Inicio",
+    "endDate": "Fecha de Fin",
+    "shortcuts": {
+      "thisWeek": "Esta Semana",
+      "lastWeek": "Semana Pasada",
+      "last7Days": "Últimos 7 Días",
+      "currentMonth": "Mes Actual",
+      "nextMonth": "Próximo Mes",
+      "thisYear": "Este Año",
+      "lastYear": "Año Pasado",
+      "reset": "Restablecer"
+    },
+    "days": {
+      "sunday": "D",
+      "monday": "L",
+      "tuesday": "M",
+      "wednesday": "X",
+      "thursday": "J",
+      "friday": "V",
+      "saturday": "S"
+    },
+    "months": {
+      "january": "Enero",
+      "february": "Febrero",
+      "march": "Marzo",
+      "april": "Abril",
+      "may": "Mayo",
+      "june": "Junio",
+      "july": "Julio",
+      "august": "Agosto",
+      "september": "Septiembre",
+      "october": "Octubre",
+      "november": "Noviembre",
+      "december": "Diciembre"
+    },
+    "monthsShort": {
+      "january": "Ene",
+      "february": "Feb",
+      "march": "Mar",
+      "april": "Abr",
+      "may": "May",
+      "june": "Jun",
+      "july": "Jul",
+      "august": "Ago",
+      "september": "Sep",
+      "october": "Oct",
+      "november": "Nov",
+      "december": "Dic"
+    }
+  },
+  "menuComponents": {
+    "common": {
+      "add": "Agregar",
+      "create": "Crear",
+      "edit": "Editar",
+      "update": "Actualizar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "name": "Nombre",
+      "description": "Descripción",
+      "price": "Precio",
+      "priority": "Prioridad",
+      "tax": "Impuesto",
+      "discount": "Descuento",
+      "select": "Seleccionar",
+      "enter": "Ingresar",
+      "required": "Requerido",
+      "words": {
+        "with": "con",
+        "variants": "variantes",
+        "products": "productos",
+        "complements": "Complementos",
+        "menus": "menús",
+        "attachVariants": "Esta variante está adjunta a",
+        "attachGroup": "Este grupo está vinculado a",
+        "attachMenu": "Esta página de menú está adjunta a",
+        "MenuPagesAttached": "Páginas de menú adjuntas",
+        "willBeDetached": "Estos se desvincularán!",
+        "areYouSure": "¿Estás segura de que quieres eliminarlo?"
+      }
+    },
+    "categories": {
+      "title": "Categorías",
+      "addCategory": "Agregar Categoría",
+      "categoryName": "Nombre de Categoría",
+      "enterCategoryName": "Ingrese nombre de categoría",
+      "noCategories": "No se encontraron categorías",
+      "createFirst": "Crea tu primera categoría para comenzar"
+    },
+    "subcategories": {
+      "title": "Subcategorías",
+      "addSubcategory": "Agregar Subcategoría",
+      "subcategoryName": "Nombre de Subcategoría",
+      "enterSubcategoryName": "Ingrese nombre de subcategoría",
+      "selectCategory": "Seleccione una categoría",
+      "noSubcategories": "No se encontraron subcategorías",
+      "createFirst": "Crea tu primera subcategoría para comenzar"
+    },
+    "products": {
+      "title": "Productos",
+      "addProduct": "Agregar Producto",
+      "productName": "Nombre del Producto",
+      "enterProductName": "Ingrese nombre del producto",
+      "selectCategory": "Seleccionar categoría",
+      "selectSubcategory": "Seleccionar subcategoría",
+      "writeDescription": "Escriba una descripción (Máx. 150 caracteres)",
+      "enterPrice": "Ingrese precio",
+      "enterPriority": "Ingrese prioridad",
+      "enterTax": "Ingrese porcentaje de impuesto",
+      "enterDiscount": "Ingrese descuento",
+      "selectVariant": "Seleccione una variante",
+      "addPage": "Agregar Página",
+      "minComplements": "Número mínimo de complementos",
+      "maxComplements": "Número máximo de complementos",
+      "freeAddons": "Número de complementos gratuitos",
+      "noProducts": "No se encontraron productos",
+      "createFirst": "Crea tu primer producto para comenzar"
+    },
+    "menuPages": {
+      "title": "Páginas de Menú",
+      "addMenuPage": "Agregar Página de Menú",
+      "pageName": "Nombre de Página",
+      "enterPageName": "Ingrese nombre de página",
+      "enterDescription": "Descripción breve (máximo 40 caracteres)",
+      "noMenuPages": "No se encontraron páginas de menú",
+      "createFirst": "Crea tu primera página de menú para comenzar"
+    },
+    "menus": {
+      "title": "Menús",
+      "addMenu": "Agregar Menú",
+      "noMenus": "No se encontraron menús",
+      "createFirst": "Crea tu primer menú para comenzar"
+    },
+    "groups": {
+      "title": "Grupos",
+      "addGroup": "Agregar Grupo",
+      "noGroups": "No se encontraron grupos",
+      "createFirst": "Crea tu primer grupo para comenzar"
+    },
+    "variants": {
+      "title": "Variantes",
+      "addVariant": "Agregar Variante",
+      "noVariants": "No se encontraron variantes",
+      "createFirst": "Crea tu primera variante para comenzar"
+    },
+    "messages": {
+      "success": {
+        "categoryCreated": "Categoría creada exitosamente",
+        "categoryUpdated": "Categoría actualizada exitosamente",
+        "categoryDeleted": "Categoría eliminada exitosamente",
+        "subcategoryCreated": "Subcategoría creada exitosamente",
+        "subcategoryUpdated": "Subcategoría actualizada exitosamente",
+        "subcategoryDeleted": "Subcategoría eliminada exitosamente",
+        "productCreated": "Producto creado exitosamente",
+        "productUpdated": "Producto actualizado exitosamente",
+        "productDeleted": "Producto eliminado exitosamente",
+        "menuPageCreated": "Página de menú creada exitosamente",
+        "menuPageUpdated": "Página de menú actualizada exitosamente",
+        "menuPageDeleted": "Página de menú eliminada exitosamente",
+        "menuCreated": "Menú creado exitosamente",
+        "menuUpdated": "Menú actualizado exitosamente",
+        "menuDeleted": "Menú eliminado exitosamente",
+        "groupCreated": "Grupo creado exitosamente",
+        "groupUpdated": "Grupo actualizado exitosamente",
+        "groupDeleted": "Grupo eliminado exitosamente",
+        "variantCreated": "Variante creada exitosamente",
+        "variantUpdated": "Variante actualizada exitosamente",
+        "variantDeleted": "Variante eliminada exitosamente"
+      },
+      "errors": {
+        "categoryNameRequired": "Por favor ingrese un nombre de categoría",
+        "subcategoryNameRequired": "Por favor ingrese un nombre de subcategoría",
+        "subcategoryCategoryRequired": "Por favor seleccione una categoría",
+        "productNameRequired": "Por favor ingrese un nombre de producto",
+        "productCategoryRequired": "Por favor seleccione una categoría",
+        "productPriceRequired": "Por favor ingrese un precio de producto",
+        "menuPageNameRequired": "Por favor ingrese un nombre de página",
+        "failedToFetch": "Error al obtener datos",
+        "failedToCreate": "Error al crear",
+        "failedToUpdate": "Error al actualizar",
+        "failedToDelete": "Error al eliminar"
+      },
+      "specialNotes": {
+        "variantDeleteWarning": "Eliminar esta variante también la eliminará de todos los productos asociados.",
+        "menuPageDeleteWarning": "Eliminar esta página de menú también la eliminará de todos los menús asociados.",
+        "productDeleteWarning": "Eliminar este producto también lo eliminará de todas las páginas de menú asociadas."
+      },
+      "emptyMessages": {
+        "noItemsAvailable": "No hay productos disponibles",
+        "noItemsAvailableDescription": "Por favor agregue productos para colocar un pedido"
+      }
+    },
+    "modals": {
+      "categoryModal": {
+        "title": "Crear Nueva Categoría",
+        "editTitle": "Editar Categoría",
+        "categoryName": "Nombre de Categoría",
+        "enterCategoryName": "Ingrese nombre de categoría",
+        "image": "IMAGEN",
+        "color": "Color",
+        "cancel": "Cancelar",
+        "create": "Crear",
+        "update": "Actualizar",
+        "errors": {
+          "nameRequired": "Por favor ingrese un nombre de categoría",
+          "failedToEdit": "Error al editar categoría",
+          "failedToSave": "Error al guardar categoría"
+        },
+        "success": {
+          "updated": "Categoría actualizada exitosamente",
+          "created": "Categoría creada exitosamente"
+        }
+      },
+      "subcategoryModal": {
+        "title": "Crear Nueva Subcategoría",
+        "editTitle": "Editar Subcategoría",
+        "subcategoryName": "Nombre de Subcategoría",
+        "enterSubcategoryName": "Ingrese nombre de subcategoría",
+        "parentCategory": "Categoría Padre",
+        "selectCategory": "Seleccione una categoría",
+        "image": "IMAGEN",
+        "color": "Color",
+        "cancel": "Cancelar",
+        "create": "Crear",
+        "update": "Actualizar",
+        "errors": {
+          "nameRequired": "Por favor ingrese un nombre de subcategoría",
+          "categoryRequired": "Por favor seleccione una categoría",
+          "failedToEdit": "Error al editar subcategoría",
+          "failedToSave": "Error al guardar subcategoría"
+        },
+        "success": {
+          "updated": "Subcategoría actualizada exitosamente",
+          "created": "Subcategoría creada exitosamente"
+        }
+      },
+      "productModal": {
+        "title": "CREAR PRODUCTO",
+        "editTitle": "EDITAR PRODUCTO",
+        "tabs": {
+          "general": "GENERAL",
+          "variants": "VARIANTES Y COMPLEMENTOS",
+          "printers": "IMPRESORAS"
+        },
+        "productStatus": "Estado del Producto",
+        "activated": "Activado",
+        "outOfStock": "Producto agotado",
+        "basicInfo": "Información Básica del Producto",
+        "name": "NOMBRE *",
+        "enterProductName": "Ingrese nombre del producto",
+        "associatedCategory": "CATEGORÍA ASOCIADA *",
+        "selectCategory": "Seleccionar categoría",
+        "associatedSubcategory": "SUBCATEGORÍA ASOCIADA *",
+        "selectSubcategory": "Seleccionar subcategoría",
+        "selectCategoryFirst": "Seleccione una categoría primero",
+        "productImage": "IMAGEN DEL PRODUCTO",
+        "uploadProductImage": "Subir imagen del producto",
+        "clickToChange": "Hacer clic para cambiar",
+        "description": "DESCRIPCIÓN",
+        "writeDescription": "Escriba una descripción (Máx. 150 caracteres)",
+        "pricingFinancials": "Precios y Finanzas",
+        "price": "PRECIO *",
+        "priority": "PRIORIDAD",
+        "tax": "IMPUESTO (%)",
+        "discount": "DESCUENTO",
+        "subtotal": "Subtotal:",
+        "taxAmount": "Impuesto",
+        "discountAmount": "Descuento:",
+        "total": "Total:",
+        "productAttributes": "Atributos del Producto",
+        "isDrink": "Es una bebida",
+        "isByWeight": "Producto por peso",
+        "isPerDiner": "Producto por comensal",
+        "isOutstanding": "Destacado",
+        "isPlus18": "Producto +18",
+        "isForMenu": "Es para Menú",
+        "assignVariants": "ASIGNAR VARIANTES",
+        "selectVariant": "Seleccione una variante",
+        "noVariant": "Ninguno",
+        "variantItemsPricing": "Elementos de Variante y Precios",
+        "selectAddonsPage": "SELECCIONAR PÁGINA DE COMPLEMENTOS",
+        "addPage": "Agregar Página",
+        "pageSetup": "CONFIGURACIÓN DE PÁGINA",
+        "minComplements": "Número mínimo de complementos",
+        "maxComplements": "Número máximo de complementos",
+        "freeAddons": "Número de complementos gratuitos",
+        "addPluginGroup": "AGREGAR GRUPO DE PLUGIN PARA PÁGINA",
+        "availableItems": "Elementos disponibles:",
+        "printers": "Impresoras",
+        "configurePrinters": "Configure la configuración de impresora aquí.",
+        "cancel": "Cancelar",
+        "saveChanges": "Guardar Cambios",
+        "createProduct": "Crear Producto",
+        "errors": {
+          "nameRequired": "El nombre del producto es requerido.",
+          "categoryRequired": "Por favor seleccione una categoría.",
+          "subcategoryRequired": "Por favor seleccione una subcategoría.",
+          "variantRequired": "Por favor agregue al menos una variante.",
+          "addonPageRequired": "Por favor agregue al menos una página de complementos con un grupo seleccionado.",
+          "failedToCreate": "Error al crear producto.",
+          "failedToUpdate": "Error al actualizar producto.",
+          "unableToGetVariant": "No se pudo obtener la variante del producto",
+          "unableToGetAddons": "No se pudieron obtener las páginas de complementos del producto",
+          "unableToGetPrinters": "No se pudieron obtener las impresoras del producto"
+        },
+        "success": {
+          "created": "¡Producto creado exitosamente!",
+          "updated": "¡Producto actualizado exitosamente!"
+        }
+      },
+      "menuPageModal": {
+        "title": "Crear Página de Menú",
+        "editTitle": "Editar Página de Menú",
+        "pageName": "Nombre de Página",
+        "enterPageName": "Ingrese nombre de página",
+        "description": "Descripción",
+        "enterDescription": "Descripción breve (máximo 40 caracteres)",
+        "products": "Productos",
+        "product": "Producto",
+        "selectProduct": "Seleccione un producto",
+        "noProductsAvailable": "No hay productos disponibles",
+        "supplement": "Suplemento",
+        "enterSupplement": "Ingrese suplemento",
+        "priority": "Prioridad",
+        "enterPriority": "Ingrese prioridad",
+        "add": "Agregar",
+        "eliminate": "Eliminar",
+        "cancel": "Cancelar",
+        "create": "Crear",
+        "update": "Actualizar",
+        "errors": {
+          "nameRequired": "Por favor ingrese un nombre de página",
+          "descriptionTooLong": "La descripción debe tener 40 caracteres o menos",
+          "addProductRequired": "Por favor agregue al menos un producto a la página de menú",
+          "selectProduct": "Por favor seleccione un producto",
+          "noProductsAvailable": "No hay productos disponibles para agregar",
+          "failedToCreate": "Error al crear página de menú",
+          "failedToUpdate": "Error al actualizar página de menú",
+          "failedToDelete": "Error al eliminar página de menú",
+          "failedToSave": "Error al guardar página de menú",
+          "failedToFetch": "Error al obtener productos"
+        },
+        "success": {
+          "created": "Página de menú creada exitosamente",
+          "updated": "Página de menú actualizada exitosamente",
+          "deleted": "Página de menú eliminada exitosamente"
+        },
+        "confirmDelete": "¿Estás seguro de que quieres eliminar esta página de menú?"
+      },
+      "menuModal": {
+        "title": "Crear Menú",
+        "editTitle": "Editar Menú",
+        "basicInformation": "Información Básica",
+        "menuName": "Nombre del Menú",
+        "enterMenuName": "Ingrese nombre del menú",
+        "description": "Descripción",
+        "writeDescription": "Escriba una descripción (Máx. 150 caracteres)",
+        "subcategory": "Subcategoría",
+        "selectSubcategory": "Seleccionar subcategoría",
+        "image": "Imagen del Menú",
+        "uploadImage": "Subir imagen del menú",
+        "clickToChange": "Hacer clic para cambiar",
+        "financialDetails": "Detalles Financieros",
+        "price": "Precio",
+        "enterPrice": "Ingrese precio",
+        "priority": "Prioridad",
+        "tax": "Impuesto",
+        "discount": "Descuento",
+        "priceBreakdown": "Desglose de Precios",
+        "subtotal": "Subtotal",
+        "total": "Total",
+        "visualAttributes": "Atributos Visuales",
+        "outstanding": "Destacado",
+        "addPages": "Agregar Páginas",
+        "selectMenuPage": "Seleccionar Página de Menú",
+        "products": "Productos",
+        "noMenuPagesAvailable": "No hay páginas de menú disponibles",
+        "minimum": "Mínimo",
+        "maximum": "Máximo",
+        "kitchenPriority": "Prioridad de Cocina",
+        "selectPriority": "Seleccionar prioridad",
+        "page": "Página",
+        "actions": "Acciones",
+        "add": "Agregar",
+        "eliminate": "Eliminar",
+        "cancel": "Cancelar",
+        "create": "Crear",
+        "update": "Actualizar",
+        "errors": {
+          "nameRequired": "Por favor ingrese un nombre de menú",
+          "subcategoryRequired": "Por favor seleccione una subcategoría",
+          "descriptionTooLong": "La descripción debe tener 150 caracteres o menos",
+          "addMenuPageRequired": "Por favor agregue al menos una página de menú al menú",
+          "selectMenuPage": "Por favor seleccione una página de menú",
+          "noMenuPagesAvailable": "No hay páginas de menú disponibles para agregar",
+          "menuPageNotFound": "Página de menú seleccionada no encontrada",
+          "fixValidationErrors": "Por favor corrija los errores de validación antes de agregar la página",
+          "failedToCreate": "Error al crear menú",
+          "failedToUpdate": "Error al actualizar menú",
+          "failedToDelete": "Error al eliminar menú",
+          "failedToSave": "Error al guardar menú",
+          "failedToFetch": "Error al obtener datos"
+        },
+        "success": {
+          "created": "Menú creado exitosamente",
+          "updated": "Menú actualizado exitosamente",
+          "deleted": "Menú eliminado exitosamente"
+        },
+        "confirmDelete": "¿Estás seguro de que quieres eliminar este menú?"
+      },
+      "createVariantModal": {
+        "title": "Crear Variante",
+        "editTitle": "Editar Variante",
+        "variantName": "Nombre de Variante",
+        "enterVariantName": "Ingrese nombre de variante",
+        "color": "Color",
+        "variantItems": "Elementos de Variante",
+        "addItem": "Agregar Elemento",
+        "itemName": "Nombre del Elemento",
+        "enterItemName": "Ingrese nombre del elemento",
+        "name": "Nombre",
+        "priority": "Prioridad",
+        "enterPriority": "Ingrese prioridad",
+        "image": "Imagen",
+        "remove": "Eliminar",
+        "associatedProducts": "Productos Asociados",
+        "seeAssociatedProducts": "Ver productos asociados",
+        "noProducts": "No se encontraron productos asociados",
+        "productName": "Nombre del Producto",
+        "price": "Precio",
+        "subcategory": "Subcategoría",
+        "close": "Cerrar",
+        "cancel": "Cancelar",
+        "create": "Crear",
+        "update": "Actualizar",
+        "errors": {
+          "nameRequired": "Por favor ingrese un nombre de variante",
+          "itemNameRequired": "Por favor ingrese un nombre de elemento",
+          "failedToCreate": "Error al crear variante",
+          "failedToUpdate": "Error al actualizar variante",
+          "failedToFetch": "Error al obtener productos asociados"
+        },
+        "success": {
+          "created": "Variante creada exitosamente",
+          "updated": "Variante actualizada exitosamente"
+        }
+      },
+      "createGroupModal": {
+        "title": "Crear Grupo",
+        "editTitle": "Editar Grupo",
+        "groupName": "Nombre del Grupo",
+        "enterGroupName": "Ingrese nombre del grupo",
+        "color": "Color",
+        "groupItems": "Elementos del Grupo",
+        "addItem": "Agregar Elemento",
+        "itemName": "Nombre del Elemento",
+        "enterItemName": "Ingrese nombre del elemento",
+        "addNewComplement": "Agregar Nuevo Complemento",
+        "complementName": "Nombre del Complemento",
+        "enterComplementName": "Ingrese nombre del complemento",
+        "price": "Precio",
+        "priority": "Prioridad",
+        "image": "Imagen",
+        "complements": "Complementos",
+        "actions": "Acciones",
+        "remove": "Eliminar",
+        "associatedProducts": "Productos Asociados",
+        "seeAssociatedProducts": "Ver productos asociados",
+        "noProducts": "No se encontraron productos asociados",
+        "productName": "Nombre del Producto",
+        "subcategory": "Subcategoría",
+        "add": "Agregar",
+        "eliminate": "Eliminar",
+        "close": "Cerrar",
+        "cancel": "Cancelar",
+        "create": "Crear",
+        "update": "Actualizar",
+        "deleteTitle": "Eliminar Grupo",
+        "deleteMessage": "¿Estás seguro de que quieres eliminar este",
+        "deleteConfirm": "Eliminar Grupo",
+        "specialNote": "Si eliminas este grupo ya no podrás editarlo en ningún pedido adjunto.",
+        "errors": {
+          "nameRequired": "Por favor ingrese un nombre de grupo",
+          "itemNameRequired": "Por favor ingrese un nombre de elemento",
+          "failedToCreate": "Error al crear grupo",
+          "failedToUpdate": "Error al actualizar grupo",
+          "failedToDelete": "Error al eliminar grupo",
+          "failedToFetch": "Error al obtener productos asociados"
+        },
+        "success": {
+          "created": "Grupo creado exitosamente",
+          "updated": "Grupo actualizado exitosamente",
+          "deleted": "Grupo eliminado exitosamente"
+        }
+      },
+      "specialNotes": {
+        "productDeleteWarning": "Si eliminas este producto ya no podrás editarlo en ningún pedido.",
+        "menuPageDeleteWarning": "Si eliminas esta página de menú ya no podrás editarla en ningún pedido adjunto.",
+        "variantDeleteWarning": "Si eliminas esta variante ya no podrás editarla en ningún pedido adjunto."
+      }
+    }
+  },
+  "menuView": {
+    "titles": {
+      "menu": "Menús",
+      "menuStructure": "Estructura del Menú",
+      "group": "Grupos",
+      "variant": "Variantes"
+    },
+    "descriptions": {
+      "menu": "Crear y gestionar categorías, subcategorías y productos.",
+      "menuStructure": "Crear menús y páginas de menú.",
+      "group": "Crear y gestionar grupos de menú y opciones.",
+      "variant": "Crear y gestionar variantes de productos y opciones."
+    },
+    "buttons": {
+      "menu": "Menús",
+      "menuStructure": "Estructura del Menú",
+      "group": "Grupos",
+      "variant": "Variantes"
+    }
+  },
+  "navigation": {
+    "defaultCompanyName": "Sistema de Entrega",
+    "logout": "Cerrar Sesión",
+    "toggleSidebar": "Alternar Barra Lateral",
+    "orders": "Pedidos",
+    "kitchenView": "Vista de Cocina",
+    "deliveryView": "Vista de Entrega",
+    "deliveryManagement": "Gestión de Entregas",
+    "manageOrders": "Administrar Pedidos",
+    "reports": "Informes",
+    "menuStructure": "Estructura del Menú",
+    "users": "Usuarios",
+    "configurations": "Configuraciones"
+  },
+  "printerUtils": {
+    "unableToGetPrinters": "No se pudieron obtener las impresoras"
+  },
+  "receipt": {
+    "date": "Fecha",
+    "order": "Pedido",
+    "payment": "Pago",
+    "servedBy": "Atendido Por",
+    "quantity": "Cant.",
+    "name": "Nombre",
+    "subtotal": "Subtotal",
+    "total": "TOTAL",
+    "vat": "IVA",
+    "base": "Base",
+    "tax": "Impuesto",
+    "thankYou": "Gracias por su visita",
+    "extra": "Extra",
+    "waiter": "Camarero",
+    "address": "Dirección del Cliente",
+    "paymentStatus": {
+      "unpaid": "NO PAGADO",
+      "paid": "PAGADO",
+      "PARTIAL": "PARCIAL"
+    },
+    "orderType": {
+      "dineIn": "EN RESTAURANTE",
+      "pickup": "PARA LLEVAR",
+      "delivery": "A DOMICILIO"
+    }
+  },
+  "menuOrderTakingForm": {
+    "errors": {
+      "unableToGetMenuPageAssociations": "No se pudieron obtener las asociaciones de páginas del menú",
+      "unableToGetMenuPages": "No se pudieron obtener las páginas del menú",
+      "failedToFetchMenuPages": "Error al obtener las páginas del menú",
+      "unableToFetchProduct": "No se pudo obtener el producto",
+      "errorRemovingMenuFromOrder": "Error al eliminar el menú del pedido",
+      "errorRemovingMenuItemFromOrder": "Error al eliminar el elemento del menú del pedido",
+      "errorGettingProduct": "Error al obtener el producto"
+    },
+    "messages": {
+      "orderAssignedToDeliveryPerson": "Este pedido está asignado a un repartidor y no se puede editar."
+    },
+    "warnings": {
+      "maximumComplementsReached": "Has alcanzado el número máximo de complementos para esta página del menú"
+    },
+    "pageOf": "Página {{current}} de {{total}}",
+    "noPagesAvailable": "No hay páginas disponibles",
+    "noMenuPages": "Sin Páginas de Menú",
+    "noMenuPagesDescription": "No hay páginas de menú disponibles para este menú.",
+    "selectionProgress": "Progreso de Selección",
+    "selectMoreProducts": "Selecciona {{count}} producto(s) más para continuar.",
+    "selectionComplete": "¡Selección completa! Ahora puedes proceder.",
+    "selectProductsToGetStarted": "Selecciona {{min, plural, =0 {cualquier producto} other {al menos # producto}} para comenzar",
+    "noImage": "Sin Imagen",
+    "processed": "Procesado",
+    "clickToSelect": "Haz clic para seleccionar",
+    "clickOnAnyProductToProcess": "Haz clic en cualquier producto para procesarlo",
+    "completeMenu": "Menú Completo ({{count}} productos)",
+    "previousPage": "Página Anterior",
+    "nextPage": "Página Siguiente",
+    "applyChanges": "Aplicar Cambios",
+    "loadingMenuPages": "Cargando páginas del menú..."
+  },
+  "orderUtils": {
+    "orderDeleted": "El pedido #{{orderId}} ha sido eliminado",
+    "newOrderReceived": "Nuevo pedido #{{orderId}} recibido",
+    "orderStatusChanged": "El pedido #{{orderId}} cambió de estado a: {{status}}",
+    "orderSynchronized": "El pedido #{{orderId}} sincronizado",
+    "unrecognizedChangeType": "Tipo de cambio no reconocido, actualizando pedidos",
+    "errorFetchingOrders": "Error al obtener pedidos"
+  },
+  "menuUtils": {
+    "unableToGetVariants": "No se pudieron obtener las variantes",
+    "unableToGetGroups": "No se pudieron obtener los grupos",
+    "unableToGetCategories": "No se pudieron obtener las categorías",
+    "failedToFetchCategories": "Error al obtener las categorías",
+    "unableToGetSubcategories": "No se pudieron obtener las subcategorías",
+    "failedToFetchSubcategories": "Error al obtener las subcategorías",
+    "unableToGetProducts": "No se pudieron obtener los productos",
+    "failedToFetchProducts": "Error al obtener los productos",
+    "unableToGetMenus": "No se pudieron obtener los menús",
+    "failedToFetchMenus": "Error al obtener los menús",
+    "failedToFetchAssociatedProducts": "Error al obtener los productos asociados"
+  },
+  "reportUtils": {
+    "orders": "Pedidos"
+  },
+  "paymentStatusUtils": {
+    "invalidPaymentAmount": "Cantidad de pago inválida: {{amount}}",
+    "errorParsingPaymentString": "Error al analizar la cadena de pago:",
+    "statuses": {
+      "paid": "Pagado",
+      "unpaid": "Sin Pagar",
+      "partial": "Pago Parcial",
+      "pending": "Pendiente"
+    }
+  },
+  "orderProcessingModal": {
+    "title": "Procesar Pedido",
+    "subtitle": "Completar detalles del pedido",
+    "customerSearch": {
+      "title": "Búsqueda de Cliente",
+      "titleOptional": "Búsqueda de Cliente (Opcional)",
+      "titleRequired": "Búsqueda de Cliente *",
+      "placeholder": "Escriba el nombre o teléfono del cliente para buscar...",
+      "addNew": "Agregar Nuevo",
+      "selectedCustomer": "Cliente Seleccionado",
+      "change": "Cambiar",
+      "name": "Nombre:",
+      "phone": "Teléfono:",
+      "email": "Correo:",
+      "address": "Dirección"
+    },
+    "customerDetails": {
+      "title": "Detalles del Cliente",
+      "titleOptional": "Detalles del Cliente (Opcional)",
+      "titleRequired": "Detalles del Cliente *",
+      "customerName": "Nombre del Cliente",
+      "enterCustomerName": "Ingrese el nombre del cliente...",
+      "phoneNumber": "Número de Teléfono",
+      "enterPhoneNumber": "Ingrese el número de teléfono...",
+      "deliveryAddress": "Dirección de Entrega",
+      "enterDeliveryAddress": "Ingrese la dirección de entrega...",
+      "descriptionOptional": "Ingrese los detalles del cliente para personalizar el pedido (opcional)",
+      "descriptionRequired": "Los detalles del cliente incluyendo la dirección son requeridos para pedidos de entrega"
+    },
+    "orderType": {
+      "title": "Tipo de Pedido",
+      "pickup": {
+        "title": "Recogida",
+        "description": "Recogida por el cliente"
+      },
+      "delivery": {
+        "title": "Entrega",
+        "description": "Entrega a domicilio"
+      },
+      "dineIn": {
+        "title": "Comer en el Local",
+        "description": "En el restaurante"
+      }
+    },
+    "pickupTime": {
+      "title": "Hora de Recogida",
+      "placeholder": "Seleccionar hora de recogida",
+      "description": "¿Cuándo debería estar listo el pedido para recoger?"
+    },
+    "deliveryAddress": {
+      "title": "Dirección de Entrega"
+    },
+    "paymentStatus": {
+      "title": "Estado del Pago",
+      "description": "El pago se cobrará al momento de la entrega (Pago contra entrega)"
+    },
+    "orderNotes": {
+      "title": "Notas del Pedido",
+      "placeholder": "Cualquier instrucción especial o nota..."
+    },
+    "orderSummary": {
+      "title": "Resumen del Pedido",
+      "variant": "Variante:",
+      "addOns": "Complementos:",
+      "total": "Total:"
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "proceedOrder": "Procesar Pedido"
+    },
+    "errors": {
+      "customerNamePhoneRequired": "Por favor ingrese el nombre y número de teléfono del cliente para pedidos de entrega",
+      "customerNoAddress": "El cliente seleccionado no tiene dirección. Por favor seleccione un cliente diferente o cambie a recogida.",
+      "customerDetailsRequired": "Por favor seleccione un cliente o ingrese los detalles del cliente incluyendo la dirección para pedidos de entrega",
+      "orderAlreadyPaid": "El pedido ya está pagado. Procesando con la información de pago existente."
+    },
+    "defaultCustomers": {
+      "dineInCustomer": "Cliente de Comedor",
+      "walkInCustomer": "Cliente de Pasada",
+      "dineIn": "Comedor",
+      "inStore": "En Tienda"
+    }
+  },
+  "paymentOptionModal": {
+    "title": "Opción de Pago",
+    "pickupOrder": "Pedido para Recoger",
+    "dineInOrder": "Pedido para Comer en el Local",
+    "choosePaymentMethod": "Elija cómo desea manejar el pago para este pedido",
+    "payNow": {
+      "title": "Pagar Ahora",
+      "description": "Procesar el pago inmediatamente y enviar a cocina"
+    },
+    "payLater": {
+      "title": "Pagar Después",
+      "description": "Enviar a cocina ahora, cobrar el pago después"
+    },
+    "cancel": "Cancelar"
+  },
+  "orderStatuses": {
+    "pending": "Pendiente",
+    "sentToKitchen": "Enviado a Cocina",
+    "readyForDelivery": "Listo para Entrega",
+    "outForDelivery": "En Camino",
+    "completed": "Completado",
+    "delivered": "Entregado",
+    "cancelled": "Cancelado"
+  },
+  "orderTable": {
+    "noDataFound": "No se encontraron datos"
+  },
+  "orderTypes": {
+    "pickup": "Recoger",
+    "delivery": "Domicilio",
+    "dineIn": "Comer Aquí"
+  },
+  "orderComponent": {
+    "partialPayment": "Pagado: €{{paid}} / €{{total}}",
+    "noOrders": "Sin Pedidos",
+    "noOrdersAvailable": "No hay pedidos disponibles para mostrar"
+  },
+  "unifiedCard": {
+    "catCountText": "Categorías",
+    "subCatCountText": "Subcategorías",
+    "prodCountText": "Productos",
+    "menuCountText": "Menús",
+    "groupCountText": "complementos",
+    "variantCountText": "Variantes",
+    "noDescription": "Sin descripción"
+  },
+  "confirmationModal": {
+    "subtitle": "Por favor, confirma tu acción",
+    "dangerWarningTitle": "Esta acción no se puede deshacer",
+    "specialNote": "Una vez eliminado, este elemento se borrará permanentemente del sistema.",
+    "confirmAction": "Confirmar Acción"
+  }
 }

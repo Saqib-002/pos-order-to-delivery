@@ -270,29 +270,36 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
   // Get variant options for CustomSelect
   const getVariantOptions = () => {
-    return variants.map((variant) => ({
-      value: variant.id,
-      label: `${variant.name}`,
-    }));
+    return [
+      {
+        value: "",
+        label: t("menuComponents.modals.productModal.noVariant") || "None",
+      },
+      ...variants.map((variant) => ({
+        value: variant.id,
+        label: `${variant.name}`,
+      })),
+    ];
   };
 
   // Handle variant selection
   const handleVariantChange = (variantId: string, newVariantPrices?: any) => {
     setSelectedVariant(variantId);
-    // Initialize prices for new variant items
+    if (!variantId) {
+      setVariantPrices({});
+      return;
+    }
     const newPrices = newVariantPrices
       ? { ...newVariantPrices }
       : { ...variantPrices };
-    if (variantId) {
-      const variant = variants.find((v) => v.id === variantId);
-      if (variant) {
-        variant.items.forEach((item) => {
-          const itemKey = item.id;
-          if (!(itemKey in newPrices)) {
-            newPrices[itemKey] = 0; // Default price for new items
-          }
-        });
-      }
+    const variant = variants.find((v) => v.id === variantId);
+    if (variant) {
+      variant.items.forEach((item) => {
+        const itemKey = item.id;
+        if (!(itemKey in newPrices)) {
+          newPrices[itemKey] = 0;
+        }
+      });
     }
     setVariantPrices(newPrices);
   };
@@ -356,18 +363,21 @@ const ProductModal: React.FC<ProductModalProps> = ({
   // Handle plugin group selection for a specific page
   const handlePagePluginGroupChange = (pageNo: number, groupId: string) => {
     setAddonPages((prev) => {
+      const currentPage = prev.find((page) => page.pageNo === pageNo);
+      const newGroupId = currentPage?.selectedGroup === groupId ? "" : groupId;
+
       const updatedPages = prev.map((page) =>
-        page.pageNo === pageNo ? { ...page, selectedGroup: groupId } : page
+        page.pageNo === pageNo ? { ...page, selectedGroup: newGroupId } : page
       );
 
       // Validate the updated page
       const updatedPage = updatedPages.find((page) => page.pageNo === pageNo);
-      if (updatedPage && groupId) {
+      if (updatedPage && newGroupId) {
         const error = validateComplementLimits(
           pageNo,
           updatedPage.minComplements,
           updatedPage.maxComplements,
-          groupId
+          newGroupId
         );
 
         setValidationErrors((prev) => ({
