@@ -6,42 +6,50 @@ import { calculatePaymentStatus } from "../../renderer/utils/paymentStatus.js";
 
 export class OrderDatabaseOperations {
     static async saveOrder(item: any): Promise<any> {
-    const trx = await db.transaction();
-    try {
-      const now = new Date().toISOString();
-      const todayDate = now.slice(0, 10);
-      const countResult = await trx("orders")
-        .whereRaw(`"createdAt"::date = ?`, [todayDate])
-        .count("* as count")
-        .first();
-      const newDailyOrderId = (Number((countResult as any).count) || 0) + 1;
-      const newOrder = {
-        id: randomUUID(),
-        status: "pending",
-        orderId: newDailyOrderId,
-        createdAt: now,
-        updatedAt: now,
-      };
-      const order = await trx("orders").insert(newOrder).returning("*");
-      const orderItem = {
-        ...item,
-        printers: item.printers.join("="),
-        id: randomUUID(),
-        orderId: newOrder.id,
-        createdAt: now,
-        updatedAt: now,
-      };
-      await trx("order_items").insert(orderItem);
-      await trx.commit();
-      return {
-        order: order[0],
-        itemId: orderItem.id,
-      };
-    } catch (error) {
-      await trx.rollback();
-      throw error;
+        const trx = await db.transaction();
+        try {
+            const nowObj = new Date();
+            const nowISO = nowObj.toISOString();
+            const startOfDay = new Date(nowObj);
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(nowObj);
+            endOfDay.setHours(23, 59, 59, 999);
+            const countResult = await trx("orders")
+                .whereBetween("createdAt", [
+                    startOfDay.toISOString(),
+                    endOfDay.toISOString(),
+                ])
+                .count("* as count")
+                .first();
+            const newDailyOrderId =
+                (Number((countResult as any).count) || 0) + 1;
+            const newOrder = {
+                id: randomUUID(),
+                status: "pending",
+                orderId: newDailyOrderId,
+                createdAt: nowObj,
+                updatedAt: nowObj,
+            };
+            const order = await trx("orders").insert(newOrder).returning("*");
+            const orderItem = {
+                ...item,
+                printers: item.printers.join("="),
+                id: randomUUID(),
+                orderId: newOrder.id,
+                createdAt: nowObj,
+                updatedAt: nowObj,
+            };
+            await trx("order_items").insert(orderItem);
+            await trx.commit();
+            return {
+                order: order[0],
+                itemId: orderItem.id,
+            };
+        } catch (error) {
+            await trx.rollback();
+            throw error;
+        }
     }
-  }
     static async addItemToOrder(orderId: string, item: any): Promise<any> {
         try {
             const now = new Date().toISOString();
@@ -152,7 +160,7 @@ export class OrderDatabaseOperations {
                 .where("orderId", orderId)
                 .andWhere("menuId", menuId)
                 .andWhere("menuSecondaryId", menuSecondaryId)
-                .update({ quantity, isKitchenPrinted: false,updatedAt: now, });
+                .update({ quantity, isKitchenPrinted: false, updatedAt: now });
         } catch (error) {
             throw error;
         }
@@ -528,22 +536,42 @@ export class OrderDatabaseOperations {
                         .orWhere("orderId", filter.searchTerm);
                 });
             }
+            const parseLocalStart = (dateInput: Date | string): Date => {
+                if (typeof dateInput === "string") {
+                    const datePart = dateInput.split("T")[0];
+                    const parts = datePart.split("-");
+                    return new Date(
+                        parseInt(parts[0]),
+                        parseInt(parts[1]) - 1,
+                        parseInt(parts[2])
+                    );
+                } else if (dateInput instanceof Date) {
+                    const d = new Date(dateInput);
+                    d.setHours(0, 0, 0, 0);
+                    return d;
+                }
+                return new Date();
+            };
             if (filter.startDateRange && filter.endDateRange) {
                 const startDate = new Date(filter.startDateRange);
                 startDate.setHours(0, 0, 0, 0);
                 const endDate = new Date(filter.endDateRange);
                 endDate.setHours(23, 59, 59, 999);
-                query
-                    .andWhere("createdAt", ">=", startDate.toISOString())
-                    .andWhere("createdAt", "<=", endDate.toISOString());
+                query.whereBetween("createdAt", [
+                    startDate.toISOString(),
+                    endDate.toISOString(),
+                ]);
             } else if (filter.selectedDate) {
-                const startDate = new Date(filter.selectedDate);
+                const startDate = parseLocalStart(filter.selectedDate);
                 startDate.setHours(0, 0, 0, 0);
-                const endDate = new Date(filter.selectedDate);
+
+                const endDate = new Date(startDate);
                 endDate.setHours(23, 59, 59, 999);
-                query
-                    .andWhere("createdAt", ">=", startDate.toISOString())
-                    .andWhere("createdAt", "<=", endDate.toISOString());
+
+                query.whereBetween("createdAt", [
+                    startDate.toISOString(),
+                    endDate.toISOString(),
+                ]);
             }
             if (
                 filter.selectedStatus.length > 0 &&
