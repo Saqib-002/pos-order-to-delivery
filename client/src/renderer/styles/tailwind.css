@@ -2,3 +2,31 @@
 input,button,textarea,select,option{
     touch-action: manipulation;
 }
+
+.thin-scrollbar {
+    overflow-y: auto;
+}
+
+/* Chrome, Edge, Safari */
+.thin-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(100, 100, 100, 0.4);
+    border-radius: 10px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 100, 100, 0.6);
+}
+
+/* Firefox */
+.thin-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 100, 100, 0.4) transparent;
+}

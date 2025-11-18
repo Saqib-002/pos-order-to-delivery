@@ -120,7 +120,9 @@ const OrderComponent = () => {
             user!.role,
             status,
             t,
-            order?.customer.address? formatAddress(order.customer.address) : undefined
+            order?.customer.address
+              ? formatAddress(order.customer.address)
+              : undefined
           );
         } else {
           receiptHTML = generateItemsReceiptHTML(
@@ -192,9 +194,9 @@ const OrderComponent = () => {
   };
   return (
     <>
-      {orderItems.length > 0 ? (
+      {orderItems.length > 0 && order ? (
         <OrderCart
-          orderId={order!.id}
+          orderId={order.id}
           orderItems={orderItems}
           onRemoveItem={removeFromOrder}
           onUpdateQuantity={updateQuantity}
@@ -204,8 +206,8 @@ const OrderComponent = () => {
       ) : (
         <>
           {orders.length > 0 ? (
-            <div className=" flex flex-col">
-              <div className="overflow-y-auto flex-1">
+            <div className=" flex flex-col thin-scrollbar">
+              <div className="flex-1">
                 {orders.map((order) => {
                   const { orderTotal } = order.items
                     ? calculateOrderTotal(order.items)

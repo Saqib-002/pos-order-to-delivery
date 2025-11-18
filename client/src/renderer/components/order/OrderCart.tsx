@@ -56,6 +56,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     order,
     setMode,
     clearOrder,
+    clearOrderItems,
     addToOrder,
     addToProcessedMenuOrderItems,
     clearProcessedMenuOrderItems,
@@ -269,7 +270,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
         );
 
         if (itemsRes.status) {
-          clearOrder();
+          clearOrderItems();
           itemsRes.data.forEach((item: any) => {
             addToOrder({
               ...item,

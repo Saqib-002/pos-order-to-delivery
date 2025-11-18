@@ -11,6 +11,7 @@ interface OrderContextType {
   removeFromOrder: (itemId: string | undefined) => void;
   updateQuantity: (itemId: string | undefined, quantity: number) => void;
   clearOrder: () => void;
+  clearOrderItems: () => void;
   findExactProductMatch: (
     productId: string,
     variantId: string,
@@ -108,7 +109,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
           ? {
               ...item,
               quantity,
-              isKitchenPrinted: false
+              isKitchenPrinted: false,
             }
           : item
       )
@@ -123,6 +124,11 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     setSelectedProduct(null);
     setEditingGroup(null);
     setEditingProduct(null);
+  };
+
+  const clearOrderItems = () => {
+    setOrderItems([]);
+    setProcessedMenuOrderItems([]);
   };
 
   const findExactProductMatch = (
@@ -289,6 +295,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     removeMenuFromOrder,
     removeMenuItemFromOrder,
     clearOrder,
+    clearOrderItems,
     processedMenuOrderItems,
     addToProcessedMenuOrderItems,
     removeProcessedMenuOrderItem,
