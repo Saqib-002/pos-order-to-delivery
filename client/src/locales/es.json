@@ -202,6 +202,15 @@
           "custom": "Personalizado"
         }
       },
+      "orderTypeSelector": {
+        "filterByOrderType": "Filtrar por Tipo de Pedido",
+        "types": {
+          "all": "Todos",
+          "delivery": "Domicilio",
+          "pickup": "Recoger",
+          "dineIn": "Comer Aquí"
+        }
+      },
       "topItems": {
         "noItems": "No se ordenaron artículos en el período seleccionado"
       }
@@ -604,14 +613,14 @@
     "deliveryPersonnelCount": "Personal de Entrega",
     "bikes": "Bicicletas",
     "motorcycles": "Motocicletas",
-    "cars": "Autos",
-    "scooters": "Scooters",
+    "cars": "Coche",
+    "scooters": "Patinetes",
     "searchDeliveryPersonnel": "Buscar personal de entrega...",
     "all": "Todos",
     "bike": "Bicicleta",
     "motorcycle": "Motocicleta",
-    "car": "Auto",
-    "scooter": "Scooter",
+    "car": "Coche",
+    "scooter": "Patinete",
     "deliveryPersonnelTable": "Personal de Entrega ({{count}})",
     "getStartedMessage": "Comienza agregando tu primer repartidor.",
     "adjustFiltersMessage": "Intenta ajustar tu búsqueda o filtro de vehículo.",

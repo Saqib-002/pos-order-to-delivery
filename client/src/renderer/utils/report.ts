@@ -8,9 +8,9 @@ export const getHourlyChartConfig = (analytics: AnalyticsType | null) => ({
                 label: "Orders",
                 data: analytics?.hourlyData,
                 backgroundColor: analytics?.hourlyData.some((h: number) => h > 0)
-                    ? "rgba(99, 102, 241, 0.8)"
-                    : "rgba(156, 163, 175, 0.5)",
-                borderColor: "rgba(99, 102, 241, 1)",
+                    ? "#000000"
+                    : "#000000",
+                borderColor: "#000000",
                 borderWidth: 1,
                 borderRadius: 4,
                 borderSkipped: false,
@@ -27,7 +27,7 @@ export const getHourlyChartConfig = (analytics: AnalyticsType | null) => ({
                 backgroundColor: "rgba(0, 0, 0, 0.8)",
                 titleColor: "white",
                 bodyColor: "white",
-                borderColor: "rgba(99, 102, 241, 1)",
+                borderColor: "#ffffff",
                 borderWidth: 1,
                 callbacks: { label: (context: any) => `Orders: ${context.parsed.y}` },
             },

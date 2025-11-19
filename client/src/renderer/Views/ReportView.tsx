@@ -36,6 +36,7 @@ export const ReportView = () => {
   const [currentPage, setCurrentPage] = useState(0);
 
   const [dateRange, setDateRange] = useState<string>("today");
+  const [orderTypeFilter, setOrderTypeFilter] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsType | null>(null);
   const {
     auth: { token },
@@ -43,7 +44,7 @@ export const ReportView = () => {
 
   useEffect(() => {
     setCurrentPage(0);
-  }, [dateRange, selectedDate, startDateRange, endDateRange]);
+  }, [dateRange, selectedDate, startDateRange, endDateRange, orderTypeFilter]);
   useEffect(() => {
     const fetchAnalytics = async () => {
       const res = await (window as any).electronAPI.getOrderAnalytics(token, {
@@ -51,6 +52,7 @@ export const ReportView = () => {
         selectedDate,
         startDateRange,
         endDateRange,
+        orderType: orderTypeFilter,
         page: currentPage,
         limit: DEFAULT_PAGE_LIMIT,
       });
@@ -73,7 +75,7 @@ export const ReportView = () => {
           res.data.totalReadyForDelivery +
           res.data.totalOutForDelivery +
           res.data.totalSentToKitchen +
-          res.data.pending,
+          res.data.totalPending,
         successRate:
           totalOrders > 0
             ? Math.round((res.data.totalDelivered / totalOrders) * 100)
@@ -81,7 +83,14 @@ export const ReportView = () => {
       });
     };
     fetchAnalytics();
-  }, [dateRange, selectedDate, startDateRange, endDateRange, currentPage]);
+  }, [
+    dateRange,
+    selectedDate,
+    startDateRange,
+    endDateRange,
+    orderTypeFilter,
+    currentPage,
+  ]);
 
   const renderOrderRow = (order: any) => (
     <tr
@@ -146,6 +155,8 @@ export const ReportView = () => {
         endDateRange={endDateRange}
         setStartDateRange={setStartDateRange}
         setEndDateRange={setEndDateRange}
+        orderType={orderTypeFilter}
+        setOrderType={setOrderTypeFilter}
       />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-4">
         <StatsCard

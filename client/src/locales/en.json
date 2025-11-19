@@ -200,6 +200,15 @@
           "custom": "Custom"
         }
       },
+      "orderTypeSelector": {
+        "filterByOrderType": "Filter by Order Type",
+        "types": {
+          "all": "All",
+          "delivery": "Delivery",
+          "pickup": "Pickup",
+          "dineIn": "Dine In"
+        }
+      },
       "topItems": {
         "noItems": "No items ordered in selected period"
       }

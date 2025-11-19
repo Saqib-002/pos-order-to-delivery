@@ -84,7 +84,7 @@ export const generateReceiptHTML = (
     string,
     { base: number; tax: number; rate: number }
   > = {};
-  switch (status.toUpperCase()){
+  switch (status.toUpperCase()) {
     case "PAID":
       status = t("receipt.paymentStatus.paid");
       break;
@@ -95,7 +95,7 @@ export const generateReceiptHTML = (
       status = t("receipt.paymentStatus.PARTIAL");
       break;
   }
-  switch (orderType?.toUpperCase()){
+  switch (orderType?.toUpperCase()) {
     case "DELIVERY":
       orderType = t("receipt.orderType.delivery");
       break;
@@ -153,7 +153,7 @@ export const generateReceiptHTML = (
             .sub-col { width: 20%; text-align: right; }
             .total-col { width: 20%; text-align: right; }
             .name-col { width: 50%; }
-            .sub-item { padding-left: 20px; font-size: 11px; }
+            .sub-item { padding-left: 20px; font-size: 13px; }
             .indent { padding-left: 30px; }
             .total-row { font-weight: bold; border-top: 2px solid black; }
             .vat-table th, .vat-table td { text-align: right; }
@@ -163,14 +163,14 @@ export const generateReceiptHTML = (
         <body>
         <div class="center">
             <h2 class="bold">${configurations.name}</h2>
-            <p>${configurations.address}</p>
-            ${configurations.vatNumber ? `<p>${configurations.vatNumber}</p>` : ""}
+            <p class="bold">${configurations.address}</p>
+            ${configurations.vatNumber ? `<p class="bold">${configurations.vatNumber}</p>` : ""}
         </div>
         <div class="line"></div>
         <div class="order-info center">
             <h1 class="bold" style="font-size: 24px;">${configurations.orderPrefix}${orderId}</h1>
         </div>
-        <div class="order-info left">
+        <div class="order-info left bold">
             <p><span class="bold">${t("receipt.date")}:</span> ${dateTimeStr}</p>
             <p><span class="bold">${t("receipt.order")}:</span> ${configurations.orderPrefix}${orderId}(${orderType?.toUpperCase() || "N/A"})</p>
             <p><span class="bold">${t("receipt.payment")}:</span> ${status}</p>
@@ -183,7 +183,6 @@ export const generateReceiptHTML = (
                 <tr>
                     <th class="qty-col">${t("receipt.quantity")}</th>
                     <th class="name-col">${t("receipt.name")}</th>
-                    <th class="sub-col">${t("receipt.subtotal")}</th>
                     <th class="total-col">${t("receipt.total")}</th>
                 </tr>
             </thead>
@@ -218,8 +217,7 @@ export const generateReceiptHTML = (
     html += `
                 <tr class="bold">
                     <td class="qty-col">${sectionQty}</td>
-                    <td class="name-col">${group.menuName}</td>
-                    <td class="sub-col">€${menuPrice.toFixed(2)}</td>
+                    <td class="name-col" style="font-size: 14px;">${group.menuName}</td>
                     <td class="total-col">€${totalGroupPrice.toFixed(2)}</td>
                 </tr>
         `;
@@ -229,8 +227,7 @@ export const generateReceiptHTML = (
                   item.supplement
                     ? `<tr>
                     <td class="qty-col"></td>
-                    <td class="name-col sub-item">${t("receipt.extra")}:${item.supplement}</td>
-                    <td class="sub-col"></td>
+                    <td class="name-col sub-item" style="font-size: 14px; font-weight: bold;">${t("receipt.extra")}:${item.supplement}</td>
                     <td class="total-col">€${item.supplement.toFixed(2)}</td>
                 </tr>
                 `
@@ -238,8 +235,7 @@ export const generateReceiptHTML = (
                 }
                 <tr class="bold">
                     <td class="qty-col"></td>
-                    <td class="name-col sub-item">${item.productName} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}</td>
-                    <td class="sub-col"></td>
+                    <td class="name-col sub-item" style="font-size: 14px;">${item.productName} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}</td>
                     <td class="total-col"></td>
                 </tr>
                 ${
@@ -247,7 +243,6 @@ export const generateReceiptHTML = (
                     ? `<tr class="bold">
                     <td class="qty-col"></td>
                     <td class="name-col sub-item indent">${item.variantName}</td>
-                    <td class="sub-col"></td>
                     <td class="total-col">€${item.variantPrice.toFixed(2)}</td>
                 </tr>`
                     : ""
@@ -257,8 +252,7 @@ export const generateReceiptHTML = (
         html += `
                      <tr>
                          <td class="qty-col"></td>
-                         <td class="name-col sub-item indent">${comp.itemName}</td>
-                         <td class="sub-col"></td>
+                         <td class="name-col sub-item indent bold">${comp.itemName}</td>
                          <td class="total-col">€${comp.price.toFixed(2)}</td>
                      </tr>
                  `;
@@ -286,7 +280,7 @@ export const generateReceiptHTML = (
     html += `
             <tr class="bold">
                 <td class="qty-col">${item.quantity}</td>
-                <td class="name-col">${item.productName} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}</td>
+                <td class="name-col" style="font-size: 14px;">${item.productName} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}</td>
                 <td class="sub-col">€${unitPrice.toFixed(2)}</td>
                 <td class="total-col">€${itemTotal.toFixed(2)}</td>
             </tr>
@@ -296,7 +290,6 @@ export const generateReceiptHTML = (
             <tr class="bold">
                 <td class="qty-col"></td>
                 <td class="name-col sub-item">${item.variantName}</td>
-                <td class="sub-col"></td>
                 <td class="total-col">€${item.variantPrice.toFixed(2)}</td>
             </tr>
         `;
@@ -305,8 +298,7 @@ export const generateReceiptHTML = (
       html += `
                  <tr>
                      <td class="qty-col"></td>
-                     <td class="name-col sub-item">${comp.itemName}</td>
-                     <td class="sub-col"></td>
+                     <td class="name-col sub-item bold">${comp.itemName}</td>
                      <td class="total-col">€${comp.price.toFixed(2)}</td>
                  </tr>
              `;
@@ -372,7 +364,7 @@ export const generateItemsReceiptHTML = (
     ...group,
     items: group.items.sort(prioritySort),
   }));
-  switch (status.toUpperCase()){
+  switch (status.toUpperCase()) {
     case "PAID":
       status = t("receipt.paymentStatus.paid");
       break;
@@ -383,7 +375,7 @@ export const generateItemsReceiptHTML = (
       status = t("receipt.paymentStatus.PARTIAL");
       break;
   }
-  switch (order.orderType?.toUpperCase()){
+  switch (order.orderType?.toUpperCase()) {
     case "DELIVERY":
       order.orderType = t("receipt.orderType.delivery");
       break;
@@ -437,8 +429,8 @@ export const generateItemsReceiptHTML = (
         <div class="order-info center">
             <h1 class="bold" style="font-size: 24px;">${configurations.orderPrefix}${order.orderId}</h1>
             <h1 class="bold" style="font-size: 16px;">${order.orderType.toUpperCase()}</h1>
-            <p>${dateTimeStr}</p>
-            <p>${status}</p>
+            <p class="bold" style="font-size: 14px;">${dateTimeStr}</p>
+            <p class="bold" style="font-size: 14px;">${status}</p>
         </div>
         <div class="line"></div>
         <div>
@@ -446,14 +438,15 @@ export const generateItemsReceiptHTML = (
 
   // Menu groups - MODIFIED to use sortedGroups
   sortedGroups.forEach((group) => {
+    const sectionQty = group.items[0]?.quantity || 1;
     // Sub-items and their complements - This loop now uses sorted items
     html += `
-                    <div class="name-col bold">${group.menuName}</div>
+            <div class="name-col bold">${sectionQty}x ${group.menuName}</div>
         `;
     group.items.forEach((item) => {
       html += `
             <div class="sub-item bold">
-            ${item.productName} ${item.variantId ? "-" : ""} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}
+            ${item.quantity}x ${item.productName} ${item.variantId ? "-" : ""} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}
             </div>
             <div class="indent">
             ${item.supplement ? `${t("receipt.extra")}: ${item.supplement}` : ""}
@@ -473,12 +466,12 @@ export const generateItemsReceiptHTML = (
   sortedNonMenuItems.forEach((item) => {
     html += `
             <div class="bold">
-                ${item.productName} ${item.variantId ? "-" : ""} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}
+                ${item.quantity}x ${item.productName} ${item.variantId ? "-" : ""} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}
             </div>
         `;
     item.complements.forEach((comp) => {
       html += `
-                <div class="sub-item">
+                <div class="sub-item bold">
                  ${comp.itemName}
                 </div>
                 `;
@@ -488,10 +481,10 @@ export const generateItemsReceiptHTML = (
   html += `
         </div>
         <div class="line"></div>
-        <div>
+        <div class="bold">
             ${t("receipt.order")} ${configurations.orderPrefix}${order.orderId} - ${dateTimeStr}
         </div>
-        <div class="center">
+        <div class="center bold">
             ${t("receipt.waiter")}: ${order.deliveryPersonName ? order.deliveryPersonName : "N/A"}
         </div>
     `;
