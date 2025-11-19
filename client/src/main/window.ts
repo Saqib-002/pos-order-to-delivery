@@ -24,7 +24,7 @@ export function createWindow(iconPath: string) {
     win.loadURL('http://localhost:5173');
     win.webContents.openDevTools();
   } else {
-    win.setMenu(null);
+    // win.setMenu(null);
     win.loadFile(path.join(__dirname, '../../dist/index.html'));
   }
 

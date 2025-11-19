@@ -3,6 +3,7 @@ import knexConfig from "../../knexfile.js";
 import Logger from "electron-log";
 import path from "path";
 import { app } from "electron";
+import dotenv from "dotenv";
 
 export let db: Knex;
 interface DbCredentials {
@@ -19,6 +20,12 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
             await db.destroy();
         }
         const isPackaged = app.isPackaged;
+        if (isPackaged) {
+            Logger.info("Running in production mode",path.join(process.resourcesPath, '.env'));
+            dotenv.config({ path: path.join(process.resourcesPath, '.env') });
+        } else {
+            dotenv.config();
+        }
         let configBase =
             process.env.NODE_ENV === "production"
                 ? knexConfig.production
