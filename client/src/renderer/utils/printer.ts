@@ -436,7 +436,7 @@ export const generateItemsReceiptHTML = (
         <body>
         <div class="order-info center">
             <h1 class="bold" style="font-size: 24px;">${configurations.orderPrefix}${order.orderId}</h1>
-            <h1 class="bold" style="font-size: 16px;">${order.orderType ? order.orderType.toUpperCase() : "N/A"}</h1>
+            <h1 class="bold" style="font-size: 16px;">${order.orderType.toUpperCase()}</h1>
             <p>${dateTimeStr}</p>
             <p>${status}</p>
         </div>

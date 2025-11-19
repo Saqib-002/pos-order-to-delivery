@@ -17,7 +17,6 @@ import {
 } from "@/renderer/public/Svg";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import {
-  generateItemsReceiptHTML,
   generateReceiptHTML,
   groupItemsByPrinter,
 } from "@/renderer/utils/printer";
@@ -106,24 +105,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
           user!.role,
           status,
           t,
-          order?.customer.address
+          order?.customer && order?.customer.address
             ? formatAddress(order.customer.address)
             : undefined
-        );
-      } else {
-        const unprintedItems = items.filter(
-          (item: OrderItem) => !item.isKitchenPrinted
-        );
-        if (unprintedItems.length === 0) {
-          continue;
-        }
-        receiptHTML = generateItemsReceiptHTML(
-          unprintedItems,
-          configurations,
-          order,
-          user!.role,
-          status,
-          t
         );
       }
       if (!receiptHTML) {
@@ -141,28 +125,6 @@ const OrderCart: React.FC<OrderCartProps> = ({
           toast.error(t("orderCart.errors.errorPrintingReceipt"));
         }
         return;
-      }
-      const updateRes = await (window as any).electronAPI.updateOrderItems(
-        token,
-        items.map((item: OrderItem) => ({
-          itemId: item.id,
-          itemData: { isKitchenPrinted: true },
-        }))
-      );
-      if (updateRes.status) {
-        const res = await (window as any).electronAPI.getOrderItems(
-          token,
-          orderId
-        );
-        if (res.status) {
-          clearOrder();
-          res.data.forEach((item: any) => {
-            addToOrder({
-              ...item,
-              complements: StringToComplements(item.complements),
-            });
-          });
-        }
       }
     }
     toast.success(t("orderCart.messages.receiptPrintedSuccessfully"));

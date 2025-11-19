@@ -3,7 +3,7 @@ import OrderCart from "./OrderCart";
 import OrderProcessingModal from "./OrderProcessingModal";
 import { useOrder } from "../../contexts/OrderContext";
 import { toast } from "react-toastify";
-import { Order } from "@/types/order";
+import { Order, OrderItem } from "@/types/order";
 import { StringToComplements, updateOrder } from "@/renderer/utils/order";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { calculateOrderTotal } from "@/renderer/utils/orderCalculations";
@@ -110,7 +110,6 @@ const OrderComponent = () => {
         const printerName = printer.split("|")[0];
         const printerIsMain = printer.split("|")[1];
         let receiptHTML = "";
-
         if (printerIsMain === "true") {
           receiptHTML = generateReceiptHTML(
             items,
@@ -120,11 +119,17 @@ const OrderComponent = () => {
             user!.role,
             status,
             t,
-            order?.customer.address
+            order?.customer ? order?.customer.address
               ? formatAddress(order.customer.address)
-              : undefined
+              : undefined : undefined
           );
         } else {
+          const unprintedItems = items.filter(
+            (item: OrderItem) => !item.isKitchenPrinted
+          );
+          if (unprintedItems.length === 0) {
+            continue;
+          }
           receiptHTML = generateItemsReceiptHTML(
             items,
             configs,
@@ -150,6 +155,29 @@ const OrderComponent = () => {
             toast.error(t("orderCart.errors.printerNotFound", { printerName }));
           } else {
             toast.error(t("orderCart.errors.errorPrintingReceipt"));
+          }
+          return;
+        }
+        const updateRes = await (window as any).electronAPI.updateOrderItems(
+          token,
+          items.map((item: OrderItem) => ({
+            itemId: item.id,
+            itemData: { isKitchenPrinted: true },
+          }))
+        );
+        if (updateRes.status) {
+          const res = await (window as any).electronAPI.getOrderItems(
+            token,
+            order!.orderId
+          );
+          if (res.status) {
+            clearOrder();
+            res.data.forEach((item: any) => {
+              addToOrder({
+                ...item,
+                complements: StringToComplements(item.complements),
+              });
+            });
           }
         }
       }
@@ -223,11 +251,10 @@ const OrderComponent = () => {
                   return (
                     <button
                       key={order.id}
-                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${
-                        isAssignedToDelivery
-                          ? "bg-gray-100 cursor-not-allowed opacity-75"
-                          : "hover:bg-gray-50 cursor-pointer"
-                      }`}
+                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${isAssignedToDelivery
+                        ? "bg-gray-100 cursor-not-allowed opacity-75"
+                        : "hover:bg-gray-50 cursor-pointer"
+                        }`}
                       onClick={() => handleOrderClick(order)}
                       disabled={
                         isAssignedToDelivery || order.status === "cancelled"
