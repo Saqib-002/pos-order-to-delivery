@@ -97,6 +97,16 @@ const OrderCart: React.FC<OrderCartProps> = ({
         orderTotal
       );
       if (printerIsMain === "true") {
+        // Get customer address only for delivery orders
+        let customerAddress: string | undefined = undefined;
+        if (order?.orderType === "delivery") {
+          if (order?.customer?.address && order.customer.address.trim()) {
+            customerAddress = order.customer.address.includes("|")
+              ? formatAddress(order.customer.address)
+              : order.customer.address;
+          }
+        }
+        
         receiptHTML = generateReceiptHTML(
           items,
           configurations,
@@ -105,9 +115,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
           user!.role,
           status,
           t,
-          order?.customer && order?.customer.address
-            ? formatAddress(order.customer.address)
-            : undefined
+          customerAddress
         );
       }
       if (!receiptHTML) {

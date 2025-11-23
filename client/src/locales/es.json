@@ -1259,6 +1259,8 @@
         "deleteMessage": "¿Estás seguro de que quieres eliminar este",
         "deleteConfirm": "Eliminar Grupo",
         "specialNote": "Si eliminas este grupo ya no podrás editarlo en ningún pedido adjunto.",
+        "forProduct": "Para Producto",
+        "forProductDescription": "Si está marcado, este grupo solo estará disponible cuando se procesen productos, no cuando se procesen menús",
         "errors": {
           "nameRequired": "Por favor ingrese un nombre de grupo",
           "itemNameRequired": "Por favor ingrese un nombre de elemento",

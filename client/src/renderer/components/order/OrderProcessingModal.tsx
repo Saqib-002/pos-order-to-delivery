@@ -242,7 +242,9 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         : t("orderProcessingModal.defaultCustomers.walkInCustomer"));
     const customerPhone = selectedCustomer?.phone || customCustomerPhone.trim();
     const customerAddress =
-      selectedCustomer?.address || customCustomerAddress.trim();
+      (selectedCustomer?.address && selectedCustomer.address.trim()) ||
+      customCustomerAddress.trim() ||
+      undefined;
 
     const existingPaymentType = order?.paymentType?.trim();
     const preserveExistingPaymentType =
@@ -786,7 +788,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                       {item.quantity}x {item.productName}
                     </div>
                     {item.variantName && item.variantId && (
-                    <div className="text-sm text-gray-600 mt-1">
+                      <div className="text-sm text-gray-600 mt-1">
                         {t("orderProcessingModal.orderSummary.variant")}{" "}
                         {item.variantName}
                       </div>
@@ -887,16 +889,16 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                                 </div> */}
                               </div>
                               {item.variantName && item.variantId && (
-                              <div className="text-sm text-gray-600">
-                                <div className="flex justify-between">
-                                  <span>
-                                    {t(
-                                      "orderProcessingModal.orderSummary.variant"
-                                    )}{" "}
-                                    {item.variantName}
-                                  </span>
+                                <div className="text-sm text-gray-600">
+                                  <div className="flex justify-between">
+                                    <span>
+                                      {t(
+                                        "orderProcessingModal.orderSummary.variant"
+                                      )}{" "}
+                                      {item.variantName}
+                                    </span>
+                                  </div>
                                 </div>
-                              </div>
                               )}
                               {item.complements.length > 0 && (
                                 <div className="mt-2">

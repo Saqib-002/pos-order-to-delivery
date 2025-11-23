@@ -1257,6 +1257,8 @@
         "deleteMessage": "Are you sure you want to delete this",
         "deleteConfirm": "Delete Group",
         "specialNote": "If you delete this group you can no longer edit this group in any attached order!",
+        "forProduct": "For Product",
+        "forProductDescription": "If checked, this group will only be available when processing products, not when processing menus",
         "errors": {
           "nameRequired": "Please enter a group name",
           "itemNameRequired": "Please enter an item name",

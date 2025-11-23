@@ -10,6 +10,7 @@ export interface Group {
   id: string;
   name: string;
   color: string;
+  forProduct?: boolean;
   items: Complement[];
 }
 interface Complement {
@@ -60,7 +61,9 @@ export const GroupView = () => {
       </div>
 
       <div className="">
-        <h2 className="text-xl font-semibold text-black">{t("menuComponents.groups.title")}</h2>
+        <h2 className="text-xl font-semibold text-black">
+          {t("menuComponents.groups.title")}
+        </h2>
       </div>
 
       {/* Groups Grid */}

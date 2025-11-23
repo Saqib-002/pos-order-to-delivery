@@ -84,6 +84,9 @@ export const generateReceiptHTML = (
     string,
     { base: number; tax: number; rate: number }
   > = {};
+
+  const originalOrderType = orderType?.toUpperCase();
+
   switch (status.toUpperCase()) {
     case "PAID":
       status = t("receipt.paymentStatus.paid");
@@ -153,8 +156,8 @@ export const generateReceiptHTML = (
             .sub-col { width: 20%; text-align: right; }
             .total-col { width: 20%; text-align: right; }
             .name-col { width: 50%; }
-            .sub-item { padding-left: 20px; font-size: 13px; }
-            .indent { padding-left: 30px; }
+            .sub-item { padding-left: 10px; font-size: 13px; }
+            .indent { padding-left: 20px; }
             .total-row { font-weight: bold; border-top: 2px solid black; }
             .vat-table th, .vat-table td { text-align: right; }
             .vat-table .name-col { text-align: left; }
@@ -172,10 +175,10 @@ export const generateReceiptHTML = (
         </div>
         <div class="order-info left bold">
             <p><span class="bold">${t("receipt.date")}:</span> ${dateTimeStr}</p>
-            <p><span class="bold">${t("receipt.order")}:</span> ${configurations.orderPrefix}${orderId}(${orderType?.toUpperCase() || "N/A"})</p>
-            <p><span class="bold">${t("receipt.payment")}:</span> ${status}</p>
+            <p style="font-size: 16px;"><span class="bold">${t("receipt.order")}:</span> ${configurations.orderPrefix}${orderId}(${orderType?.toUpperCase() || "N/A"})</p>
+            <p style="font-size: 16px;"><span class="bold">${t("receipt.payment")}:</span> ${status}</p>
             <p><span class="bold">${t("receipt.servedBy")}:</span> ${userRole}</p>
-            <p><span class="bold">${t("receipt.address")}:</span> ${customerAddress}</p>
+            ${customerAddress && customerAddress.trim() && originalOrderType === "DELIVERY" ? `<p><span class="bold">${t("receipt.address")}:</span> ${customerAddress}</p>` : ""}
             <div class="line"></div>
         </div>
         <table>
@@ -223,21 +226,21 @@ export const generateReceiptHTML = (
         `;
     group.items.forEach((item) => {
       html += `
-                ${
-                  item.supplement
-                    ? `<tr>
-                    <td class="qty-col"></td>
-                    <td class="name-col sub-item" style="font-size: 14px; font-weight: bold;">${t("receipt.extra")}:${item.supplement}</td>
-                    <td class="total-col">€${item.supplement.toFixed(2)}</td>
-                </tr>
-                `
-                    : ""
-                }
                 <tr class="bold">
                     <td class="qty-col"></td>
                     <td class="name-col sub-item" style="font-size: 14px;">${item.productName} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}</td>
                     <td class="total-col"></td>
                 </tr>
+                ${
+                  item.supplement
+                    ? `<tr>
+                    <td class="qty-col"></td>
+                    <td class="name-col sub-item indent" style="font-weight: bold;">${t("receipt.extra")}:${item.supplement}</td>
+                    <td class="total-col">€${item.supplement.toFixed(2)}</td>
+                </tr>
+                `
+                    : ""
+                }
                 ${
                   item.variantPrice && item.variantPrice > 0
                     ? `<tr class="bold">
@@ -282,7 +285,6 @@ export const generateReceiptHTML = (
                 <td class="qty-col">${item.quantity}</td>
                 <td class="name-col" style="font-size: 14px;">${item.productName} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}</td>
                 <td class="sub-col">€${unitPrice.toFixed(2)}</td>
-                <td class="total-col">€${itemTotal.toFixed(2)}</td>
             </tr>
         `;
     if (item.variantPrice && item.variantPrice > 0) {

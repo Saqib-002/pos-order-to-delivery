@@ -17,6 +17,7 @@ interface Group {
   id: string;
   name: string;
   color: string;
+  forProduct?: boolean;
   items: Complement[];
 }
 
@@ -54,6 +55,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   const [formData, setFormData] = useState({
     name: "",
     color: "red",
+    forProduct: false,
   });
   const [newComplement, setNewComplement] = useState({
     name: "",
@@ -119,12 +121,14 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       setFormData({
         name: editingGroup.name,
         color: editingGroup.color,
+        forProduct: (editingGroup as any).forProduct || false,
       });
       setComplements(editingGroup.items);
     } else {
       setFormData({
         name: "",
         color: "red",
+        forProduct: false,
       });
       setComplements([]);
     }
@@ -327,6 +331,37 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* For Product Checkbox */}
+          <div className="mb-6">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="forProduct"
+                checked={formData.forProduct}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    forProduct: e.target.checked,
+                  })
+                }
+                className="h-4 w-4 accent-black cursor-pointer"
+              />
+              <label
+                htmlFor="forProduct"
+                className="text-sm text-gray-700 cursor-pointer"
+              >
+                {t("menuComponents.modals.createGroupModal.forProduct") ||
+                  "For Product"}
+              </label>
+            </div>
+            <p className="text-xs text-gray-500 mt-1 ml-6">
+              {t(
+                "menuComponents.modals.createGroupModal.forProductDescription"
+              ) ||
+                "If checked, this group will only be available when processing products, not when processing menus"}
+            </p>
           </div>
 
           {/* Add New Complement Section */}

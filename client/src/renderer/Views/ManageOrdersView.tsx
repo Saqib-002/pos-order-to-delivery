@@ -237,6 +237,16 @@ export const ManageOrdersView = () => {
         const printerIsMain = printer.split("|")[1];
 
         if (printerIsMain === "true") {
+          // Get customer address only for delivery orders
+          let customerAddress: string | undefined = undefined;
+          if (order.orderType === "delivery") {
+            if (order?.customer?.address && order.customer.address.trim()) {
+              customerAddress = order.customer.address.includes("|")
+                ? formatAddress(order.customer.address)
+                : order.customer.address;
+            }
+          }
+          
           const receiptHTML = generateReceiptHTML(
             items,
             configs,
@@ -245,7 +255,7 @@ export const ManageOrdersView = () => {
             user?.role || "",
             status,
             t,
-            order?.customer.address? formatAddress(order.customer.address) : undefined
+            customerAddress
           );
 
           if (!receiptHTML) {

@@ -83,24 +83,41 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         toast.error(t("orderTakingForm.errors.unableToGetAddonPages"));
         return;
       }
-      setAddonPages(
-        groupRes.data.map((page: any) => ({
-          id: page.id,
-          minComplements: page.minComplements,
-          maxComplements: page.maxComplements,
-          freeAddons: page.freeAddons,
-          selectedGroup: page.selectedGroup,
-          pageNo: page.pageNo,
-        }))
-      );
 
-      // Get all groups
       const groupsRes = await (window as any).electronAPI.getGroups(token);
       if (!groupsRes.status) {
         toast.error(t("orderTakingForm.errors.unableToGetGroups"));
         return;
       }
-      setGroups(groupsRes.data);
+
+      const isMenuMode = mode === "menu" || !!currentOrderItem?.menuId;
+
+      const filteredGroups = isMenuMode
+        ? groupsRes.data.filter((group: any) => !group.forProduct)
+        : groupsRes.data;
+      setGroups(filteredGroups);
+
+      const allowedGroupIds = new Set(filteredGroups.map((g: any) => g.id));
+      const filteredAddonPages = isMenuMode
+        ? groupRes.data
+            .filter((page: any) => allowedGroupIds.has(page.selectedGroup))
+            .map((page: any) => ({
+              id: page.id,
+              minComplements: page.minComplements,
+              maxComplements: page.maxComplements,
+              freeAddons: page.freeAddons,
+              selectedGroup: page.selectedGroup,
+              pageNo: page.pageNo,
+            }))
+        : groupRes.data.map((page: any) => ({
+            id: page.id,
+            minComplements: page.minComplements,
+            maxComplements: page.maxComplements,
+            freeAddons: page.freeAddons,
+            selectedGroup: page.selectedGroup,
+            pageNo: page.pageNo,
+          }));
+      setAddonPages(filteredAddonPages);
 
       if (res.data.length > 0) {
         if (editingProduct) {

@@ -111,6 +111,28 @@ const OrderComponent = () => {
         const printerIsMain = printer.split("|")[1];
         let receiptHTML = "";
         if (printerIsMain === "true") {
+          let customerAddress: string | undefined = undefined;
+          if (orderData.orderType?.toLowerCase() === "delivery") {
+            if (orderData.customerAddress && orderData.customerAddress.trim()) {
+              const defaultValues = [
+                t("orderProcessingModal.defaultCustomers.dineIn"),
+                t("orderProcessingModal.defaultCustomers.inStore"),
+              ];
+              if (!defaultValues.includes(orderData.customerAddress.trim())) {
+                customerAddress = orderData.customerAddress.includes("|")
+                  ? formatAddress(orderData.customerAddress)
+                  : orderData.customerAddress;
+              }
+            }
+            if (!customerAddress) {
+              if (order?.customer?.address && order.customer.address.trim()) {
+                customerAddress = order.customer.address.includes("|")
+                  ? formatAddress(order.customer.address)
+                  : order.customer.address;
+              }
+            }
+          }
+
           receiptHTML = generateReceiptHTML(
             items,
             configs,
@@ -119,9 +141,7 @@ const OrderComponent = () => {
             user!.role,
             status,
             t,
-            order?.customer ? order?.customer.address
-              ? formatAddress(order.customer.address)
-              : undefined : undefined
+            customerAddress
           );
         } else {
           const unprintedItems = items.filter(
@@ -251,10 +271,11 @@ const OrderComponent = () => {
                   return (
                     <button
                       key={order.id}
-                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${isAssignedToDelivery
-                        ? "bg-gray-100 cursor-not-allowed opacity-75"
-                        : "hover:bg-gray-50 cursor-pointer"
-                        }`}
+                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${
+                        isAssignedToDelivery
+                          ? "bg-gray-100 cursor-not-allowed opacity-75"
+                          : "hover:bg-gray-50 cursor-pointer"
+                      }`}
                       onClick={() => handleOrderClick(order)}
                       disabled={
                         isAssignedToDelivery || order.status === "cancelled"
