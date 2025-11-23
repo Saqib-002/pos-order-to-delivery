@@ -90,7 +90,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       );
     }
   };
-  // Get color classes for selection ring
   const getColorClasses = (color: string, isSelected: boolean) => {
     if (!isSelected) {
       return "border-gray-200 hover:border-gray-300";
