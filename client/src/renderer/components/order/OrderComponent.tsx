@@ -133,6 +133,50 @@ const OrderComponent = () => {
             }
           }
 
+          // Get pickup time and format it
+          let formattedPickupTime: string | undefined = undefined;
+          if (
+            orderData.orderType?.toLowerCase() === "pickup" &&
+            orderData.pickupTime
+          ) {
+            try {
+              // Handle dayjs format or ISO string
+              const pickupDate = new Date(orderData.pickupTime);
+              if (!isNaN(pickupDate.getTime())) {
+                formattedPickupTime = pickupDate.toLocaleTimeString("es-ES", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+              } else {
+                // If it's already formatted, use as is
+                formattedPickupTime = orderData.pickupTime;
+              }
+            } catch (e) {
+              formattedPickupTime = orderData.pickupTime;
+            }
+          } else if (
+            order?.pickupTime &&
+            orderData.orderType?.toLowerCase() === "pickup"
+          ) {
+            try {
+              const pickupDate = new Date(order.pickupTime);
+              if (!isNaN(pickupDate.getTime())) {
+                formattedPickupTime = pickupDate.toLocaleTimeString("es-ES", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+              } else {
+                formattedPickupTime = order.pickupTime;
+              }
+            } catch (e) {
+              formattedPickupTime = order.pickupTime;
+            }
+          }
+
+          // Get customer phone
+          const customerPhone =
+            orderData.customerPhone || order?.customer?.phone;
+
           receiptHTML = generateReceiptHTML(
             items,
             configs,
@@ -141,7 +185,9 @@ const OrderComponent = () => {
             user!.role,
             status,
             t,
-            customerAddress
+            customerAddress,
+            formattedPickupTime,
+            customerPhone
           );
         } else {
           const unprintedItems = items.filter(

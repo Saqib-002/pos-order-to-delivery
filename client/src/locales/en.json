@@ -1333,6 +1333,8 @@
     "extra": "Extra",
     "waiter": "Waiter",
     "address": "Customer Address",
+    "pickupTime": "Pickup Time",
+    "phone": "Phone",
     "paymentStatus": {
       "unpaid": "UNPAID",
       "paid": "PAID",

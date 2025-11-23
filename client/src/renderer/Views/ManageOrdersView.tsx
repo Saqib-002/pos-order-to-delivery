@@ -246,7 +246,27 @@ export const ManageOrdersView = () => {
                 : order.customer.address;
             }
           }
-          
+
+          // Get pickup time and format it
+          let formattedPickupTime: string | undefined = undefined;
+          if (order.orderType === "pickup" && order.pickupTime) {
+            try {
+              const pickupDate = new Date(order.pickupTime);
+              if (!isNaN(pickupDate.getTime())) {
+                formattedPickupTime = pickupDate.toLocaleTimeString("es-ES", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+              } else {
+                formattedPickupTime = order.pickupTime;
+              }
+            } catch (e) {
+              formattedPickupTime = order.pickupTime;
+            }
+          }
+
+          const customerPhone = order?.customer?.phone;
+
           const receiptHTML = generateReceiptHTML(
             items,
             configs,
@@ -255,7 +275,9 @@ export const ManageOrdersView = () => {
             user?.role || "",
             status,
             t,
-            customerAddress
+            customerAddress,
+            formattedPickupTime,
+            customerPhone
           );
 
           if (!receiptHTML) {

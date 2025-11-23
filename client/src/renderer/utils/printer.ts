@@ -55,7 +55,9 @@ export const generateReceiptHTML = (
   userRole: string,
   status: string,
   t: (key: string) => string,
-  customerAddress: string | undefined
+  customerAddress: string | undefined,
+  pickupTime: string | undefined,
+  customerPhone: string | undefined
 ): string => {
   const { nonMenuItems, groups, orderTotal } = calculateOrderTotal(items);
 
@@ -179,6 +181,8 @@ export const generateReceiptHTML = (
             <p style="font-size: 16px;"><span class="bold">${t("receipt.payment")}:</span> ${status}</p>
             <p><span class="bold">${t("receipt.servedBy")}:</span> ${userRole}</p>
             ${customerAddress && customerAddress.trim() && originalOrderType === "DELIVERY" ? `<p><span class="bold">${t("receipt.address")}:</span> ${customerAddress}</p>` : ""}
+            ${pickupTime && originalOrderType === "PICKUP" ? `<p><span class="bold">${t("receipt.pickupTime")}:</span> ${pickupTime}</p>` : ""}
+            ${customerPhone && customerPhone.trim() ? `<p><span class="bold">${t("receipt.phone")}:</span> ${customerPhone}</p>` : ""}
             <div class="line"></div>
         </div>
         <table>
@@ -228,7 +232,7 @@ export const generateReceiptHTML = (
       html += `
                 <tr class="bold">
                     <td class="qty-col"></td>
-                    <td class="name-col sub-item" style="font-size: 14px;">${item.productName} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}</td>
+                    <td class="name-col sub-item" style="font-size: 14px;"><span style="width: 6px; height: 6px; background: black; display: inline-block; margin-right: 5px; border-radius: 50%;"></span>${item.productName} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}</td>
                     <td class="total-col"></td>
                 </tr>
                 ${

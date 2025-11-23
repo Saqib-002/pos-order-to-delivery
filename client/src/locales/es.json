@@ -1335,6 +1335,8 @@
     "extra": "Extra",
     "waiter": "Camarero",
     "address": "Dirección del Cliente",
+    "pickupTime": "Hora de Recogida",
+    "phone": "Teléfono",
     "paymentStatus": {
       "unpaid": "NO PAGADO",
       "paid": "PAGADO",
