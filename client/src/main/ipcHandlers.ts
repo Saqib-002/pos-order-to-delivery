@@ -90,8 +90,12 @@ import {
 import {
   createCustomer,
   getCustomersByPhone,
+  getCustomerByPhone,
   updateCustomer,
   getAllCustomers,
+  getCustomerById,
+  updateCustomerById,
+  deleteCustomer,
 } from "./handlers/customers.js";
 import {
   createPrinter,
@@ -134,7 +138,7 @@ const store = new Store<StoreSchema>({
 export function registerIpcHandlers() {
   // db handlers
   ipcMain.handle("get-db-credentials", async () => {
-    return store.get("dbCredentials");
+    return (store as any).get("dbCredentials");
   });
   ipcMain.handle(
     "save-and-init-db",
@@ -144,7 +148,7 @@ export function registerIpcHandlers() {
         await initDatabase(credentials);
 
         // 2. If successful, save them to the store
-        store.set("dbCredentials", credentials);
+        (store as any).set("dbCredentials", credentials);
 
         return { success: true };
       } catch (error) {
@@ -198,8 +202,12 @@ export function registerIpcHandlers() {
   // Customer handlers
   ipcMain.handle("create-customer", createCustomer);
   ipcMain.handle("get-customers-by-phone", getCustomersByPhone);
+  ipcMain.handle("get-customer-by-phone", getCustomerByPhone);
   ipcMain.handle("get-all-customers", getAllCustomers);
+  ipcMain.handle("get-customer-by-id", getCustomerById);
   ipcMain.handle("upsert-customer", updateCustomer);
+  ipcMain.handle("update-customer-by-id", updateCustomerById);
+  ipcMain.handle("delete-customer", deleteCustomer);
 
   // Menu Pages handlers
   ipcMain.handle("create-menu-page", createMenuPage);

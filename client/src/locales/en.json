@@ -81,6 +81,7 @@
         "reports": "Reports",
         "menu-structure": "Menu Structure",
         "users": "Users",
+        "customers": "Customers",
         "configurations": "Configurations"
       },
       "username": "Username",
@@ -125,6 +126,90 @@
     "deleteConfirmMessage": "Are you sure you want to delete this user?",
     "yes": "Yes",
     "no": "No"
+  },
+  "customerManagement": {
+    "title": "Customer Management",
+    "subtitle": "Manage customers and their information",
+    "addCustomer": "Add Customer",
+    "totalCustomers": "Total Customers",
+    "withEmail": "With Email",
+    "withAddress": "With Address",
+    "searchPlaceholder": "Search customers...",
+    "noCustomersTitle": "No customers found",
+    "noCustomersFirst": "Get started by adding your first customer.",
+    "noCustomersTry": "Try adjusting your search criteria.",
+    "noEmail": "No email",
+    "noAddress": "No address",
+    "table": {
+      "customers": "Customers",
+      "name": "Name",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "actions": "Actions"
+    },
+    "modal": {
+      "addNew": "Add New Customer",
+      "edit": "Edit Customer",
+      "name": "Name",
+      "phone": "Phone",
+      "email": "Email",
+      "cif": "CIF/Tax ID",
+      "address": "Address",
+      "comments": "Comments",
+      "cancel": "Cancel",
+      "add": "Add Customer",
+      "update": "Update Customer"
+    },
+    "validation": {
+      "nameRequired": "Please enter a customer name",
+      "phoneRequired": "Please enter a phone number",
+      "phoneInvalid": "Phone number must contain only numbers",
+      "addressRequired": "Please enter an address"
+    },
+    "messages": {
+      "fetchFailed": "Failed to fetch customers",
+      "addFailed": "Failed to add customer",
+      "updateFailed": "Failed to update customer",
+      "deleteFailed": "Failed to delete customer",
+      "phoneTaken": "Phone number already exists",
+      "added": "Customer added successfully",
+      "updated": "Customer updated successfully",
+      "deleted": "Customer deleted successfully"
+    },
+    "deleteConfirmTitle": "Delete Customer",
+    "deleteConfirmMessage": "Are you sure you want to delete this customer? This action cannot be undone.",
+    "bulkImport": {
+      "buttonLabel": "Bulk Import",
+      "title": "Bulk Import Customers",
+      "description": "Upload an Excel file (.xlsx) to import multiple customers at once. The file should have the following columns:",
+      "expectedColumns": "Expected Columns:",
+      "downloadTemplate": "Download Template",
+      "columns": {
+        "name": "Name (required)",
+        "phone": "Phone (required, numbers only)",
+        "address": "Address (required)",
+        "email": "Email (optional)",
+        "cif": "CIF/Tax ID (optional)",
+        "comments": "Comments (optional)"
+      },
+      "uploadText": "Click to upload Excel file",
+      "fileFormat": "Only .xlsx files are supported",
+      "processing": "Processing...",
+      "noData": "No data found in the Excel file",
+      "invalidFile": "Invalid file format. Please upload a .xlsx file",
+      "parseError": "Error parsing Excel file",
+      "success": "Successfully imported {{count}} customer(s)",
+      "failed": "Failed to import {{count}} customer(s)",
+      "partialSuccess": "Imported {{success}} customer(s), {{failed}} failed",
+      "databaseError": "Database error occurred",
+      "results": "Import Results",
+      "successCount": "Successfully Imported",
+      "failedCount": "Failed",
+      "errors": "Errors",
+      "moreErrors": "...and {{count}} more errors",
+      "importAnother": "Import Another File"
+    }
   },
   "printers": {
     "title": "Printers",
@@ -1317,6 +1402,7 @@
     "reports": "Reports",
     "menuStructure": "Menu Structure",
     "users": "Users",
+    "customers": "Customers",
     "configurations": "Configurations"
   },
   "printerUtils": {

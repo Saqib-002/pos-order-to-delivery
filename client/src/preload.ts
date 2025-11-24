@@ -31,7 +31,7 @@ const orderChangeCallbacks = new Set<(change: any, event: any) => void>();
 contextBridge.exposeInMainWorld("electronAPI", {
   // db
   getDbCredentials: () => ipcRenderer.invoke("get-db-credentials"),
-  saveAndInitDb: (credentials:any) =>
+  saveAndInitDb: (credentials: any) =>
     ipcRenderer.invoke("save-and-init-db", credentials),
   // categories
   createCategory: (token: string, category: any) =>
@@ -137,10 +137,18 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("create-customer", token, customer),
   getCustomersByPhone: (token: string, phone: string) =>
     ipcRenderer.invoke("get-customers-by-phone", token, phone),
+  getCustomerByPhone: (token: string, phone: string) =>
+    ipcRenderer.invoke("get-customer-by-phone", token, phone),
   getAllCustomers: (token: string) =>
     ipcRenderer.invoke("get-all-customers", token),
+  getCustomerById: (token: string, customerId: string) =>
+    ipcRenderer.invoke("get-customer-by-id", token, customerId),
   upsertCustomer: (token: string, customer: any) =>
     ipcRenderer.invoke("upsert-customer", token, customer),
+  updateCustomerById: (token: string, customerId: string, customer: any) =>
+    ipcRenderer.invoke("update-customer-by-id", token, customerId, customer),
+  deleteCustomer: (token: string, customerId: string) =>
+    ipcRenderer.invoke("delete-customer", token, customerId),
 
   // Order operations
   saveOrder: (token: string, item: any) =>
@@ -221,8 +229,19 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("get-orders-by-filter", token, filter),
   getOrderAnalytics: (token: string, filter: any) =>
     ipcRenderer.invoke("get-order-analytics", token, filter),
-  duplicateMenuInOrder: (token: string, orderId: string, menuId: string, menuSecondaryId: string) =>
-    ipcRenderer.invoke("duplicate-menu-in-order", token, orderId, menuId, menuSecondaryId),
+  duplicateMenuInOrder: (
+    token: string,
+    orderId: string,
+    menuId: string,
+    menuSecondaryId: string
+  ) =>
+    ipcRenderer.invoke(
+      "duplicate-menu-in-order",
+      token,
+      orderId,
+      menuId,
+      menuSecondaryId
+    ),
 
   // User operations
   registerUser: (

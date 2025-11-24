@@ -25,8 +25,18 @@ export class CustomerDatabaseOperations {
   }
   static async getCustomersByPhone(phone: string) {
     try {
-      const customers = await db("customers").whereLike("phone", `%${phone}%`).orWhereLike("name", `%${phone}%`);
+      const customers = await db("customers")
+        .whereLike("phone", `%${phone}%`)
+        .orWhereLike("name", `%${phone}%`);
       return customers || null;
+    } catch (error) {
+      throw error;
+    }
+  }
+  static async getCustomerByPhone(phone: string) {
+    try {
+      const customer = await db("customers").where("phone", phone).first();
+      return customer || null;
     } catch (error) {
       throw error;
     }
@@ -66,6 +76,37 @@ export class CustomerDatabaseOperations {
         await db("customers").insert(newCustomer);
         return newCustomer;
       }
+    } catch (error) {
+      throw error;
+    }
+  }
+  static async getCustomerById(customerId: string) {
+    try {
+      const customer = await db("customers").where("id", customerId).first();
+      return customer || null;
+    } catch (error) {
+      throw error;
+    }
+  }
+  static async updateCustomer(customerId: string, customer: Partial<Customer>) {
+    try {
+      await db("customers")
+        .where("id", customerId)
+        .update({
+          ...customer,
+          updatedAt: new Date().toISOString(),
+        });
+      const updatedCustomer = await db("customers")
+        .where("id", customerId)
+        .first();
+      return updatedCustomer;
+    } catch (error) {
+      throw error;
+    }
+  }
+  static async deleteCustomer(customerId: string) {
+    try {
+      await db("customers").where("id", customerId).delete();
     } catch (error) {
       throw error;
     }

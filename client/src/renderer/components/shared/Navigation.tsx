@@ -51,6 +51,7 @@ export const Navigation = ({
       reports: "./images/reports.png",
       "menu-structure": "./images/menu-structure.png",
       users: "./images/users.png",
+      customers: "./images/users.png",
       configurations: "./images/configuration.png",
       logout: "./images/logout.png",
     };
@@ -68,6 +69,7 @@ export const Navigation = ({
       reports: t("navigation.reports"),
       "menu-structure": t("navigation.menuStructure"),
       users: t("navigation.users"),
+      customers: t("navigation.customers"),
       configurations: t("navigation.configurations"),
     };
 
