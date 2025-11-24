@@ -161,6 +161,7 @@
     "minutes": "minutes",
     "topOrderedItems": "Top Ordered Items",
     "topOrderedMenus": "Top Ordered Menus",
+    "orderTypeTotals": "Total Revenue by Order Type",
     "orderDetails": "Order Details",
     "orderId": "Order ID",
     "customer": "Customer",
@@ -211,6 +212,10 @@
       },
       "topItems": {
         "noItems": "No items ordered in selected period"
+      },
+      "orderTypeTotals": {
+        "noData": "No order type data available in selected period",
+        "unknown": "Unknown"
       }
     }
   },

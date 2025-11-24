@@ -83,19 +83,44 @@ export const getPaymentStatusStyle = (status: string) => {
 export const translateOrderType = (orderType: string): string => {
   if (!orderType) return "";
 
-  const typeKey = orderType.toLowerCase();
+  // Normalize: lowercase, trim, remove accents and special characters
+  const normalized = orderType
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // Remove accents
 
-  switch (typeKey) {
-    case "pickup":
-      return i18n.t("orderTypes.pickup");
-    case "delivery":
-      return i18n.t("orderTypes.delivery");
-    case "dine-in":
-    case "dinein":
-      return i18n.t("orderTypes.dineIn");
-    default:
-      return orderType;
+  let translationKey = "";
+
+  // Check for pickup variations
+  if (
+    normalized === "pickup" ||
+    normalized === "recoger" ||
+    normalized.includes("recoger")
+  ) {
+    translationKey = "orderTypes.pickup";
   }
+  // Check for delivery variations
+  else if (
+    normalized === "delivery" ||
+    normalized === "domicilio" ||
+    normalized.includes("domicilio")
+  ) {
+    translationKey = "orderTypes.delivery";
+  } else if (
+    normalized === "dine-in" ||
+    normalized === "dinein" ||
+    normalized === "dine in" ||
+    normalized === "comer aqui" ||
+    normalized.includes("comer aqui") ||
+    normalized.includes("dine")
+  ) {
+    translationKey = "orderTypes.dineIn";
+  } else {
+    return orderType;
+  }
+
+  return i18n.t(translationKey);
 };
 
 export const getOrderTypeStyle = (orderType: string) => {

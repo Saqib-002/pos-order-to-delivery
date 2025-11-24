@@ -4,6 +4,28 @@ import { FilterType, Order, OrderItem } from "@/types/order.js";
 import { randomUUID } from "crypto";
 import { calculatePaymentStatus } from "../../renderer/utils/paymentStatus.js";
 
+const stringToComplements = (complementStr: any): any[] => {
+  if (Array.isArray(complementStr)) {
+    return complementStr;
+  }
+  if (typeof complementStr !== "string" || !complementStr) {
+    return [];
+  }
+
+  const complements = complementStr.split("=");
+  return complements.map((c) => {
+    const [groupId, groupName, itemId, itemName, price] = c.split("|");
+    return {
+      groupId,
+      groupName,
+      itemId,
+      itemName,
+      price: parseFloat(price || "0"),
+      priority: 0,
+    };
+  });
+};
+
 export class OrderDatabaseOperations {
   static async saveOrder(item: any): Promise<any> {
     const trx = await db.transaction();
@@ -286,7 +308,6 @@ export class OrderDatabaseOperations {
       endDate = new Date(endDateRange);
       endDate.setHours(23, 59, 59, 999);
     } else {
-      // Fall back to dateRange string logic
       const now = new Date();
       switch (dateRange) {
         case "today":
@@ -534,6 +555,99 @@ export class OrderDatabaseOperations {
           : parseInt(menu.count, 10) || 0,
     }));
 
+    let ordersQuery = db("orders")
+      .whereBetween("createdAt", [
+        startDate.toISOString(),
+        endDate.toISOString(),
+      ])
+      .andWhereNot("status", "pending")
+      .whereNotNull("orderType")
+      .whereNot("orderType", "");
+
+    if (orderType) {
+      const normalizedOrderType = orderType.toLowerCase().replace(/-/g, "");
+      ordersQuery = ordersQuery.whereRaw(
+        "LOWER(REPLACE(\"orderType\", '-', '')) = LOWER(?)",
+        [normalizedOrderType]
+      );
+    }
+
+    const ordersForTotals = await ordersQuery.select("id", "orderType");
+
+    const orderIds = ordersForTotals.map((o: any) => o.id);
+    const allOrderItems =
+      orderIds.length > 0
+        ? await db("order_items").whereIn("orderId", orderIds)
+        : [];
+
+    const orderTotalsMap = new Map<string, { type: string; total: number }>();
+
+    for (const order of ordersForTotals) {
+      const orderItems = allOrderItems.filter(
+        (item: any) => item.orderId === order.id
+      );
+
+      const formattedItems: OrderItem[] = orderItems.map((item: any) => {
+        let complements: any[] = [];
+        if (item.complements) {
+          try {
+            if (
+              typeof item.complements === "string" &&
+              item.complements.trim().startsWith("[")
+            ) {
+              complements = JSON.parse(item.complements);
+            } else {
+              complements = stringToComplements(item.complements);
+            }
+          } catch (e) { 
+            complements = stringToComplements(item.complements);
+          }
+        }
+
+        return {
+          id: item.id,
+          productId: item.productId,
+          productName: item.productName,
+          productPrice: parseFloat(item.productPrice || 0),
+          productDescription: item.productDescription,
+          productPriority: parseInt(item.productPriority || 0),
+          productDiscount: parseFloat(item.productDiscount || 0),
+          productTax: parseFloat(item.productTax || 0),
+          variantId: item.variantId || "",
+          variantName: item.variantName || "",
+          variantPrice: parseFloat(item.variantPrice || 0),
+          complements: complements,
+          quantity: parseInt(item.quantity || 1),
+          totalPrice: parseFloat(item.totalPrice || 0),
+          menuId: item.menuId || undefined,
+          menuSecondaryId: item.menuSecondaryId || undefined,
+          menuName: item.menuName || undefined,
+          menuPrice: item.menuPrice ? parseFloat(item.menuPrice) : undefined,
+          menuTax: item.menuTax ? parseFloat(item.menuTax) : undefined,
+          menuDiscount: item.menuDiscount
+            ? parseFloat(item.menuDiscount)
+            : undefined,
+          supplement: item.supplement ? parseFloat(item.supplement) : undefined,
+        };
+      });
+
+      const { orderTotal } = calculateOrderTotal(formattedItems);
+
+      const orderTypeKey = order.orderType;
+      if (!orderTotalsMap.has(orderTypeKey)) {
+        orderTotalsMap.set(orderTypeKey, { type: orderTypeKey, total: 0 });
+      }
+      const current = orderTotalsMap.get(orderTypeKey)!;
+      current.total += orderTotal;
+    }
+
+    const orderTypeTotals = Array.from(orderTotalsMap.values())
+      .map((item) => ({
+        type: item.type,
+        total: parseFloat(item.total.toFixed(2)),
+      }))
+      .sort((a, b) => b.total - a.total);
+
     const serializedOrdersStats = {
       totalDelivered: Number(ordersStats.totalDelivered) || 0,
       totalSentToKitchen: Number(ordersStats.totalSentToKitchen) || 0,
@@ -550,6 +664,7 @@ export class OrderDatabaseOperations {
       hourlyData: hourlyData.map((val: any) => Number(val) || 0),
       topItems,
       topMenus,
+      orderTypeTotals,
       orders: newOrders,
       ordersTotalCount: Number(ordersTotalCount) || 0,
     };
