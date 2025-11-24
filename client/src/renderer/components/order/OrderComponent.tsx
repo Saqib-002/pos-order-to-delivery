@@ -176,6 +176,7 @@ const OrderComponent = () => {
           // Get customer phone
           const customerPhone =
             orderData.customerPhone || order?.customer?.phone;
+          const customerName = orderData.customerName || order?.customer?.name;
 
           receiptHTML = generateReceiptHTML(
             items,
@@ -187,7 +188,8 @@ const OrderComponent = () => {
             t,
             customerAddress,
             formattedPickupTime,
-            customerPhone
+            customerPhone,
+            customerName
           );
         } else {
           const unprintedItems = items.filter(

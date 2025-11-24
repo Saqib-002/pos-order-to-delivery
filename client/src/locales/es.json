@@ -163,6 +163,7 @@
     "minutes": "minutos",
     "topOrderedItems": "Artículos Más Pedidos",
     "topOrderedMenus": "Menús Más Pedidos",
+    "orderTypeTotals": "Ingresos Totales por Tipo de Pedido",
     "orderDetails": "Detalles del Pedido",
     "orderId": "ID del Pedido",
     "customer": "Cliente",
@@ -213,6 +214,10 @@
       },
       "topItems": {
         "noItems": "No se ordenaron artículos en el período seleccionado"
+      },
+      "orderTypeTotals": {
+        "noData": "No hay datos de tipo de pedido disponibles en el período seleccionado",
+        "unknown": "Desconocido"
       }
     }
   },
@@ -1334,6 +1339,7 @@
     "thankYou": "Gracias por su visita",
     "extra": "Extra",
     "waiter": "Camarero",
+    "customerName": "Nombre del Cliente",
     "address": "Dirección del Cliente",
     "pickupTime": "Hora de Recogida",
     "phone": "Teléfono",

@@ -9,6 +9,7 @@ import { DateRangeSelector } from "../components/report/DateRangeSelector";
 import { HourlyDistribution } from "../components/report/HourlyDistribution";
 import { StatusDistribution } from "../components/report/StatusDistribution";
 import { TopItems } from "../components/report/TopItems";
+import { OrderTypeTotals } from "../components/report/OrderTypeTotals";
 import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
 import {
@@ -204,6 +205,12 @@ export const ReportView = () => {
           <TopItems
             topItems={analytics?.topMenus}
             title={t("reports.topOrderedMenus")}
+          />
+        )}
+        {analytics?.orderTypeTotals && analytics.orderTypeTotals.length > 0 && (
+          <OrderTypeTotals
+            orderTypeTotals={analytics.orderTypeTotals}
+            title={t("reports.orderTypeTotals")}
           />
         )}
       </div>

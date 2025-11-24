@@ -127,6 +127,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
 
         // Get customer phone
         const customerPhone = order?.customer?.phone;
+        const customerName = order?.customer?.name;
 
         receiptHTML = generateReceiptHTML(
           items,
@@ -138,7 +139,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
           t,
           customerAddress,
           formattedPickupTime,
-          customerPhone
+          customerPhone,
+          customerName
         );
       }
       if (!receiptHTML) {
