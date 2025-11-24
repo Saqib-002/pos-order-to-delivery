@@ -572,7 +572,7 @@ export class OrderDatabaseOperations {
       );
     }
 
-    const ordersForTotals = await ordersQuery.select("id", "orderType");
+    const ordersForTotals = await ordersQuery.select("id", "orderType","status");
 
     const orderIds = ordersForTotals.map((o: any) => o.id);
     const allOrderItems =
@@ -632,13 +632,14 @@ export class OrderDatabaseOperations {
       });
 
       const { orderTotal } = calculateOrderTotal(formattedItems);
-
-      const orderTypeKey = order.orderType;
-      if (!orderTotalsMap.has(orderTypeKey)) {
-        orderTotalsMap.set(orderTypeKey, { type: orderTypeKey, total: 0 });
+      if(order.status !== 'cancelled'){
+        const orderTypeKey = order.orderType;
+        if (!orderTotalsMap.has(orderTypeKey)) {
+          orderTotalsMap.set(orderTypeKey, { type: orderTypeKey, total: 0 });
+        }
+        const current = orderTotalsMap.get(orderTypeKey)!;
+        current.total += orderTotal;
       }
-      const current = orderTotalsMap.get(orderTypeKey)!;
-      current.total += orderTotal;
     }
 
     const orderTypeTotals = Array.from(orderTotalsMap.values())
