@@ -197,7 +197,7 @@ const OrderComponent = () => {
             continue;
           }
           receiptHTML = generateItemsReceiptHTML(
-            items,
+            unprintedItems,
             configs,
             { ...order, ...orderData },
             user!.role,
