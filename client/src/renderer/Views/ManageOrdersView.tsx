@@ -266,6 +266,7 @@ export const ManageOrdersView = () => {
           }
 
           const customerPhone = order?.customer?.phone;
+          const customerName = order?.customer?.name;
 
           const receiptHTML = generateReceiptHTML(
             items,
@@ -277,7 +278,8 @@ export const ManageOrdersView = () => {
             t,
             customerAddress,
             formattedPickupTime,
-            customerPhone
+            customerPhone,
+            customerName
           );
 
           if (!receiptHTML) {

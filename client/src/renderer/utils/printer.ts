@@ -57,7 +57,8 @@ export const generateReceiptHTML = (
   t: (key: string) => string,
   customerAddress: string | undefined,
   pickupTime: string | undefined,
-  customerPhone: string | undefined
+  customerPhone: string | undefined,
+  customerName: string | undefined
 ): string => {
   const { nonMenuItems, groups, orderTotal } = calculateOrderTotal(items);
 
@@ -180,6 +181,7 @@ export const generateReceiptHTML = (
             <p style="font-size: 16px;"><span class="bold">${t("receipt.order")}:</span> ${configurations.orderPrefix}${orderId}(${orderType?.toUpperCase() || "N/A"})</p>
             <p style="font-size: 16px;"><span class="bold">${t("receipt.payment")}:</span> ${status}</p>
             <p><span class="bold">${t("receipt.servedBy")}:</span> ${userRole}</p>
+            ${customerName && customerName.trim() ? `<p><span class="bold">${t("receipt.customerName")}:</span> ${customerName}</p>` : ""}
             ${customerAddress && customerAddress.trim() && originalOrderType === "DELIVERY" ? `<p><span class="bold">${t("receipt.address")}:</span> ${customerAddress}</p>` : ""}
             ${pickupTime && originalOrderType === "PICKUP" ? `<p><span class="bold">${t("receipt.pickupTime")}:</span> ${pickupTime}</p>` : ""}
             ${customerPhone && customerPhone.trim() ? `<p><span class="bold">${t("receipt.phone")}:</span> ${customerPhone}</p>` : ""}
