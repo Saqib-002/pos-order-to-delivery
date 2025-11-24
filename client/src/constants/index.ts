@@ -9,6 +9,7 @@ export const VIEWS = {
   MANAGE_ORDERS: "manage-orders",
   REPORTS: "reports",
   USERS: "users",
+  CUSTOMERS: "customers",
   MENU_STRUCTURE: "menu-structure",
   CONFIGURATIONS: "configurations",
 } as const;
@@ -30,6 +31,7 @@ export const navItems = [
   { view: VIEWS.REPORTS, label: "Reports", roles: ["admin"] },
   { view: VIEWS.MENU_STRUCTURE, label: "Menu Structure", roles: ["admin"] },
   { view: VIEWS.USERS, label: "Users", roles: ["admin"] },
+  { view: VIEWS.CUSTOMERS, label: "Customers", roles: ["admin"] },
   { view: VIEWS.CONFIGURATIONS, label: "Configurations", roles: ["admin"] },
 ];
 
@@ -66,6 +68,7 @@ export const MODULES = {
   REPORTS: "reports",
   MENU_STRUCTURE: "menu-structure",
   USERS: "users",
+  CUSTOMERS: "customers",
   CONFIGURATIONS: "configurations",
 } as const;
 
@@ -78,6 +81,7 @@ export const MODULE_LABELS = {
   [MODULES.REPORTS]: "Reports",
   [MODULES.MENU_STRUCTURE]: "Menu Structure",
   [MODULES.USERS]: "Users",
+  [MODULES.CUSTOMERS]: "Customers",
   [MODULES.CONFIGURATIONS]: "Configurations",
 } as const;
 

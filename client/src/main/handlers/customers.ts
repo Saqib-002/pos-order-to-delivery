@@ -77,3 +77,82 @@ export const getAllCustomers = async (
     };
   }
 };
+export const getCustomerById = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  customerId: string
+) => {
+  try {
+    await verifyToken(event, token);
+    const result = await CustomerDatabaseOperations.getCustomerById(customerId);
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};
+export const getCustomerByPhone = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  phone: string
+) => {
+  try {
+    await verifyToken(event, token);
+    const result = await CustomerDatabaseOperations.getCustomerByPhone(phone);
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};
+export const updateCustomerById = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  customerId: string,
+  customer: any
+) => {
+  try {
+    await verifyToken(event, token);
+    const result = await CustomerDatabaseOperations.updateCustomer(
+      customerId,
+      customer
+    );
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};
+export const deleteCustomer = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  customerId: string
+) => {
+  try {
+    await verifyToken(event, token);
+    await CustomerDatabaseOperations.deleteCustomer(customerId);
+    return {
+      status: true,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};

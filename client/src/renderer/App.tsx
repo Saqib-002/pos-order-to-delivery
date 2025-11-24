@@ -13,6 +13,7 @@ import { MenuView } from "./Views/MenuView";
 import { OrderView } from "./Views/OrderView";
 import { ReportView } from "./Views/ReportView";
 import { UserManagement } from "./Views/UserManagement";
+import { CustomerManagement } from "./Views/CustomerManagement";
 import { useAuth } from "./contexts/AuthContext";
 import Configurations from "./Views/Configurations";
 import { OrderManagementProvider } from "./contexts/orderManagementContext";
@@ -126,6 +127,10 @@ const App: React.FC = () => {
     },
     [VIEWS.USERS]: {
       component: <UserManagement />,
+      roles: ["admin"],
+    },
+    [VIEWS.CUSTOMERS]: {
+      component: <CustomerManagement />,
       roles: ["admin"],
     },
     [VIEWS.DELIVERY_MANAGEMENT]: {

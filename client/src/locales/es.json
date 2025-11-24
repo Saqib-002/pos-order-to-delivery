@@ -107,6 +107,7 @@
         "reports": "Reportes",
         "menu-structure": "Estructura de Menú",
         "users": "Usuarios",
+        "customers": "Clientes",
         "configurations": "Configuraciones"
       },
       "username": "Nombre de usuario",
@@ -151,6 +152,90 @@
     "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar este usuario?",
     "yes": "Sí",
     "no": "No"
+  },
+  "customerManagement": {
+    "title": "Gestión de Clientes",
+    "subtitle": "Administra clientes y su información",
+    "addCustomer": "Agregar Cliente",
+    "totalCustomers": "Clientes Totales",
+    "withEmail": "Con Correo",
+    "withAddress": "Con Dirección",
+    "searchPlaceholder": "Buscar clientes...",
+    "noCustomersTitle": "No se encontraron clientes",
+    "noCustomersFirst": "Comienza agregando tu primer cliente.",
+    "noCustomersTry": "Intenta ajustar tus criterios de búsqueda.",
+    "noEmail": "Sin correo",
+    "noAddress": "Sin dirección",
+    "table": {
+      "customers": "Clientes",
+      "name": "Nombre",
+      "phone": "Teléfono",
+      "email": "Correo electrónico",
+      "address": "Dirección",
+      "actions": "Acciones"
+    },
+    "modal": {
+      "addNew": "Agregar Nuevo Cliente",
+      "edit": "Editar Cliente",
+      "name": "Nombre",
+      "phone": "Teléfono",
+      "email": "Correo electrónico",
+      "cif": "CIF/NIF",
+      "address": "Dirección",
+      "comments": "Comentarios",
+      "cancel": "Cancelar",
+      "add": "Agregar Cliente",
+      "update": "Actualizar Cliente"
+    },
+    "validation": {
+      "nameRequired": "Por favor ingresa un nombre de cliente",
+      "phoneRequired": "Por favor ingresa un número de teléfono",
+      "phoneInvalid": "El número de teléfono solo debe contener números",
+      "addressRequired": "Por favor ingresa una dirección"
+    },
+    "messages": {
+      "fetchFailed": "Error al obtener clientes",
+      "addFailed": "Error al agregar cliente",
+      "updateFailed": "Error al actualizar cliente",
+      "deleteFailed": "Error al eliminar cliente",
+      "phoneTaken": "El número de teléfono ya existe",
+      "added": "Cliente agregado correctamente",
+      "updated": "Cliente actualizado correctamente",
+      "deleted": "Cliente eliminado correctamente"
+    },
+    "deleteConfirmTitle": "Eliminar Cliente",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer.",
+    "bulkImport": {
+      "buttonLabel": "Importación Masiva",
+      "title": "Importación Masiva de Clientes",
+      "description": "Sube un archivo Excel (.xlsx) para importar múltiples clientes a la vez. El archivo debe tener las siguientes columnas:",
+      "expectedColumns": "Columnas Esperadas:",
+      "downloadTemplate": "Descargar Plantilla",
+      "columns": {
+        "name": "Nombre (obligatorio)",
+        "phone": "Teléfono (obligatorio, solo números)",
+        "address": "Dirección (obligatorio)",
+        "email": "Correo electrónico (opcional)",
+        "cif": "CIF/NIF (opcional)",
+        "comments": "Comentarios (opcional)"
+      },
+      "uploadText": "Haz clic para subir archivo Excel",
+      "fileFormat": "Solo se admiten archivos .xlsx",
+      "processing": "Procesando...",
+      "noData": "No se encontraron datos en el archivo Excel",
+      "invalidFile": "Formato de archivo inválido. Por favor sube un archivo .xlsx",
+      "parseError": "Error al analizar el archivo Excel",
+      "success": "Se importaron exitosamente {{count}} cliente(s)",
+      "failed": "Error al importar {{count}} cliente(s)",
+      "partialSuccess": "Se importaron {{success}} cliente(s), {{failed}} fallaron",
+      "databaseError": "Error de base de datos",
+      "results": "Resultados de Importación",
+      "successCount": "Importados Exitosamente",
+      "failedCount": "Fallidos",
+      "errors": "Errores",
+      "moreErrors": "...y {{count}} errores más",
+      "importAnother": "Importar Otro Archivo"
+    }
   },
   "reports": {
     "title": "Análisis e Informes",
@@ -1319,6 +1404,7 @@
     "reports": "Informes",
     "menuStructure": "Estructura del Menú",
     "users": "Usuarios",
+    "customers": "Clientes",
     "configurations": "Configuraciones"
   },
   "printerUtils": {
