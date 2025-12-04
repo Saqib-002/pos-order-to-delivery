@@ -182,6 +182,11 @@
       "email": "Correo electrónico",
       "cif": "CIF/NIF",
       "address": "Dirección",
+      "searchAddress": "Buscar dirección",
+      "apartment": "Apartamento, unidad, suite o piso #",
+      "postalCode": "Código Postal",
+      "city": "Ciudad",
+      "province": "Provincia/Estado",
       "comments": "Comentarios",
       "cancel": "Cancelar",
       "add": "Agregar Cliente",
@@ -191,7 +196,10 @@
       "nameRequired": "Por favor ingresa un nombre de cliente",
       "phoneRequired": "Por favor ingresa un número de teléfono",
       "phoneInvalid": "El número de teléfono solo debe contener números",
-      "addressRequired": "Por favor ingresa una dirección"
+      "addressRequired": "Por favor ingresa una dirección",
+      "postalCodeRequired": "Por favor ingresa un código postal",
+      "cityRequired": "Por favor ingresa una ciudad",
+      "provinceRequired": "Por favor ingresa una provincia/estado"
     },
     "messages": {
       "fetchFailed": "Error al obtener clientes",
@@ -215,6 +223,9 @@
         "name": "Nombre (obligatorio)",
         "phone": "Teléfono (obligatorio, solo números)",
         "address": "Dirección (obligatorio)",
+        "postalCode": "Código Postal (obligatorio)",
+        "city": "Ciudad (obligatorio)",
+        "province": "Provincia/Estado (obligatorio)",
         "email": "Correo electrónico (opcional)",
         "cif": "CIF/NIF (opcional)",
         "comments": "Comentarios (opcional)"
@@ -1436,7 +1447,7 @@
     },
     "orderType": {
       "dineIn": "EN RESTAURANTE",
-      "pickup": "PARA LLEVAR",
+      "pickup": "RECOGER",
       "delivery": "A DOMICILIO"
     }
   },

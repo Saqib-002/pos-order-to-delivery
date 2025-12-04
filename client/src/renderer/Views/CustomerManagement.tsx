@@ -17,23 +17,15 @@ import { useTranslation } from "react-i18next";
 import { useConfirm } from "../hooks/useConfirm";
 import { formatAddress } from "../utils/utils";
 import * as XLSX from "xlsx";
+import CustomerModal from "../components/order/modals/CustomerModal";
 
 export const CustomerManagement = () => {
   const { t } = useTranslation();
   const confirm = useConfirm();
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    email: "",
-    cif: "",
-    comments: "",
-    id: "",
-  });
-  const [originalAddress, setOriginalAddress] = useState<string>("");
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
   const [bulkImportLoading, setBulkImportLoading] = useState(false);
   const [importResults, setImportResults] = useState<{
@@ -67,106 +59,6 @@ export const CustomerManagement = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim()) {
-      toast.error(t("customerManagement.validation.nameRequired"));
-      return;
-    }
-    if (!formData.phone.trim()) {
-      toast.error(t("customerManagement.validation.phoneRequired"));
-      return;
-    }
-    const phoneRegex = /^[0-9]+$/;
-    if (!phoneRegex.test(formData.phone.trim())) {
-      toast.error(t("customerManagement.validation.phoneInvalid"));
-      return;
-    }
-    if (!formData.address.trim()) {
-      toast.error(t("customerManagement.validation.addressRequired"));
-      return;
-    }
-
-    if (modalMode === "add") {
-      try {
-        const res = await (window as any).electronAPI.createCustomer(token, {
-          name: formData.name,
-          phone: formData.phone,
-          address: formData.address,
-          email: formData.email || "",
-          cif: formData.cif || "",
-          comments: formData.comments || "",
-        });
-        if (!res.status) {
-          toast.error(
-            res.error.includes("UNIQUE constraint")
-              ? t("customerManagement.messages.phoneTaken")
-              : t("customerManagement.messages.addFailed")
-          );
-          return;
-        }
-        const customer = res.data;
-        setCustomers([...customers, customer]);
-        resetForm();
-        setIsModalOpen(false);
-        toast.success(t("customerManagement.messages.added"));
-      } catch (error) {
-        toast.error(t("customerManagement.messages.addFailed"));
-      }
-    } else {
-      try {
-        let addressToSave = formData.address;
-        if (originalAddress && originalAddress.includes("|")) {
-          const formattedOriginal = formatAddress(originalAddress);
-          if (formData.address === formattedOriginal) {
-            addressToSave = originalAddress;
-          }
-        }
-
-        const res = await (window as any).electronAPI.updateCustomerById(
-          token,
-          formData.id,
-          {
-            name: formData.name,
-            phone: formData.phone,
-            address: addressToSave,
-            email: formData.email || "",
-            cif: formData.cif || "",
-            comments: formData.comments || "",
-          }
-        );
-        if (!res.status) {
-          toast.error(
-            res.error.includes("UNIQUE constraint")
-              ? t("customerManagement.messages.phoneTaken")
-              : t("customerManagement.messages.updateFailed")
-          );
-          return;
-        }
-        setCustomers(
-          customers.map((c) => (c.id === res.data.id ? res.data : c))
-        );
-        setIsModalOpen(false);
-        toast.success(t("customerManagement.messages.updated"));
-      } catch (error) {
-        toast.error(t("customerManagement.messages.updateFailed"));
-      }
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      phone: "",
-      address: "",
-      email: "",
-      cif: "",
-      comments: "",
-      id: "",
-    });
-    setOriginalAddress("");
-  };
-
   const handleDeleteCustomer = async (customerId: string) => {
     const ok = await confirm({
       title: t("customerManagement.deleteConfirmTitle"),
@@ -195,31 +87,19 @@ export const CustomerManagement = () => {
 
   const openAddModal = () => {
     setModalMode("add");
-    resetForm();
+    setEditingCustomer(null);
     setIsModalOpen(true);
   };
 
   const openEditModal = (customer: Customer) => {
     setModalMode("edit");
-    const address = customer.address || "";
-    setOriginalAddress(address);
-    const displayAddress = address.includes("|")
-      ? formatAddress(address)
-      : address;
-    setFormData({
-      id: customer.id || "",
-      name: customer.name,
-      phone: customer.phone,
-      address: displayAddress,
-      email: customer.email || "",
-      cif: customer.cif || "",
-      comments: customer.comments || "",
-    });
+    setEditingCustomer(customer);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setEditingCustomer(null);
   };
 
   const handleBulkImport = async (file: File) => {
@@ -247,10 +127,30 @@ export const CustomerManagement = () => {
         const rowNumber = i + 2;
 
         try {
+          const address = String(row["Address"] || row["address"] || "").trim();
+          const postalCode = String(
+            row["Postal Code"] ||
+              row["PostalCode"] ||
+              row["postal code"] ||
+              row["postalCode"] ||
+              ""
+          ).trim();
+          const city = String(row["City"] || row["city"] || "").trim();
+          const province = String(
+            row["Province"] ||
+              row["State"] ||
+              row["province"] ||
+              row["state"] ||
+              ""
+          ).trim();
+
           const customerData = {
             name: String(row["Name"] || row["name"] || "").trim(),
             phone: String(row["Phone"] || row["phone"] || "").trim(),
-            address: String(row["Address"] || row["address"] || "").trim(),
+            address: address,
+            postalCode: postalCode,
+            city: city,
+            province: province,
             email:
               String(row["Email"] || row["email"] || "").trim() || undefined,
             cif: String(row["CIF"] || row["cif"] || "").trim() || undefined,
@@ -292,6 +192,42 @@ export const CustomerManagement = () => {
             continue;
           }
 
+          if (!customerData.postalCode) {
+            errors.push(
+              `Row ${rowNumber}: ${t("customerManagement.validation.postalCodeRequired")}`
+            );
+            failedCount++;
+            continue;
+          }
+
+          if (!customerData.city) {
+            errors.push(
+              `Row ${rowNumber}: ${t("customerManagement.validation.cityRequired")}`
+            );
+            failedCount++;
+            continue;
+          }
+
+          if (!customerData.province) {
+            errors.push(
+              `Row ${rowNumber}: ${t("customerManagement.validation.provinceRequired")}`
+            );
+            failedCount++;
+            continue;
+          }
+
+          // Combine address fields into pipe-separated format
+          const addressString = `address=${customerData.address}|postal=${customerData.postalCode}|city=${customerData.city}|province=${customerData.province}`;
+
+          const customerPayload = {
+            name: customerData.name,
+            phone: customerData.phone,
+            address: addressString,
+            email: customerData.email || "",
+            cif: customerData.cif || "",
+            comments: customerData.comments || "",
+          };
+
           // Check if customer exists by phone number
           const existingCustomerRes = await (
             window as any
@@ -303,13 +239,13 @@ export const CustomerManagement = () => {
             res = await (window as any).electronAPI.updateCustomerById(
               token,
               existingCustomerRes.data.id,
-              customerData
+              customerPayload
             );
           } else {
             // Create new customer
             res = await (window as any).electronAPI.createCustomer(
               token,
-              customerData
+              customerPayload
             );
           }
 
@@ -417,6 +353,9 @@ export const CustomerManagement = () => {
         Name: "John Doe",
         Phone: "123456789",
         Address: "123 Main Street",
+        "Postal Code": "28001",
+        City: "Madrid",
+        Province: "Madrid",
         Email: "john@example.com",
         CIF: "",
         Comments: "Regular customer",
@@ -425,6 +364,9 @@ export const CustomerManagement = () => {
         Name: "Jane Smith",
         Phone: "987654321",
         Address: "456 Oak Avenue",
+        "Postal Code": "08001",
+        City: "Barcelona",
+        Province: "Barcelona",
         Email: "jane@example.com",
         CIF: "B12345678",
         Comments: "",
@@ -642,126 +584,21 @@ export const CustomerManagement = () => {
       </div>
 
       {/* Customer Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl sticky top-0 z-10">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold">
-                  {modalMode === "add"
-                    ? t("customerManagement.modal.addNew")
-                    : t("customerManagement.modal.edit")}
-                </h3>
-                <CustomButton
-                  type="button"
-                  variant="transparent"
-                  onClick={closeModal}
-                  Icon={<CrossIcon className="size-6" />}
-                  className="text-white hover:text-gray-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
-                />
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <CustomInput
-                  label={`${t("customerManagement.modal.name")} *`}
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  placeholder={t("customerManagement.modal.name")}
-                  inputClasses="py-3 px-4"
-                />
-                <CustomInput
-                  label={`${t("customerManagement.modal.phone")} *`}
-                  type="text"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, "");
-                    setFormData({ ...formData, phone: value });
-                  }}
-                  placeholder={t("customerManagement.modal.phone")}
-                  inputClasses="py-3 px-4"
-                />
-                <CustomInput
-                  label={t("customerManagement.modal.email")}
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  placeholder={t("customerManagement.modal.email")}
-                  inputClasses="py-3 px-4"
-                />
-                <CustomInput
-                  label={t("customerManagement.modal.cif")}
-                  type="text"
-                  name="cif"
-                  value={formData.cif}
-                  onChange={(e) =>
-                    setFormData({ ...formData, cif: e.target.value })
-                  }
-                  placeholder={t("customerManagement.modal.cif")}
-                  inputClasses="py-3 px-4"
-                />
-                <div className="md:col-span-2">
-                  <CustomInput
-                    label={`${t("customerManagement.modal.address")} *`}
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={(e) =>
-                      setFormData({ ...formData, address: e.target.value })
-                    }
-                    placeholder={t("customerManagement.modal.address")}
-                    inputClasses="py-3 px-4"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t("customerManagement.modal.comments")}
-                  </label>
-                  <textarea
-                    name="comments"
-                    value={formData.comments}
-                    onChange={(e) =>
-                      setFormData({ ...formData, comments: e.target.value })
-                    }
-                    placeholder={t("customerManagement.modal.comments")}
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-colors"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-4 mt-8">
-                <CustomButton
-                  type="button"
-                  variant="secondary"
-                  onClick={closeModal}
-                  label={t("customerManagement.modal.cancel")}
-                  className="hover:scale-105"
-                />
-                <CustomButton
-                  type="submit"
-                  variant="primary"
-                  label={
-                    modalMode === "add"
-                      ? t("customerManagement.modal.add")
-                      : t("customerManagement.modal.update")
-                  }
-                  className="bg-gradient-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 hover:scale-105"
-                />
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CustomerModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        mode={modalMode}
+        initialCustomer={editingCustomer}
+        onSuccess={(customer) => {
+          if (modalMode === "add") {
+            setCustomers([...customers, customer]);
+          } else {
+            setCustomers(
+              customers.map((c) => (c.id === customer.id ? customer : c))
+            );
+          }
+        }}
+      />
 
       {/* Bulk Import Modal */}
       {isBulkImportModalOpen && (
@@ -806,6 +643,17 @@ export const CustomerManagement = () => {
                         </li>
                         <li>
                           {t("customerManagement.bulkImport.columns.address")}
+                        </li>
+                        <li>
+                          {t(
+                            "customerManagement.bulkImport.columns.postalCode"
+                          )}
+                        </li>
+                        <li>
+                          {t("customerManagement.bulkImport.columns.city")}
+                        </li>
+                        <li>
+                          {t("customerManagement.bulkImport.columns.province")}
                         </li>
                         <li>
                           {t("customerManagement.bulkImport.columns.email")}

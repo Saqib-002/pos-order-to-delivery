@@ -140,6 +140,14 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-db-credentials", async () => {
     return (store as any).get("dbCredentials");
   });
+
+  ipcMain.handle("get-google-maps-api-key", async () => {
+    return (
+      process.env.VITE_GOOGLE_MAPS_API_KEY ||
+      process.env.GOOGLE_MAPS_API_KEY ||
+      ""
+    );
+  });
   ipcMain.handle(
     "save-and-init-db",
     async (event, credentials: DbCredentials) => {

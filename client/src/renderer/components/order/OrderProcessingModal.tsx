@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -25,6 +25,7 @@ import {
 } from "@/renderer/public/Svg";
 import CustomInput from "../shared/CustomInput";
 import CustomButton from "../ui/CustomButton";
+import { AddressAutocomplete } from "../shared/AddressAutocomplete";
 
 interface OrderProcessingModalProps {
   onClose: () => void;
@@ -49,6 +50,13 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const [customCustomerName, setCustomCustomerName] = useState("");
   const [customCustomerPhone, setCustomCustomerPhone] = useState("");
   const [customCustomerAddress, setCustomCustomerAddress] = useState("");
+  const [customAddressFields, setCustomAddressFields] = useState({
+    address: "",
+    apartment: "",
+    postalCode: "",
+    city: "",
+    province: "",
+  });
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isPaymentOptionModalOpen, setIsPaymentOptionModalOpen] =
     useState(false);
@@ -536,25 +544,102 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 {/* Address field - only show for delivery orders */}
                 {orderType === "delivery" && (
                   <div className="mt-4">
-                    <CustomInput
+                    <AddressAutocomplete
                       label={t(
                         "orderProcessingModal.customerDetails.deliveryAddress"
                       )}
                       placeholder={t(
                         "orderProcessingModal.customerDetails.enterDeliveryAddress"
                       )}
-                      value={customCustomerAddress}
-                      onChange={(e) => {
-                        setCustomCustomerAddress(e.target.value);
-                        if (e.target.value.trim() && !selectedCustomer) {
+                      value={customAddressFields.address}
+                      onChange={(value) => {
+                        setCustomAddressFields((prev) => {
+                          const updated = {
+                            ...prev,
+                            address: value,
+                          };
+                          // Update address string synchronously with updated values
+                          const addressString = `address=${updated.address}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}${updated.apartment ? `|apartment=${updated.apartment}` : ""}`;
+                          setCustomCustomerAddress(addressString);
+                          return updated;
+                        });
+                        if (value.trim() && !selectedCustomer) {
                           setCustomerSearch("");
                         }
                       }}
+                      onAddressSelect={(components) => {
+                        const newFields = {
+                          address: components.address,
+                          apartment: components.apartment || "",
+                          postalCode: components.postalCode,
+                          city: components.city,
+                          province: components.province,
+                        };
+                        setCustomAddressFields(newFields);
+                        let addressString = `address=${components.address}|postal=${components.postalCode}|city=${components.city}|province=${components.province}`;
+                        if (components.apartment) {
+                          addressString += `|apartment=${components.apartment}`;
+                        }
+                        setCustomCustomerAddress(addressString);
+                      }}
+                      apartmentValue={customAddressFields.apartment}
+                      postalCodeValue={customAddressFields.postalCode}
+                      cityValue={customAddressFields.city}
+                      provinceValue={customAddressFields.province}
+                      onApartmentChange={(value) => {
+                        setCustomAddressFields((prev) => {
+                          const updated = {
+                            ...prev,
+                            apartment: value,
+                          };
+                          const addressString = `address=${updated.address}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}${updated.apartment ? `|apartment=${updated.apartment}` : ""}`;
+                          setCustomCustomerAddress(addressString);
+                          return updated;
+                        });
+                      }}
+                      onPostalCodeChange={(value) => {
+                        setCustomAddressFields((prev) => {
+                          const updated = {
+                            ...prev,
+                            postalCode: value,
+                          };
+                          const addressString = `address=${updated.address}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}${updated.apartment ? `|apartment=${updated.apartment}` : ""}`;
+                          setCustomCustomerAddress(addressString);
+                          return updated;
+                        });
+                      }}
+                      onCityChange={(value) => {
+                        setCustomAddressFields((prev) => {
+                          const updated = {
+                            ...prev,
+                            city: value,
+                          };
+                          const addressString = `address=${updated.address}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}${updated.apartment ? `|apartment=${updated.apartment}` : ""}`;
+                          setCustomCustomerAddress(addressString);
+                          return updated;
+                        });
+                      }}
+                      onProvinceChange={(value) => {
+                        setCustomAddressFields((prev) => {
+                          const updated = {
+                            ...prev,
+                            province: value,
+                          };
+                          const addressString = `address=${updated.address}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}${updated.apartment ? `|apartment=${updated.apartment}` : ""}`;
+                          setCustomCustomerAddress(addressString);
+                          return updated;
+                        });
+                      }}
+                      searchAddressLabel={t(
+                        "customerManagement.modal.searchAddress"
+                      )}
+                      apartmentLabel={t("customerManagement.modal.apartment")}
+                      postalCodeLabel={t("customerManagement.modal.postalCode")}
+                      cityLabel={t("customerManagement.modal.city")}
+                      provinceLabel={t("customerManagement.modal.province")}
                       required={orderType === "delivery"}
                       name="custom-customer-address"
-                      type="text"
-                      inputClasses="py-3 px-4 text-lg"
-                      otherClasses="w-full"
+                      inputClasses="py-3 px-4"
                     />
                   </div>
                 )}
@@ -967,12 +1052,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       </div>
 
       {/* Customer Modal */}
-      {isCustomerModalOpen && (
-        <CustomerModal
-          setIsOpen={setIsCustomerModalOpen}
-          onCustomerCreated={handleNewCustomerCreated}
-        />
-      )}
+      <CustomerModal
+        isOpen={isCustomerModalOpen}
+        onClose={() => setIsCustomerModalOpen(false)}
+        mode="add"
+        onSuccess={handleNewCustomerCreated}
+      />
 
       {/* Payment Option Modal */}
       <PaymentOptionModal

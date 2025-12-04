@@ -595,7 +595,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
             </div>
           ) : (
             <div className="text-center text-yellow-700 text-2xl">
-              {t("orderTakingForm.variantsDetached")}
+              {/* {t("orderTakingForm.variantsDetached")} */}
             </div>
           )}
 
@@ -784,7 +784,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
             </div>
           ) : (
             <div className="text-center text-yellow-700 text-2xl">
-              {t("orderTakingForm.complementsDetached")}
+              {/* {t("orderTakingForm.complementsDetached")} */}
             </div>
           )}
           {mode === "product" && (

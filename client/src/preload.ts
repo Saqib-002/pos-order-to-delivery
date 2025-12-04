@@ -33,6 +33,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getDbCredentials: () => ipcRenderer.invoke("get-db-credentials"),
   saveAndInitDb: (credentials: any) =>
     ipcRenderer.invoke("save-and-init-db", credentials),
+  // Google Maps API
+  getGoogleMapsApiKey: () => ipcRenderer.invoke("get-google-maps-api-key"),
   // categories
   createCategory: (token: string, category: any) =>
     ipcRenderer.invoke("create-category", token, category),

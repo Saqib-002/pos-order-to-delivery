@@ -156,6 +156,11 @@
       "email": "Email",
       "cif": "CIF/Tax ID",
       "address": "Address",
+      "searchAddress": "Search address",
+      "apartment": "Apartment, unit, suite, or floor #",
+      "postalCode": "Postal Code",
+      "city": "City",
+      "province": "Province/State",
       "comments": "Comments",
       "cancel": "Cancel",
       "add": "Add Customer",
@@ -165,7 +170,10 @@
       "nameRequired": "Please enter a customer name",
       "phoneRequired": "Please enter a phone number",
       "phoneInvalid": "Phone number must contain only numbers",
-      "addressRequired": "Please enter an address"
+      "addressRequired": "Please enter an address",
+      "postalCodeRequired": "Please enter a postal code",
+      "cityRequired": "Please enter a city",
+      "provinceRequired": "Please enter a province/state"
     },
     "messages": {
       "fetchFailed": "Failed to fetch customers",
@@ -189,6 +197,9 @@
         "name": "Name (required)",
         "phone": "Phone (required, numbers only)",
         "address": "Address (required)",
+        "postalCode": "Postal Code (required)",
+        "city": "City (required)",
+        "province": "Province/State (required)",
         "email": "Email (optional)",
         "cif": "CIF/Tax ID (optional)",
         "comments": "Comments (optional)"

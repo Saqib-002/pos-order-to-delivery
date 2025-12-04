@@ -1,324 +1,354 @@
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { debounce } from "lodash";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { Customer } from "@/types/order";
-import { formatAddress } from "@/renderer/utils/utils";
 import { useTranslation } from "react-i18next";
+import { AddressAutocomplete } from "../../shared/AddressAutocomplete";
+import { CrossIcon } from "@/renderer/public/Svg";
 
 interface CustomerModalProps {
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  onCustomerCreated?: (customer: Customer) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  mode?: "add" | "edit";
+  initialCustomer?: Customer | null;
+  onSuccess?: (customer: Customer) => void;
 }
 
 const CustomerModal = ({
-  setIsOpen,
-  onCustomerCreated,
+  isOpen,
+  onClose,
+  mode = "add",
+  initialCustomer = null,
+  onSuccess,
 }: CustomerModalProps) => {
   const { t } = useTranslation();
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [isSelected, setIsSelected] = useState(false);
   const {
     auth: { token },
   } = useAuth();
-  const fetchCustomers = debounce(async (phone: string) => {
-    if (!phone || phone.length < 3) {
-      setCustomers([]);
-      setShowDropdown(false);
-      return;
-    }
-    try {
-      const res = await (window as any).electronAPI.getCustomersByPhone(
-        token,
-        phone
-      );
-      if (res.status) {
-        setCustomers(res.data);
-        setShowDropdown(true);
-      } else {
-        setCustomers([]);
-        setShowDropdown(false);
-      }
-    } catch (error) {
-      console.error("Error fetching customers:", error);
-      setCustomers([]);
-      setShowDropdown(false);
-    }
-  }, 500);
-  useEffect(() => {
-    if (!isSelected) {
-      fetchCustomers(phone);
-    } else {
-      setCustomers([]);
-      setShowDropdown(false);
-    }
-    return () => {
-      fetchCustomers.cancel();
-    };
-  }, [phone]);
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPhone(e.target.value);
-    setIsSelected(false);
-  };
-  const handlePhoneBlur = () => {
-    setTimeout(() => {
-      setShowDropdown(false);
-    }, 200);
-  };
-  const handleCustomerSelect = (customer: Customer) => {
-    setIsSelected(true);
-    setPhone(customer.phone);
-    setShowDropdown(false);
-    const form = document.querySelector("form");
-    if (form) {
-      (form.querySelector("[name='name']") as HTMLInputElement).value =
-        customer.name || "";
-      (form.querySelector("[name='cif']") as HTMLInputElement).value =
-        customer.cif || "";
-      (form.querySelector("[name='email']") as HTMLInputElement).value =
-        customer.email || "";
-      (form.querySelector("[name='comments']") as HTMLTextAreaElement).value =
-        customer.comments || "";
 
-      if (customer.address) {
-        const addressObj = customer.address
-          .split("|")
-          .reduce((obj: Record<string, string>, pair: string) => {
-            const [key, value] = pair.split("=");
-            obj[key] = value;
-            return obj;
-          }, {});
-        (form.querySelector("[name='address']") as HTMLTextAreaElement).value =
-          addressObj.address || "";
-        (form.querySelector("[name='postal']") as HTMLTextAreaElement).value =
-          addressObj.postal || "";
-        (form.querySelector("[name='city']") as HTMLTextAreaElement).value =
-          addressObj.city || "";
-        (form.querySelector("[name='province']") as HTMLTextAreaElement).value =
-          addressObj.province || "";
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    apartment: "",
+    postalCode: "",
+    city: "",
+    province: "",
+    email: "",
+    cif: "",
+    comments: "",
+    id: "",
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      if (mode === "edit" && initialCustomer) {
+        const address = initialCustomer.address || "";
+        let parsedAddress = "";
+        let parsedApartment = "";
+        let parsedPostalCode = "";
+        let parsedCity = "";
+        let parsedProvince = "";
+
+        if (address.includes("|")) {
+          const parts = address.split("|");
+          parts.forEach((part) => {
+            const [key, value] = part.split("=");
+            if (key === "address") parsedAddress = value || "";
+            if (key === "apartment") parsedApartment = value || "";
+            if (key === "postal") parsedPostalCode = value || "";
+            if (key === "city") parsedCity = value || "";
+            if (key === "province") parsedProvince = value || "";
+          });
+        } else {
+          parsedAddress = address;
+        }
+
+        setFormData({
+          id: initialCustomer.id || "",
+          name: initialCustomer.name,
+          phone: initialCustomer.phone,
+          address: parsedAddress,
+          apartment: parsedApartment,
+          postalCode: parsedPostalCode,
+          city: parsedCity,
+          province: parsedProvince,
+          email: initialCustomer.email || "",
+          cif: initialCustomer.cif || "",
+          comments: initialCustomer.comments || "",
+        });
+      } else {
+        // Reset form for add mode
+        setFormData({
+          name: "",
+          phone: "",
+          address: "",
+          apartment: "",
+          postalCode: "",
+          city: "",
+          province: "",
+          email: "",
+          cif: "",
+          comments: "",
+          id: "",
+        });
       }
-      setIsEditing(true);
     }
-  };
+  }, [isOpen, mode, initialCustomer]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here, e.g., add customer to order
-    const formData = new FormData(e.target as HTMLFormElement);
-    const data = Object.fromEntries(formData.entries());
+    if (!formData.name.trim()) {
+      toast.error(t("customerManagement.validation.nameRequired"));
+      return;
+    }
+    if (!formData.phone.trim()) {
+      toast.error(t("customerManagement.validation.phoneRequired"));
+      return;
+    }
+    const phoneRegex = /^[0-9]+$/;
+    if (!phoneRegex.test(formData.phone.trim())) {
+      toast.error(t("customerManagement.validation.phoneInvalid"));
+      return;
+    }
+    if (!formData.address.trim()) {
+      toast.error(t("customerManagement.validation.addressRequired"));
+      return;
+    }
+    if (!formData.postalCode.trim()) {
+      toast.error(t("customerManagement.validation.postalCodeRequired"));
+      return;
+    }
+    if (!formData.city.trim()) {
+      toast.error(t("customerManagement.validation.cityRequired"));
+      return;
+    }
+    if (!formData.province.trim()) {
+      toast.error(t("customerManagement.validation.provinceRequired"));
+      return;
+    }
 
-    // Validate required fields
-    const phone = (data.phone as string)?.trim();
-    const address = (data.address as string)?.trim();
-    const postal = (data.postal as string)?.trim();
-    const city = (data.city as string)?.trim();
-
-    if (!phone) {
-      toast.error(t("customerModal.errors.phoneRequired"));
-      return;
-    }
-    if (!address) {
-      toast.error(t("customerModal.errors.addressRequired"));
-      return;
-    }
-    if (!postal) {
-      toast.error(t("customerModal.errors.postalCodeRequired"));
-      return;
-    }
-    if (!city) {
-      toast.error(t("customerModal.errors.cityRequired"));
-      return;
+    // Combine address fields into pipe-separated format
+    let addressString = `address=${formData.address.trim()}|postal=${formData.postalCode.trim()}|city=${formData.city.trim()}|province=${formData.province.trim()}`;
+    if (formData.apartment.trim()) {
+      addressString += `|apartment=${formData.apartment.trim()}`;
     }
 
-    const addressObj = {
-      address: address,
-      postal: postal,
-      city: city,
-      province: (data.province as string) || "",
-    };
-    const addressString = Object.entries(addressObj)
-      .map(([key, value]) => `${key}=${value}`)
-      .join("|");
-    const customer: Customer = {
-      name: (data.name as string) || "",
-      phone: phone,
-      address: addressString,
-      cif: (data.cif as string) || "",
-      email: (data.email as string) || "",
-      comments: (data.comments as string) || "",
-    };
-    let res;
-    if (!isEditing) {
-      res = await (window as any).electronAPI.createCustomer(token, customer);
-    } else {
-      res = await (window as any).electronAPI.upsertCustomer(token, customer);
-    }
-    if (!res.status) {
-      if (res.error.includes("customers_phone_unique")) {
-        toast.error(t("customerModal.errors.customerAlreadyExists"));
-        return;
+    if (mode === "add") {
+      try {
+        const res = await (window as any).electronAPI.createCustomer(token, {
+          name: formData.name,
+          phone: formData.phone,
+          address: addressString,
+          email: formData.email || "",
+          cif: formData.cif || "",
+          comments: formData.comments || "",
+        });
+        if (!res.status) {
+          toast.error(
+            res.error.includes("UNIQUE constraint")
+              ? t("customerManagement.messages.phoneTaken")
+              : t("customerManagement.messages.addFailed")
+          );
+          return;
+        }
+        const customer = res.data;
+        toast.success(t("customerManagement.messages.added"));
+        if (onSuccess) {
+          onSuccess(customer);
+        }
+        onClose();
+      } catch (error) {
+        toast.error(t("customerManagement.messages.addFailed"));
       }
-      toast.error(
-        isEditing
-          ? t("customerModal.errors.failedToEditCustomer")
-          : t("customerModal.errors.failedToAddCustomer")
-      );
-      return;
-    }
-
-    // Call the callback with the created customer data
-    if (onCustomerCreated) {
-      const createdCustomer: Customer = {
-        id: res.data.id,
-        name: customer.name as string,
-        phone: customer.phone as string,
-        address: customer.address as string,
-        cif: customer.cif as string,
-        email: customer.email as string,
-        comments: customer.comments as string,
-        createdAt: res.data.createdAt,
-        updatedAt: res.data.updatedAt,
-      };
-      onCustomerCreated(createdCustomer);
     } else {
-      setIsOpen(false);
+      try {
+        const res = await (window as any).electronAPI.updateCustomerById(
+          token,
+          formData.id,
+          {
+            name: formData.name,
+            phone: formData.phone,
+            address: addressString,
+            email: formData.email || "",
+            cif: formData.cif || "",
+            comments: formData.comments || "",
+          }
+        );
+        if (!res.status) {
+          toast.error(t("customerManagement.messages.updateFailed"));
+          return;
+        }
+        const customer = res.data;
+        toast.success(t("customerManagement.messages.updated"));
+        if (onSuccess) {
+          onSuccess(customer);
+        }
+        onClose();
+      } catch (error) {
+        toast.error(t("customerManagement.messages.updateFailed"));
+      }
     }
   };
+
+  if (!isOpen) return null;
+
   return (
-    <>
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full mx-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-600">
-              {t("customerModal.title")}
-            </h2>
-            <button
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex-shrink-0">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-bold">
+              {mode === "add"
+                ? t("customerManagement.modal.addNew")
+                : t("customerManagement.modal.edit")}
+            </h3>
+            <CustomButton
               type="button"
-              onClick={() => setIsOpen(false)}
-              className="text-gray-500 hover:text-gray-700 text-2xl font-bold cursor-pointer"
-            >
-              &times;
-            </button>
+              variant="transparent"
+              onClick={onClose}
+              Icon={<CrossIcon className="size-6" />}
+              className="text-white hover:text-gray-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
+            />
           </div>
-          <form onSubmit={handleSubmit} noValidate>
-            <div className="relative">
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="p-8 overflow-y-auto flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <CustomInput
-                type="tel"
-                name="phone"
-                label={t("customerModal.phone")}
-                placeholder={t("customerModal.placeholders.phone")}
-                otherClasses="mb-2"
-                value={phone}
-                onChange={handlePhoneChange}
-                onBlur={handlePhoneBlur}
-                onFocus={() => setShowDropdown(true)}
-              />
-              {showDropdown && customers.length > 0 && (
-                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                  {customers.map((customer, index) => (
-                    <div
-                      key={index}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleCustomerSelect(customer)}
-                    >
-                      <p className="font-medium">{customer.name}</p>
-                      <p className="text-sm text-gray-600">{customer.phone}</p>
-                      {customer.address && (
-                        <p className="text-sm text-gray-500 truncate">
-                          {formatAddress(customer.address)}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <CustomInput
+                label={`${t("customerManagement.modal.name")} *`}
                 type="text"
                 name="name"
-                label={t("customerModal.name")}
-                placeholder={t("customerModal.placeholders.name")}
-                otherClasses="mb-2 col-span-2"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                placeholder={t("customerManagement.modal.name")}
+                inputClasses="py-3 px-4"
               />
               <CustomInput
+                label={`${t("customerManagement.modal.phone")} *`}
+                type="text"
+                name="phone"
+                value={formData.phone}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  setFormData({ ...formData, phone: value });
+                }}
+                placeholder={t("customerManagement.modal.phone")}
+                inputClasses="py-3 px-4"
+              />
+              <CustomInput
+                label={t("customerManagement.modal.email")}
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                placeholder={t("customerManagement.modal.email")}
+                inputClasses="py-3 px-4"
+              />
+              <CustomInput
+                label={t("customerManagement.modal.cif")}
                 type="text"
                 name="cif"
-                label={t("customerModal.cifDni")}
-                placeholder={t("customerModal.placeholders.cifDni")}
-                otherClasses="mb-2 col-span-1"
+                value={formData.cif}
+                onChange={(e) =>
+                  setFormData({ ...formData, cif: e.target.value })
+                }
+                placeholder={t("customerManagement.modal.cif")}
+                inputClasses="py-3 px-4"
               />
+              <div className="md:col-span-2">
+                <AddressAutocomplete
+                  label={t("customerManagement.modal.address")}
+                  name="address"
+                  value={formData.address}
+                  onChange={(value) =>
+                    setFormData((prev) => ({ ...prev, address: value }))
+                  }
+                  onAddressSelect={(components) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      address: components.address,
+                      apartment: components.apartment || "",
+                      postalCode: components.postalCode,
+                      city: components.city,
+                      province: components.province,
+                    }));
+                  }}
+                  apartmentValue={formData.apartment}
+                  postalCodeValue={formData.postalCode}
+                  cityValue={formData.city}
+                  provinceValue={formData.province}
+                  onApartmentChange={(value) =>
+                    setFormData((prev) => ({ ...prev, apartment: value }))
+                  }
+                  onPostalCodeChange={(value) =>
+                    setFormData((prev) => ({ ...prev, postalCode: value }))
+                  }
+                  onCityChange={(value) =>
+                    setFormData((prev) => ({ ...prev, city: value }))
+                  }
+                  onProvinceChange={(value) =>
+                    setFormData((prev) => ({ ...prev, province: value }))
+                  }
+                  searchAddressLabel={t(
+                    "customerManagement.modal.searchAddress"
+                  )}
+                  apartmentLabel={t("customerManagement.modal.apartment")}
+                  postalCodeLabel={t("customerManagement.modal.postalCode")}
+                  cityLabel={t("customerManagement.modal.city")}
+                  provinceLabel={t("customerManagement.modal.province")}
+                  placeholder={t("customerManagement.modal.address")}
+                  required
+                  inputClasses="py-3 px-4"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("customerManagement.modal.comments")}
+                </label>
+                <textarea
+                  name="comments"
+                  value={formData.comments}
+                  onChange={(e) =>
+                    setFormData({ ...formData, comments: e.target.value })
+                  }
+                  placeholder={t("customerManagement.modal.comments")}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-colors"
+                />
+              </div>
             </div>
-            <CustomInput
-              type="email"
-              name="email"
-              label={t("customerModal.email")}
-              placeholder={t("customerModal.placeholders.email")}
-              otherClasses="mb-2"
+          </div>
+          <div className="flex justify-end gap-4 p-4 flex-shrink-0 border-t border-gray-200">
+            <CustomButton
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              label={t("customerManagement.modal.cancel")}
+              className="hover:scale-105"
             />
-            <div className="mb-2">
-              <label
-                htmlFor="comments"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                {t("customerModal.comments")}
-              </label>
-              <textarea
-                id="comments"
-                name="comments"
-                placeholder={t("customerModal.placeholders.comments")}
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:outline-none focus:ring-gray-500 focus:border-transparent resize-none"
-              ></textarea>
-            </div>
-            <div className="grid grid-cols-2 gap-y-2 gap-x-4 mb-4">
-              <CustomInput
-                type="text"
-                name="address"
-                label={t("customerModal.address")}
-                placeholder={t("customerModal.placeholders.address")}
-              />
-
-              <CustomInput
-                type="text"
-                name="postal"
-                label={t("customerModal.postalCode")}
-                placeholder={t("customerModal.placeholders.postalCode")}
-              />
-              <CustomInput
-                type="text"
-                name="city"
-                label={t("customerModal.city")}
-                placeholder={t("customerModal.placeholders.city")}
-              />
-              <CustomInput
-                type="text"
-                name="province"
-                label={t("customerModal.province")}
-                placeholder={t("customerModal.placeholders.province")}
-              />
-            </div>
-            <div className="flex justify-end space-x-3">
-              <CustomButton
-                label={t("common.cancel")}
-                variant="secondary"
-                onClick={() => setIsOpen(false)}
-                type="button"
-              />
-              <CustomButton
-                label={t("customerModal.addCustomer")}
-                type="submit"
-              />
-            </div>
-          </form>
-        </div>
+            <CustomButton
+              type="submit"
+              variant="primary"
+              label={
+                mode === "add"
+                  ? t("customerManagement.modal.add")
+                  : t("customerManagement.modal.update")
+              }
+              className="bg-gradient-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 hover:scale-105"
+            />
+          </div>
+        </form>
       </div>
-    </>
+    </div>
   );
 };
 

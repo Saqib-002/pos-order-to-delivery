@@ -279,7 +279,8 @@ export const ManageOrdersView = () => {
             customerAddress,
             formattedPickupTime,
             customerPhone,
-            customerName
+            customerName,
+            user?.name
           );
 
           if (!receiptHTML) {
