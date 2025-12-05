@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useConfigurations } from "@/renderer/contexts/configurationContext";
 
 declare global {
   interface Window {
@@ -67,7 +68,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   provinceLabel = "Province/State",
   searchAddressLabel = "Search address",
 }) => {
-  const [apiKey, setApiKey] = useState<string>("");
+  const { configurations } = useConfigurations();
+  const apiKey = configurations?.googleMapsApiKey || "";
   const [isLoaded, setIsLoaded] = useState(false);
   const [address1, setAddress1] = useState(value);
   const [internalApartment, setInternalApartment] = useState(apartmentValue);
@@ -78,31 +80,15 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const address1FieldRef = useRef<HTMLInputElement>(null);
 
-  // Fetch API key
   useEffect(() => {
-    const fetchApiKey = async () => {
-      try {
-        if ((window as any).electronAPI?.getGoogleMapsApiKey) {
-          const key = await (window as any).electronAPI.getGoogleMapsApiKey();
-          if (key) {
-            setApiKey(key);
-            return;
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching API key:", error);
-      }
-
-      const viteKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || "";
-      if (viteKey) {
-        setApiKey(viteKey);
-      }
-    };
-    fetchApiKey();
-  }, []);
-
-  useEffect(() => {
-    if (!apiKey) return;
+    if (!apiKey) {
+      setIsLoaded(false);
+      return;
+    }
+    const existingScripts = document.querySelectorAll(
+      'script[src*="maps.googleapis.com"]'
+    );
+    existingScripts.forEach((script) => script.remove());
 
     if (window.google?.maps?.importLibrary) {
       setIsLoaded(true);
@@ -134,6 +120,11 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         }
       }, 100);
     };
+
+    script.onerror = () => {
+      setIsLoaded(false);
+      console.error("Failed to load Google Maps API");
+    };
   }, [apiKey]);
 
   useEffect(() => {
@@ -161,10 +152,11 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             autocompleteElement.setAttribute("required", "true");
           }
 
-          autocompleteElement.setAttribute(
-            "included-primary-types",
-            "street_address"
-          );
+          // autocompleteElement.setAttribute(
+          //   "included-primary-types",
+          //   "street_address"
+          // );
+          
           autocompleteElement.setAttribute("included-region-codes", "ES");
 
           containerRef.current.appendChild(autocompleteElement);

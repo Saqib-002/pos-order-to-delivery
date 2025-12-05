@@ -187,6 +187,21 @@ const ConfigurationsTab = () => {
               required={false}
               inputClasses="bg-white"
             />
+            <CustomInput
+              type="password"
+              value={configurations.googleMapsApiKey || ""}
+              onChange={(e) =>
+                setConfigurations({
+                  ...configurations,
+                  googleMapsApiKey: e.target.value,
+                })
+              }
+              label={t("configurations.googleMapsApiKey")}
+              name="googleMapsApiKey"
+              placeholder={t("configurations.googleMapsApiKeyPlaceholder")}
+              required={false}
+              inputClasses="bg-white"
+            />
             <div>
               <h3>{t("configurations.kitchenPriorityLabel")}</h3>
               <div className="flex gap-4">

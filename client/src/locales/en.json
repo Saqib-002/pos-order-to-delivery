@@ -29,6 +29,8 @@
     "vatNumberPlaceholder": "Enter VAT number",
     "orderPrefix": "Order Prefix",
     "orderPrefixPlaceholder": "K",
+    "googleMapsApiKey": "Google Maps API Key",
+    "googleMapsApiKeyPlaceholder": "Enter Google Maps API Key",
     "kitchenPriorityLabel": "Kitchen Priority Time (in minutes)",
     "lowKitchenPriorityTime": "Low",
     "mediumKitchenPriorityTime": "Medium",

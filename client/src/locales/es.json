@@ -30,6 +30,8 @@
     "vatNumberPlaceholder": "Ingrese el número de IVA",
     "orderPrefix": "prefijo de orden",
     "orderPrefixPlaceholder": "K",
+    "googleMapsApiKey": "Clave API de Google Maps",
+    "googleMapsApiKeyPlaceholder": "Ingrese la clave API de Google Maps",
     "kitchenPriorityLabel": "Tiempo de prioridad en la cocina (en minutos)",
     "lowKitchenPriorityTime": "Bajo",
     "mediumKitchenPriorityTime": "Medio",
