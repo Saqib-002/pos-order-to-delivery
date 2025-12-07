@@ -11,13 +11,23 @@ import { OrderTable } from "../components/shared/OrderTable";
 import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
-import { CheckIcon, ClipboardIcon, ClockIcon, EyeIcon, LightningBoltIcon, SentToKitchenIcon } from "../public/Svg";
+import {
+  CheckIcon,
+  ClipboardIcon,
+  ClockIcon,
+  EyeIcon,
+  LightningBoltIcon,
+  SentToKitchenIcon,
+} from "../public/Svg";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
 
 export const KitchenView = () => {
   const { t } = useTranslation();
-  const { auth: { token } } = useAuth();
-  const { orders, filter, setFilter, refreshOrdersCallback } = useOrderManagementContext();
+  const {
+    auth: { token },
+  } = useAuth();
+  const { orders, filter, setFilter, refreshOrdersCallback } =
+    useOrderManagementContext();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
   const { configurations } = useConfigurations();
@@ -39,14 +49,13 @@ export const KitchenView = () => {
   const markAsReady = useCallback(
     async (order: Order) => {
       try {
-        // Determine status based on order type
         let updates: {
           status: string;
           readyAt?: string;
           assignedAt?: string;
           deliveredAt?: string;
         };
-        if (order.orderType === "delivery") {
+        if (order.orderType === "delivery" || order.orderType === "platform") {
           updates = {
             status: "ready for delivery",
             readyAt: new Date(Date.now()).toISOString(),
@@ -173,7 +182,8 @@ export const KitchenView = () => {
           </span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-2xl font-bold text-black">
-          {configurations.orderPrefix || "K"}{order.orderId}
+          {configurations.orderPrefix || "K"}
+          {order.orderId}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
           {order.customer.name}
@@ -192,7 +202,7 @@ export const KitchenView = () => {
                       <div className="flex-1">
                         <div className="font-medium text-black">
                           {item.quantity}x {item.productName}
-                          {item.variantName && item.variantId &&  (
+                          {item.variantName && item.variantId && (
                             <span className="text-gray-600">
                               {" "}
                               ({item.variantName})

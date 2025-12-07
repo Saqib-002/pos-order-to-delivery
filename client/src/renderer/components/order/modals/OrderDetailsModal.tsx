@@ -9,6 +9,7 @@ import { calculatePaymentStatus } from "../../../utils/paymentStatus";
 import { formatAddress } from "../../../utils/utils";
 import {
   translateOrderStatus,
+  getOrderStatusStyle,
   translatePaymentStatus,
   getPaymentStatusStyle,
   translateOrderType,
@@ -30,15 +31,23 @@ const parseComplements = (complements: any) => {
 interface OrderDetailsModalProps {
   order: Order;
   onClose: () => void;
-  view?: "kitchen" | "manage";
+  view?: "kitchen" | "manage" | "platform";
+  platforms?: Array<{ id: string; name: string }>;
 }
 
 const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   order,
   onClose,
   view = "kitchen",
+  platforms = [],
 }) => {
   const { t } = useTranslation();
+
+  const getPlatformName = (platformId: string | undefined) => {
+    if (!platformId) return "-";
+    const platform = platforms.find((p) => p.id === platformId);
+    return platform?.name || "-";
+  };
 
   const receipt = () => {
     const { nonMenuItems, groups, orderTotal } = calculateOrderTotal(
@@ -418,7 +427,140 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
         {/* Content */}
         <div className="p-6 overflow-y-auto flex-1">
-          {view === "manage" ? (
+          {view === "platform" ? (
+            <div className="space-y-6">
+              {/* Platform Order Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
+                  {t("orderDetailsModal.platformOrderInformation")}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("orderDetailsModal.platform")}
+                    </p>
+                    <p className="text-black">
+                      {getPlatformName((order as any).platformId)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("orderDetailsModal.customerName")}
+                    </p>
+                    <p className="text-black">
+                      {(order.customer as any)?.name ||
+                        (order as any).customerName ||
+                        "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("orderDetailsModal.customerPhone")}
+                    </p>
+                    <p className="text-black">
+                      {(order.customer as any)?.phone ||
+                        (order as any).customerPhone ||
+                        "-"}
+                    </p>
+                  </div>
+                  {(order as any).receivingTime && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        {t("orderDetailsModal.receivingTime")}
+                      </p>
+                      <p className="text-black">
+                        {new Date(
+                          (order as any).receivingTime
+                        ).toLocaleTimeString("en-US", {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}
+                      </p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("orderDetailsModal.status")}
+                    </p>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getOrderStatusStyle(order.status || "")}`}
+                    >
+                      {translateOrderStatus(order.status || "")}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("orderDetailsModal.created")}
+                    </p>
+                    <p className="text-black">
+                      {new Date(order.createdAt || "").toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("orderDetailsModal.address")}
+                    </p>
+                    <p className="text-black">
+                      {formatAddress(
+                        order.customer?.address ||
+                          (order as any).customerAddress ||
+                          "-"
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
+                  {t("orderDetailsModal.paymentInformation")}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(() => {
+                    const { orderTotal } = calculateOrderTotal(
+                      order.items || []
+                    );
+                    const paymentStatus = calculatePaymentStatus(
+                      order.paymentType || "",
+                      orderTotal
+                    );
+                    return (
+                      <>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">
+                            {t("orderDetailsModal.paymentStatus")}
+                          </p>
+                          <span
+                            className={`inline-flex w-fit px-2 py-1 text-xs font-semibold rounded-full border ${getPaymentStatusStyle(paymentStatus.status)}`}
+                          >
+                            {translatePaymentStatus(paymentStatus.status)}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">
+                            {t("orderDetailsModal.total")}
+                          </p>
+                          <p className="text-black font-semibold">
+                            €{orderTotal.toFixed(2)}
+                          </p>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Receipt Preview */}
+              <div>
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
+                  {t("orderDetailsModal.receipt")}
+                </h3>
+                {receipt()}
+              </div>
+            </div>
+          ) : view === "manage" ? (
             <div className="space-y-6">
               {/* Customer Information */}
               <div>
@@ -465,6 +607,14 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       {translateOrderType(order.orderType || "") ||
                         t("manageOrders.statuses.nA")}
                     </span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("orderDetailsModal.platform")}
+                    </p>
+                    <p className="text-black">
+                      {getPlatformName((order as any).platformId)}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">

@@ -7,6 +7,7 @@ import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { useTranslation } from "react-i18next";
 import { ImgIcon } from "@/renderer/public/Svg";
+import { AddressAutocomplete } from "../shared/AddressAutocomplete";
 
 const ConfigurationsTab = () => {
   const [configurationsId, setConfigurationsId] = useState<string>("");
@@ -15,7 +16,8 @@ const ConfigurationsTab = () => {
   const {
     auth: { token },
   } = useAuth();
-  const { configurations, setConfigurations, language, setLanguage } = useConfigurations();
+  const { configurations, setConfigurations, language, setLanguage } =
+    useConfigurations();
   const { i18n, t } = useTranslation();
 
   const getConfigurations = async () => {
@@ -32,10 +34,10 @@ const ConfigurationsTab = () => {
         setLogoPreview(res.data.logo);
       }
     }
-    const savedLanguage = localStorage.getItem('language');
-    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'es')) {
+    const savedLanguage = localStorage.getItem("language");
+    if (savedLanguage && (savedLanguage === "en" || savedLanguage === "es")) {
       i18n.changeLanguage(savedLanguage);
-      setLanguage(savedLanguage as 'en' | 'es');
+      setLanguage(savedLanguage as "en" | "es");
     }
   };
 
@@ -95,20 +97,20 @@ const ConfigurationsTab = () => {
           <div className="flex-1 flex flex-col gap-6">
             <div className="flex gap-4">
               <CustomInput
-              type="text"
-              value={configurations.orderPrefix}
-              onChange={(e) =>
-                setConfigurations({
-                  ...configurations,
-                  orderPrefix: e.target.value,
-                })
-              }
-              label={t("configurations.orderPrefix")}
-              name="orderPrefix"
-              placeholder={t("configurations.orderPrefixPlaceholder")}
-              required={true}
-              inputClasses="bg-white"
-            />
+                type="text"
+                value={configurations.orderPrefix}
+                onChange={(e) =>
+                  setConfigurations({
+                    ...configurations,
+                    orderPrefix: e.target.value,
+                  })
+                }
+                label={t("configurations.orderPrefix")}
+                name="orderPrefix"
+                placeholder={t("configurations.orderPrefixPlaceholder")}
+                required={true}
+                inputClasses="bg-white"
+              />
               <div className="flex flex-col gap-2 w-48">
                 <label className="text-sm font-medium text-gray-700">
                   {t("configurations.languageLabel")}
@@ -129,7 +131,7 @@ const ConfigurationsTab = () => {
                     const lang = val as "en" | "es";
                     i18n.changeLanguage(lang);
                     setLanguage(lang);
-                    localStorage.setItem('language', lang);
+                    localStorage.setItem("language", lang);
                   }}
                   className="w-full"
                   portalClassName="language-select-portal"
@@ -149,15 +151,21 @@ const ConfigurationsTab = () => {
               required={true}
               inputClasses="bg-white"
             />
-            <CustomInput
-              type="text"
+            <AddressAutocomplete
               value={configurations.address}
-              onChange={(e) =>
+              onChange={(value) =>
                 setConfigurations({
                   ...configurations,
-                  address: e.target.value,
+                  address: value,
                 })
               }
+              onAddressSelect={(components) => {
+                const addressString = `${components.address}, ${components.postalCode} ${components.city}, ${components.province}`;
+                setConfigurations({
+                  ...configurations,
+                  address: addressString,
+                });
+              }}
               label={t("configurations.companyAddress")}
               name="address"
               placeholder={t("configurations.companyAddressPlaceholder")}
@@ -176,6 +184,21 @@ const ConfigurationsTab = () => {
               label={t("configurations.vatNumber")}
               name="vatNumber"
               placeholder={t("configurations.vatNumberPlaceholder")}
+              required={false}
+              inputClasses="bg-white"
+            />
+            <CustomInput
+              type="password"
+              value={configurations.googleMapsApiKey || ""}
+              onChange={(e) =>
+                setConfigurations({
+                  ...configurations,
+                  googleMapsApiKey: e.target.value,
+                })
+              }
+              label={t("configurations.googleMapsApiKey")}
+              name="googleMapsApiKey"
+              placeholder={t("configurations.googleMapsApiKeyPlaceholder")}
               required={false}
               inputClasses="bg-white"
             />
@@ -200,7 +223,9 @@ const ConfigurationsTab = () => {
                 />
                 <CustomInput
                   type="number"
-                  value={String(configurations.mediumKitchenPriorityTime) || "0"}
+                  value={
+                    String(configurations.mediumKitchenPriorityTime) || "0"
+                  }
                   onChange={(e) =>
                     setConfigurations({
                       ...configurations,

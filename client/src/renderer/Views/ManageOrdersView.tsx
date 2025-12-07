@@ -64,6 +64,7 @@ export const ManageOrdersView = () => {
   useEffect(() => {
     fetchDeliveryPersons();
     fetchCustomers();
+    fetchPlatforms();
   }, []);
   useEffect(() => {
     setFilter({
@@ -94,11 +95,13 @@ export const ManageOrdersView = () => {
     useState<Order | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loadingCustomers, setLoadingCustomers] = useState(false);
+  const [platforms, setPlatforms] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Fetch delivery persons from database
   const fetchDeliveryPersons = async () => {
     try {
       setLoadingDeliveryPersons(true);
@@ -116,7 +119,6 @@ export const ManageOrdersView = () => {
     }
   };
 
-  // Fetch customers from database
   const fetchCustomers = async () => {
     try {
       setLoadingCustomers(true);
@@ -134,7 +136,17 @@ export const ManageOrdersView = () => {
     }
   };
 
-  // Check scroll position and update arrow visibility
+  const fetchPlatforms = async () => {
+    try {
+      const res = await (window as any).electronAPI.getAllPlatforms(token);
+      if (res.status) {
+        setPlatforms(res.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching platforms:", error);
+    }
+  };
+
   const checkScrollPosition = () => {
     if (scrollContainerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } =
@@ -144,7 +156,6 @@ export const ManageOrdersView = () => {
     }
   };
 
-  // Scroll handlers
   const handleScrollLeft = () => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollBy({ left: -300, behavior: "smooth" });
@@ -157,7 +168,6 @@ export const ManageOrdersView = () => {
     }
   };
 
-  // Check scroll position on mount and when content changes
   useEffect(() => {
     checkScrollPosition();
     const container = scrollContainerRef.current;
@@ -279,7 +289,8 @@ export const ManageOrdersView = () => {
             customerAddress,
             formattedPickupTime,
             customerPhone,
-            customerName
+            customerName,
+            user?.name
           );
 
           if (!receiptHTML) {
@@ -814,6 +825,7 @@ export const ManageOrdersView = () => {
             setSelectedOrder(null);
           }}
           view="manage"
+          platforms={platforms}
         />
       )}
 

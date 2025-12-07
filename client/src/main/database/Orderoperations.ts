@@ -27,6 +27,140 @@ const stringToComplements = (complementStr: any): any[] => {
 };
 
 export class OrderDatabaseOperations {
+  static async getOrCreatePlatformOrderProduct(trx: any): Promise<string> {
+    const PLATFORM_ORDER_PRODUCT_NAME = "Platform Order";
+    const existingProduct = await trx("products")
+      .where("name", PLATFORM_ORDER_PRODUCT_NAME)
+      .first();
+
+    if (existingProduct) {
+      return existingProduct.id;
+    }
+
+    const firstSubcategory = await trx("sub_categories")
+      .orderBy("createdAt", "asc")
+      .first();
+
+    if (!firstSubcategory) {
+      throw new Error(
+        "No subcategories found. Please create at least one subcategory first."
+      );
+    }
+
+    const now = new Date().toISOString();
+    const platformProduct = {
+      id: randomUUID(),
+      name: PLATFORM_ORDER_PRODUCT_NAME,
+      description: "Platform order item",
+      price: 0,
+      priority: 0,
+      discount: 0,
+      tax: 0,
+      subcategoryId: firstSubcategory.id,
+      isAvailable: true,
+      isByWeight: false,
+      isDrink: false,
+      isOutOfStock: false,
+      isPerDiner: false,
+      isPlus18: false,
+      isOutstanding: false,
+      isForMenu: false,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await trx("products").insert(platformProduct);
+    return platformProduct.id;
+  }
+
+  static async createPlatformOrder(orderData: any): Promise<any> {
+    const trx = await db.transaction();
+    try {
+      const nowObj = new Date();
+      const startOfDay = new Date(nowObj);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(nowObj);
+      endOfDay.setHours(23, 59, 59, 999);
+      const countResult = await trx("orders")
+        .whereBetween("createdAt", [
+          startOfDay.toISOString(),
+          endOfDay.toISOString(),
+        ])
+        .count("* as count")
+        .first();
+      const newDailyOrderId = (Number((countResult as any).count) || 0) + 1;
+      const newOrder = {
+        id: randomUUID(),
+        status: "sent to kitchen",
+        orderId: newDailyOrderId,
+        orderType: "platform",
+        platformId: orderData.platformId,
+        customerName: orderData.customerName || "",
+        customerPhone: orderData.customerPhone || "",
+        customerAddress: orderData.customerAddress || "",
+        paymentType: orderData.paymentType || "pending",
+        isPaid: orderData.isPaid || false,
+        receivingTime: orderData.receivingTime || null,
+        notes: orderData.notes || "",
+        createdAt: nowObj,
+        updatedAt: nowObj,
+      };
+      const order = await trx("orders").insert(newOrder).returning("*");
+      const platformProductId = await this.getOrCreatePlatformOrderProduct(trx);
+      const platform = await trx("platforms")
+        .where("id", orderData.platformId)
+        .first();
+      const platformName = platform?.name || "Platform";
+      const orderPrice =
+        orderData.price ||
+        (() => {
+          const priceMatch = orderData.paymentType?.match(/cash:([\d.]+)/);
+          return priceMatch ? parseFloat(priceMatch[1]) : 0;
+        })();
+
+      const orderItem = {
+        id: randomUUID(),
+        orderId: newOrder.id,
+        productId: platformProductId,
+        productName: `${platformName} Order`,
+        productDescription: `Platform order from ${platformName}`,
+        productPrice: orderPrice,
+        productDiscount: 0,
+        productPriority: 0,
+        productTax: 0,
+        quantity: 1,
+        totalPrice: orderPrice,
+        variantId: null,
+        variantName: null,
+        variantPrice: null,
+        printers: null,
+        complements: null,
+        menuDescription: null,
+        menuDiscount: null,
+        menuTax: null,
+        menuPrice: null,
+        menuId: null,
+        menuSecondaryId: null,
+        menuName: null,
+        menuPageId: null,
+        menuPageName: null,
+        supplement: null,
+        createdAt: nowObj,
+        updatedAt: nowObj,
+      };
+
+      await trx("order_items").insert(orderItem);
+      await trx.commit();
+      return {
+        order: order[0],
+        itemId: orderItem.id,
+      };
+    } catch (error) {
+      await trx.rollback();
+      throw error;
+    }
+  }
+
   static async saveOrder(item: any): Promise<any> {
     const trx = await db.transaction();
     try {
@@ -266,7 +400,7 @@ export class OrderDatabaseOperations {
       const items = await db("order_items").where("orderId", orderId);
       return items.map((item) => ({
         ...item,
-        printers: item.printers.split("="),
+        printers: item.printers ? item.printers.split("=") : [],
       }));
     } catch (error) {
       throw error;
@@ -599,7 +733,7 @@ export class OrderDatabaseOperations {
             } else {
               complements = stringToComplements(item.complements);
             }
-          } catch (e) { 
+          } catch (e) {
             complements = stringToComplements(item.complements);
           }
         }
@@ -721,6 +855,9 @@ export class OrderDatabaseOperations {
       const { page = 0, limit = 10 } = filter;
       const offset = page * limit;
       const query = db("orders");
+      if ((filter as any).orderType) {
+        query.where("orderType", (filter as any).orderType);
+      }
       if (filter.searchTerm) {
         query.where(function () {
           this.where("customerName", "like", `%${filter.searchTerm}%`)
@@ -892,6 +1029,8 @@ export class OrderDatabaseOperations {
           assignedAt: order.assignedAt,
           deliveredAt: order.deliveredAt,
           pickupTime: order.pickupTime,
+          receivingTime: order.receivingTime,
+          platformId: order.platformId,
           orderId: order.orderId,
           status: order.status,
           paymentType: order.paymentType,
@@ -910,7 +1049,7 @@ export class OrderDatabaseOperations {
           paymentStatus: paymentStatusResult.status,
           items: items.map((item) => ({
             ...item,
-            printers: item.printers.split("="),
+            printers: item.printers ? item.printers.split("=") : [],
           })),
         };
         newOrders.push(newOrder);

@@ -33,6 +33,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getDbCredentials: () => ipcRenderer.invoke("get-db-credentials"),
   saveAndInitDb: (credentials: any) =>
     ipcRenderer.invoke("save-and-init-db", credentials),
+  // Google Maps API
+  getGoogleMapsApiKey: () => ipcRenderer.invoke("get-google-maps-api-key"),
   // categories
   createCategory: (token: string, category: any) =>
     ipcRenderer.invoke("create-category", token, category),
@@ -229,6 +231,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("get-orders-by-filter", token, filter),
   getOrderAnalytics: (token: string, filter: any) =>
     ipcRenderer.invoke("get-order-analytics", token, filter),
+  createPlatformOrder: (token: string, orderData: any) =>
+    ipcRenderer.invoke("create-platform-order", token, orderData),
   duplicateMenuInOrder: (
     token: string,
     orderId: string,
@@ -339,6 +343,18 @@ contextBridge.exposeInMainWorld("electronAPI", {
     printerName: string,
     printData: { html: string; options?: any }
   ) => ipcRenderer.invoke("print-to-printer", token, printerName, printData),
+
+  // platforms
+  createPlatform: (token: string, platformData: any) =>
+    ipcRenderer.invoke("create-platform", token, platformData),
+  updatePlatform: (token: string, platformId: string, platformData: any) =>
+    ipcRenderer.invoke("update-platform", token, platformId, platformData),
+  deletePlatform: (token: string, platformId: string) =>
+    ipcRenderer.invoke("delete-platform", token, platformId),
+  getAllPlatforms: (token: string) =>
+    ipcRenderer.invoke("get-all-platforms", token),
+  getPlatformById: (token: string, platformId: string) =>
+    ipcRenderer.invoke("get-platform-by-id", token, platformId),
 
   // configurations
   createConfigurations: (token: string, configData: any) =>

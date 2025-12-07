@@ -9,12 +9,13 @@ interface ConfigurationType {
   lowKitchenPriorityTime?: number;
   mediumKitchenPriorityTime?: number;
   highKitchenPriorityTime?: number;
+  googleMapsApiKey?: string;
 }
 interface ConfigurationContextType {
   configurations: ConfigurationType;
   setConfigurations: React.Dispatch<React.SetStateAction<ConfigurationType>>;
   language: "en" | "es";
-  setLanguage: React.Dispatch<React.SetStateAction<"en" | "es">>
+  setLanguage: React.Dispatch<React.SetStateAction<"en" | "es">>;
 }
 
 const ConfigurationContext = createContext<ConfigurationContextType | null>(
@@ -43,13 +44,14 @@ export const ConfigurationsProvider = ({
     lowKitchenPriorityTime: 0,
     mediumKitchenPriorityTime: 0,
     highKitchenPriorityTime: 0,
+    googleMapsApiKey: "",
   });
   const [language, setLanguage] = useState("en");
   const value = {
     configurations,
     setConfigurations,
     language,
-    setLanguage
+    setLanguage,
   } as ConfigurationContextType;
   return (
     <ConfigurationContext.Provider value={value}>

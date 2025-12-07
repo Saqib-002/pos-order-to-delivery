@@ -5,6 +5,7 @@ import {
   getOrderAnalytics,
   getOrderItems,
   getOrdersByFilter,
+  createPlatformOrder,
   removeItemFromOrder,
   removeMenuFromOrder,
   removeMenuItemFromOrder,
@@ -107,6 +108,13 @@ import {
   updatePrinter,
 } from "./handlers/printers.js";
 import {
+  createPlatform,
+  deletePlatform,
+  getAllPlatforms,
+  getPlatformById,
+  updatePlatform,
+} from "./handlers/platforms.js";
+import {
   createConfigurations,
   getConfigurations,
   updateConfigurations,
@@ -139,6 +147,14 @@ export function registerIpcHandlers() {
   // db handlers
   ipcMain.handle("get-db-credentials", async () => {
     return (store as any).get("dbCredentials");
+  });
+
+  ipcMain.handle("get-google-maps-api-key", async () => {
+    return (
+      process.env.VITE_GOOGLE_MAPS_API_KEY ||
+      process.env.GOOGLE_MAPS_API_KEY ||
+      ""
+    );
   });
   ipcMain.handle(
     "save-and-init-db",
@@ -254,6 +270,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-order-analytics", getOrderAnalytics);
   ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
   ipcMain.handle("duplicate-menu-in-order", duplicateMenuInOrder);
+  ipcMain.handle("create-platform-order", createPlatformOrder);
 
   // delivery person handlers
   ipcMain.handle("create-delivery-person", createDeliveryPerson);
@@ -271,6 +288,13 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-all-printers", getAllPrinters);
   ipcMain.handle("get-product-printers", getProductPrinters);
   ipcMain.handle("print-to-printer", printToPrinter);
+
+  // platforms
+  ipcMain.handle("create-platform", createPlatform);
+  ipcMain.handle("update-platform", updatePlatform);
+  ipcMain.handle("delete-platform", deletePlatform);
+  ipcMain.handle("get-all-platforms", getAllPlatforms);
+  ipcMain.handle("get-platform-by-id", getPlatformById);
 
   // configurations
   ipcMain.handle("create-configurations", createConfigurations);

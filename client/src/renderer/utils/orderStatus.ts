@@ -116,6 +116,8 @@ export const translateOrderType = (orderType: string): string => {
     normalized.includes("dine")
   ) {
     translationKey = "orderTypes.dineIn";
+  } else if (normalized === "platform" || normalized.includes("platform")) {
+    translationKey = "orderTypes.platform";
   } else {
     return orderType;
   }
@@ -131,6 +133,8 @@ export const getOrderTypeStyle = (orderType: string) => {
       return "bg-purple-100 text-purple-800 border-purple-200";
     case "delivery":
       return "bg-orange-100 text-orange-800 border-orange-200";
+    case "platform":
+      return "bg-pink-100 text-pink-800 border-pink-200";
     default:
       return "bg-gray-100 text-gray-800 border-gray-200";
   }

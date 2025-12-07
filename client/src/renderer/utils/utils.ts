@@ -11,21 +11,47 @@ export const showToast = {
 };
 export const formatAddress = (address: string) => {
   if (!address || !address.trim()) return "";
-  const parts = address.split("|");
 
-  const addressParts = parts
-    .map((item, index) => {
-      if (index === 1) return null;
-      const value = item.split("=")[1];
-      return value || "";
-    })
-    .filter(Boolean);
+  if (address.includes("|") && address.includes("=")) {
+    const parts = address.split("|");
+    const addressObj: Record<string, string> = {};
 
-  const cityPart = parts[1]?.split("=")[1] || "";
+    parts.forEach((part) => {
+      const [key, value] = part.split("=");
+      if (key && value) {
+        addressObj[key] = value;
+      }
+    });
 
-  const allParts = [...addressParts, cityPart].filter(Boolean);
+    const formattedParts: string[] = [];
 
-  return allParts.join(", ");
+    if (addressObj.address) {
+      formattedParts.push(addressObj.address);
+    }
+
+    if (addressObj.apartment) {
+      formattedParts.push(addressObj.apartment);
+    }
+
+    const locationParts: string[] = [];
+    if (addressObj.postal) {
+      locationParts.push(addressObj.postal);
+    }
+    if (addressObj.city) {
+      locationParts.push(addressObj.city);
+    }
+    if (addressObj.province) {
+      locationParts.push(addressObj.province);
+    }
+
+    if (locationParts.length > 0) {
+      formattedParts.push(locationParts.join(" "));
+    }
+
+    return formattedParts.join(", ");
+  }
+
+  return address;
 };
 
 export const colorOptions = [

@@ -9,6 +9,7 @@ import { DeliveryView } from "./Views/DeliveryView";
 import { KitchenView } from "./Views/KitchenView";
 import { LoginView } from "./Views/LoginView";
 import { ManageOrdersView } from "./Views/ManageOrdersView";
+import PlatformOrdersView from "./Views/PlatformOrdersView";
 import { MenuView } from "./Views/MenuView";
 import { OrderView } from "./Views/OrderView";
 import { ReportView } from "./Views/ReportView";
@@ -139,6 +140,10 @@ const App: React.FC = () => {
     },
     [VIEWS.MANAGE_ORDERS]: {
       component: <ManageOrdersView />,
+      roles: ["admin"],
+    },
+    [VIEWS.PLATFORM_ORDERS]: {
+      component: <PlatformOrdersView />,
       roles: ["admin"],
     },
     [VIEWS.CONFIGURATIONS]: {

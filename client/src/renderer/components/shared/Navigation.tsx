@@ -51,6 +51,7 @@ export const Navigation = ({
       reports: "./images/reports.png",
       "menu-structure": "./images/menu-structure.png",
       users: "./images/users.png",
+      "platform-orders": "./images/platform.png",
       customers: "./images/customer.png",
       configurations: "./images/configuration.png",
       logout: "./images/logout.png",
@@ -68,6 +69,7 @@ export const Navigation = ({
       "manage-orders": t("navigation.manageOrders"),
       reports: t("navigation.reports"),
       "menu-structure": t("navigation.menuStructure"),
+      "platform-orders": t("navigation.platformOrders"),
       users: t("navigation.users"),
       customers: t("navigation.customers"),
       configurations: t("navigation.configurations"),
@@ -106,7 +108,7 @@ export const Navigation = ({
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <DoubleBackArrowIcon
-              className={`w-5 h-5 transition-transform duration-300 rotate-180 ${isOpen ? "rotate-360" : ""}`}
+              className={`w-5 h-5 transition-transform cursor-pointer duration-300 rotate-180 ${isOpen ? "rotate-360" : ""}`}
             />
           </button>
         </div>
@@ -117,7 +119,7 @@ export const Navigation = ({
             hasModuleAccess(view, userModulePermissions, userRole, roles) ? (
               <button
                 key={view}
-                className={`w-full flex items-center gap-3 px-2 py-2 text-left transition-colors duration-200 ${
+                className={`w-full flex items-center gap-3 px-2 py-2 text-left transition-colors duration-200 cursor-pointer ${
                   currentView === view
                     ? "bg-gray-300 text-black"
                     : "text-gray-700 hover:bg-gray-100"

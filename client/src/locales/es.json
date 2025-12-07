@@ -30,6 +30,8 @@
     "vatNumberPlaceholder": "Ingrese el número de IVA",
     "orderPrefix": "prefijo de orden",
     "orderPrefixPlaceholder": "K",
+    "googleMapsApiKey": "Clave API de Google Maps",
+    "googleMapsApiKeyPlaceholder": "Ingrese la clave API de Google Maps",
     "kitchenPriorityLabel": "Tiempo de prioridad en la cocina (en minutos)",
     "lowKitchenPriorityTime": "Bajo",
     "mediumKitchenPriorityTime": "Medio",
@@ -68,6 +70,120 @@
     "yes": "Sí",
     "no": "No"
   },
+  "platforms": {
+    "title": "Plataformas",
+    "subtitle": "Gestionar Plataformas de Entrega",
+    "addPlatform": "Agregar Plataforma",
+    "manageDescription": "Agregar y gestionar plataformas de entrega (Foodpanda, Just Eat, etc.)",
+    "platformsList": "Lista de Plataformas",
+    "noPlatforms": "Aún no se han agregado plataformas. Agrega una arriba.",
+    "table": {
+      "platformName": "Nombre de la Plataforma",
+      "createdAt": "Fecha de Creación",
+      "actions": "Acciones"
+    },
+    "deleteTitle": "Eliminar Plataforma",
+    "deleteMessage": "¿Estás seguro de que quieres eliminar esta plataforma?",
+    "deleteConfirm": "Eliminar",
+    "deleteCancel": "Cancelar",
+    "deletedSuccess": "Plataforma eliminada exitosamente",
+    "deletedFailed": "Error al eliminar la plataforma",
+    "deletedError": "Ocurrió un error al eliminar la plataforma",
+    "fetchError": "Error al obtener las plataformas"
+  },
+  "platformModal": {
+    "viewPlatform": "Ver Plataforma",
+    "editPlatform": "Editar Plataforma",
+    "addNewPlatform": "Agregar Nueva Plataforma",
+    "platformName": "Nombre de la Plataforma *",
+    "enterPlatformName": "Ingrese el nombre de la plataforma",
+    "updatePlatform": "Actualizar Plataforma",
+    "addPlatform": "Agregar Plataforma",
+    "errors": {
+      "pleaseEnterPlatformName": "Por favor ingrese el nombre de la plataforma",
+      "unableToAddPlatform": "No se pudo agregar la plataforma",
+      "unableToUpdatePlatform": "No se pudo actualizar la plataforma",
+      "anErrorOccurred": "Ocurrió un error"
+    },
+    "warnings": {
+      "platformAlreadyAdded": "¡Esta plataforma ya existe!"
+    },
+    "messages": {
+      "platformAddedSuccessfully": "Plataforma agregada exitosamente",
+      "platformUpdatedSuccessfully": "Plataforma actualizada exitosamente"
+    }
+  },
+  "platformOrders": {
+    "title": "Pedidos de Plataforma",
+    "subtitle": "Registrar pedidos de plataformas de entrega",
+    "addOrder": "Agregar Pedido",
+    "tableDescription": "Ver y gestionar todos los pedidos de plataforma",
+    "platformName": "Nombre de la Plataforma",
+    "selectPlatform": "Seleccionar plataforma",
+    "customerName": "Nombre del Cliente",
+    "enterCustomerName": "Ingrese el nombre del cliente",
+    "customerPhone": "Teléfono del Cliente",
+    "enterCustomerPhone": "Ingrese el teléfono del cliente",
+    "price": "Precio",
+    "enterPrice": "Ingrese el precio",
+    "address": "Dirección",
+    "receivingTime": "Hora de Recepción",
+    "isPaid": "Pagado",
+    "registerOrder": "Registrar Pedido",
+    "noOrders": "No se encontraron pedidos de plataforma",
+    "table": {
+      "orderNumber": "Pedido #",
+      "platform": "Plataforma",
+      "customerName": "Nombre del Cliente",
+      "customerPhone": "Teléfono del Cliente",
+      "price": "Precio",
+      "paymentStatus": "Estado de Pago",
+      "status": "Estado",
+      "receivingTime": "Hora de Recepción",
+      "created": "Creado",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "viewOrder": "Ver Pedido",
+      "editOrder": "Editar Pedido",
+      "cancelOrder": "Cancelar Pedido"
+    },
+    "platformCustomer": "Cliente de Plataforma",
+    "updateOrder": "Actualizar Pedido",
+    "modal": {
+      "title": "Registrar Pedido de Plataforma",
+      "editTitle": "Editar Pedido de Plataforma"
+    },
+    "errors": {
+      "platformRequired": "Por favor seleccione una plataforma",
+      "priceRequired": "Por favor ingrese un precio válido",
+      "fetchPlatformsError": "Error al obtener las plataformas",
+      "createOrderError": "Error al crear el pedido de plataforma",
+      "failedToUpdateOrder": "Error al actualizar el pedido",
+      "failedToCancelOrder": "Error al cancelar el pedido"
+    },
+    "messages": {
+      "orderCreatedSuccessfully": "Pedido de plataforma registrado exitosamente",
+      "orderUpdatedSuccessfully": "Pedido de plataforma actualizado exitosamente",
+      "orderMarkedAsCompleted": "Pedido marcado como completado exitosamente",
+      "orderCancelled": "Pedido cancelado exitosamente"
+    },
+    "searchOrders": "Buscar Pedidos",
+    "searchPlaceholder": "Buscar por número de pedido...",
+    "filterByDate": "Filtrar por Fecha",
+    "orderStatus": "Estado del Pedido",
+    "paymentStatus": "Estado de Pago",
+    "clearFilters": "Limpiar Todos los Filtros",
+    "filters": {
+      "allStatuses": "Todos los Estados",
+      "allPaymentStatuses": "Todos los Estados de Pago",
+      "pending": "Pendiente",
+      "completed": "Completado",
+      "paid": "Pagado",
+      "unpaid": "No Pagado",
+      "partialPayment": "Pago Parcial"
+    }
+  },
   "userManagement": {
     "title": "Administración de usuarios",
     "subtitle": "Administra los usuarios del sistema y sus roles",
@@ -104,6 +220,7 @@
         "delivery": "Entrega",
         "delivery-management": "Gestión de Entrega",
         "manage-orders": "Gestión de Pedidos",
+        "platform-orders": "Pedidos de Plataforma",
         "reports": "Reportes",
         "menu-structure": "Estructura de Menú",
         "users": "Usuarios",
@@ -182,6 +299,11 @@
       "email": "Correo electrónico",
       "cif": "CIF/NIF",
       "address": "Dirección",
+      "searchAddress": "Buscar dirección",
+      "apartment": "Apartamento, unidad, suite o piso #",
+      "postalCode": "Código Postal",
+      "city": "Ciudad",
+      "province": "Provincia/Estado",
       "comments": "Comentarios",
       "cancel": "Cancelar",
       "add": "Agregar Cliente",
@@ -191,7 +313,10 @@
       "nameRequired": "Por favor ingresa un nombre de cliente",
       "phoneRequired": "Por favor ingresa un número de teléfono",
       "phoneInvalid": "El número de teléfono solo debe contener números",
-      "addressRequired": "Por favor ingresa una dirección"
+      "addressRequired": "Por favor ingresa una dirección",
+      "postalCodeRequired": "Por favor ingresa un código postal",
+      "cityRequired": "Por favor ingresa una ciudad",
+      "provinceRequired": "Por favor ingresa una provincia/estado"
     },
     "messages": {
       "fetchFailed": "Error al obtener clientes",
@@ -215,6 +340,9 @@
         "name": "Nombre (obligatorio)",
         "phone": "Teléfono (obligatorio, solo números)",
         "address": "Dirección (obligatorio)",
+        "postalCode": "Código Postal (obligatorio)",
+        "city": "Ciudad (obligatorio)",
+        "province": "Provincia/Estado (obligatorio)",
         "email": "Correo electrónico (opcional)",
         "cif": "CIF/NIF (opcional)",
         "comments": "Comentarios (opcional)"
@@ -294,7 +422,8 @@
           "all": "Todos",
           "delivery": "Domicilio",
           "pickup": "Recoger",
-          "dineIn": "Comer Aquí"
+          "dineIn": "Comer Aquí",
+          "platform": "Plataforma"
         }
       },
       "topItems": {
@@ -596,6 +725,12 @@
     "close": "Cerrar",
     "customerInformation": "Información del Cliente",
     "name": "Nombre",
+    "platformOrderInformation": "Información del Pedido de Plataforma",
+    "platform": "Plataforma",
+    "customerName": "Nombre del Cliente",
+    "customerPhone": "Teléfono del Cliente",
+    "receivingTime": "Hora de Recepción",
+    "receipt": "Recibo",
     "phone": "Teléfono",
     "address": "Dirección",
     "orderInformation": "Información del Pedido",
@@ -1405,7 +1540,8 @@
     "menuStructure": "Estructura del Menú",
     "users": "Usuarios",
     "customers": "Clientes",
-    "configurations": "Configuraciones"
+    "configurations": "Configuraciones",
+    "platformOrders": "Pedidos de Plataforma"
   },
   "printerUtils": {
     "unableToGetPrinters": "No se pudieron obtener las impresoras"
@@ -1436,7 +1572,7 @@
     },
     "orderType": {
       "dineIn": "EN RESTAURANTE",
-      "pickup": "PARA LLEVAR",
+      "pickup": "RECOGER",
       "delivery": "A DOMICILIO"
     }
   },
@@ -1621,7 +1757,8 @@
   "orderTypes": {
     "pickup": "Recoger",
     "delivery": "Domicilio",
-    "dineIn": "Comer Aquí"
+    "dineIn": "Comer Aquí",
+    "platform": "Plataforma"
   },
   "orderComponent": {
     "partialPayment": "Pagado: €{{paid}} / €{{total}}",

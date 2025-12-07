@@ -7,6 +7,7 @@ const ORDER_TYPES = [
   { value: "delivery", key: "delivery" },
   { value: "pickup", key: "pickup" },
   { value: "dine-in", key: "dineIn" },
+  { value: "platform", key: "platform" },
 ];
 
 export const DateRangeSelector: React.FC<{

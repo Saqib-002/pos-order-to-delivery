@@ -58,7 +58,8 @@ export const generateReceiptHTML = (
   customerAddress: string | undefined,
   pickupTime: string | undefined,
   customerPhone: string | undefined,
-  customerName: string | undefined
+  customerName: string | undefined,
+  userName?: string
 ): string => {
   const { nonMenuItems, groups, orderTotal } = calculateOrderTotal(items);
 
@@ -180,9 +181,9 @@ export const generateReceiptHTML = (
             <p><span class="bold">${t("receipt.date")}:</span> ${dateTimeStr}</p>
             <p style="font-size: 16px;"><span class="bold">${t("receipt.order")}:</span> ${configurations.orderPrefix}${orderId}(${orderType?.toUpperCase() || "N/A"})</p>
             <p style="font-size: 16px;"><span class="bold">${t("receipt.payment")}:</span> ${status}</p>
-            <p><span class="bold">${t("receipt.servedBy")}:</span> ${userRole}</p>
+            <p><span class="bold">${t("receipt.servedBy")}:</span> ${userName || userRole}</p>
             ${customerName && customerName.trim() ? `<p><span class="bold">${t("receipt.customerName")}:</span> ${customerName}</p>` : ""}
-            ${customerAddress && customerAddress.trim() && originalOrderType === "DELIVERY" ? `<p><span class="bold">${t("receipt.address")}:</span> ${customerAddress}</p>` : ""}
+            ${customerAddress && customerAddress.trim() && originalOrderType === "DELIVERY" ? `<p style="font-size: 14px;"><span class="bold">${t("receipt.address")}:</span> ${customerAddress}</p>` : ""}
             ${pickupTime && originalOrderType === "PICKUP" ? `<p><span class="bold">${t("receipt.pickupTime")}:</span> ${pickupTime}</p>` : ""}
             ${customerPhone && customerPhone.trim() ? `<p><span class="bold">${t("receipt.phone")}:</span> ${customerPhone}</p>` : ""}
             <div class="line"></div>
@@ -318,7 +319,12 @@ export const generateReceiptHTML = (
         </table>
         <div class="total-row center">
             <table style="width: 100%; margin: 10px 0;">
-                <tr><td class="qty-col"></td><td class="name-col"></td><td class="sub-col bold">${t("receipt.total")}</td><td class="total-col bold">€${orderTotal.toFixed(2)}</td></tr>
+                <tr>
+                  <td class="qty-col"></td>
+                  <td class="name-col"></td>
+                  <td style="font-size: 14px;" class="sub-col bold">${t("receipt.total")}</td>
+                  <td style="font-size: 14px;" class="total-col bold">€${orderTotal.toFixed(2)}</td>
+                </tr>
             </table>
         </div>
         <div class="line"></div>
