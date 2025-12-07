@@ -321,13 +321,13 @@ const OrderComponent = () => {
                     <button
                       key={order.id}
                       className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${
-                        isAssignedToDelivery
+                        isAssignedToDelivery || order.orderType === "platform" || order.status === "cancelled"
                           ? "bg-gray-100 cursor-not-allowed opacity-75"
                           : "hover:bg-gray-50 cursor-pointer"
                       }`}
                       onClick={() => handleOrderClick(order)}
                       disabled={
-                        isAssignedToDelivery || order.status === "cancelled"
+                        isAssignedToDelivery || order.orderType === "platform" || order.status === "cancelled"
                       }
                     >
                       <div className="flex flex-col items-start gap-2 flex-1">

@@ -324,3 +324,22 @@ export const getOrdersByFilter = async (
     };
   }
 };
+
+export const createPlatformOrder = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  orderData: any
+) => {
+  try {
+    const result = await OrderDatabaseOperations.createPlatformOrder(orderData);
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};

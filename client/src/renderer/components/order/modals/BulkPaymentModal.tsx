@@ -271,12 +271,14 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
         handleClose();
         refreshOrdersCallback();
       } else {
-        toast.error(
+        toast.warning(
           t("individualPaymentModal.success.bulkPaymentPartial", {
             successCount,
             totalCount: ordersForDelivery.length,
           })
         );
+        handleClose();
+        refreshOrdersCallback();
       }
     } catch (error) {
       console.error("Error applying bulk payment:", error);

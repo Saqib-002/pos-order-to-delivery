@@ -59,8 +59,8 @@ export interface Order {
   orderId: string;
   customer: Customer;
   notes: string;
-  orderType: "pickup" | "delivery" | "dine-in";
-  paymentType: "cash" | "card";
+  orderType: "pickup" | "delivery" | "dine-in" | "platform";
+  paymentType: "cash" | "card" | string;
   isPaid: boolean;
   status: string;
   deliveryPerson?: DeliveryPerson;
@@ -70,6 +70,8 @@ export interface Order {
   cancelAt?: string;
   deliveredAt?: string;
   pickupTime?: string;
+  receivingTime?: string;
+  platformId?: string;
   updatedAt?: string;
   createdAt?: string;
   items?: OrderItem[];

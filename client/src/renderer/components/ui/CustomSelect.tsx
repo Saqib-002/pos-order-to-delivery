@@ -117,7 +117,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                   handleOptionClick(option.value, option.disabled);
                 }}
                 disabled={option.disabled}
-                className={`w-full px-3 py-3 text-left text-lg transition-colors duration-150 ${
+                className={`w-full px-3 py-3 text-left text-md transition-colors duration-150 ${
                   option.disabled
                     ? "text-gray-400 cursor-not-allowed bg-gray-50"
                     : value === option.value
