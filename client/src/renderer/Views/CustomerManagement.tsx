@@ -9,6 +9,7 @@ import {
   EditIcon,
   SearchIcon,
   GroupIcon,
+  EyeIcon,
 } from "../public/Svg";
 import CustomButton from "../components/ui/CustomButton";
 import { StatsCard } from "../components/shared/StatsCard.order";
@@ -18,11 +19,13 @@ import { useConfirm } from "../hooks/useConfirm";
 import { formatAddress } from "../utils/utils";
 import * as XLSX from "xlsx";
 import CustomerModal from "../components/order/modals/CustomerModal";
+import HistoryModal from "../components/customer/modal/HistoryModal";
 
 export const CustomerManagement = () => {
   const { t } = useTranslation();
   const confirm = useConfirm();
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [historyCustomer,setHistoryCustomer] = useState<Customer | null>(null);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -401,6 +404,11 @@ export const CustomerManagement = () => {
 
   return (
     <div className="p-4">
+      {
+        historyCustomer && (
+          <HistoryModal customer={historyCustomer} onClose={()=>setHistoryCustomer(null)} />
+        )
+      }
       <div className="">
         <div className="flex justify-between items-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div>
@@ -557,7 +565,13 @@ export const CustomerManagement = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2">
                         <CustomButton
                           type="button"
-                          label={t("common.edit", "Edit")}
+                          variant="transparent"
+                          onClick={() => setHistoryCustomer(customer)}
+                          Icon={<EyeIcon className="size-4" />}
+                          className="text-black hover:text-black hover:bg-gray-50 hover:scale-105 !px-2 !py-1 !gap-1"
+                        />
+                        <CustomButton
+                          type="button"
                           variant="transparent"
                           onClick={() => openEditModal(customer)}
                           Icon={<EditIcon className="size-4" />}
@@ -565,7 +579,6 @@ export const CustomerManagement = () => {
                         />
                         <CustomButton
                           type="button"
-                          label={t("common.delete", "Delete")}
                           variant="transparent"
                           onClick={() =>
                             customer.id && handleDeleteCustomer(customer.id)

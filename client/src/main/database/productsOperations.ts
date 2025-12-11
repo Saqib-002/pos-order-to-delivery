@@ -80,6 +80,7 @@ export class ProductsDatabaseOperations {
                     "=",
                     "sub_categories.id"
                 )
+                .where("products.name", "!=", "250f812e66c1afab64c57bcea36bb3b7")
                 .select("products.*", "sub_categories.categoryId")
                 .orderBy("products.priority", "asc");
             const products = await query;
@@ -101,6 +102,7 @@ export class ProductsDatabaseOperations {
                     "sub_categories.id"
                 )
                 .where("products.subcategoryId", subcatId)
+                .andWhere("products.name", "!=", "250f812e66c1afab64c57bcea36bb3b7")
                 .select("products.*", "sub_categories.categoryId")
                 .orderBy("products.priority", "asc");
             const products = await query;

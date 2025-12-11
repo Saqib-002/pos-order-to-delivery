@@ -34,7 +34,7 @@ import { CustomSelect } from "../components/ui/CustomSelect";
 import { DateRangePicker } from "../components/ui/DateRangePicker";
 
 const PlatformOrdersView = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     auth: { token },
   } = useAuth();
@@ -502,7 +502,9 @@ const PlatformOrdersView = () => {
             </div>
 
             {/* Payment Status Filter */}
-            <div className="w-full lg:w-48">
+            <div className={`w-full ${
+                i18n.language === 'es' ? 'lg:w-54' : 'lg:w-48'
+              }`}>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t("platformOrders.paymentStatus")}
               </label>

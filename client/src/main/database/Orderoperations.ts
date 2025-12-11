@@ -28,7 +28,7 @@ const stringToComplements = (complementStr: any): any[] => {
 
 export class OrderDatabaseOperations {
   static async getOrCreatePlatformOrderProduct(trx: any): Promise<string> {
-    const PLATFORM_ORDER_PRODUCT_NAME = "Platform Order";
+    const PLATFORM_ORDER_PRODUCT_NAME = "250f812e66c1afab64c57bcea36bb3b7";
     const existingProduct = await trx("products")
       .where("name", PLATFORM_ORDER_PRODUCT_NAME)
       .first();
@@ -51,7 +51,7 @@ export class OrderDatabaseOperations {
     const platformProduct = {
       id: randomUUID(),
       name: PLATFORM_ORDER_PRODUCT_NAME,
-      description: "Platform order item",
+      description: "",
       price: 0,
       priority: 0,
       discount: 0,

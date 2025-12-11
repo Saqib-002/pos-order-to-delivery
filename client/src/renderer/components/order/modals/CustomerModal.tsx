@@ -1,6 +1,6 @@
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { Customer } from "@/types/order";
@@ -42,6 +42,61 @@ const CustomerModal = ({
     id: "",
   });
 
+  const [isEditMode, setIsEditMode] = useState(mode === "edit");
+  const [searchResults, setSearchResults] = useState<Customer[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsEditMode(mode === "edit");
+  }, [mode, isOpen]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [wrapperRef]);
+
+  useEffect(() => {
+    const searchCustomers = async () => {
+      if (!formData.phone.trim()) {
+        setSearchResults([]);
+        return;
+      }
+
+      try {
+        const res = await (window as any).electronAPI.getCustomersByPhone(
+          token,
+          formData.phone
+        );
+        if (res.status && res.data) {
+          setSearchResults(res.data);
+        } else {
+          setSearchResults([]);
+        }
+      } catch (err) {
+        console.error("Error searching customers:", err);
+      }
+    };
+
+    const debounce = setTimeout(() => {
+      if (showDropdown && formData.phone.length > 1) {
+        searchCustomers();
+      }
+    }, 300);
+
+    return () => clearTimeout(debounce);
+  }, [formData.phone, token, showDropdown]);
+
   useEffect(() => {
     if (isOpen) {
       if (mode === "edit" && initialCustomer) {
@@ -80,7 +135,6 @@ const CustomerModal = ({
           comments: initialCustomer.comments || "",
         });
       } else {
-        // Reset form for add mode
         setFormData({
           name: "",
           phone: "",
@@ -94,9 +148,51 @@ const CustomerModal = ({
           comments: "",
           id: "",
         });
+        setSearchResults([]);
+        setShowDropdown(false);
       }
     }
   }, [isOpen, mode, initialCustomer]);
+
+  const handleSelectCustomer = (customer: Customer) => {
+    const address = customer.address || "";
+    let parsedAddress = "";
+    let parsedApartment = "";
+    let parsedPostalCode = "";
+    let parsedCity = "";
+    let parsedProvince = "";
+
+    if (address.includes("|")) {
+      const parts = address.split("|");
+      parts.forEach((part) => {
+        const [key, value] = part.split("=");
+        if (key === "address") parsedAddress = value || "";
+        if (key === "apartment") parsedApartment = value || "";
+        if (key === "postal") parsedPostalCode = value || "";
+        if (key === "city") parsedCity = value || "";
+        if (key === "province") parsedProvince = value || "";
+      });
+    } else {
+      parsedAddress = address;
+    }
+
+    setFormData({
+      id: customer.id || "",
+      name: customer.name,
+      phone: customer.phone,
+      address: parsedAddress,
+      apartment: parsedApartment,
+      postalCode: parsedPostalCode,
+      city: parsedCity,
+      province: parsedProvince,
+      email: customer.email || "",
+      cif: customer.cif || "",
+      comments: customer.comments || "",
+    });
+
+    setIsEditMode(true);
+    setShowDropdown(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,13 +226,12 @@ const CustomerModal = ({
       return;
     }
 
-    // Combine address fields into pipe-separated format
     let addressString = `address=${formData.address.trim()}|postal=${formData.postalCode.trim()}|city=${formData.city.trim()}|province=${formData.province.trim()}`;
     if (formData.apartment.trim()) {
       addressString += `|apartment=${formData.apartment.trim()}`;
     }
 
-    if (mode === "add") {
+    if (!isEditMode) {
       try {
         const res = await (window as any).electronAPI.createCustomer(token, {
           name: formData.name,
@@ -202,9 +297,9 @@ const CustomerModal = ({
         <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex-shrink-0">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-bold">
-              {mode === "add"
-                ? t("customerManagement.modal.addNew")
-                : t("customerManagement.modal.edit")}
+              {isEditMode
+                ? t("customerManagement.modal.edit")
+                : t("customerManagement.modal.addNew")}
             </h3>
             <CustomButton
               type="button"
@@ -230,18 +325,43 @@ const CustomerModal = ({
                 placeholder={t("customerManagement.modal.name")}
                 inputClasses="py-3 px-4"
               />
-              <CustomInput
-                label={`${t("customerManagement.modal.phone")} *`}
-                type="text"
-                name="phone"
-                value={formData.phone}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, "");
-                  setFormData({ ...formData, phone: value });
-                }}
-                placeholder={t("customerManagement.modal.phone")}
-                inputClasses="py-3 px-4"
-              />
+
+              <div className="relative" ref={wrapperRef}>
+                <CustomInput
+                  label={`${t("customerManagement.modal.phone")} *`}
+                  type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={(e) => {
+                    setFormData({ ...formData, phone: e.target.value });
+                    setShowDropdown(true);
+                  }}
+                  onFocus={() => {
+                    if (formData.phone.length > 1) setShowDropdown(true);
+                  }}
+                  placeholder={t("customerManagement.modal.phone")}
+                  inputClasses="py-3 px-4"
+                />
+                {showDropdown && searchResults.length > 0 && (
+                  <div className="absolute top-[100%] left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto bg-white rounded-lg shadow-xl border border-gray-100">
+                    {searchResults.map((customer) => (
+                      <div
+                        key={customer.id}
+                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors duration-150"
+                        onClick={() => handleSelectCustomer(customer)}
+                      >
+                        <div className="font-medium text-gray-900">
+                          {customer.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {customer.phone}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <CustomInput
                 label={t("customerManagement.modal.email")}
                 type="email"
@@ -339,9 +459,9 @@ const CustomerModal = ({
               type="submit"
               variant="primary"
               label={
-                mode === "add"
-                  ? t("customerManagement.modal.add")
-                  : t("customerManagement.modal.update")
+                isEditMode
+                  ? t("customerManagement.modal.update")
+                  : t("customerManagement.modal.add")
               }
               className="bg-gradient-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 hover:scale-105"
             />

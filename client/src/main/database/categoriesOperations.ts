@@ -124,7 +124,7 @@ export class SubCategoriesOperations {
                 .select(
                     "sub_categories.*",
                     db.raw(
-                        '(SELECT COUNT(*) FROM products WHERE "subcategoryId" = sub_categories.id) as "itemCount"'
+                        '(SELECT COUNT(*) FROM products WHERE "subcategoryId" = sub_categories.id AND "name" <> \'250f812e66c1afab64c57bcea36bb3b7\') as "itemCount"'
                     ),
                     db.raw(
                         '(SELECT COUNT(*) FROM menus WHERE "subcategoryId" = sub_categories.id) as "menuCount"'
