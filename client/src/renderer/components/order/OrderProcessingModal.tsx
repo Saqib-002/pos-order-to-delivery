@@ -73,7 +73,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
 
   useEffect(() => {
     setCustomerSearch(order?.customer?.name || "");
-    setOrderType(order?.orderType || "delivery");
     setNotes(order?.notes || "");
     setSearchResults([]);
     setIsSearching(false);
@@ -168,21 +167,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   }, [showSearchResults]);
 
   const handleProcessOrder = () => {
-    if (orderType === "delivery" && !selectedCustomer) {
-      if (!customCustomerName.trim() || !customCustomerPhone.trim()) {
-        toast.error(t("orderProcessingModal.errors.customerNamePhoneRequired"));
-        return;
-      }
-    }
-
-    if (
-      orderType === "delivery" &&
-      selectedCustomer &&
-      !selectedCustomer.address.trim()
-    ) {
-      toast.error(t("orderProcessingModal.errors.customerNoAddress"));
-      return;
-    }
 
     const currentPaymentStatus = calculatePaymentStatus(
       order?.paymentType || "",
@@ -231,22 +215,14 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     paymentType: string;
     totalAmount: number;
   }) => {
-    if (
-      orderType === "delivery" &&
-      !selectedCustomer &&
-      (!customCustomerName.trim() ||
-        !customCustomerPhone.trim() ||
-        !customCustomerAddress.trim())
-    ) {
-      toast.error(t("orderProcessingModal.errors.customerDetailsRequired"));
-      return;
-    }
 
     const customerName =
       selectedCustomer?.name ||
       customCustomerName.trim() ||
       (orderType === "dine-in"
         ? t("orderProcessingModal.defaultCustomers.dineInCustomer")
+        : orderType === "delivery"
+        ? t("orderProcessingModal.defaultCustomers.deliveryCustomer")
         : t("orderProcessingModal.defaultCustomers.walkInCustomer"));
     const customerPhone = selectedCustomer?.phone || customCustomerPhone.trim();
     const customerAddress =
@@ -356,7 +332,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     setCustomCustomerPhone("");
                   }
                 }}
-                required={orderType === "delivery"}
                 name="search-customer"
                 type="text"
                 inputClasses="py-3 px-4 text-lg pr-12"
@@ -513,7 +488,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                         setCustomerSearch("");
                       }
                     }}
-                    required={orderType === "delivery"}
                     name="custom-customer-name"
                     type="text"
                     inputClasses="py-3 px-4 text-lg"
@@ -533,7 +507,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                         setCustomerSearch("");
                       }
                     }}
-                    required={orderType === "delivery"}
                     name="custom-customer-phone"
                     type="tel"
                     inputClasses="py-3 px-4 text-lg"
@@ -637,7 +610,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                       postalCodeLabel={t("customerManagement.modal.postalCode")}
                       cityLabel={t("customerManagement.modal.city")}
                       provinceLabel={t("customerManagement.modal.province")}
-                      required={orderType === "delivery"}
                       name="custom-customer-address"
                       inputClasses="py-3 px-4"
                     />

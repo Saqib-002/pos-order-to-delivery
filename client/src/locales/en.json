@@ -1721,6 +1721,7 @@
     "defaultCustomers": {
       "dineInCustomer": "Dine-in Customer",
       "walkInCustomer": "Walk-in Customer",
+      "deliveryCustomer": "Delivery Customer",
       "dineIn": "Dine-in",
       "inStore": "In-store"
     }

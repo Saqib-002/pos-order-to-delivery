@@ -1723,6 +1723,7 @@
     "defaultCustomers": {
       "dineInCustomer": "Cliente de Comedor",
       "walkInCustomer": "Cliente de Pasada",
+      "deliveryCustomer": "Cliente de entrega",
       "dineIn": "Comedor",
       "inStore": "En Tienda"
     }
