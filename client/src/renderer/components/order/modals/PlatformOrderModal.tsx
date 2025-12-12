@@ -169,11 +169,8 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
       }
 
       const priceAmount = parseFloat(price);
-      const formatPaymentAmount = (amount: number): string => {
-        return amount.toString().replace(/\.?0+$/, "");
-      };
       const paymentType = isPaid
-        ? `cash:${formatPaymentAmount(priceAmount)}`
+        ? `cash:${priceAmount}`
         : "pending:0";
 
       let formattedAddress = "";

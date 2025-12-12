@@ -254,7 +254,6 @@ const PlatformOrdersView = () => {
       order.paymentType || "",
       orderTotal
     );
-
     return (
       <tr key={order.id} className="hover:bg-gray-50">
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
