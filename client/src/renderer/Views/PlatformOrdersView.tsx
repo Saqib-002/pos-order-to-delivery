@@ -76,10 +76,16 @@ const PlatformOrdersView = () => {
     );
   };
 
+  const canCancelOrder = () => {
+    return user?.functionPermissions?.includes(FUNCTIONS.CANCEL_ORDER) || false;
+  };
+
   useEffect(() => {
-    fetchPlatformOrders();
-    fetchPlatforms();
-  }, [filter, token]);
+    if (token && user) {
+      fetchPlatformOrders();
+      fetchPlatforms();
+    }
+  }, [filter, token, user]);
 
   useEffect(() => {
     if (!filter.selectedDate) {
@@ -323,22 +329,26 @@ const PlatformOrdersView = () => {
               order.status?.toLowerCase() !== "cancelled" &&
               order.status?.toLowerCase() !== "delivered" &&
               order.status?.toLowerCase() !== "out for delivery" &&
-              canEditPlatformOrder() && (
+              (canEditPlatformOrder() || canCancelOrder()) && (
                 <>
-                  <button
-                    onClick={() => handleEditOrder(order)}
-                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 cursor-pointer"
-                    title={t("platformOrders.actions.editOrder")}
-                  >
-                    <EditIcon className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleCancelOrderClick(order)}
-                    className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 cursor-pointer"
-                    title={t("platformOrders.actions.cancelOrder")}
-                  >
-                    <CrossIcon className="w-5 h-5" />
-                  </button>
+                  {canEditPlatformOrder() && (
+                    <button
+                      onClick={() => handleEditOrder(order)}
+                      className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 cursor-pointer"
+                      title={t("platformOrders.actions.editOrder")}
+                    >
+                      <EditIcon className="w-5 h-5" />
+                    </button>
+                  )}
+                  {canCancelOrder() && (
+                    <button
+                      onClick={() => handleCancelOrderClick(order)}
+                      className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 cursor-pointer"
+                      title={t("platformOrders.actions.cancelOrder")}
+                    >
+                      <CrossIcon className="w-5 h-5" />
+                    </button>
+                  )}
                 </>
               )}
           </div>

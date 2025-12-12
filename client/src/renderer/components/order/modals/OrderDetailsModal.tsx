@@ -183,7 +183,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                               {item.productName}{" "}
                               {item.variantName &&
                               item.variantId &&
-                              item.variantName !== "0"
+                              item.variantName !== "0" &&
+                              String(item.variantName).trim() !== ""
                                 ? `(${item.variantName})`
                                 : ""}
                             </td>
@@ -399,7 +400,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-black">
-                {t("orderDetailsModal.title", { orderId: order.orderId })}{order.ticketNumber? ` (${order.ticketNumber.toString()})`:""}
+                {t("orderDetailsModal.title", { orderId: order.orderId })}
+                {order.ticketNumber
+                  ? ` (${order.ticketNumber.toString()})`
+                  : ""}
               </h2>
               <p className="text-sm text-gray-600 mt-1">
                 {t("orderDetailsModal.created")}

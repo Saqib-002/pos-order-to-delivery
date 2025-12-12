@@ -89,6 +89,9 @@ export class UserDatabaseOperations {
           modulePermissions: row.modulePermissions
             ? JSON.parse(row.modulePermissions)
             : [],
+          functionPermissions: row.functionPermissions
+            ? JSON.parse(row.functionPermissions)
+            : [],
           createdAt: row.createdAt,
           updatedAt: row.updatedAt,
         },
