@@ -16,7 +16,6 @@ import {
   getOrderTypeStyle,
 } from "@/renderer/utils/orderStatus";
 import { useTranslation } from "react-i18next";
-import { useConfigurations } from "../../../contexts/configurationContext";
 
 const parseComplements = (complements: any) => {
   if (Array.isArray(complements)) return complements;
@@ -203,8 +202,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                               </td>
                             </tr>
                           )}
-                          {Number(item.variantPrice) > 0 &&
-                            item.variantName &&
+                          {/* UPDATED: Removed price > 0 check to allow free variants */}
+                          {item.variantName &&
                             String(item.variantName).trim() !== "0" && (
                               <tr>
                                 <td></td>
@@ -213,7 +212,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                 </td>
                                 <td></td>
                                 <td className="text-right">
-                                  €{item.variantPrice.toFixed(2)}
+                                  €{Number(item.variantPrice || 0).toFixed(2)}
                                 </td>
                               </tr>
                             )}
@@ -270,16 +269,18 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         €{itemTotal.toFixed(2)}
                       </td>
                     </tr>
-                    {item.variantPrice && item.variantPrice > 0 && (
-                      <tr>
-                        <td></td>
-                        <td className="pl-5 text-base">{item.variantName}</td>
-                        <td></td>
-                        <td className="text-right">
-                          €{item.variantPrice.toFixed(2)}
-                        </td>
-                      </tr>
-                    )}
+                    {/* UPDATED: Removed price > 0 check to allow free variants */}
+                    {item.variantName &&
+                      String(item.variantName).trim() !== "0" && (
+                        <tr>
+                          <td></td>
+                          <td className="pl-5 text-base">{item.variantName}</td>
+                          <td></td>
+                          <td className="text-right">
+                            €{Number(item.variantPrice || 0).toFixed(2)}
+                          </td>
+                        </tr>
+                      )}
                     {parsedComplements.map((comp, compIndex) => (
                       <tr key={compIndex}>
                         <td></td>
@@ -297,16 +298,19 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           {/* Total Row */}
           <div className="border-t-2 border-black mt-4">
             <table className="w-full">
-              <tr>
-                <td className="w-[10%]"></td>
-                <td className="w-[50%]"></td>
-                <td className="w-[20%] text-right font-bold py-2">
-                  {t("receipt.total")}
-                </td>
-                <td className="w-[20%] text-right font-bold py-2">
-                  €{orderTotal.toFixed(2)}
-                </td>
-              </tr>
+              {/* UPDATED: Added tbody wrapper to fix hydration error */}
+              <tbody>
+                <tr>
+                  <td className="w-[10%]"></td>
+                  <td className="w-[50%]"></td>
+                  <td className="w-[20%] text-right font-bold py-2">
+                    {t("receipt.total")}
+                  </td>
+                  <td className="w-[20%] text-right font-bold py-2">
+                    €{orderTotal.toFixed(2)}
+                  </td>
+                </tr>
+              </tbody>
             </table>
           </div>
 

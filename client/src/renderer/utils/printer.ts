@@ -36,8 +36,10 @@ export const groupItemsByPrinter = (
   const printerGroups: Record<string, OrderItem[]> = {};
   items.forEach((item) => {
     item.printers?.forEach((printerStr) => {
-      const printerName = printerStr.split("|")[1];
-      const printerIsMain = printerStr.split("|")[2];
+      const parts= printerStr.split("|");
+      const printerName = parts[1];
+      const printerIsMain = parts[2];
+      if(parts.length<3) return;
       if (!printerGroups[`${printerName}|${printerIsMain}`]) {
         printerGroups[`${printerName}|${printerIsMain}`] = [];
       }

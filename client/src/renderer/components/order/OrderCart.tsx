@@ -86,7 +86,6 @@ const OrderCart: React.FC<OrderCartProps> = ({
     if (res.data) {
       configurations = res.data;
     }
-
     toast.info(t("orderCart.messages.printingCustomerReceipt"));
     for (const [printer, items] of Object.entries(printerGroups)) {
       const printerName = printer.split("|")[0];

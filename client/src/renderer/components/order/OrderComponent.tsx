@@ -65,7 +65,6 @@ const OrderComponent = () => {
       toast.error("Failed to process order");
       return;
     }
-    toast.success("Order processed successfully");
 
     // Automatically print receipts after processing
     try {
@@ -102,9 +101,7 @@ const OrderComponent = () => {
         orderData.paymentType || "",
         orderTotal
       );
-
       toast.info(t("orderCart.messages.printingCustomerReceipt"));
-
       // Print to all printers
       for (const [printer, items] of Object.entries(printerGroups)) {
         const printerName = printer.split("|")[0];
