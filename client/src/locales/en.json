@@ -72,7 +72,8 @@
       },
       "functionLabels": {
         "cancel-order": "Cancel Order",
-        "change-delivery-person": "Change Delivery Person"
+        "change-delivery-person": "Change Delivery Person",
+        "edit-platform-order": "Edit Platform Order"
       },
       "moduleLabels": {
         "order": "Order",

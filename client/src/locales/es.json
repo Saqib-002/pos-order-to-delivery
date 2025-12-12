@@ -212,7 +212,8 @@
       },
       "functionLabels": {
         "cancel-order": "Cancelar Pedido",
-        "change-delivery-person": "Cambiar Repartidor"
+        "change-delivery-person": "Cambiar Repartidor",
+        "edit-platform-order": "Editar Pedido de Plataforma"
       },
       "moduleLabels": {
         "order": "Pedido",

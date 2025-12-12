@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import { useConfigurations } from "../contexts/configurationContext";
+import { FUNCTIONS } from "@/constants";
 import { toast } from "react-toastify";
 import Header from "../components/shared/Header.order";
 import CustomButton from "../components/ui/CustomButton";
@@ -36,7 +37,7 @@ import { DateRangePicker } from "../components/ui/DateRangePicker";
 const PlatformOrdersView = () => {
   const { t, i18n } = useTranslation();
   const {
-    auth: { token },
+    auth: { token, user },
   } = useAuth();
   const { configurations } = useConfigurations();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -67,6 +68,13 @@ const PlatformOrdersView = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const canEditPlatformOrder = () => {
+    return (
+      user?.functionPermissions?.includes(FUNCTIONS.EDIT_PLATFORM_ORDER) ||
+      false
+    );
+  };
 
   useEffect(() => {
     fetchPlatformOrders();
@@ -312,7 +320,10 @@ const PlatformOrdersView = () => {
               <EyeIcon className="w-5 h-5" />
             </button>
             {order.status?.toLowerCase() !== "completed" &&
-              order.status?.toLowerCase() !== "cancelled" && (
+              order.status?.toLowerCase() !== "cancelled" &&
+              order.status?.toLowerCase() !== "delivered" &&
+              order.status?.toLowerCase() !== "out for delivery" &&
+              canEditPlatformOrder() && (
                 <>
                   <button
                     onClick={() => handleEditOrder(order)}
@@ -501,9 +512,11 @@ const PlatformOrdersView = () => {
             </div>
 
             {/* Payment Status Filter */}
-            <div className={`w-full ${
-                i18n.language === 'es' ? 'lg:w-54' : 'lg:w-48'
-              }`}>
+            <div
+              className={`w-full ${
+                i18n.language === "es" ? "lg:w-54" : "lg:w-48"
+              }`}
+            >
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t("platformOrders.paymentStatus")}
               </label>

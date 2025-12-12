@@ -94,11 +94,13 @@ export const AVAILABLE_MODULES = Object.values(MODULES) as string[];
 export const FUNCTIONS = {
   CANCEL_ORDER: "cancel-order",
   CHANGE_DELIVERY_PERSON: "change-delivery-person",
+  EDIT_PLATFORM_ORDER: "edit-platform-order",
 } as const;
 
 export const FUNCTION_LABELS = {
   [FUNCTIONS.CANCEL_ORDER]: "Cancel Order",
   [FUNCTIONS.CHANGE_DELIVERY_PERSON]: "Change Delivery Person",
+  [FUNCTIONS.EDIT_PLATFORM_ORDER]: "Edit Platform Order",
 } as const;
 
 // Available functions for permission management
