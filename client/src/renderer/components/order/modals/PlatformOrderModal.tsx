@@ -41,6 +41,7 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
   } = useAuth();
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [selectedPlatformId, setSelectedPlatformId] = useState<string>("");
+  const [ticketNumber, setTicketNumber] = useState<string>(""); // State for Ticket Number
   const [customerName, setCustomerName] = useState<string>("");
   const [customerPhone, setCustomerPhone] = useState<string>("");
   const [price, setPrice] = useState<string>("");
@@ -62,6 +63,7 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
       if (mode === "edit" && initialOrder) {
         const orderAny = initialOrder as any;
         setSelectedPlatformId(orderAny.platformId || "");
+        setTicketNumber(orderAny.ticketNumber || ""); // Populate Ticket Number
         setCustomerName(orderAny.customer?.name || orderAny.customerName || "");
         setCustomerPhone(
           orderAny.customer?.phone || orderAny.customerPhone || ""
@@ -111,6 +113,7 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
   useEffect(() => {
     if (!isOpen) {
       setSelectedPlatformId("");
+      setTicketNumber(""); // Reset Ticket Number
       setCustomerName("");
       setCustomerPhone("");
       setPrice("");
@@ -185,6 +188,7 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
 
       const orderData = {
         platformId: selectedPlatformId,
+        ticketNumber: ticketNumber.trim(), // Include Ticket Number in payload
         customerName:
           customerName.trim() || t("platformOrders.platformCustomer"),
         customerPhone: customerPhone.trim() || "",
@@ -200,6 +204,7 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
       if (mode === "edit" && initialOrder) {
         result = await updateOrder(token, initialOrder.id, {
           platformId: selectedPlatformId,
+          ticketNumber: orderData.ticketNumber, // Update Ticket Number
           customerName: orderData.customerName,
           customerPhone: orderData.customerPhone,
           customerAddress: orderData.customerAddress,
@@ -259,18 +264,33 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6">
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("platformOrders.platformName")}{" "}
-                <span className="text-red-500">*</span>
-              </label>
-              <CustomSelect
-                options={platformOptions}
-                value={selectedPlatformId}
-                onChange={(value: string) => setSelectedPlatformId(value)}
-                placeholder={t("platformOrders.selectPlatform")}
-                className="w-full"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("platformOrders.platformName")}{" "}
+                  <span className="text-red-500">*</span>
+                </label>
+                <CustomSelect
+                  options={platformOptions}
+                  value={selectedPlatformId}
+                  onChange={(value: string) => setSelectedPlatformId(value)}
+                  placeholder={t("platformOrders.selectPlatform")}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("Ticket Number")} {/* Add translation key if available */}
+                </label>
+                <CustomInput
+                  type="text"
+                  name="ticketNumber"
+                  value={ticketNumber}
+                  onChange={(e) => setTicketNumber(e.target.value)}
+                  placeholder="e.g. #12345"
+                  inputClasses="py-3 px-4"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

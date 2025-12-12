@@ -73,6 +73,7 @@ export interface Order {
   receivingTime?: string;
   platformId?: string;
   platformName?: string;
+  ticketNumber?: string;
   updatedAt?: string;
   createdAt?: string;
   items?: OrderItem[];

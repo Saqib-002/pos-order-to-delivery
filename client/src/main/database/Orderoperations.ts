@@ -1042,6 +1042,7 @@ export class OrderDatabaseOperations {
           receivingTime: order.receivingTime,
           platformId: order.platformId,
           platformName: order.platformId ? platformMap.get(order.platformId) : undefined,
+          ticketNumber: order.ticketNumber,
           orderId: order.orderId,
           status: order.status,
           paymentType: order.paymentType,

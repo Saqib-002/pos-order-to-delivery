@@ -391,7 +391,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       );
     });
   };
-
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] overflow-hidden flex flex-col">
@@ -400,12 +399,11 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-black">
-                {t("orderDetailsModal.title", { orderId: order.orderId })}
+                {t("orderDetailsModal.title", { orderId: order.orderId })}{order.ticketNumber? ` (${order.ticketNumber.toString()})`:""}
               </h2>
               <p className="text-sm text-gray-600 mt-1">
-                {t("orderDetailsModal.created", {
-                  date: new Date(order.createdAt || "").toLocaleString(),
-                })}
+                {t("orderDetailsModal.created")}
+                {new Date(order.createdAt || "").toLocaleString()}
               </p>
             </div>
             <button
