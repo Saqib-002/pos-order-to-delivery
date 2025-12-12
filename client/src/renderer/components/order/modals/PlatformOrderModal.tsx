@@ -209,6 +209,7 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
           customerPhone: orderData.customerPhone,
           customerAddress: orderData.customerAddress,
           paymentType: orderData.paymentType,
+          price: orderData.price,
           isPaid: orderData.isPaid,
           receivingTime: orderData.receivingTime,
         });
@@ -231,6 +232,7 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
       onSuccess();
       onClose();
     } catch (error: any) {
+      console.error("Error creating order:", error);
       toast.error(error.message || t("platformOrders.errors.createOrderError"));
     } finally {
       setLoading(false);

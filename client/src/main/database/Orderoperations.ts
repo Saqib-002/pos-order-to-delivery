@@ -410,14 +410,28 @@ export class OrderDatabaseOperations {
     orderId: string,
     orderData: Partial<Order>
   ): Promise<any> {
+    const trx = await db.transaction();
     try {
       const now = new Date().toISOString();
-      await db("orders")
-        .where("id", orderId)
-        .update({
-          ...orderData,
-          updatedAt: now,
-        });
+      const { price, ...fieldsToUpdate } = orderData as any;
+      if (Object.keys(fieldsToUpdate).length > 0) {
+        await trx("orders")
+          .where("id", orderId)
+          .update({
+            ...fieldsToUpdate,
+            updatedAt: now,
+          });
+      }
+      if (price !== undefined && price !== null) {
+        await trx("order_items")
+          .where("orderId", orderId)
+          .update({
+            productPrice: price,
+            totalPrice: price,
+            updatedAt: now,
+          });
+      }
+      await trx.commit();
       return { orderId };
     } catch (error) {
       throw error;
