@@ -183,7 +183,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                               {item.productName}{" "}
                               {item.variantName &&
                               item.variantId &&
-                              item.variantName !== "0" &&
+                              String(item.variantName).trim() !== "0" &&
                               String(item.variantName).trim() !== ""
                                 ? `(${item.variantName})`
                                 : ""}
@@ -204,7 +204,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                             </tr>
                           )}
                           {/* UPDATED: Removed price > 0 check to allow free variants */}
-                          {item.variantName &&
+                          {item.variantName && item.variantId &&
                             String(item.variantName).trim() !== "0" && (
                               <tr>
                                 <td></td>
