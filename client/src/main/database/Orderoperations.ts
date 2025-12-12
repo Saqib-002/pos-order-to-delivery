@@ -1000,12 +1000,22 @@ export class OrderDatabaseOperations {
       }
 
       const countQuery = baseQuery.clone().count("* as count").first();
+      
       const dataQuery = baseQuery
         .clone()
         .limit(limit)
         .offset(offset)
         .orderBy("createdAt", "desc");
       const [countResult, orders] = await Promise.all([countQuery, dataQuery]);
+      const platformIds = orders
+        .map((o) => o.platformId)
+        .filter((id) => id);
+      
+      const platforms = platformIds.length > 0 
+        ? await db("platforms").whereIn("id", platformIds).select("id", "name")
+        : [];
+      
+      const platformMap = new Map(platforms.map(p => [p.id, p.name]));
       const totalCount = parseInt((countResult as any).count, 10) || 0;
       const newOrders = [];
       for (const order of orders) {
@@ -1031,6 +1041,7 @@ export class OrderDatabaseOperations {
           pickupTime: order.pickupTime,
           receivingTime: order.receivingTime,
           platformId: order.platformId,
+          platformName: order.platformId ? platformMap.get(order.platformId) : undefined,
           orderId: order.orderId,
           status: order.status,
           paymentType: order.paymentType,

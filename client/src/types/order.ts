@@ -72,6 +72,7 @@ export interface Order {
   pickupTime?: string;
   receivingTime?: string;
   platformId?: string;
+  platformName?: string;
   updatedAt?: string;
   createdAt?: string;
   items?: OrderItem[];

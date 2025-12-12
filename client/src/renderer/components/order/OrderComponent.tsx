@@ -345,8 +345,10 @@ const OrderComponent = () => {
                           <span
                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getOrderTypeStyle(order.orderType || "")}`}
                           >
-                            {translateOrderType(order.orderType || "") ||
-                              t("manageOrders.statuses.notSelected")}
+                            {order.orderType === "platform" && order.platformName
+                              ? order.platformName
+                              : translateOrderType(order.orderType || "") ||
+                                t("manageOrders.statuses.notSelected")}
                           </span>
 
                           {/* Order Status Pill */}
