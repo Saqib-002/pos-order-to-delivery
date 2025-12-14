@@ -303,11 +303,7 @@ const PlatformOrdersView = () => {
           {orderAny.receivingTime || (order as any).receivingTime
             ? new Date(
                 orderAny.receivingTime || (order as any).receivingTime
-              ).toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-                hour12: true,
-              })
+              ).toLocaleTimeString()
             : "-"}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
