@@ -41,6 +41,7 @@ import { useConfigurations } from "../contexts/configurationContext";
 import { DEFAULT_PAGE_LIMIT, FUNCTIONS } from "@/constants";
 import Pagination from "../components/shared/Pagination";
 import { formatAddress } from "../utils/utils";
+import dayjs from "dayjs";
 
 export const ManageOrdersView = () => {
   const { t } = useTranslation();
@@ -465,7 +466,9 @@ export const ManageOrdersView = () => {
           €{calculateOrderTotal(order.items || []).orderTotal.toFixed(2)}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-          {new Date(order.createdAt || "").toLocaleDateString()}
+          {dayjs(new Date(order.createdAt || "").toLocaleDateString()).format(
+            "DD/MM/YYYY"
+          )}
           <div className="text-xs text-gray-400">
             {new Date(order.createdAt || "").toLocaleTimeString()}
           </div>
@@ -775,7 +778,7 @@ export const ManageOrdersView = () => {
           </p>
           <div className="text-sm text-gray-500">
             {t("manageOrders.lastUpdated", {
-              time: new Date().toLocaleString(),
+              time: dayjs().format("DD/MM/YYYY HH:mm:ss"),
             })}
           </div>
         </div>

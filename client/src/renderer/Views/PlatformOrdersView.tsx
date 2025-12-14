@@ -33,6 +33,7 @@ import Pagination from "../components/shared/Pagination";
 import CustomInput from "../components/shared/CustomInput";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import { DateRangePicker } from "../components/ui/DateRangePicker";
+import dayjs from "dayjs";
 
 const PlatformOrdersView = () => {
   const { t, i18n } = useTranslation();
@@ -301,15 +302,15 @@ const PlatformOrdersView = () => {
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
           {orderAny.receivingTime || (order as any).receivingTime
-            ? new Date(
+            ? dayjs(
                 orderAny.receivingTime || (order as any).receivingTime
-              ).toLocaleTimeString()
+              ).format("DD/MM/YYYY HH:mm:ss")
             : "-"}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-          {new Date(order.createdAt || "").toLocaleDateString()}
+          {dayjs(order.createdAt || "").format("DD/MM/YYYY")}
           <div className="text-xs text-gray-400">
-            {new Date(order.createdAt || "").toLocaleTimeString()}
+            {dayjs(order.createdAt || "").format("HH:mm:ss")}
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

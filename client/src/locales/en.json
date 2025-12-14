@@ -1714,7 +1714,7 @@
       "proceedOrder": "Proceed Order"
     },
     "errors": {
-      "customerNamePhoneRequired": "Please enter customer name and phone number for delivery orders",
+      "customerPhoneRequired": "Please enter customer phone number for delivery orders",
       "customerNoAddress": "Selected customer has no address. Please select a different customer or change to pickup.",
       "customerDetailsRequired": "Please select a customer or enter customer details including address for delivery orders",
       "orderAlreadyPaid": "Order is already paid. Processing with existing payment information."

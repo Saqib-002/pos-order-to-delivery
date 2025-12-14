@@ -196,10 +196,6 @@ const CustomerModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) {
-      toast.error(t("customerManagement.validation.nameRequired"));
-      return;
-    }
     if (!formData.phone.trim()) {
       toast.error(t("customerManagement.validation.phoneRequired"));
       return;

@@ -25,6 +25,7 @@ import { useConfigurations } from "../contexts/configurationContext";
 import { useTranslation } from "react-i18next";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
 import Pagination from "../components/shared/Pagination";
+import dayjs from "dayjs";
 
 export const ReportView = () => {
   const { t } = useTranslation();
@@ -127,10 +128,10 @@ export const ReportView = () => {
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-black">
-          {new Date(order.createdAt).toLocaleTimeString()}
+          {dayjs(order.createdAt).format("DD/MM/YYYY HH:mm:ss")}
         </div>
         <div className="text-sm text-gray-500">
-          {new Date(order.createdAt).toLocaleDateString()}
+          {dayjs(order.createdAt).format("DD/MM/YYYY HH:mm:ss")}
         </div>
       </td>
     </tr>

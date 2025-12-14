@@ -167,7 +167,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   }, [showSearchResults]);
 
   const handleProcessOrder = () => {
-
+    if (orderType === "delivery" && !selectedCustomer) {
+      if (!customCustomerPhone.trim()) {
+        toast.error(t("orderProcessingModal.errors.customerPhoneRequired"));
+        return;
+      }
+    }
     const currentPaymentStatus = calculatePaymentStatus(
       order?.paymentType || "",
       orderTotal
@@ -215,15 +220,23 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     paymentType: string;
     totalAmount: number;
   }) => {
-
+    if (
+      orderType === "delivery" &&
+      !selectedCustomer &&
+      (!customCustomerPhone.trim() ||
+        !customCustomerAddress.trim())
+    ) {
+      toast.error(t("orderProcessingModal.errors.customerDetailsRequired"));
+      return;
+    }
     const customerName =
       selectedCustomer?.name ||
       customCustomerName.trim() ||
       (orderType === "dine-in"
         ? t("orderProcessingModal.defaultCustomers.dineInCustomer")
         : orderType === "delivery"
-        ? t("orderProcessingModal.defaultCustomers.deliveryCustomer")
-        : t("orderProcessingModal.defaultCustomers.walkInCustomer"));
+          ? t("orderProcessingModal.defaultCustomers.deliveryCustomer")
+          : t("orderProcessingModal.defaultCustomers.walkInCustomer"));
     const customerPhone = selectedCustomer?.phone || customCustomerPhone.trim();
     const customerAddress =
       (selectedCustomer?.address && selectedCustomer.address.trim()) ||

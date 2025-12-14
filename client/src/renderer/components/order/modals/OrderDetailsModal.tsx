@@ -16,6 +16,7 @@ import {
   getOrderTypeStyle,
 } from "@/renderer/utils/orderStatus";
 import { useTranslation } from "react-i18next";
+import dayjs from "dayjs";
 
 const parseComplements = (complements: any) => {
   if (Array.isArray(complements)) return complements;
@@ -361,8 +362,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
       if (cancelledMatch) {
         const [, timestamp, noteText] = cancelledMatch;
-        const cancelledDate = new Date(timestamp);
-        const formattedDate = cancelledDate.toLocaleString();
+        const formattedDate = dayjs(timestamp).format("DD/MM/YYYY HH:mm:ss");
 
         return (
           <div key={index} className="mb-4 last:mb-0">
@@ -406,8 +406,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   : ""}
               </h2>
               <p className="text-sm text-gray-600 mt-1">
-                {t("orderDetailsModal.created")}
-                {new Date(order.createdAt || "").toLocaleString()}
+                {t("orderDetailsModal.created")} {" "}
+                {dayjs(order.createdAt || "").format("DD/MM/YYYY HH:mm:ss")}
               </p>
             </div>
             <button
@@ -475,9 +475,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         {t("orderDetailsModal.receivingTime")}
                       </p>
                       <p className="text-black">
-                        {new Date(
+                        {dayjs(
                           (order as any).receivingTime
-                        ).toLocaleTimeString()}
+                        ).format("DD/MM/YYYY HH:mm:ss")}
                       </p>
                     </div>
                   )}
@@ -496,7 +496,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       {t("orderDetailsModal.created")}
                     </p>
                     <p className="text-black">
-                      {new Date(order.createdAt || "").toLocaleString()}
+                      {dayjs(order.createdAt || "").format("DD/MM/YYYY HH:mm:ss")}
                     </p>
                   </div>
                   <div className="md:col-span-2">
@@ -631,7 +631,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       {t("orderDetailsModal.created")}
                     </p>
                     <p className="text-black">
-                      {new Date(order.createdAt || "").toLocaleString()}
+                      {dayjs(order.createdAt || "").format("DD/MM/YYYY HH:mm:ss")}
                     </p>
                   </div>
                   <div>
@@ -640,7 +640,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     </p>
                     <p className="text-black">
                       {order.updatedAt
-                        ? new Date(order.updatedAt).toLocaleString()
+                        ? dayjs(order.updatedAt).format("DD/MM/YYYY HH:mm:ss")
                         : t("manageOrders.statuses.nA")}
                     </p>
                   </div>
@@ -729,7 +729,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       </p>
                       <p className="text-black">
                         {order.assignedAt
-                          ? new Date(order.assignedAt).toLocaleString()
+                          ? dayjs(order.assignedAt).format("DD/MM/YYYY HH:mm:ss")
                           : order.status === "out for delivery" ||
                               order.status === "delivered"
                             ? t("orderDetailsModal.notRecorded")
@@ -742,7 +742,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           {t("orderDetailsModal.deliveredAt")}
                         </p>
                         <p className="text-black">
-                          {new Date(order.deliveredAt).toLocaleString()}
+                          {dayjs(order.deliveredAt).format("DD/MM/YYYY HH:mm:ss")}
                         </p>
                       </div>
                     )}

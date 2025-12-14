@@ -1716,7 +1716,7 @@
       "proceedOrder": "Procesar Pedido"
     },
     "errors": {
-      "customerNamePhoneRequired": "Por favor ingrese el nombre y número de teléfono del cliente para pedidos de entrega",
+      "customerPhoneRequired": "Por favor, introduzca el número de teléfono del cliente para pedidos de entrega",
       "customerNoAddress": "El cliente seleccionado no tiene dirección. Por favor seleccione un cliente diferente o cambie a recogida.",
       "customerDetailsRequired": "Por favor seleccione un cliente o ingrese los detalles del cliente incluyendo la dirección para pedidos de entrega",
       "orderAlreadyPaid": "El pedido ya está pagado. Procesando con la información de pago existente."
