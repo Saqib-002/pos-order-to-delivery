@@ -130,16 +130,18 @@ interface DbCredentials {
 }
 interface StoreSchema {
   dbCredentials: DbCredentials;
+  cdnUrl: string;
 }
 const store = new Store<StoreSchema>({
   defaults: {
     dbCredentials: {
       host: "localhost",
       port: 5432,
-      database: "restaurant_pos",
-      user: "pos_admin",
+      database: "postgres",
+      user: "postgres",
       password: "",
     },
+    cdnUrl: "http://192.168.1.0:3000",
   },
 });
 
@@ -147,6 +149,14 @@ export function registerIpcHandlers() {
   // db handlers
   ipcMain.handle("get-db-credentials", async () => {
     return (store as any).get("dbCredentials");
+  });
+  // cdn handlers
+  ipcMain.handle("get-cdn-url", async () => {
+    return (store as any).get("cdnUrl");
+  });
+  ipcMain.handle("save-cdn-url", async (event, url: string) => {
+    (store as any).set("cdnUrl", url);
+    return true;
   });
 
   ipcMain.handle("get-google-maps-api-key", async () => {

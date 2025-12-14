@@ -1,3 +1,7 @@
+import Store from "electron-store";
+
+const store = new Store();
+
 export const uploadImg = async (
     base64Logo: string,
     isLogo: boolean
@@ -12,9 +16,9 @@ export const uploadImg = async (
     const ext = mimeType.split("/")[1];
     const blob = new Blob([buffer], { type: mimeType });
     formData.append("file", blob, `${isLogo ? "logo" : "uuid"}.${ext}`);
-    const uploadUrl = process.env.CDN_URL;
+    const uploadUrl = (store as any).get("cdnUrl") as string;
     if (!uploadUrl) {
-        throw new Error("CDN_URL environment variable is not set");
+        throw new Error("CDN_URL is not set in configurations");
     }
     const response = await fetch(`${uploadUrl}/upload`, {
         method: "POST",
@@ -33,7 +37,7 @@ export const deleteImg = async (filename: string | null | undefined) => {
     if (filename.startsWith("http")) {
         return false;
     }
-    const cdnUrl = process.env.CDN_URL;
+    const cdnUrl = (store as any).get("cdnUrl") as string;
     if (!cdnUrl) {
         return false;
     }

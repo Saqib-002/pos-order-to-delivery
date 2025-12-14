@@ -3,6 +3,9 @@ import { db } from "./index.js";
 import { randomUUID } from "crypto";
 import { deleteImg, uploadImg } from "../utils/utils.js";
 import dotenv from "dotenv";
+import Store from "electron-store";
+
+const store=new Store();
 dotenv.config();
 
 export class VariantsDatabaseOperations {
@@ -86,7 +89,7 @@ export class VariantsDatabaseOperations {
                     variantsMap.set(row.variantId, variant);
                 }
                 if (row.itemId) {
-                    const uploadUrl = process.env.CDN_URL;
+                    const uploadUrl = (store as any).get("cdnUrl");
                     variantsMap.get(row.variantId).items.push({
                         id: row.itemId,
                         name: row.itemName,

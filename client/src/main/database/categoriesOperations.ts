@@ -3,6 +3,8 @@ import { randomUUID } from "crypto";
 import { db } from "./index.js";
 import { deleteImg, uploadImg } from "../utils/utils.js";
 import dotenv from "dotenv";
+import Store from "electron-store";
+const store=new Store();
 dotenv.config();
 
 export class CategoryDatabaseOperations {
@@ -23,7 +25,7 @@ export class CategoryDatabaseOperations {
             };
 
             await db("categories").insert(newCategory);
-            const uploadUrl = process.env.CDN_URL;
+            const uploadUrl = (store as any).get("cdnUrl");
             return {
                 newCategory,
                 imgUrl: `${category.imgUrl ? `${uploadUrl}/uploads/${category.imgUrl}` : ""}`,
@@ -45,7 +47,7 @@ export class CategoryDatabaseOperations {
             const categories = await query;
             return categories.map((c) => ({
                 ...c,
-                imgUrl: `${c.imgUrl ? `${process.env.CDN_URL}/uploads/${c.imgUrl}` : ""}`,
+                imgUrl: `${c.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${c.imgUrl}` : ""}`,
             }));
         } catch (error) {
             throw error;
@@ -132,7 +134,7 @@ export class SubCategoriesOperations {
                 )
                 .orderBy("name", "asc");
             const subCategories = await query;
-            const uploadUrl = process.env.CDN_URL;
+            const uploadUrl = (store as any).get("cdnUrl");
             return subCategories.map((s) => {
                 return {
                     ...s,
@@ -147,7 +149,7 @@ export class SubCategoriesOperations {
         try {
             let query = db("sub_categories").orderBy("name", "asc");
             const subCategories = await query;
-            const uploadUrl = process.env.CDN_URL;
+            const uploadUrl = (store as any).get("cdnUrl");
             return subCategories.map((s) => {
                 return {
                     ...s,

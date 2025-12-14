@@ -1,6 +1,8 @@
 import { randomUUID } from "crypto";
 import { db } from "./index.js";
 import dotenv from "dotenv";
+import Store from "electron-store";
+const store=new Store();
 dotenv.config();
 
 export class ConfigurationsDatabaseOperations {
@@ -21,7 +23,7 @@ export class ConfigurationsDatabaseOperations {
         try {
             let configurations = await db("configurations").select("*").first();
             if (configurations && configurations.logo) {
-                const uploadUrl = process.env.CDN_URL;
+                const uploadUrl = (store as any).get("cdnUrl");
                 if (uploadUrl) {
                     configurations.logo = `${uploadUrl}/uploads/${configurations.logo}`;
                 }

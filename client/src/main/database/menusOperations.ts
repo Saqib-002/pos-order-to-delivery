@@ -4,6 +4,8 @@ import { randomUUID } from "crypto";
 import Logger from "electron-log";
 import { deleteImg, uploadImg } from "../utils/utils.js";
 import dotenv from "dotenv";
+import Store from "electron-store";
+const store=new Store();
 dotenv.config();
 
 export class MenusOperations {
@@ -53,7 +55,7 @@ export class MenusOperations {
             const menus = await db("menus").orderBy("priority", "asc");
             return menus.map((menu) => ({
                 ...menu,
-                imgUrl: `${menu.imgUrl ? `${process.env.CDN_URL}/uploads/${menu.imgUrl}` : ""}`,
+                imgUrl: `${menu.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${menu.imgUrl}` : ""}`,
             }));
         } catch (error) {
             throw error;
@@ -67,7 +69,7 @@ export class MenusOperations {
                 .orderBy("priority", "asc");
             return menus.map((menu) => ({
                 ...menu,
-                imgUrl: `${menu.imgUrl ? `${process.env.CDN_URL}/uploads/${menu.imgUrl}` : ""}`,
+                imgUrl: `${menu.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${menu.imgUrl}` : ""}`,
             }));
         } catch (error) {
             throw error;
@@ -76,7 +78,7 @@ export class MenusOperations {
     static async getMenuById(id: string): Promise<Menu> {
         try {
             const menu = await db("menus").where("id", id).first();
-            return {...menu, imgUrl: `${menu.imgUrl ? `${process.env.CDN_URL}/uploads/${menu.imgUrl}` : ""}`};
+            return {...menu, imgUrl: `${menu.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${menu.imgUrl}` : ""}`};
         } catch (error) {
             throw error;
         }

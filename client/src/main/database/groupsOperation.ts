@@ -3,6 +3,8 @@ import { randomUUID } from "crypto";
 import { db } from "./index.js";
 import { deleteImg, uploadImg } from "../utils/utils.js";
 import dotenv from "dotenv";
+import Store from "electron-store";
+const store=new Store();
 dotenv.config();
 
 export class GroupsDatabaseOperations {
@@ -85,7 +87,7 @@ export class GroupsDatabaseOperations {
           groupsMap.set(row.groupId, group);
         }
         if (row.itemId) {
-          const uploadUrl = process.env.CDN_URL;
+          const uploadUrl = (store as any).get("cdnUrl");
           groupsMap.get(row.groupId).items.push({
             id: row.itemId,
             name: row.itemName,

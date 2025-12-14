@@ -2,6 +2,8 @@ import { randomUUID } from "crypto";
 import { db } from "./index.js";
 import { deleteImg, uploadImg } from "../utils/utils.js";
 import dotenv from "dotenv";
+import Store from "electron-store";
+const store=new Store();
 dotenv.config();
 
 export class ProductsDatabaseOperations {
@@ -86,7 +88,7 @@ export class ProductsDatabaseOperations {
             const products = await query;
             return products.map((p: any) => ({
                 ...p,
-                imgUrl: `${p.imgUrl ? `${process.env.CDN_URL}/uploads/${p.imgUrl}` : ""}`,
+                imgUrl: `${p.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${p.imgUrl}` : ""}`,
             }));
         } catch (error) {
             throw error;
@@ -126,7 +128,7 @@ export class ProductsDatabaseOperations {
                     .push(`${printerId}|${name}|${isMain}`);
             }
             for (const product of products) {
-                const uploadUrl = process.env.CDN_URL;
+                const uploadUrl = (store as any).get("cdnUrl");
                 product.printerIds = printerMap.get(product.id) || [];
                 product.imgUrl = `${product.imgUrl ? `${uploadUrl}/uploads/${product.imgUrl}` : ""}`;
             }
@@ -250,7 +252,7 @@ export class ProductsDatabaseOperations {
                     "products_variants.price as price",
                     "products_variants.variantId as id"
                 );
-            const uploadUrl = process.env.CDN_URL;
+            const uploadUrl = (store as any).get("cdnUrl");
             return variants.map((variant: any) => ({
                 ...variant,
                 imgUrl: variant.imgUrl
@@ -303,7 +305,7 @@ export class ProductsDatabaseOperations {
             );
             return {
                 ...product,
-                imgUrl: `${product.imgUrl ? `${process.env.CDN_URL}/uploads/${product.imgUrl}` : ""}`,
+                imgUrl: `${product.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${product.imgUrl}` : ""}`,
             };
         } catch (error) {
             throw error;

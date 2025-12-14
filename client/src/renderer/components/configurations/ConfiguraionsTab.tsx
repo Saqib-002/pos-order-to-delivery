@@ -13,6 +13,7 @@ const ConfigurationsTab = () => {
   const [configurationsId, setConfigurationsId] = useState<string>("");
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [cdnUrl, setCdnUrl] = useState<string>(""); // State for CDN URL
   const {
     auth: { token },
   } = useAuth();
@@ -21,6 +22,10 @@ const ConfigurationsTab = () => {
   const { i18n, t } = useTranslation();
 
   const getConfigurations = async () => {
+    // Fetch CDN URL
+    const url = await (window as any).electronAPI.getCdnUrl();
+    if (url) setCdnUrl(url);
+
     const res = await (window as any).electronAPI.getConfigurations(token);
     if (!res.status) {
       toast.error("Error getting configurations");
@@ -59,6 +64,10 @@ const ConfigurationsTab = () => {
   };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Save CDN URL
+    await (window as any).electronAPI.saveCdnUrl(cdnUrl);
+
     let res;
     if (mode === "add") {
       res = await (window as any).electronAPI.createConfigurations(
@@ -169,7 +178,6 @@ const ConfigurationsTab = () => {
               label={t("configurations.companyAddress")}
               name="address"
               placeholder={t("configurations.companyAddressPlaceholder")}
-              required={true}
               inputClasses="bg-white"
             />
             <CustomInput
@@ -184,7 +192,15 @@ const ConfigurationsTab = () => {
               label={t("configurations.vatNumber")}
               name="vatNumber"
               placeholder={t("configurations.vatNumberPlaceholder")}
-              required={false}
+              inputClasses="bg-white"
+            />
+             <CustomInput
+              type="text"
+              value={cdnUrl}
+              onChange={(e) => setCdnUrl(e.target.value)}
+              label="CDN URL"
+              name="cdnUrl"
+              placeholder="http://localhost:3000"
               inputClasses="bg-white"
             />
             <CustomInput
@@ -199,7 +215,6 @@ const ConfigurationsTab = () => {
               label={t("configurations.googleMapsApiKey")}
               name="googleMapsApiKey"
               placeholder={t("configurations.googleMapsApiKeyPlaceholder")}
-              required={false}
               inputClasses="bg-white"
             />
             <div>
@@ -218,7 +233,6 @@ const ConfigurationsTab = () => {
                   name="low"
                   placeholder="0"
                   min="0"
-                  required={false}
                   inputClasses="bg-white"
                 />
                 <CustomInput
@@ -236,7 +250,6 @@ const ConfigurationsTab = () => {
                   label={t("configurations.mediumKitchenPriorityTime")}
                   name="medium"
                   placeholder="0"
-                  required={false}
                   inputClasses="bg-white"
                 />
                 <CustomInput
@@ -252,7 +265,6 @@ const ConfigurationsTab = () => {
                   label={t("configurations.highKitchenPriorityTime")}
                   name="high"
                   placeholder="0"
-                  required={false}
                   inputClasses="bg-white"
                 />
               </div>
