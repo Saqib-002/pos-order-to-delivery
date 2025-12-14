@@ -477,11 +477,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       <p className="text-black">
                         {new Date(
                           (order as any).receivingTime
-                        ).toLocaleTimeString("en-US", {
-                          hour: "numeric",
-                          minute: "2-digit",
-                          hour12: true,
-                        })}
+                        ).toLocaleTimeString()}
                       </p>
                     </div>
                   )}

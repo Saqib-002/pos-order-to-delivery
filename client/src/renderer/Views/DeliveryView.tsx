@@ -292,8 +292,18 @@ export const DeliveryView = () => {
       >
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-2xl font-bold text-black">
-            {configurations.orderPrefix || "K"}
-            {order.orderId}
+            {
+            order.ticketNumber ? (
+              <>
+              {order.ticketNumber}
+              </>
+            ) : (
+              <>
+              {configurations.orderPrefix || "K"}
+              {order.orderId}
+              </>
+            )
+          }
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
@@ -367,8 +377,18 @@ export const DeliveryView = () => {
     >
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-2xl font-bold text-black">
-          {configurations.orderPrefix || "K"}
-          {order.orderId}
+          {
+            order.ticketNumber ? (
+              <>
+              {order.ticketNumber}
+              </>
+            ) : (
+              <>
+              {configurations.orderPrefix || "K"}
+              {order.orderId}
+              </>
+            )
+          }
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">

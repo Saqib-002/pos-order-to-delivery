@@ -182,8 +182,18 @@ export const KitchenView = () => {
           </span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-2xl font-bold text-black">
-          {configurations.orderPrefix || "K"}
-          {order.orderId}
+          {
+            order.ticketNumber ? (
+              <>
+              {order.ticketNumber}
+              </>
+            ) : (
+              <>
+              {configurations.orderPrefix || "K"}
+              {order.orderId}
+              </>
+            )
+          }
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
           {order.customer.name}

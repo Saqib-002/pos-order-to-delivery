@@ -95,6 +95,7 @@ export class OrderDatabaseOperations {
         orderId: newDailyOrderId,
         orderType: "platform",
         platformId: orderData.platformId,
+        ticketNumber: orderData.ticketNumber || null,
         customerName: orderData.customerName || "",
         customerPhone: orderData.customerPhone || "",
         customerAddress: orderData.customerAddress || "",

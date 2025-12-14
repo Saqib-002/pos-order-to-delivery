@@ -332,7 +332,7 @@ const OrderComponent = () => {
                         <div className="flex items-center justify-between gap-3 w-full">
                           <h3 className="font-semibold text-black text-3xl">
                             {configurations.orderPrefix || "K"}
-                            {order.orderId}
+                            {order.orderId} {order.ticketNumber && (<span className="text-xl">({order.ticketNumber})</span>)}
                           </h3>
                           <div className="text-xl font-bold text-black">
                             €{orderTotal.toFixed(2)}
@@ -368,7 +368,7 @@ const OrderComponent = () => {
                           {/* Delivery Person Assigned Pill */}
                           {isAssignedToDelivery && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                              🚚 {order.deliveryPerson?.name}
+                              🏍️ {order.deliveryPerson?.name}
                             </span>
                           )}
                         </div>
