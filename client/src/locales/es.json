@@ -831,7 +831,7 @@
     }
   },
   "deliveryManagement": {
-    "title": "Gestión de Entregas",
+    "title": "Registro de Repartidores",
     "subtitle": "Gestionar personal de entrega y su información de vehículos",
     "deliveryPersonnel": "Personal de Entrega",
     "addAndManageStaff": "Agregar y gestionar personal de entrega",
@@ -912,7 +912,7 @@
     "quickAssign": "Asignación Rápida"
   },
   "deliveryView": {
-    "title": "Gestión de Entregas",
+    "title": "Registro de Repartidores",
     "assignDelivery": "Asignar",
     "subtitle": "Asignar y rastrear entregas de pedidos",
     "readyForDeliveryOrders": "Pedidos Listos para Entrega",
@@ -1535,7 +1535,7 @@
     "orders": "Pedidos",
     "kitchenView": "Vista de Cocina",
     "deliveryView": "Vista de Entrega",
-    "deliveryManagement": "Gestión de Entregas",
+    "deliveryManagement": "Registro de Repartidores",
     "manageOrders": "Administrar Pedidos",
     "reports": "Informes",
     "menuStructure": "Estructura del Menú",
