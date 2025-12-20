@@ -2,7 +2,6 @@ import { createContext, useContext, useState } from "react";
 
 interface ConfigurationType {
   name?: string;
-  address: string;
   logo: string;
   vatNumber?: string;
   orderPrefix?: string;
@@ -10,6 +9,11 @@ interface ConfigurationType {
   mediumKitchenPriorityTime?: number;
   highKitchenPriorityTime?: number;
   googleMapsApiKey?: string;
+  address: string;
+  apartment?: string;
+  postalCode?: string;
+  city?: string;
+  province?: string;
 }
 interface ConfigurationContextType {
   configurations: ConfigurationType;
@@ -37,7 +41,6 @@ export const ConfigurationsProvider = ({
 }) => {
   const [configurations, setConfigurations] = useState<ConfigurationType>({
     name: "",
-    address: "",
     logo: "",
     vatNumber: "",
     orderPrefix: "",
@@ -45,6 +48,11 @@ export const ConfigurationsProvider = ({
     mediumKitchenPriorityTime: 0,
     highKitchenPriorityTime: 0,
     googleMapsApiKey: "",
+    address: "",
+    apartment: "",
+    postalCode: "",
+    city: "",
+    province: "",
   });
   const [language, setLanguage] = useState("en");
   const value = {

@@ -163,17 +163,37 @@ const ConfigurationsTab = () => {
             <AddressAutocomplete
               value={configurations.address}
               onChange={(value) =>
-                setConfigurations({
-                  ...configurations,
+                setConfigurations((prev) => ({
+                  ...prev,
                   address: value,
-                })
+                }))
+              }
+              apartmentValue={configurations.apartment || ""}
+              postalCodeValue={configurations.postalCode || ""}
+              cityValue={configurations.city || ""}
+              provinceValue={configurations.province || ""}
+              
+              onApartmentChange={(val) => 
+                 setConfigurations((prev) => ({ ...prev, apartment: val }))
+              }
+              onPostalCodeChange={(val) => 
+                 setConfigurations((prev) => ({ ...prev, postalCode: val }))
+              }
+              onCityChange={(val) => 
+                 setConfigurations((prev) => ({ ...prev, city: val }))
+              }
+              onProvinceChange={(val) => 
+                 setConfigurations((prev) => ({ ...prev, province: val }))
               }
               onAddressSelect={(components) => {
-                const addressString = `${components.address}, ${components.postalCode} ${components.city}, ${components.province}`;
-                setConfigurations({
-                  ...configurations,
-                  address: addressString,
-                });
+                setConfigurations((prev) => ({
+                  ...prev,
+                  address: components.address,
+                  apartment: components.apartment || prev.apartment || "", 
+                  postalCode: components.postalCode,
+                  city: components.city,
+                  province: components.province,
+                }));
               }}
               label={t("configurations.companyAddress")}
               name="address"
