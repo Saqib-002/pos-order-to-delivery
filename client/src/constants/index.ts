@@ -13,6 +13,7 @@ export const VIEWS = {
   CUSTOMERS: "customers",
   MENU_STRUCTURE: "menu-structure",
   CONFIGURATIONS: "configurations",
+  VEHICLES: "vehicles",
 } as const;
 
 export const navItems = [
@@ -35,6 +36,7 @@ export const navItems = [
   { view: VIEWS.USERS, label: "Users", roles: ["admin"] },
   { view: VIEWS.CUSTOMERS, label: "Customers", roles: ["admin"] },
   { view: VIEWS.CONFIGURATIONS, label: "Configurations", roles: ["admin"] },
+  { view: VIEWS.VEHICLES, label: "Vehicles", roles: ["admin"] },
 ];
 
 export const MENU_CATEGORIES = {
@@ -73,6 +75,7 @@ export const MODULES = {
   USERS: "users",
   CUSTOMERS: "customers",
   CONFIGURATIONS: "configurations",
+  VEHICLES: "vehicles",
 } as const;
 
 export const MODULE_LABELS = {
@@ -87,6 +90,7 @@ export const MODULE_LABELS = {
   [MODULES.USERS]: "Users",
   [MODULES.CUSTOMERS]: "Customers",
   [MODULES.CONFIGURATIONS]: "Configurations",
+  [MODULES.VEHICLES]: "Vehicle Management",
 } as const;
 
 export const AVAILABLE_MODULES = Object.values(MODULES) as string[];

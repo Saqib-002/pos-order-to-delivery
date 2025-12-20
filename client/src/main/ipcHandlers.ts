@@ -119,6 +119,14 @@ import {
   getConfigurations,
   updateConfigurations,
 } from "./handlers/configurations.js";
+import {
+  createVehicle,
+  getVehicles,
+  updateVehicle,
+  deleteVehicle,
+  addVehicleMaintenance,
+  getVehicleMaintenance
+} from "./handlers/vehicles.js";
 import Store from "electron-store";
 import { initDatabase } from "./database/index.js";
 interface DbCredentials {
@@ -182,7 +190,13 @@ export function registerIpcHandlers() {
       }
     }
   );
-
+  // Vehicle handlers
+  ipcMain.handle("create-vehicle", createVehicle);
+  ipcMain.handle("get-vehicles", getVehicles);
+  ipcMain.handle("update-vehicle", updateVehicle);
+  ipcMain.handle("delete-vehicle", deleteVehicle);
+  ipcMain.handle("add-vehicle-maintenance", addVehicleMaintenance);
+  ipcMain.handle("get-vehicle-maintenance", getVehicleMaintenance);
   // categories handlers
   ipcMain.handle("create-category", createCategory);
   ipcMain.handle("get-categories", getCategories);

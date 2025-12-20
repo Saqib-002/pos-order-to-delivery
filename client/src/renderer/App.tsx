@@ -22,6 +22,7 @@ import i18n from "@/i18n";
 import { useConfigurations } from "./contexts/configurationContext";
 import { DatabaseSetupView } from "./Views/DatabaseSetupView";
 import { hasModuleAccess } from "./utils/permissions";
+import { VehicleManagement } from "./Views/VehicleManagement";
 
 interface ViewConfig {
   component: JSX.Element;
@@ -148,6 +149,10 @@ const App: React.FC = () => {
     },
     [VIEWS.CONFIGURATIONS]: {
       component: <Configurations />,
+    },
+    [VIEWS.VEHICLES]: {
+      component: <VehicleManagement />,
+      roles: ["admin"],
     },
   };
 

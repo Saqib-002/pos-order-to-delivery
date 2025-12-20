@@ -4,7 +4,7 @@ interface CustomInputProps {
     preLabel?: string | React.ReactElement;
     postLabel?: string | React.ReactElement;
     name: string;
-    type: "text" | "email" | "password" | "tel" | "number";
+    type: "text" | "email" | "password" | "tel" | "number" | "date";
     placeholder?: string;
     required?: boolean;
     value?: string | number;

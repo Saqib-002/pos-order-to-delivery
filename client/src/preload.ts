@@ -38,6 +38,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
   saveCdnUrl: (url: string) => ipcRenderer.invoke("save-cdn-url", url),
   // Google Maps API
   getGoogleMapsApiKey: () => ipcRenderer.invoke("get-google-maps-api-key"),
+  // Vehicle operations
+  createVehicle: (token: string, data: any) => ipcRenderer.invoke("create-vehicle", token, data),
+  getVehicles: (token: string) => ipcRenderer.invoke("get-vehicles", token),
+  updateVehicle: (token: string, id: string, data: any) => ipcRenderer.invoke("update-vehicle", token, id, data),
+  deleteVehicle: (token: string, id: string) => ipcRenderer.invoke("delete-vehicle", token, id),
+  
+  // Maintenance operations
+  addVehicleMaintenance: (token: string, data: any) => ipcRenderer.invoke("add-vehicle-maintenance", token, data),
+  getVehicleMaintenance: (token: string, vehicleId: string) => ipcRenderer.invoke("get-vehicle-maintenance", token, vehicleId),
   // categories
   createCategory: (token: string, category: any) =>
     ipcRenderer.invoke("create-category", token, category),
