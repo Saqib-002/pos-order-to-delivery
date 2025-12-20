@@ -115,7 +115,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
         description: product.description || "",
         price: product.price || 0,
         priority: product.priority || 0,
-        tax: product.tax || 10,
+        tax: product.tax || 0,
         discount: product.discount || 0,
         categoryId: product.categoryId || "",
         subcategoryId: product.subcategoryId || "",

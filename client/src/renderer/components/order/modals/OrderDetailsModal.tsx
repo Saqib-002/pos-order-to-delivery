@@ -273,6 +273,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     </tr>
                     {/* UPDATED: Removed price > 0 check to allow free variants */}
                     {item.variantName &&
+                    item.variantId &&
                       String(item.variantName).trim() !== "0" && (
                         <tr>
                           <td></td>
