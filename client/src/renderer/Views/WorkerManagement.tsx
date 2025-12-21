@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Added useEffect
 import { useConfirm } from "../hooks/useConfirm";
 import { useWorkerData } from "../hooks/useWorkerData";
 import { Worker } from "@/types/workers";
@@ -34,6 +34,20 @@ export const WorkerManagement = () => {
     worker: Worker | null;
   }>({ isOpen: false, type: "add", worker: null });
 
+  const [searchTerm, setSearchTerm] = useState(filters.search || "");
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setFilters(prev => ({ ...prev, search: searchTerm, page: 1 }));
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, setFilters]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
   const handleFilterChange = (key: string, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
   };
@@ -66,11 +80,6 @@ export const WorkerManagement = () => {
       { value: 'transfer', label: 'Transfer' },
       { value: 'mixed', label: 'Mixed' }
   ];
-
-  if (loading && workersData.data.length === 0) {
-    return <div className="flex justify-center min-h-screen items-center"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div></div>;
-  }
-
   return (
     <div className="p-4">
       <div className="flex justify-between items-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -88,8 +97,9 @@ export const WorkerManagement = () => {
                       name="search"
                       type="text"
                       placeholder="Search Name or ID Number..."
-                      value={filters.search || ''}
-                      onChange={(e) => handleFilterChange('search', e.target.value)}
+                      // Use local state here
+                      value={searchTerm} 
+                      onChange={handleSearchChange}
                       preLabel={<SearchIcon className="size-5 text-gray-400" />}
                       inputClasses="pl-9"
                   />
@@ -103,7 +113,14 @@ export const WorkerManagement = () => {
           </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[500px]">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[500px] relative">
+        {/* 3. Non-blocking Loading Indicator */}
+        {loading && (
+          <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+          </div>
+        )}
+
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-semibold text-black">Workers ({workersData.pagination.total})</h3>
         </div>
