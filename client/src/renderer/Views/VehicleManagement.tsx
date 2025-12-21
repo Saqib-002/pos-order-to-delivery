@@ -27,6 +27,8 @@ export const VehicleManagement = () => {
     updateVehicle,
     deleteVehicle,
     addMaintenance,
+    updateMaintenance,
+    deleteMaintenance,
     fetchMaintenanceRecords,
   } = useVehicleData();
 
@@ -84,7 +86,7 @@ export const VehicleManagement = () => {
       { value: 'expired', label: 'Expired' }
   ];
 
-  if (loading && vehicleFilters.page === 1) {
+  if (loading && vehiclesData.data.length === 0) {
     return <div className="flex justify-center min-h-screen items-center"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div></div>;
   }
 
@@ -157,6 +159,7 @@ export const VehicleManagement = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[500px]">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-semibold text-black">Vehicles ({vehiclesData.pagination.total})</h3>
+          {loading && <span className="text-sm text-gray-500 animate-pulse">Updating...</span>}
         </div>
         
         <div className="flex-grow">
@@ -191,6 +194,8 @@ export const VehicleManagement = () => {
         onClose={handleClose}
         vehicle={modalState.vehicle}
         onAddRecord={addMaintenance}
+        onUpdateRecord={updateMaintenance}
+        onDeleteRecord={deleteMaintenance}
         fetchRecords={fetchMaintenanceRecords}
       />
     </div>

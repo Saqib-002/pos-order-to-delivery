@@ -148,6 +148,22 @@ export class VehicleDatabaseOperations {
             throw error;
         }
     }
+    static async updateMaintenanceRecord(id: string, updates: Partial<VehicleMaintenance>): Promise<VehicleMaintenance> {
+        try {
+            await db("vehicle_maintenance").where("id", id).update(updates);
+            return await db("vehicle_maintenance").where("id", id).first();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async deleteMaintenanceRecord(id: string): Promise<void> {
+        try {
+            await db("vehicle_maintenance").where("id", id).delete();
+        } catch (error) {
+            throw error;
+        }
+    }
 
     static async getMaintenanceRecords(vehicleId: string, filters: MaintenanceFilters): Promise<PaginatedResult<VehicleMaintenance>> {
         try {

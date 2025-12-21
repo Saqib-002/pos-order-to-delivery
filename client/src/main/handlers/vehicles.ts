@@ -59,6 +59,28 @@ export const addVehicleMaintenance = async (event: IpcMainInvokeEvent, token: st
   }
 };
 
+export const updateVehicleMaintenance = async (event: IpcMainInvokeEvent, token: string, id: string, updates: any) => {
+  try {
+    await verifyToken(event, token);
+    const result = await VehicleDatabaseOperations.updateMaintenanceRecord(id, updates);
+    return { status: true, data: result };
+  } catch (error) {
+    Logger.error("Error updating maintenance:", error);
+    return { status: false, error: (error as Error).message };
+  }
+};
+
+export const deleteVehicleMaintenance = async (event: IpcMainInvokeEvent, token: string, id: string) => {
+  try {
+    await verifyToken(event, token);
+    await VehicleDatabaseOperations.deleteMaintenanceRecord(id);
+    return { status: true, data: { message: "Maintenance record deleted" } };
+  } catch (error) {
+    Logger.error("Error deleting maintenance:", error);
+    return { status: false, error: (error as Error).message };
+  }
+};
+
 export const getVehicleMaintenance = async (event: IpcMainInvokeEvent, token: string, vehicleId: string, filters: any) => {
   try {
     await verifyToken(event, token);

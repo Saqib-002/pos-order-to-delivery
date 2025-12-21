@@ -47,6 +47,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // Maintenance operations
   addVehicleMaintenance: (token: string, data: any) => ipcRenderer.invoke("add-vehicle-maintenance", token, data),
   getVehicleMaintenance: (token: string, vehicleId: string,filters: any) => ipcRenderer.invoke("get-vehicle-maintenance", token, vehicleId,filters),
+  updateVehicleMaintenance: (token: string, id: string, data: any) => ipcRenderer.invoke("update-vehicle-maintenance", token, id, data),
+  deleteVehicleMaintenance: (token: string, id: string) => ipcRenderer.invoke("delete-vehicle-maintenance", token, id),
+  
   // categories
   createCategory: (token: string, category: any) =>
     ipcRenderer.invoke("create-category", token, category),

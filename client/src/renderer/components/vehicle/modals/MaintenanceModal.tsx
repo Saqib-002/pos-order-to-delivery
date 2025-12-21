@@ -3,13 +3,16 @@ import { Vehicle, VehicleMaintenance, MaintenanceFilters, PaginatedResult } from
 import CustomButton from "../../ui/CustomButton";
 import CustomInput from "../../shared/CustomInput";
 import Pagination from "../../shared/Pagination";
-import { CrossIcon, SearchIcon } from "../../../public/Svg";
+import { CrossIcon, SearchIcon, EditIcon, DeleteIcon } from "../../../public/Svg";
+import { useConfirm } from "../../../hooks/useConfirm"; // Assuming you have access to this here, otherwise pass confirm as prop
 
 interface MaintenanceModalProps {
   isOpen: boolean;
   onClose: () => void;
   vehicle: Vehicle | null;
   onAddRecord: (vehicleId: string, data: Partial<VehicleMaintenance>) => Promise<boolean>;
+  onUpdateRecord: (maintenanceId: string, data: Partial<VehicleMaintenance>) => Promise<boolean>;
+  onDeleteRecord: (maintenanceId: string) => Promise<boolean>;
   fetchRecords: (vehicleId: string, filters: MaintenanceFilters) => Promise<PaginatedResult<VehicleMaintenance>>;
 }
 
@@ -27,26 +30,40 @@ const INITIAL_FILTERS: MaintenanceFilters = {
     maxPrice: undefined,
 };
 
+const formatDate = (dateString: string | Date | undefined) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('en-GB'); // dd/mm/yyyy
+};
+
 export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   isOpen,
   onClose,
   vehicle,
   onAddRecord,
+  onUpdateRecord,
+  onDeleteRecord,
   fetchRecords
 }) => {
+  const confirm = useConfirm();
   const [data, setData] = useState<PaginatedResult<VehicleMaintenance>>({ 
       data: [], pagination: { total: 0, page: 1, pageSize: 5, totalPages: 0 } 
   });
   const [filters, setFilters] = useState<MaintenanceFilters>(INITIAL_FILTERS);
   const [form, setForm] = useState<MaintenanceForm>({ unit: '1', sparePart: '', price: '' });
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen && vehicle) {
       setFilters(INITIAL_FILTERS); 
-      setForm({ unit: '1', sparePart: '', price: '' });
+      resetForm();
       loadRecords(INITIAL_FILTERS);
     }
   }, [isOpen, vehicle]);
+
+  const resetForm = () => {
+    setForm({ unit: '1', sparePart: '', price: '' });
+    setEditingId(null);
+  }
 
   const loadRecords = async (currentFilters: MaintenanceFilters) => {
     if (vehicle) {
@@ -67,7 +84,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
       loadRecords(newFilters);
   };
 
-  const handleAdd = async () => {
+  const handleSubmit = async () => {
     if (!vehicle || !form.sparePart || !form.price) return;
     
     const priceVal = parseFloat(form.price);
@@ -75,12 +92,34 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
     if (isNaN(priceVal)) return;
 
     const payload = { sparePart: form.sparePart, price: priceVal, unit: isNaN(unitVal) ? 1 : unitVal };
-    const success = await onAddRecord(vehicle.id, payload);
+    
+    let success = false;
+    if (editingId) {
+        success = await onUpdateRecord(editingId, payload);
+    } else {
+        success = await onAddRecord(vehicle.id, payload);
+    }
     
     if (success) {
-      setForm({ unit: '1', sparePart: '', price: '' });
+      resetForm();
       loadRecords(filters);
     }
+  };
+
+  const handleEdit = (record: VehicleMaintenance) => {
+      setForm({
+          sparePart: record.sparePart,
+          unit: record.unit.toString(),
+          price: record.price.toString()
+      });
+      setEditingId(record.id);
+  };
+
+  const handleDelete = async (id: string) => {
+      if (await confirm({ title: "Delete Record", message: "Are you sure?", confirmText: "Delete", type: "danger" })) {
+         const success = await onDeleteRecord(id);
+         if (success) loadRecords(filters);
+      }
   };
 
   if (!isOpen || !vehicle) return null;
@@ -107,9 +146,11 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
 
         <div className="p-8 overflow-y-auto flex-1 flex flex-col">
           
-          {/* Add Record Form */}
+          {/* Add/Edit Record Form */}
           <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100 flex-shrink-0">
-            <h4 className="font-semibold mb-3 text-sm text-black uppercase tracking-wider">Add New Record</h4>
+            <h4 className="font-semibold mb-3 text-sm text-black uppercase tracking-wider">
+                {editingId ? "Edit Record" : "Add New Record"}
+            </h4>
             <div className="grid grid-cols-12 gap-3 items-end">
               <div className="col-span-5">
                 <CustomInput
@@ -142,8 +183,22 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                   inputClasses="bg-white py-2"
                 />
               </div>
-              <div className="col-span-2">
-                <CustomButton type="button" onClick={handleAdd} label="Add" className="w-full justify-center bg-black text-white hover:bg-gray-800 py-2" />
+              <div className="col-span-2 flex gap-1">
+                <CustomButton 
+                    type="button" 
+                    onClick={handleSubmit} 
+                    label={editingId ? "Save" : "Add"} 
+                    className={`flex-1 justify-center ${editingId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-black hover:bg-gray-800'} text-white py-2`} 
+                />
+                {editingId && (
+                    <CustomButton 
+                        type="button" 
+                        onClick={resetForm} 
+                        label="X" 
+                        className="bg-gray-200 text-black hover:bg-gray-300 py-2 px-3" 
+                        title="Cancel Edit"
+                    />
+                )}
               </div>
             </div>
           </div>
@@ -194,21 +249,40 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                     <th className="p-3 text-right font-medium text-gray-500">Unit</th>
                     <th className="p-3 text-right font-medium text-gray-500">Price</th>
                     <th className="p-3 text-right font-medium text-gray-500">Total</th>
+                    <th className="p-3 text-right font-medium text-gray-500 w-24">Actions</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                     {data.data.length === 0 ? (
                     <tr>
-                        <td colSpan={5} className="p-8 text-center text-gray-400">No records found matching filters</td>
+                        <td colSpan={6} className="p-8 text-center text-gray-400">No records found matching filters</td>
                     </tr>
                     ) : (
                     data.data.map((r) => (
                         <tr key={r.id} className="hover:bg-gray-50">
-                        <td className="p-3 text-gray-600">{new Date(r.date).toLocaleDateString()}</td>
+                        <td className="p-3 text-gray-600">{formatDate(r.date)}</td>
                         <td className="p-3 font-medium text-black">{r.sparePart}</td>
                         <td className="p-3 text-right text-gray-600">{r.unit}</td>
                         <td className="p-3 text-right text-gray-600">{Number(r.price).toFixed(2)}€</td>
                         <td className="p-3 text-right font-semibold text-black">{Number(r.total).toFixed(2)}€</td>
+                        <td className="p-3 text-right flex justify-end gap-1">
+                            <CustomButton
+                                type="button"
+                                variant="transparent"
+                                onClick={() => handleEdit(r)}
+                                Icon={<EditIcon className="size-3" />}
+                                className="text-black hover:text-blue-600 !p-1.5"
+                                title="Edit"
+                            />
+                            <CustomButton
+                                type="button"
+                                variant="transparent"
+                                onClick={() => handleDelete(r.id)}
+                                Icon={<DeleteIcon className="size-3" />}
+                                className="text-red-500 hover:text-red-700 !p-1.5"
+                                title="Delete"
+                            />
+                        </td>
                         </tr>
                     ))
                     )}

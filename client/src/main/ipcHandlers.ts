@@ -125,7 +125,9 @@ import {
   updateVehicle,
   deleteVehicle,
   addVehicleMaintenance,
-  getVehicleMaintenance
+  getVehicleMaintenance,
+  deleteVehicleMaintenance,
+  updateVehicleMaintenance
 } from "./handlers/vehicles.js";
 import Store from "electron-store";
 import { initDatabase } from "./database/index.js";
@@ -196,6 +198,8 @@ export function registerIpcHandlers() {
   ipcMain.handle("update-vehicle", updateVehicle);
   ipcMain.handle("delete-vehicle", deleteVehicle);
   ipcMain.handle("add-vehicle-maintenance", addVehicleMaintenance);
+  ipcMain.handle("update-vehicle-maintenance", updateVehicleMaintenance);
+  ipcMain.handle("delete-vehicle-maintenance", deleteVehicleMaintenance);
   ipcMain.handle("get-vehicle-maintenance", getVehicleMaintenance);
   // categories handlers
   ipcMain.handle("create-category", createCategory);

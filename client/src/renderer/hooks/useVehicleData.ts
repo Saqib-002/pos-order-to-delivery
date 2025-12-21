@@ -37,7 +37,6 @@ export const useVehicleData = () => {
   }, [auth.token]);
 
   useEffect(() => {
-    setLoading(true);
     Promise.all([fetchVehicles(), fetchDrivers()]).finally(() => setLoading(false));
   }, [fetchVehicles, fetchDrivers]);
 
@@ -60,11 +59,26 @@ export const useVehicleData = () => {
     toast.error(res.error); return false;
   };
 
+  // --- Maintenance Operations ---
+
   const addMaintenance = async (vehicleId: string, data: Partial<VehicleMaintenance>) => {
      const total = (data.price || 0) * (data.unit || 1);
      const res = await (window as any).electronAPI.addVehicleMaintenance(auth.token, { ...data, total, vehicleId });
      if(res.status) { toast.success("Maintenance record added"); return true; }
      toast.error(res.error); return false;
+  };
+
+  const updateMaintenance = async (maintenanceId: string, data: Partial<VehicleMaintenance>) => {
+    const total = (data.price || 0) * (data.unit || 1);
+    const res = await (window as any).electronAPI.updateVehicleMaintenance(auth.token, maintenanceId, { ...data, total });
+    if(res.status) { toast.success("Maintenance record updated"); return true; }
+    toast.error(res.error); return false;
+  };
+
+  const deleteMaintenance = async (maintenanceId: string) => {
+    const res = await (window as any).electronAPI.deleteVehicleMaintenance(auth.token, maintenanceId);
+    if(res.status) { toast.success("Maintenance record deleted"); return true; }
+    toast.error(res.error); return false;
   };
 
   const fetchMaintenanceRecords = async (vehicleId: string, filters: MaintenanceFilters) => {
@@ -83,6 +97,8 @@ export const useVehicleData = () => {
     updateVehicle,
     deleteVehicle,
     addMaintenance,
+    updateMaintenance,
+    deleteMaintenance,
     fetchMaintenanceRecords
   };
 };

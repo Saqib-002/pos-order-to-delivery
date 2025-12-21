@@ -18,6 +18,11 @@ interface VehicleTableProps {
   onMaintenance: (vehicle: Vehicle) => void;
 }
 
+const formatDate = (dateString: string | Date | undefined) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('en-GB');
+};
+
 export const VehicleTable: React.FC<VehicleTableProps> = ({
   vehicles,
   onEdit,
@@ -119,16 +124,10 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
               </td>
               <td className="px-6 py-4 text-sm text-gray-500">
                 <div>
-                  ITV:{" "}
-                  {vehicle.itvDate
-                    ? new Date(vehicle.itvDate).toLocaleDateString()
-                    : "-"}
+                  ITV: {formatDate(vehicle.itvDate)}
                 </div>
                 <div>
-                  Ins:{" "}
-                  {vehicle.insuranceDate
-                    ? new Date(vehicle.insuranceDate).toLocaleDateString()
-                    : "-"}
+                  Ins: {formatDate(vehicle.insuranceDate)}
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2">
