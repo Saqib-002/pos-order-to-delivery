@@ -14,10 +14,11 @@ export const createVehicle = async (event: IpcMainInvokeEvent, token: string, ve
   }
 };
 
-export const getVehicles = async (event: IpcMainInvokeEvent, token: string) => {
+export const getVehicles = async (event: IpcMainInvokeEvent, token: string, filters: any) => {
   try {
     await verifyToken(event, token);
-    const result = await VehicleDatabaseOperations.getVehicles();
+    // filters object passed directly to DB operations
+    const result = await VehicleDatabaseOperations.getVehicles(filters || {});
     return { status: true, data: result };
   } catch (error) {
     Logger.error("Error getting vehicles:", error);
@@ -58,10 +59,10 @@ export const addVehicleMaintenance = async (event: IpcMainInvokeEvent, token: st
   }
 };
 
-export const getVehicleMaintenance = async (event: IpcMainInvokeEvent, token: string, vehicleId: string) => {
+export const getVehicleMaintenance = async (event: IpcMainInvokeEvent, token: string, vehicleId: string, filters: any) => {
   try {
     await verifyToken(event, token);
-    const result = await VehicleDatabaseOperations.getMaintenanceRecords(vehicleId);
+    const result = await VehicleDatabaseOperations.getMaintenanceRecords(vehicleId, filters || {});
     return { status: true, data: result };
   } catch (error) {
     Logger.error("Error getting maintenance:", error);

@@ -24,3 +24,33 @@ export interface VehicleMaintenance {
   total: number;
   date: string;
 }
+
+export interface PaginatedResult<T> {
+  data: T[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
+}
+
+export interface VehicleFilters {
+  search?: string;
+  type?: 'bike' | 'car' | 'all';
+  hasGps?: boolean | null;
+  driverId?: string;
+  alertStatus?: 'all' | 'has_alerts' | 'expired' | 'expiring_soon';
+  page: number;
+  pageSize: number;
+}
+
+export interface MaintenanceFilters {
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  page: number;
+  pageSize: number;
+}

@@ -1,277 +1,198 @@
-import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { useAuth } from "../contexts/AuthContext";
-import { Vehicle, VehicleMaintenance } from "@/types/vehicles";
+import { useState } from "react";
+import { useConfirm } from "../hooks/useConfirm";
+import { useVehicleData } from "../hooks/useVehicleData";
+import { Vehicle } from "@/types/vehicles";
+
+// Components
 import CustomButton from "../components/ui/CustomButton";
 import CustomInput from "../components/shared/CustomInput";
-import { DeliveryPerson } from "@/types/delivery";
+import { CustomSelect } from "../components/ui/CustomSelect";
+import Pagination from "../components/shared/Pagination";
+import { VehicleTable } from "../components/vehicle/VehicleTable";
+import { VehicleModal } from "../components/vehicle/modals/VehicleModal";
+import { MaintenanceModal } from "../components/vehicle/modals/MaintenanceModal";
+
+// Icons
+import { AddIcon, SearchIcon } from "../public/Svg";
 
 export const VehicleManagement = () => {
-  const { auth } = useAuth();
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [drivers, setDrivers] = useState<DeliveryPerson[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
-  const [maintenanceRecords, setMaintenanceRecords] = useState<VehicleMaintenance[]>([]);
-  
-  // Form States
-  const [formData, setFormData] = useState<Partial<Vehicle>>({
-    type: 'bike',
-    hasGps: false
-  });
-  const [maintenanceForm, setMaintenanceForm] = useState<Partial<VehicleMaintenance>>({ unit: 1 });
+  const confirm = useConfirm();
+  const {
+    vehiclesData,
+    drivers,
+    loading,
+    vehicleFilters,
+    setVehicleFilters,
+    createVehicle,
+    updateVehicle,
+    deleteVehicle,
+    addMaintenance,
+    fetchMaintenanceRecords,
+  } = useVehicleData();
 
-  useEffect(() => {
-    fetchVehicles();
-    fetchDrivers();
-  }, []);
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: "add" | "edit" | "maintenance";
+    vehicle: Vehicle | null;
+  }>({ isOpen: false, type: "add", vehicle: null });
 
-  const fetchVehicles = async () => {
-    const res = await (window as any).electronAPI.getVehicles(auth.token);
-    if (res.status) setVehicles(res.data);
+  // --- Filter Handlers ---
+  const handleFilterChange = (key: string, value: any) => {
+    setVehicleFilters(prev => ({ ...prev, [key]: value, page: 1 }));
   };
 
-  const fetchDrivers = async () => {
-    const res = await (window as any).electronAPI.getDeliveryPersons(auth.token);
-    if (res.status) setDrivers(res.data);
+  const handlePageChange = (zeroIndexedPage: number) => {
+    setVehicleFilters(prev => ({ ...prev, page: zeroIndexedPage + 1 }));
   };
 
-  const handleSave = async () => {
-    if (!formData.model || !formData.licensePlate) {
-      toast.error("Model and License Plate are required");
-      return;
-    }
-    
-    let res;
-    if (selectedVehicle) {
-      res = await (window as any).electronAPI.updateVehicle(auth.token, selectedVehicle.id, formData);
-    } else {
-      res = await (window as any).electronAPI.createVehicle(auth.token, formData);
-    }
+  // --- Modal Handlers ---
+  const handleOpenAdd = () => setModalState({ isOpen: true, type: "add", vehicle: null });
+  const handleOpenEdit = (vehicle: Vehicle) => setModalState({ isOpen: true, type: "edit", vehicle });
+  const handleOpenMaintenance = (vehicle: Vehicle) => setModalState({ isOpen: true, type: "maintenance", vehicle });
+  const handleClose = () => setModalState({ ...modalState, isOpen: false });
 
-    if (res.status) {
-      toast.success(selectedVehicle ? "Vehicle updated" : "Vehicle created");
-      setShowModal(false);
-      fetchVehicles();
-    } else {
-      toast.error(res.error);
-    }
+  const handleSaveVehicle = async (data: Partial<Vehicle>) => {
+    const result = modalState.type === "edit" && modalState.vehicle
+      ? await updateVehicle(modalState.vehicle.id, data)
+      : await createVehicle(data);
+    return result;
   };
 
   const handleDelete = async (id: string) => {
-    if(!confirm("Are you sure?")) return;
-    const res = await (window as any).electronAPI.deleteVehicle(auth.token, id);
-    if (res.status) {
-        toast.success("Vehicle deleted");
-        fetchVehicles();
+    if (await confirm({ title: "Delete Vehicle", message: "Are you sure?", confirmText: "Delete", type: "danger" })) {
+        await deleteVehicle(id);
     }
   };
 
-  const openMaintenance = async (vehicle: Vehicle) => {
-    setSelectedVehicle(vehicle);
-    const res = await (window as any).electronAPI.getVehicleMaintenance(auth.token, vehicle.id);
-    if (res.status) setMaintenanceRecords(res.data);
-    setShowMaintenanceModal(true);
-  };
+  // --- Options ---
+  const driverOptions = [
+      { value: '', label: 'All Drivers' },
+      { value: 'unassigned', label: 'Unassigned' },
+      ...drivers.map(d => ({ value: d.id, label: d.name }))
+  ];
 
-  const addMaintenance = async () => {
-      if (!selectedVehicle) return;
-      const total = (maintenanceForm.price || 0) * (maintenanceForm.unit || 1);
-      const payload = { ...maintenanceForm, total, vehicleId: selectedVehicle.id };
-      
-      const res = await (window as any).electronAPI.addVehicleMaintenance(auth.token, payload);
-      if(res.status) {
-          toast.success("Maintenance record added");
-          setMaintenanceForm({ unit: 1, sparePart: '', price: 0 });
-          // Refresh list
-          const updated = await (window as any).electronAPI.getVehicleMaintenance(auth.token, selectedVehicle.id);
-          if(updated.status) setMaintenanceRecords(updated.data);
-      }
-  };
+  const typeOptions = [
+      { value: 'all', label: 'All Types' },
+      { value: 'bike', label: 'Bike' },
+      { value: 'car', label: 'Car' }
+  ];
+
+  const alertOptions = [
+      { value: 'all', label: 'All Status' },
+      { value: 'has_alerts', label: 'Has Alerts' },
+      { value: 'expiring_soon', label: 'Expiring Soon' },
+      { value: 'expired', label: 'Expired' }
+  ];
+
+  if (loading && vehicleFilters.page === 1) {
+    return <div className="flex justify-center min-h-screen items-center"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div></div>;
+  }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Vehicle Management</h1>
-        <CustomButton type="button" onClick={() => { setSelectedVehicle(null); setFormData({type: 'bike', hasGps: false}); setShowModal(true); }} label="Add Vehicle"/>
-      </div>
-
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vehicle</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Driver</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dates (ITV/Ins)</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alerts</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {vehicles.map((vehicle) => (
-              <tr key={vehicle.id}>
-                <td className="px-6 py-4">
-                  <div className="font-bold">{vehicle.model} ({vehicle.type})</div>
-                  <div className="text-sm text-gray-500">{vehicle.licensePlate}</div>
-                  <div className="text-xs text-gray-400">GPS: {vehicle.hasGps ? "Yes" : "No"}</div>
-                </td>
-                <td className="px-6 py-4">{vehicle.driverName || "Unassigned"}</td>
-                <td className="px-6 py-4 text-sm">
-                   <div>ITV: {vehicle.itvDate ? new Date(vehicle.itvDate).toLocaleDateString() : 'N/A'}</div>
-                   <div>Ins: {vehicle.insuranceDate ? new Date(vehicle.insuranceDate).toLocaleDateString() : 'N/A'}</div>
-                </td>
-                <td className="px-6 py-4">
-                    {vehicle.alerts?.map((alert, i) => (
-                        <span key={i} className="inline-block bg-red-100 text-red-800 text-xs px-2 py-1 rounded mr-1">{alert}</span>
-                    ))}
-                </td>
-                <td className="px-6 py-4 text-right space-x-2">
-                  <button onClick={() => openMaintenance(vehicle)} className="text-blue-600 hover:text-blue-900">Maintenance</button>
-                  <button onClick={() => { setSelectedVehicle(vehicle); setFormData(vehicle); setShowModal(true); }} className="text-indigo-600 hover:text-indigo-900">Edit</button>
-                  <button onClick={() => handleDelete(vehicle.id)} className="text-red-600 hover:text-red-900">Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Add/Edit Vehicle Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
-            <h2 className="text-xl font-bold mb-4">{selectedVehicle ? "Edit" : "Add"} Vehicle</h2>
-            <div className="grid grid-cols-2 gap-4">
-                <CustomInput 
-                    name="model" 
-                    type="text" 
-                    label="Model" 
-                    value={formData.model || ''} 
-                    onChange={(e) => setFormData({...formData, model: e.target.value})} 
-                />
-                <CustomInput 
-                    name="licensePlate" 
-                    type="text" 
-                    label="License Plate" 
-                    value={formData.licensePlate || ''} 
-                    onChange={(e) => setFormData({...formData, licensePlate: e.target.value})} 
-                />
-                <CustomInput 
-                    name="color" 
-                    type="text" 
-                    label="Color" 
-                    value={formData.color || ''} 
-                    onChange={(e) => setFormData({...formData, color: e.target.value})} 
-                />
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                    <select className="w-full border rounded p-2" value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value as any})}>
-                        <option value="bike">Bike</option>
-                        <option value="car">Car</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Driver</label>
-                    <select className="w-full border rounded p-2" value={formData.driverId || ''} onChange={(e) => setFormData({...formData, driverId: e.target.value})}>
-                        <option value="">Select Driver</option>
-                        {drivers.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                    </select>
-                </div>
-                <div className="flex items-center mt-6">
-                    <input type="checkbox" checked={formData.hasGps} onChange={(e) => setFormData({...formData, hasGps: e.target.checked})} className="mr-2" />
-                    <label>Has GPS</label>
-                </div>
-                <CustomInput 
-                    name="itvDate" 
-                    type="date" 
-                    label="ITV Date" 
-                    value={formData.itvDate ? new Date(formData.itvDate).toISOString().split('T')[0] : ''} 
-                    onChange={(e) => setFormData({...formData, itvDate: e.target.value})} 
-                />
-                <CustomInput 
-                    name="insuranceDate" 
-                    type="date" 
-                    label="Insurance Date" 
-                    value={formData.insuranceDate ? new Date(formData.insuranceDate).toISOString().split('T')[0] : ''} 
-                    onChange={(e) => setFormData({...formData, insuranceDate: e.target.value})} 
-                />
-            </div>
-            <div className="mt-6 flex justify-end gap-2">
-                <CustomButton type="button" variant="secondary" onClick={() => setShowModal(false)} label="Cancel"/>
-                <CustomButton type="button" onClick={handleSave} label="Save"/>
-            </div>
-          </div>
+    <div className="p-4">
+      {/* Header */}
+      <div className="flex justify-between items-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-black">Vehicle Management</h2>
+          <p className="text-gray-600 mt-1">Manage your fleet and maintenance</p>
         </div>
-      )}
+        <CustomButton type="button" onClick={handleOpenAdd} label="Add Vehicle" Icon={<AddIcon className="size-5" />} />
+      </div>
 
-      {/* Maintenance Modal */}
-      {showMaintenanceModal && selectedVehicle && (
-         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-         <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-           <h2 className="text-xl font-bold mb-4">Maintenance: {selectedVehicle.model}</h2>
-           
-           {/* Add New Record Form */}
-           <div className="bg-gray-50 p-4 rounded mb-4 grid grid-cols-4 gap-2 items-end">
-                <div className="col-span-2">
-                    <CustomInput 
-                        name="sparePart" 
-                        type="text" 
-                        label="Spare Part" 
-                        value={maintenanceForm.sparePart || ''} 
-                        onChange={(e) => setMaintenanceForm({...maintenanceForm, sparePart: e.target.value})} 
-                    />
-                </div>
-                <CustomInput 
-                    name="unit" 
-                    type="number" 
-                    label="Unit" 
-                    value={maintenanceForm.unit?.toString() || '1'} 
-                    onChange={(e) => setMaintenanceForm({...maintenanceForm, unit: parseInt(e.target.value) || 0})} 
-                />
-                <CustomInput 
-                    name="price" 
-                    type="number" 
-                    label="Price" 
-                    value={maintenanceForm.price?.toString() || ''} 
-                    onChange={(e) => setMaintenanceForm({...maintenanceForm, price: parseFloat(e.target.value) || 0})} 
-                />
-                <div className="col-span-4 mt-2 text-right">
-                     <CustomButton type="button" size="sm" onClick={addMaintenance}>Add Record</CustomButton>
-                </div>
-           </div>
+      {/* Filter Bar */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="md:col-span-1">
+                  <CustomInput
+                      name="search"
+                      type="text"
+                      placeholder="Search Model/Plate..."
+                      value={vehicleFilters.search || ''}
+                      onChange={(e) => handleFilterChange('search', e.target.value)}
+                      preLabel={<SearchIcon className="size-5 text-gray-400" />}
+                      inputClasses="pl-9"
+                  />
+              </div>
+              <CustomSelect
+                  options={typeOptions}
+                  value={vehicleFilters.type || 'all'}
+                  onChange={(val) => handleFilterChange('type', val)}
+                  placeholder="Type"
+              />
+              <CustomSelect
+                  options={driverOptions}
+                  value={vehicleFilters.driverId || ''}
+                  onChange={(val) => handleFilterChange('driverId', val)}
+                  placeholder="Driver"
+              />
+              <CustomSelect
+                  options={alertOptions}
+                  value={vehicleFilters.alertStatus || 'all'}
+                  onChange={(val) => handleFilterChange('alertStatus', val)}
+                  placeholder="Status"
+              />
+              <div className="flex items-center justify-center border rounded-lg bg-gray-50 px-4">
+                 <label className="flex items-center cursor-pointer gap-2">
+                     <input 
+                        type="checkbox" 
+                        className="w-4 h-4 text-black rounded focus:ring-black accent-black"
+                        checked={vehicleFilters.hasGps === true}
+                        ref={(input) => {
+                            if (input) input.indeterminate = vehicleFilters.hasGps === null;
+                        }}
+                        onChange={() => {
+                            const nextState = vehicleFilters.hasGps === null ? true : (vehicleFilters.hasGps === true ? false : null);
+                            handleFilterChange('hasGps', nextState);
+                        }}
+                     />
+                     <span className="text-sm font-medium text-gray-700">
+                         GPS: {vehicleFilters.hasGps === null ? 'All' : (vehicleFilters.hasGps ? 'Yes' : 'No')}
+                     </span>
+                 </label>
+              </div>
+          </div>
+      </div>
 
-           <div className="max-h-60 overflow-y-auto">
-               <table className="min-w-full text-sm">
-                   <thead>
-                       <tr className="bg-gray-100">
-                           <th className="p-2 text-left">Date</th>
-                           <th className="p-2 text-left">Part</th>
-                           <th className="p-2 text-right">Unit</th>
-                           <th className="p-2 text-right">Price</th>
-                           <th className="p-2 text-right">Total</th>
-                       </tr>
-                   </thead>
-                   <tbody>
-                       {maintenanceRecords.map(r => (
-                           <tr key={r.id} className="border-b">
-                               <td className="p-2">{new Date(r.date).toLocaleDateString()}</td>
-                               <td className="p-2">{r.sparePart}</td>
-                               <td className="p-2 text-right">{r.unit}</td>
-                               <td className="p-2 text-right">{r.price?.toFixed(2)}€</td>
-                               <td className="p-2 text-right">{r.total?.toFixed(2)}€</td>
-                           </tr>
-                       ))}
-                   </tbody>
-               </table>
-           </div>
+      {/* Table */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[500px]">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-black">Vehicles ({vehiclesData.pagination.total})</h3>
+        </div>
+        
+        <div className="flex-grow">
+            <VehicleTable
+              vehicles={vehiclesData.data}
+              onEdit={handleOpenEdit}
+              onDelete={handleDelete}
+              onMaintenance={handleOpenMaintenance}
+            />
+        </div>
 
-           <div className="mt-6 flex justify-end">
-               <CustomButton type="button" variant="secondary" onClick={() => setShowMaintenanceModal(false)}>Close</CustomButton>
-           </div>
-         </div>
-       </div>
-      )}
+        <div className="p-4 border-t border-gray-200">
+            <Pagination
+                currentPage={vehiclesData.pagination.page - 1}
+                totalPages={vehiclesData.pagination.totalPages}
+                onPageChange={handlePageChange}
+            />
+        </div>
+      </div>
+
+      {/* Modals */}
+      <VehicleModal
+        isOpen={modalState.isOpen && modalState.type !== "maintenance"}
+        onClose={handleClose}
+        onSubmit={handleSaveVehicle}
+        initialData={modalState.type === "edit" ? modalState.vehicle : null}
+        drivers={drivers}
+      />
+
+      <MaintenanceModal
+        isOpen={modalState.isOpen && modalState.type === "maintenance"}
+        onClose={handleClose}
+        vehicle={modalState.vehicle}
+        onAddRecord={addMaintenance}
+        fetchRecords={fetchMaintenanceRecords}
+      />
     </div>
   );
 };
