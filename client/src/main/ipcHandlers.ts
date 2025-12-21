@@ -131,7 +131,7 @@ import {
 } from "./handlers/vehicles.js";
 import Store from "electron-store";
 import { initDatabase } from "./database/index.js";
-import { createWorker, getWorkers, updateWorker, deleteWorker, addSalaryRecord, getSalaryRecords, deleteSalaryRecord } from "./handlers/workers.js";
+import { createWorker, getWorkers, updateWorker, deleteWorker, addSalaryRecord, getSalaryRecords, deleteSalaryRecord, updateSalaryRecord } from "./handlers/workers.js";
 interface DbCredentials {
   host: string;
   port: number;
@@ -212,6 +212,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("add-salary-record", addSalaryRecord);
   ipcMain.handle("get-salary-records", getSalaryRecords);
   ipcMain.handle("delete-salary-record", deleteSalaryRecord);
+  ipcMain.handle("update-salary-record", updateSalaryRecord);
   // categories handlers
   ipcMain.handle("create-category", createCategory);
   ipcMain.handle("get-categories", getCategories);

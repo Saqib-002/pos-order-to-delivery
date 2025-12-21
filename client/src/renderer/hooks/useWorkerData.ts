@@ -99,6 +99,11 @@ export const useWorkerData = () => {
     if(res.status) return res.data;
     return { data: [], pagination: { total: 0 } };
   };
+  const updateSalary = async (id: string, data: any) => {
+    const res = await (window as any).electronAPI.updateSalaryRecord(token, id, data);
+    if(res.status) { toast.success("Salary updated"); return true; }
+    else { toast.error(res.error); return false; }
+  };
 
   const deleteSalary = async (id: string) => {
     const res = await (window as any).electronAPI.deleteSalaryRecord(token, id);
@@ -115,6 +120,7 @@ export const useWorkerData = () => {
     updateWorker,
     deleteWorker,
     addSalary,
+    updateSalary,
     fetchSalaryRecords,
     deleteSalary
   };

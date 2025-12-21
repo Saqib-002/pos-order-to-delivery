@@ -71,6 +71,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("add-salary-record", token, data),
   getSalaryRecords: (token: string, workerId: string, filters: any) =>
     ipcRenderer.invoke("get-salary-records", token, workerId, filters),
+  updateSalaryRecord: (token: string, id: string, data: any) =>
+    ipcRenderer.invoke("update-salary-record", token, id, data),
   deleteSalaryRecord: (token: string, id: string) =>
     ipcRenderer.invoke("delete-salary-record", token, id),
   // categories

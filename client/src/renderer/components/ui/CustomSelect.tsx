@@ -16,6 +16,7 @@ interface CustomSelectProps {
   disabled?: boolean;
   portalClassName?: string;
   maxHeight?: string;
+  label?: string;
 }
 
 export const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -27,6 +28,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   disabled = false,
   portalClassName = "",
   maxHeight = "max-h-60",
+  label
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
@@ -65,6 +67,11 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   return (
     <>
       <div className={`relative ${className}`} ref={selectRef}>
+        {label && (
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {label}
+          </label>
+        )}
         <button
           type="button"
           onClick={() => !disabled && setIsOpen(!isOpen)}

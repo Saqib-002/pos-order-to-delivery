@@ -22,6 +22,7 @@ export const WorkerManagement = () => {
     createWorker,
     updateWorker,
     deleteWorker,
+    updateSalary,
     addSalary,
     deleteSalary,
     fetchSalaryRecords
@@ -138,6 +139,7 @@ export const WorkerManagement = () => {
         onClose={handleClose}
         worker={modalState.worker}
         onAddRecord={addSalary}
+        onUpdateRecord={updateSalary}
         onDeleteRecord={deleteSalary}
         fetchRecords={fetchSalaryRecords}
       />

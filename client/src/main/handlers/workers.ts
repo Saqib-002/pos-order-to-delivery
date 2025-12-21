@@ -59,7 +59,16 @@ export const addSalaryRecord = async (event: IpcMainInvokeEvent, token: string, 
     return { status: false, error: (error as Error).message };
   }
 };
-
+export const updateSalaryRecord = async (event: IpcMainInvokeEvent, token: string, id: string, updates: any) => {
+  try {
+    await verifyToken(event, token);
+    const result = await WorkerDatabaseOperations.updateSalaryRecord(id, updates);
+    return { status: true, data: result };
+  } catch (error) {
+    Logger.error("Error updating salary record:", error);
+    return { status: false, error: (error as Error).message };
+  }
+};
 export const getSalaryRecords = async (event: IpcMainInvokeEvent, token: string, workerId: string, filters: any) => {
   try {
     await verifyToken(event, token);

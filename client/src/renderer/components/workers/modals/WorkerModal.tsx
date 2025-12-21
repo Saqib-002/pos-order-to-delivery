@@ -28,6 +28,17 @@ export const WorkerModal = ({ isOpen, onClose, onSubmit, initialData }: Props) =
     if (success) onClose();
   };
 
+  const getInputValue = (dateVal: string | Date | undefined) => {
+    if (!dateVal) return '';
+    if (dateVal instanceof Date) {
+      return dateVal.toISOString().split('T')[0];
+    }
+    if (typeof dateVal === 'string') {
+      return dateVal.split('T')[0];
+    }
+    return '';
+  };
+
   const paymentOptions = [
     { value: 'cash', label: 'Cash' },
     { value: 'transfer', label: 'Transfer' },
@@ -49,11 +60,19 @@ export const WorkerModal = ({ isOpen, onClose, onSubmit, initialData }: Props) =
              <CustomInput name="fullname" type="text" label="Full Name" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} required />
           </div>
           
-          <CustomInput name="dob" label="Date of Birth" type="date" value={formData.dateOfBirth?.split('T')[0] || ''} onChange={e => setFormData({...formData, dateOfBirth: e.target.value})} />
+          {/* Use the helper function here */}
+          <CustomInput 
+            name="dob" 
+            label="Date of Birth" 
+            type="date" 
+            value={getInputValue(formData.dateOfBirth)} 
+            onChange={e => setFormData({...formData, dateOfBirth: e.target.value})} 
+          />
+          
           <CustomInput name="id" type="tel" label="ID Number (DNI/NIE)" value={formData.idNumber || ''} onChange={e => setFormData({...formData, idNumber: e.target.value})} />
           
           <CustomInput name="phone" type="tel" label="Phone Number" value={formData.phoneNumber || ''} onChange={e => setFormData({...formData, phoneNumber: e.target.value})} />
-          <CustomSelect placeholder="Payment Method" options={paymentOptions} value={formData.paymentMethod || 'transfer'} onChange={val => setFormData({...formData, paymentMethod: val as any})} />
+          <CustomSelect placeholder="Payment Method" options={paymentOptions} value={formData.paymentMethod || 'transfer'} onChange={val => setFormData({...formData, paymentMethod: val as any})} label="Payment Method" className="px-2!" />
 
           <div className="col-span-2 border-t pt-4 mt-2">
             <h4 className="text-sm font-semibold text-gray-700 mb-2">Banking Details</h4>

@@ -70,6 +70,13 @@ export class WorkerDatabaseOperations {
             return record;
         } catch (error) { throw error; }
     }
+    static async updateSalaryRecord(id: string, updates: Partial<WorkerSalary>): Promise<WorkerSalary> {
+        try {
+            const { id: _id, createdAt, workerId, ...validUpdates } = updates as any;
+            await db("worker_salaries").where("id", id).update(validUpdates);
+            return await db("worker_salaries").where("id", id).first();
+        } catch (error) { throw error; }
+    }
 
     static async getSalaryRecords(workerId: string, filters: SalaryFilters): Promise<PaginatedResult<WorkerSalary>> {
         try {
