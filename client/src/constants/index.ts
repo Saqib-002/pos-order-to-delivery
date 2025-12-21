@@ -14,6 +14,7 @@ export const VIEWS = {
   MENU_STRUCTURE: "menu-structure",
   CONFIGURATIONS: "configurations",
   VEHICLES: "vehicles",
+  WORKERS: "workers",
 } as const;
 
 export const navItems = [
@@ -31,12 +32,13 @@ export const navItems = [
   },
   { view: VIEWS.MANAGE_ORDERS, label: "Manage Orders", roles: ["admin"] },
   { view: VIEWS.PLATFORM_ORDERS, label: "Platform Orders", roles: ["admin"] },
-  { view: VIEWS.REPORTS, label: "Reports", roles: ["admin"] },
-  { view: VIEWS.MENU_STRUCTURE, label: "Menu Structure", roles: ["admin"] },
-  { view: VIEWS.USERS, label: "Users", roles: ["admin"] },
   { view: VIEWS.CUSTOMERS, label: "Customers", roles: ["admin"] },
   { view: VIEWS.CONFIGURATIONS, label: "Configurations", roles: ["admin"] },
   { view: VIEWS.VEHICLES, label: "Vehicles", roles: ["admin"] },
+  { view: VIEWS.WORKERS, label: "Workers", roles: ["admin"] },
+  { view: VIEWS.MENU_STRUCTURE, label: "Menu Structure", roles: ["admin"] },
+  { view: VIEWS.REPORTS, label: "Reports", roles: ["admin"] },
+  { view: VIEWS.USERS, label: "Users", roles: ["admin"] },
 ];
 
 export const MENU_CATEGORIES = {

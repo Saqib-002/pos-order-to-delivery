@@ -39,17 +39,40 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // Google Maps API
   getGoogleMapsApiKey: () => ipcRenderer.invoke("get-google-maps-api-key"),
   // Vehicle operations
-  createVehicle: (token: string, data: any) => ipcRenderer.invoke("create-vehicle", token, data),
-  getVehicles: (token: string,filters: any) => ipcRenderer.invoke("get-vehicles", token,filters),
-  updateVehicle: (token: string, id: string, data: any) => ipcRenderer.invoke("update-vehicle", token, id, data),
-  deleteVehicle: (token: string, id: string) => ipcRenderer.invoke("delete-vehicle", token, id),
-  
+  createVehicle: (token: string, data: any) =>
+    ipcRenderer.invoke("create-vehicle", token, data),
+  getVehicles: (token: string, filters: any) =>
+    ipcRenderer.invoke("get-vehicles", token, filters),
+  updateVehicle: (token: string, id: string, data: any) =>
+    ipcRenderer.invoke("update-vehicle", token, id, data),
+  deleteVehicle: (token: string, id: string) =>
+    ipcRenderer.invoke("delete-vehicle", token, id),
+
   // Maintenance operations
-  addVehicleMaintenance: (token: string, data: any) => ipcRenderer.invoke("add-vehicle-maintenance", token, data),
-  getVehicleMaintenance: (token: string, vehicleId: string,filters: any) => ipcRenderer.invoke("get-vehicle-maintenance", token, vehicleId,filters),
-  updateVehicleMaintenance: (token: string, id: string, data: any) => ipcRenderer.invoke("update-vehicle-maintenance", token, id, data),
-  deleteVehicleMaintenance: (token: string, id: string) => ipcRenderer.invoke("delete-vehicle-maintenance", token, id),
-  
+  addVehicleMaintenance: (token: string, data: any) =>
+    ipcRenderer.invoke("add-vehicle-maintenance", token, data),
+  getVehicleMaintenance: (token: string, vehicleId: string, filters: any) =>
+    ipcRenderer.invoke("get-vehicle-maintenance", token, vehicleId, filters),
+  updateVehicleMaintenance: (token: string, id: string, data: any) =>
+    ipcRenderer.invoke("update-vehicle-maintenance", token, id, data),
+  deleteVehicleMaintenance: (token: string, id: string) =>
+    ipcRenderer.invoke("delete-vehicle-maintenance", token, id),
+  // Worker operations
+  createWorker: (token: string, data: any) =>
+    ipcRenderer.invoke("create-worker", token, data),
+  getWorkers: (token: string, filters: any) =>
+    ipcRenderer.invoke("get-workers", token, filters),
+  updateWorker: (token: string, id: string, data: any) =>
+    ipcRenderer.invoke("update-worker", token, id, data),
+  deleteWorker: (token: string, id: string) =>
+    ipcRenderer.invoke("delete-worker", token, id),
+  // Salary operations
+  addSalaryRecord: (token: string, data: any) =>
+    ipcRenderer.invoke("add-salary-record", token, data),
+  getSalaryRecords: (token: string, workerId: string, filters: any) =>
+    ipcRenderer.invoke("get-salary-records", token, workerId, filters),
+  deleteSalaryRecord: (token: string, id: string) =>
+    ipcRenderer.invoke("delete-salary-record", token, id),
   // categories
   createCategory: (token: string, category: any) =>
     ipcRenderer.invoke("create-category", token, category),

@@ -1540,7 +1540,9 @@
     "users": "Users",
     "customers": "Customers",
     "configurations": "Configurations",
-    "platformOrders": "Platform Orders"
+    "platformOrders": "Platform Orders",
+    "workers": "Workers",
+    "vehicles": "Vehicles"
   },
   "printerUtils": {
     "unableToGetPrinters": "Unable to get printers"

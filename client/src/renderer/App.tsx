@@ -23,6 +23,7 @@ import { useConfigurations } from "./contexts/configurationContext";
 import { DatabaseSetupView } from "./Views/DatabaseSetupView";
 import { hasModuleAccess } from "./utils/permissions";
 import { VehicleManagement } from "./Views/VehicleManagement";
+import { WorkerManagement } from "./Views/WorkerManagement";
 
 interface ViewConfig {
   component: JSX.Element;
@@ -152,6 +153,10 @@ const App: React.FC = () => {
     },
     [VIEWS.VEHICLES]: {
       component: <VehicleManagement />,
+      roles: ["admin"],
+    },
+    [VIEWS.WORKERS]: {
+      component: <WorkerManagement />,
       roles: ["admin"],
     },
   };

@@ -1542,7 +1542,9 @@
     "users": "Usuarios",
     "customers": "Clientes",
     "configurations": "Configuraciones",
-    "platformOrders": "Pedidos de Plataforma"
+    "platformOrders": "Pedidos de Plataforma",
+    "workers": "Trabajadores",
+    "vehicles": "Vehículos"
   },
   "printerUtils": {
     "unableToGetPrinters": "No se pudieron obtener las impresoras"

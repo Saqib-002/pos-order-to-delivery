@@ -112,7 +112,8 @@ export const VehicleManagement = () => {
                       value={vehicleFilters.search || ''}
                       onChange={(e) => handleFilterChange('search', e.target.value)}
                       preLabel={<SearchIcon className="size-5 text-gray-400" />}
-                      inputClasses="pl-9"
+                      inputClasses="pl-8"
+                      secLabelClasses="top-3 left-1.5!"
                   />
               </div>
               <CustomSelect
