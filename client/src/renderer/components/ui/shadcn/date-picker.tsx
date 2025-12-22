@@ -92,14 +92,13 @@ export function DatePicker({
     const inputVal = e.target.value;
     setInputValue(inputVal);
 
-    
     if (inputVal && /^\d{4}-\d{2}-\d{2}$/.test(inputVal)) {
       const [year, month, day] = inputVal.split("-").map(Number);
-      const parsedDate = new Date(year, month - 1, day); 
+      const parsedDate = new Date(year, month - 1, day);
       if (isValidDate(parsedDate)) {
         setDate(parsedDate);
         setMonth(parsedDate);
-        onChange(inputVal); 
+        onChange(inputVal);
       }
     }
   };

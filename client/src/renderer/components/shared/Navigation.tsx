@@ -8,18 +8,6 @@ import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { useTranslation } from "react-i18next";
 import { hasModuleAccess } from "@/renderer/utils/permissions";
 
-// Simple 3-dots icon for the "More" button
-const MoreIcon = ({ className }: { className?: string }) => (
-  <svg 
-    viewBox="0 0 24 24" 
-    fill="currentColor" 
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M6 10C4.9 10 4 10.9 4 12C4 13.1 4.9 14 6 14C7.1 14 8 13.1 8 12C8 10.9 7.1 10 6 10ZM18 10C16.9 10 16 10.9 16 12C16 13.1 16.9 14 18 14C19.1 14 20 13.1 20 12C20 10.9 19.1 10 18 10ZM12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z" />
-  </svg>
-);
-
 export const Navigation = ({
   currentView,
   setView,
@@ -34,16 +22,39 @@ export const Navigation = ({
   onLogout: () => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
   const { configurations, setConfigurations } = useConfigurations();
-  const { auth: { token } } = useAuth();
+  const {
+    auth: { token },
+  } = useAuth();
   const { t } = useTranslation();
-  
-  // Ref for handling clicks outside the popover
-  const moreMenuRef = useRef<HTMLDivElement>(null);
+  const navContainerRef = useRef<HTMLDivElement>(null);
 
-  // Constants
-  const VISIBLE_ITEM_LIMIT = 10; 
+  const VISIBLE_ITEMS_COLLAPSED = 10;
+
+  const accessibleNavItems = [
+    ...navItems.filter(({ view, roles }) =>
+      hasModuleAccess(view, userModulePermissions, userRole, roles)
+    ),
+    { view: "logout", roles: [] }, // Add logout as a regular nav item
+  ];
+
+  const scrollUp = () => {
+    setScrollPosition(Math.max(0, scrollPosition - 1));
+  };
+
+  const scrollDown = () => {
+    const maxScroll = Math.max(
+      0,
+      accessibleNavItems.length - VISIBLE_ITEMS_COLLAPSED
+    );
+    setScrollPosition(Math.min(maxScroll, scrollPosition + 1));
+  };
+
+  const canScrollUp = scrollPosition > 0;
+  const canScrollDown =
+    scrollPosition <
+    Math.max(0, accessibleNavItems.length - VISIBLE_ITEMS_COLLAPSED);
 
   const getConfigurations = async () => {
     const res = await (window as any).electronAPI.getConfigurations(token);
@@ -58,16 +69,11 @@ export const Navigation = ({
 
   useEffect(() => {
     getConfigurations();
-    
-    // Close more menu on click outside
-    const handleClickOutside = (event: MouseEvent) => {
-      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
-        setShowMoreMenu(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    setScrollPosition(0);
+  }, [isOpen]);
 
   const getIcon = (view: string) => {
     const iconMap: { [key: string]: string } = {
@@ -108,43 +114,49 @@ export const Navigation = ({
     return labelMap[view] || view;
   };
 
-  // Filter items first
-  const accessibleNavItems = navItems.filter(({ view, roles }) => 
-    hasModuleAccess(view, userModulePermissions, userRole, roles)
-  );
+  const getVisibleItems = () => {
+    if (isOpen) {
+      return accessibleNavItems;
+    }
+    return accessibleNavItems.slice(
+      scrollPosition,
+      scrollPosition + VISIBLE_ITEMS_COLLAPSED
+    );
+  };
 
-  // Split into visible and hidden
-  const visibleItems = accessibleNavItems.slice(0, VISIBLE_ITEM_LIMIT);
-  const hiddenItems = accessibleNavItems.slice(VISIBLE_ITEM_LIMIT);
-  const hasHiddenItems = hiddenItems.length > 0;
+  const visibleItems = getVisibleItems();
 
-  // Helper to render a single nav button
-  const renderNavButton = (view: string, label: string, onClickOverride?: () => void, isPopover = false) => (
+  const renderNavButton = (
+    view: string,
+    label: string,
+    onClickOverride?: () => void,
+    isPopover = false
+  ) => (
     <button
       key={view}
       className={`w-full flex items-center gap-3 p-2 text-left transition-colors duration-200 cursor-pointer mb-1
         ${currentView === view ? "bg-gray-300 text-black" : "text-gray-700 hover:bg-gray-100"} 
         ${!isOpen && !isPopover ? "justify-center" : ""}
       `}
-      onClick={onClickOverride || (() => {
-        setView(view);
-        setIsOpen(false);
-        setShowMoreMenu(false);
-      })}
-      title={(!isOpen && !isPopover) ? label : undefined}
+      onClick={
+        onClickOverride ||
+        (() => {
+          setView(view);
+          setIsOpen(false);
+        })
+      }
+      title={!isOpen && !isPopover ? label : undefined}
     >
       <img
         src={getIcon(view)}
         alt={`${label} icon`}
         className="size-9 flex-shrink-0 object-contain"
         onError={(e) => {
-           e.currentTarget.src = "./images/order.png";
+          e.currentTarget.src = "./images/order.png";
         }}
       />
       {(isOpen || isPopover) && (
-        <span className="font-medium truncate">
-          {label}
-        </span>
+        <span className="font-medium truncate">{label}</span>
       )}
     </button>
   );
@@ -167,7 +179,9 @@ export const Navigation = ({
                 className="size-6 object-contain"
               />
               <h1 className="text-lg font-bold text-gray-800 truncate">
-                {configurations.name ? configurations.name : t("navigation.defaultCompanyName")}
+                {configurations.name
+                  ? configurations.name
+                  : t("navigation.defaultCompanyName")}
               </h1>
             </div>
           )}
@@ -181,61 +195,63 @@ export const Navigation = ({
           </button>
         </div>
 
-        {/* Visible Navigation Items */}
-        <div className="flex-1 py-4 flex flex-col gap-1">
-          {visibleItems.map(({ view }) => 
-            renderNavButton(view, getTranslatedLabel(view))
+        {/* Navigation Items Container */}
+        <div className="flex-1 flex flex-col">
+          {/* Scroll Up Button (Collapsed Mode Only) */}
+          {!isOpen && accessibleNavItems.length > VISIBLE_ITEMS_COLLAPSED && (
+            <button
+              onClick={scrollUp}
+              disabled={!canScrollUp}
+              className={`px-4 py-2 transition-colors ${
+                canScrollUp
+                  ? "text-gray-600 hover:bg-gray-100 cursor-pointer"
+                  : "text-gray-300 cursor-not-allowed"
+              }`}
+              title="Scroll Up"
+            >
+              <DoubleBackArrowIcon
+                className={`ml-1 w-6 h-6 transition-transform cursor-pointer duration-300 rotate-90`}
+              />
+            </button>
           )}
 
-          {/* More Button (Shown if there are hidden items) */}
-          {hasHiddenItems && (
-            <div className="relative" ref={moreMenuRef}>
-              <button
-                className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors duration-200 cursor-pointer rounded-lg text-gray-700 hover:bg-gray-100
-                  ${!isOpen ? "justify-center" : ""}
-                  ${showMoreMenu ? "bg-gray-200" : ""}
-                `}
-                onClick={() => setShowMoreMenu(!showMoreMenu)}
-                title={!isOpen ? "More" : undefined}
-              >
-                 <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 text-gray-600">
-                    <MoreIcon className="w-6 h-6" />
-                 </div>
-                 {isOpen && <span className="font-medium">More</span>}
-              </button>
+          {/* Navigation Items */}
+          <div
+            ref={navContainerRef}
+            className={`flex-1 py-0 flex flex-col gap-1 ${
+              isOpen
+                ? "overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full"
+                : ""
+            }`}
+            style={isOpen ? { maxHeight: "calc(100vh - 80px)" } : {}}
+          >
+            {visibleItems.map(({ view }) =>
+              renderNavButton(
+                view,
+                getTranslatedLabel(view),
+                view === "logout" ? onLogout : undefined
+              )
+            )}
+          </div>
 
-              {/* Popover Menu for Hidden Items AND Logout */}
-              {showMoreMenu && (
-                <div 
-                  className={`absolute bottom-0 bg-white shadow-xl rounded-lg border border-gray-200 p-2 w-56 z-50
-                    ${isOpen ? "left-full ml-2" : "left-full ml-4"}
-                  `}
-                  style={{ bottom: '0px' }}
-                >
-                  <div className="flex flex-col gap-1 max-h-[70vh] overflow-y-auto">
-                     {/* Hidden Views */}
-                     {hiddenItems.map(({ view }) => 
-                        renderNavButton(view, getTranslatedLabel(view), undefined, true)
-                     )}
-                     
-                     {/* Divider */}
-                     <div className="border-t border-gray-100 my-1"></div>
-
-                     {/* Logout Button (Moved here) */}
-                     {renderNavButton("logout", t("navigation.logout"), onLogout, true)}
-                  </div>
-                </div>
-              )}
-            </div>
+          {/* Scroll Down Button (Collapsed Mode Only) */}
+          {!isOpen && accessibleNavItems.length > VISIBLE_ITEMS_COLLAPSED && (
+            <button
+              onClick={scrollDown}
+              disabled={!canScrollDown}
+              className={`px-4 py-2 transition-colors ${
+                canScrollDown
+                  ? "text-gray-600 hover:bg-gray-100 cursor-pointer"
+                  : "text-gray-300 cursor-not-allowed"
+              }`}
+              title="Scroll Down"
+            >
+              <DoubleBackArrowIcon
+                className={`ml-1 w-6 h-6 transition-transform cursor-pointer duration-300 rotate-270`}
+              />
+            </button>
           )}
         </div>
-
-        {/* Fixed Logout Button (ONLY if NO hidden items) */}
-        {!hasHiddenItems && (
-          <div className="p-2 border-t border-gray-100 shrink-0">
-             {renderNavButton("logout", t("navigation.logout"), onLogout)}
-          </div>
-        )}
       </div>
     </>
   );
