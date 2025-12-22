@@ -78,6 +78,7 @@ export const MODULES = {
   CUSTOMERS: "customers",
   CONFIGURATIONS: "configurations",
   VEHICLES: "vehicles",
+  WORKERS: "workers",
 } as const;
 
 export const MODULE_LABELS = {
@@ -93,6 +94,7 @@ export const MODULE_LABELS = {
   [MODULES.CUSTOMERS]: "Customers",
   [MODULES.CONFIGURATIONS]: "Configurations",
   [MODULES.VEHICLES]: "Vehicle Management",
+  [MODULES.WORKERS]: "Worker Management",
 } as const;
 
 export const AVAILABLE_MODULES = Object.values(MODULES) as string[];

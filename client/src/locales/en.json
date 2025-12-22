@@ -1544,6 +1544,122 @@
     "workers": "Workers",
     "vehicles": "Vehicles"
   },
+  "workerManagement": {
+    "title": "Worker Management",
+    "subtitle": "Manage employees and payroll",
+    "addWorker": "Register Worker",
+    "searchPlaceholder": "Search Name or ID Number...",
+    "filters": {
+      "paymentMethod": "Payment Method",
+      "allPaymentTypes": "All Payment Types",
+      "cash": "Cash",
+      "transfer": "Transfer",
+      "mixed": "Mixed",
+      "clearFilters": "Clear Filters"
+    },
+    "table": {
+      "workers": "Workers",
+      "noWorkersFound": "No workers found",
+      "getStartedMessage": "Get started by registering your first worker.",
+      "updating": "Updating..."
+    },
+    "modal": {
+      "dateOfBirth": "Date of Birth",
+      "deleteConfirm": {
+        "title": "Delete Worker",
+        "message": "Are you sure? This will delete all salary records too."
+      }
+    }
+  },
+  "vehicleManagement": {
+    "title": "Vehicle Management",
+    "subtitle": "Manage your fleet and maintenance",
+    "addVehicle": "Add Vehicle",
+    "searchPlaceholder": "Search Model/Plate...",
+    "filters": {
+      "type": "Type",
+      "driver": "Driver",
+      "status": "Status",
+      "gps": "GPS",
+      "allTypes": "All Types",
+      "allDrivers": "All Drivers",
+      "allStatus": "All Status",
+      "all": "All",
+      "yes": "Yes",
+      "no": "No",
+      "bike": "Bike",
+      "car": "Car",
+      "unassigned": "Unassigned",
+      "hasAlerts": "Has Alerts",
+      "expiringSoon": "Expiring Soon",
+      "expired": "Expired",
+      "clearFilters": "Clear Filters"
+    },
+    "table": {
+      "vehicles": "Vehicles",
+      "vehicle": "Vehicle",
+      "gpsColor": "GPS/Color",
+      "status": "Status",
+      "dates": "Dates",
+      "itvDate": "ITV Date",
+      "insurance": "Insurance",
+      "actions": "Actions",
+      "assigned": "Assigned",
+      "unassigned": "Unassigned",
+      "driver": "Driver",
+      "noVehiclesFound": "No vehicles found",
+      "getStartedMessage": "Get started by adding a new vehicle to your fleet.",
+      "updating": "Updating..."
+    },
+    "modal": {
+      "addVehicle": "Add Vehicle",
+      "editVehicle": "Edit Vehicle",
+      "model": "Model",
+      "modelRequired": "Model *",
+      "licensePlate": "License Plate",
+      "licensePlateRequired": "License Plate *",
+      "color": "Color",
+      "type": "Type",
+      "selectType": "Select Type",
+      "assignDriver": "Assign Driver",
+      "selectDriver": "Select Driver",
+      "hasGps": "Vehicle has GPS installed",
+      "itvDate": "ITV Date",
+      "insuranceDate": "Insurance Date",
+      "cancel": "Cancel",
+      "saveVehicle": "Save Vehicle"
+    },
+    "maintenanceModal": {
+      "title": "Maintenance Records",
+      "addNewRecord": "Add New Record",
+      "editRecord": "Edit Record",
+      "sparePart": "Spare Part",
+      "sparePartPlaceholder": "Service Name",
+      "unit": "Unit",
+      "price": "Price (€)",
+      "add": "Add",
+      "save": "Save",
+      "cancelEdit": "Cancel Edit",
+      "searchPlaceholder": "Search records...",
+      "minPrice": "Min €",
+      "maxPrice": "Max €",
+      "table": {
+        "date": "Date",
+        "servicePart": "Service/Part",
+        "unit": "Unit",
+        "price": "Price",
+        "total": "Total",
+        "actions": "Actions",
+        "noRecordsFound": "No records found matching filters"
+      },
+      "deleteTitle": "Delete Record",
+      "deleteMessage": "Are you sure?"
+    },
+    "deleteConfirm": {
+      "title": "Delete Vehicle",
+      "message": "Are you sure?"
+    }
+  },
   "printerUtils": {
     "unableToGetPrinters": "Unable to get printers"
   },

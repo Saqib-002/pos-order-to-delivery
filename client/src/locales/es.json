@@ -1546,6 +1546,121 @@
     "workers": "Trabajadores",
     "vehicles": "Vehículos"
   },
+  "workerManagement": {
+    "title": "Gestión de Trabajadores",
+    "subtitle": "Gestionar empleados y nóminas",
+    "addWorker": "Registrar Trabajador",
+    "searchPlaceholder": "Buscar Nombre o Número de ID...",
+    "filters": {
+      "paymentMethod": "Método de Pago",
+      "allPaymentTypes": "Todos los Tipos de Pago",
+      "cash": "Efectivo",
+      "transfer": "Transferencia",
+      "mixed": "Mixto",
+      "clearFilters": "Limpiar Filtros"
+    },
+    "table": {
+      "workers": "Trabajadores",
+      "noWorkersFound": "No se encontraron trabajadores",
+      "getStartedMessage": "Comienza registrando tu primer trabajador."
+    },
+    "modal": {
+      "dateOfBirth": "Fecha de Nacimiento",
+      "deleteConfirm": {
+        "title": "Eliminar Trabajador",
+        "message": "¿Estás seguro? Esto eliminará todos los registros salariales también."
+      }
+    }
+  },
+  "vehicleManagement": {
+    "title": "Gestión de Vehículos",
+    "subtitle": "Administra tu flota y mantenimiento",
+    "addVehicle": "Agregar Vehículo",
+    "searchPlaceholder": "Buscar Modelo/Matrícula...",
+    "filters": {
+      "type": "Tipo",
+      "driver": "Conductor",
+      "status": "Estado",
+      "gps": "GPS",
+      "allTypes": "Todos los Tipos",
+      "allDrivers": "Todos los Conductores",
+      "allStatus": "Todos los Estados",
+      "all": "Todos",
+      "yes": "Sí",
+      "no": "No",
+      "bike": "Bicicleta",
+      "car": "Coche",
+      "unassigned": "Sin Asignar",
+      "hasAlerts": "Tiene Alertas",
+      "expiringSoon": "Por Vencer",
+      "expired": "Vencido",
+      "clearFilters": "Limpiar Filtros"
+    },
+    "table": {
+      "vehicles": "Vehículos",
+      "vehicle": "Vehículo",
+      "gpsColor": "GPS/Color",
+      "status": "Estado",
+      "dates": "Fechas",
+      "itvDate": "Fecha ITV",
+      "insurance": "Seguro",
+      "actions": "Acciones",
+      "assigned": "Asignado",
+      "unassigned": "Sin Asignar",
+      "driver": "Conductor",
+      "noVehiclesFound": "No se encontraron vehículos",
+      "getStartedMessage": "Comienza agregando un nuevo vehículo a tu flota.",
+      "updating": "Actualizando..."
+    },
+    "modal": {
+      "addVehicle": "Agregar Vehículo",
+      "editVehicle": "Editar Vehículo",
+      "model": "Modelo",
+      "modelRequired": "Modelo *",
+      "licensePlate": "Matrícula",
+      "licensePlateRequired": "Matrícula *",
+      "color": "Color",
+      "type": "Tipo",
+      "selectType": "Seleccionar Tipo",
+      "assignDriver": "Asignar Conductor",
+      "selectDriver": "Seleccionar Conductor",
+      "hasGps": "El vehículo tiene GPS instalado",
+      "itvDate": "Fecha ITV",
+      "insuranceDate": "Fecha de Seguro",
+      "cancel": "Cancelar",
+      "saveVehicle": "Guardar Vehículo"
+    },
+    "maintenanceModal": {
+      "title": "Registros de Mantenimiento",
+      "addNewRecord": "Agregar Nuevo Registro",
+      "editRecord": "Editar Registro",
+      "sparePart": "Repuesto",
+      "sparePartPlaceholder": "Nombre del Servicio",
+      "unit": "Unidad",
+      "price": "Precio (€)",
+      "add": "Agregar",
+      "save": "Guardar",
+      "cancelEdit": "Cancelar Edición",
+      "searchPlaceholder": "Buscar registros...",
+      "minPrice": "Mín €",
+      "maxPrice": "Máx €",
+      "table": {
+        "date": "Fecha",
+        "servicePart": "Servicio/Repuesto",
+        "unit": "Unidad",
+        "price": "Precio",
+        "total": "Total",
+        "actions": "Acciones",
+        "noRecordsFound": "No se encontraron registros que coincidan con los filtros"
+      },
+      "deleteTitle": "Eliminar Registro",
+      "deleteMessage": "¿Estás seguro?"
+    },
+    "deleteConfirm": {
+      "title": "Eliminar Vehículo",
+      "message": "¿Estás seguro?"
+    }
+  },
   "printerUtils": {
     "unableToGetPrinters": "No se pudieron obtener las impresoras"
   },

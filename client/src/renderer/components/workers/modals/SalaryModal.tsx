@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Worker, WorkerSalary } from "@/types/workers";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
-import { DeleteIcon, EditIcon } from "@/renderer/public/Svg";
+import { DatePicker } from "../../ui/shadcn/date-picker";
+import { DeleteIcon, EditIcon, CrossIcon } from "@/renderer/public/Svg";
 import Pagination from "../../shared/Pagination";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 
@@ -25,6 +27,7 @@ export const SalaryModal = ({
   onDeleteRecord,
   fetchRecords,
 }: Props) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"list" | "form">("list");
   const [records, setRecords] = useState<WorkerSalary[]>([]);
   const [page, setPage] = useState(1);
@@ -128,41 +131,42 @@ export const SalaryModal = ({
   if (!isOpen || !worker) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
-          <div>
-            <h3 className="text-lg font-bold text-gray-800">
-              Salary Management
-            </h3>
-            <p className="text-sm text-gray-500">
-              {worker.name} - {worker.idNumber}
-            </p>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col">
+        <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex-shrink-0">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-xl font-bold">Salary Records</h3>
+              <p className="text-sm text-gray-300 opacity-90">
+                {worker.name} - {worker.idNumber}
+              </p>
+            </div>
+            <CustomButton
+              type="button"
+              variant="transparent"
+              onClick={onClose}
+              Icon={<CrossIcon className="size-6" />}
+              className="text-white hover:text-gray-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
+            />
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
-          >
-            &times;
-          </button>
         </div>
 
-        <div className="p-4 border-b border-gray-100 flex gap-4 bg-white shrink-0">
+        <div className="p-6 border-b border-gray-100 flex gap-4 bg-white shrink-0">
           <button
             onClick={() => handleTabChange("list")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === "list" ? "bg-black text-white" : "bg-gray-100 text-gray-600"}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "list" ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
           >
             History
           </button>
           <button
             onClick={() => handleTabChange("form")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === "form" ? "bg-black text-white" : "bg-gray-100 text-gray-600"}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "form" ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
           >
             {editingId ? "Edit Entry" : "Add New Entry"}
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto">
+        <div className="p-8 overflow-y-auto flex-1">
           {activeTab === "list" ? (
             <div className="flex flex-col h-full">
               <table className="w-full text-left text-sm">
@@ -234,15 +238,11 @@ export const SalaryModal = ({
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-              <CustomInput
-                name="date"
-                type="date"
+              <DatePicker
                 label="Date"
                 value={formData.date}
-                onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
-                }
-                required
+                onChange={(value) => setFormData({ ...formData, date: value })}
+                placeholder="Select salary date"
               />
               <div className="col-span-1"></div> {/* Spacer */}
               <CustomInput

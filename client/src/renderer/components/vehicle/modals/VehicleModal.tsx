@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Vehicle } from "@/types/vehicles";
 import { DeliveryPerson } from "@/types/delivery";
 import CustomButton from "../../ui/CustomButton";
 import CustomInput from "../../shared/CustomInput";
 import { CustomSelect } from "../../ui/CustomSelect";
+import { DatePicker } from "../../ui/shadcn/date-picker";
 import { CrossIcon } from "../../../public/Svg";
 
 interface VehicleModalProps {
@@ -21,6 +23,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
   initialData,
   drivers,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<Partial<Vehicle>>({
     type: "bike",
     hasGps: false,
@@ -45,10 +48,13 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
 
   if (!isOpen) return null;
 
-  const driverOptions = drivers.map((d) => ({ value: d.id, label: d.name }));
+  const driverOptions = [
+    { value: "", label: t("vehicleManagement.modal.selectDriver") },
+    ...drivers.map((d) => ({ value: d.id, label: d.name })),
+  ];
   const typeOptions = [
-    { value: "bike", label: "Bike" },
-    { value: "car", label: "Car" },
+    { value: "bike", label: t("vehicleManagement.filters.bike") },
+    { value: "car", label: t("vehicleManagement.filters.car") },
   ];
 
   return (
@@ -57,7 +63,9 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
         <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-bold">
-              {initialData ? "Edit Vehicle" : "Add Vehicle"}
+              {initialData
+                ? t("vehicleManagement.modal.editVehicle")
+                : t("vehicleManagement.modal.addVehicle")}
             </h3>
             <CustomButton
               type="button"
@@ -73,15 +81,17 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
           <CustomInput
             name="model"
             type="text"
-            label="Model *"
+            label={t("vehicleManagement.modal.modelRequired")}
             value={formData.model || ""}
-            onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, model: e.target.value })
+            }
             inputClasses="py-2"
           />
           <CustomInput
             name="licensePlate"
             type="text"
-            label="License Plate *"
+            label={t("vehicleManagement.modal.licensePlateRequired")}
             value={formData.licensePlate || ""}
             onChange={(e) =>
               setFormData({ ...formData, licensePlate: e.target.value })
@@ -91,33 +101,35 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
           <CustomInput
             name="color"
             type="text"
-            label="Color"
+            label={t("vehicleManagement.modal.color")}
             value={formData.color || ""}
-            onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, color: e.target.value })
+            }
             inputClasses="py-2"
           />
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Type
+              {t("vehicleManagement.modal.type")}
             </label>
             <CustomSelect
               options={typeOptions}
               value={formData.type || "bike"}
               onChange={(val) => setFormData({ ...formData, type: val as any })}
-              placeholder="Select Type"
+              placeholder={t("vehicleManagement.modal.selectType")}
             />
           </div>
 
           <div className="col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Assign Driver
+              {t("vehicleManagement.modal.assignDriver")}
             </label>
             <CustomSelect
               options={driverOptions}
               value={formData.driverId || ""}
               onChange={(val) => setFormData({ ...formData, driverId: val })}
-              placeholder="Select Driver"
+              placeholder={t("vehicleManagement.modal.selectDriver")}
             />
           </div>
 
@@ -132,37 +144,23 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
               className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black accent-black mr-2"
             />
             <label htmlFor="hasGps" className="text-sm text-gray-700">
-              Vehicle has GPS installed
+              {t("vehicleManagement.modal.hasGps")}
             </label>
           </div>
 
-          <CustomInput
-            name="itvDate"
-            type="date"
-            label="ITV Date"
-            value={
-              formData.itvDate
-                ? new Date(formData.itvDate).toISOString().split("T")[0]
-                : ""
-            }
-            onChange={(e) =>
-              setFormData({ ...formData, itvDate: e.target.value })
-            }
-            inputClasses="py-2"
+          <DatePicker
+            label={t("vehicleManagement.modal.itvDate")}
+            value={formData.itvDate}
+            onChange={(value) => setFormData({ ...formData, itvDate: value })}
+            placeholder="Select ITV date"
           />
-          <CustomInput
-            name="insuranceDate"
-            type="date"
-            label="Insurance Date"
-            value={
-              formData.insuranceDate
-                ? new Date(formData.insuranceDate).toISOString().split("T")[0]
-                : ""
+          <DatePicker
+            label={t("vehicleManagement.modal.insuranceDate")}
+            value={formData.insuranceDate}
+            onChange={(value) =>
+              setFormData({ ...formData, insuranceDate: value })
             }
-            onChange={(e) =>
-              setFormData({ ...formData, insuranceDate: e.target.value })
-            }
-            inputClasses="py-2"
+            placeholder="Select insurance date"
           />
         </div>
 
@@ -171,13 +169,13 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
             type="button"
             variant="secondary"
             onClick={onClose}
-            label="Cancel"
+            label={t("vehicleManagement.modal.cancel")}
             className="hover:scale-105"
           />
           <CustomButton
             type="button"
             onClick={handleSubmit}
-            label="Save Vehicle"
+            label={t("vehicleManagement.modal.saveVehicle")}
             className="bg-gradient-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 hover:scale-105"
           />
         </div>

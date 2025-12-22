@@ -1,15 +1,9 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Vehicle } from "@/types/vehicles";
 import CustomButton from "../ui/CustomButton";
-import {
-  CarIcon,
-  MotorcycleIcon,
-  LocationIcon,
-  ExclamationIcon,
-  ClipboardIcon,
-  EditIcon,
-  DeleteIcon,
-} from "../../public/Svg";
+import { Car, Bike, LocateFixed, Toolbox } from "lucide-react";
+import { ExclamationIcon, EditIcon, DeleteIcon } from "../../public/Svg";
 
 interface VehicleTableProps {
   vehicles: Vehicle[];
@@ -19,8 +13,8 @@ interface VehicleTableProps {
 }
 
 const formatDate = (dateString: string | Date | undefined) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('en-GB');
+  if (!dateString) return "-";
+  return new Date(dateString).toLocaleDateString("en-GB");
 };
 
 export const VehicleTable: React.FC<VehicleTableProps> = ({
@@ -29,15 +23,17 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
   onDelete,
   onMaintenance,
 }) => {
+  const { t } = useTranslation();
+
   if (vehicles.length === 0) {
     return (
       <div className="text-center py-12">
-        <CarIcon className="size-12 mx-auto text-gray-400" />
+        <Car className="size-12 mx-auto text-gray-400" />
         <h3 className="mt-2 text-sm font-medium text-black">
-          No vehicles found
+          {t("vehicleManagement.table.noVehiclesFound")}
         </h3>
         <p className="mt-1 text-sm text-gray-500">
-          Get started by adding a new vehicle to your fleet.
+          {t("vehicleManagement.table.getStartedMessage")}
         </p>
       </div>
     );
@@ -49,19 +45,22 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
         <thead className="bg-gray-50">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-              Vehicle
+              {t("vehicleManagement.table.vehicle")}
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-              Details
+              {t("vehicleManagement.table.gpsColor")}
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-              Status
+              {t("vehicleManagement.table.status")}
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-              Dates
+              {t("vehicleManagement.table.itvDate")}
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              {t("vehicleManagement.table.insurance")}
             </th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-              Actions
+              {t("vehicleManagement.table.actions")}
             </th>
           </tr>
         </thead>
@@ -70,18 +69,18 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
             <tr key={vehicle.id} className="hover:bg-gray-50 transition-colors">
               <td className="px-6 py-4">
                 <div className="flex items-center">
-                  <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
+                  <div className="flex-shrink-0 h-12 w-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center shadow-sm">
                     {vehicle.type === "bike" ? (
-                      <MotorcycleIcon className="size-5 text-gray-600" />
+                      <Bike className="size-6 text-blue-600" />
                     ) : (
-                      <CarIcon className="size-5 text-gray-600" />
+                      <Car className="size-6 text-green-600" />
                     )}
                   </div>
                   <div className="ml-4">
-                    <div className="text-sm font-medium text-black">
+                    <div className="text-sm font-semibold text-black">
                       {vehicle.model}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 font-medium">
                       {vehicle.licensePlate}
                     </div>
                   </div>
@@ -90,7 +89,7 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
               <td className="px-6 py-4">
                 <div className="text-sm text-gray-600 flex items-center gap-1">
                   {vehicle.hasGps && (
-                    <LocationIcon className="size-4 text-blue-500" />
+                    <LocateFixed className="size-4 text-black" />
                   )}
                   {vehicle.color && (
                     <span className="capitalize">{vehicle.color}</span>
@@ -98,22 +97,32 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
                 </div>
               </td>
               <td className="px-6 py-4">
-                <div className="flex flex-col gap-1">
-                  {vehicle.driverName ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 w-max">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium w-max ${
+                        vehicle.driverName
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {vehicle.driverName
+                        ? t("vehicleManagement.table.assigned")
+                        : t("vehicleManagement.table.unassigned")}
+                    </span>
+                  </div>
+                  {vehicle.driverName && (
+                    <div className="text-xs text-gray-600 font-medium">
+                      {t("vehicleManagement.table.driver")}:{" "}
                       {vehicle.driverName}
-                    </span>
-                  ) : (
-                    <span className="w-max inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      Unassigned
-                    </span>
+                    </div>
                   )}
                   {vehicle.alerts && vehicle.alerts.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
                       {vehicle.alerts.map((alert, i) => (
                         <span
                           key={i}
-                          className="inline-flex items-center gap-1 text-xs text-red-600"
+                          className="inline-flex items-center gap-1 text-xs text-red-600 bg-red-50 px-2 py-1 rounded"
                         >
                           <ExclamationIcon className="size-3" /> {alert}
                         </span>
@@ -122,38 +131,44 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
                   )}
                 </div>
               </td>
-              <td className="px-6 py-4 text-sm text-gray-500">
-                <div>
-                  ITV: {formatDate(vehicle.itvDate)}
-                </div>
-                <div>
-                  Ins: {formatDate(vehicle.insuranceDate)}
+              <td className="px-6 py-4 text-sm">
+                <div
+                  className={`font-medium ${new Date(vehicle.itvDate || "") < new Date() ? "text-red-600" : "text-gray-700"}`}
+                >
+                  {formatDate(vehicle.itvDate)}
                 </div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2">
+              <td className="px-6 py-4 text-sm">
+                <div
+                  className={`font-medium ${new Date(vehicle.insuranceDate || "") < new Date() ? "text-red-600" : "text-gray-700"}`}
+                >
+                  {formatDate(vehicle.insuranceDate)}
+                </div>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-1">
                 <CustomButton
                   type="button"
                   variant="transparent"
                   onClick={() => onMaintenance(vehicle)}
-                  Icon={<ClipboardIcon className="size-4" />}
-                  className="text-blue-600 hover:text-blue-900 hover:bg-blue-50 hover:scale-105 !px-2 !py-1"
-                  title="Maintenance"
+                  Icon={<Toolbox className="size-5" />}
+                  className="text-orange-600 hover:text-orange-900 hover:bg-orange-50 hover:scale-105 !px-3 !py-2 rounded-lg transition-all duration-200"
+                  title="View Maintenance Records"
                 />
                 <CustomButton
                   type="button"
                   variant="transparent"
                   onClick={() => onEdit(vehicle)}
-                  Icon={<EditIcon className="size-4" />}
-                  className="text-black hover:text-black hover:bg-gray-50 hover:scale-105 !px-2 !py-1"
-                  title="Edit"
+                  Icon={<EditIcon className="size-5" />}
+                  className="text-blue-600 hover:text-blue-900 hover:bg-blue-50 hover:scale-105 !px-3 !py-2 rounded-lg transition-all duration-200"
+                  title="Edit Vehicle"
                 />
                 <CustomButton
                   type="button"
                   variant="transparent"
                   onClick={() => onDelete(vehicle.id)}
-                  Icon={<DeleteIcon className="size-4" />}
-                  className="text-red-600 hover:text-red-900 hover:bg-red-50 hover:scale-105 !px-2 !py-1"
-                  title="Delete"
+                  Icon={<DeleteIcon className="size-5" />}
+                  className="text-red-600 hover:text-red-900 hover:bg-red-50 hover:scale-105 !px-3 !py-2 rounded-lg transition-all duration-200"
+                  title="Delete Vehicle"
                 />
               </td>
             </tr>

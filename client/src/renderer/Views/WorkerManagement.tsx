@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react"; // Added useEffect
+import { useState, useEffect } from "react"; 
+import { useTranslation } from "react-i18next";
 import { useConfirm } from "../hooks/useConfirm";
 import { useWorkerData } from "../hooks/useWorkerData";
 import { Worker } from "@/types/workers";
@@ -13,6 +14,7 @@ import { SalaryModal } from "../components/workers/modals/SalaryModal";
 import { AddIcon, SearchIcon } from "../public/Svg";
 
 export const WorkerManagement = () => {
+  const { t } = useTranslation();
   const confirm = useConfirm();
   const {
     workersData,
@@ -25,8 +27,17 @@ export const WorkerManagement = () => {
     updateSalary,
     addSalary,
     deleteSalary,
-    fetchSalaryRecords
+    fetchSalaryRecords,
   } = useWorkerData();
+
+  const handleClearFilters = () => {
+    setFilters({
+      page: 1,
+      pageSize: 10,
+      search: "",
+      paymentMethod: "all",
+    });
+  };
 
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -38,7 +49,7 @@ export const WorkerManagement = () => {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      setFilters(prev => ({ ...prev, search: searchTerm, page: 1 }));
+      setFilters((prev) => ({ ...prev, search: searchTerm, page: 1 }));
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
@@ -49,97 +60,133 @@ export const WorkerManagement = () => {
   };
 
   const handleFilterChange = (key: string, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
+    setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
   };
 
   const handlePageChange = (zeroIndexedPage: number) => {
-    setFilters(prev => ({ ...prev, page: zeroIndexedPage + 1 }));
+    setFilters((prev) => ({ ...prev, page: zeroIndexedPage + 1 }));
   };
 
-  const handleOpenAdd = () => setModalState({ isOpen: true, type: "add", worker: null });
-  const handleOpenEdit = (worker: Worker) => setModalState({ isOpen: true, type: "edit", worker });
-  const handleOpenSalary = (worker: Worker) => setModalState({ isOpen: true, type: "salary", worker });
+  const handleOpenAdd = () =>
+    setModalState({ isOpen: true, type: "add", worker: null });
+  const handleOpenEdit = (worker: Worker) =>
+    setModalState({ isOpen: true, type: "edit", worker });
+  const handleOpenSalary = (worker: Worker) =>
+    setModalState({ isOpen: true, type: "salary", worker });
   const handleClose = () => setModalState({ ...modalState, isOpen: false });
 
   const handleSaveWorker = async (data: Partial<Worker>) => {
-    const result = modalState.type === "edit" && modalState.worker
-      ? await updateWorker(modalState.worker.id, data)
-      : await createWorker(data);
+    const result =
+      modalState.type === "edit" && modalState.worker
+        ? await updateWorker(modalState.worker.id, data)
+        : await createWorker(data);
     return result;
   };
 
   const handleDelete = async (id: string) => {
-    if (await confirm({ title: "Delete Worker", message: "Are you sure? This will delete all salary records too.", confirmText: "Delete", type: "danger" })) {
-        await deleteWorker(id);
+    if (
+      await confirm({
+        title: t("workerManagement.modal.deleteConfirm.title"),
+        message: t("workerManagement.modal.deleteConfirm.message"),
+        confirmText: t("common.delete"),
+        type: "danger",
+      })
+    ) {
+      await deleteWorker(id);
     }
   };
 
   const paymentOptions = [
-      { value: 'all', label: 'All Payment Types' },
-      { value: 'cash', label: 'Cash' },
-      { value: 'transfer', label: 'Transfer' },
-      { value: 'mixed', label: 'Mixed' }
+    { value: "all", label: t("workerManagement.filters.allPaymentTypes") },
+    { value: "cash", label: t("workerManagement.filters.cash") },
+    { value: "transfer", label: t("workerManagement.filters.transfer") },
+    { value: "mixed", label: t("workerManagement.filters.mixed") },
   ];
   return (
     <div className="p-4">
       <div className="flex justify-between items-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-black">Worker Management</h2>
-          <p className="text-gray-600 mt-1">Manage employees and payroll</p>
+          <h2 className="text-2xl font-bold text-black">
+            {t("workerManagement.title")}
+          </h2>
+          <p className="text-gray-600 mt-1">{t("workerManagement.subtitle")}</p>
         </div>
-        <CustomButton type="button" onClick={handleOpenAdd} label="Register Worker" Icon={<AddIcon className="size-5" />} />
+        <CustomButton
+          type="button"
+          onClick={handleOpenAdd}
+          label={t("workerManagement.addWorker")}
+          Icon={<AddIcon className="size-5" />}
+        />
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="md:col-span-2">
-                  <CustomInput
-                      name="search"
-                      type="text"
-                      placeholder="Search Name or ID Number..."
-                      // Use local state here
-                      value={searchTerm} 
-                      onChange={handleSearchChange}
-                      preLabel={<SearchIcon className="size-5 text-gray-400" />}
-                      inputClasses="pl-9"
-                  />
-              </div>
-              <CustomSelect
-                  options={paymentOptions}
-                  value={filters.paymentMethod || 'all'}
-                  onChange={(val) => handleFilterChange('paymentMethod', val)}
-                  placeholder="Payment Method"
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
+            <div className="sm:col-span-1 lg:col-span-1">
+              <CustomInput
+                name="search"
+                type="text"
+                placeholder={t("workerManagement.searchPlaceholder")}
+                value={searchTerm}
+                onChange={handleSearchChange}
+                preLabel={<SearchIcon className="size-5 text-gray-400" />}
+                inputClasses="pl-9"
+                secLabelClasses="top-3 left-1.5!"
               />
+            </div>
+            <CustomSelect
+              options={paymentOptions}
+              value={filters.paymentMethod || "all"}
+              onChange={(val) => handleFilterChange("paymentMethod", val)}
+              placeholder={t("workerManagement.filters.paymentMethod")}
+            />
           </div>
+          <div className="flex-shrink-0">
+            <CustomButton
+              type="button"
+              variant="secondary"
+              onClick={handleClearFilters}
+              label={t("workerManagement.filters.clearFilters")}
+              className="hover:scale-105 whitespace-nowrap"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[500px] relative">
-        {/* 3. Non-blocking Loading Indicator */}
         {loading && (
           <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
-             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
           </div>
         )}
 
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-black">Workers ({workersData.pagination.total})</h3>
+          <h3 className="text-lg font-semibold text-black">
+            {t("workerManagement.table.workers")} (
+            {workersData.pagination.total})
+          </h3>
+          {loading && (
+            <span className="text-sm text-gray-500 animate-pulse">
+              {t("workerManagement.table.updating")}
+            </span>
+          )}
         </div>
-        
+
         <div className="flex-grow">
-            <WorkerTable
-              workers={workersData.data}
-              onEdit={handleOpenEdit}
-              onDelete={handleDelete}
-              onSalary={handleOpenSalary}
-            />
+          <WorkerTable
+            workers={workersData.data}
+            onEdit={handleOpenEdit}
+            onDelete={handleDelete}
+            onSalary={handleOpenSalary}
+          />
         </div>
 
         <div className="p-4 border-t border-gray-200">
-            <Pagination
-                currentPage={workersData.pagination.page - 1}
-                totalPages={workersData.pagination.totalPages}
-                onPageChange={handlePageChange}
-            />
+          <Pagination
+            currentPage={workersData.pagination.page - 1}
+            totalPages={workersData.pagination.totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       </div>
 

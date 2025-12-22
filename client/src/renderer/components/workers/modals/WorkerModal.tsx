@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Worker } from "@/types/workers";
 import CustomInput from "../../shared/CustomInput";
 import { CustomSelect } from "../../ui/CustomSelect";
 import CustomButton from "../../ui/CustomButton";
+import { DatePicker } from "../../ui/shadcn/date-picker";
+import { CrossIcon } from "../../../public/Svg";
 
 interface Props {
   isOpen: boolean;
@@ -11,12 +14,18 @@ interface Props {
   initialData?: Worker | null;
 }
 
-export const WorkerModal = ({ isOpen, onClose, onSubmit, initialData }: Props) => {
+export const WorkerModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialData,
+}: Props) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<Partial<Worker>>({});
 
   useEffect(() => {
     if (isOpen) {
-      setFormData(initialData || { paymentMethod: 'transfer' });
+      setFormData(initialData || { paymentMethod: "transfer" });
     }
   }, [isOpen, initialData]);
 
@@ -29,63 +38,146 @@ export const WorkerModal = ({ isOpen, onClose, onSubmit, initialData }: Props) =
   };
 
   const getInputValue = (dateVal: string | Date | undefined) => {
-    if (!dateVal) return '';
+    if (!dateVal) return "";
     if (dateVal instanceof Date) {
-      return dateVal.toISOString().split('T')[0];
+      return dateVal.toISOString().split("T")[0];
     }
-    if (typeof dateVal === 'string') {
-      return dateVal.split('T')[0];
+    if (typeof dateVal === "string") {
+      return dateVal.split("T")[0];
     }
-    return '';
+    return "";
   };
 
   const paymentOptions = [
-    { value: 'cash', label: 'Cash' },
-    { value: 'transfer', label: 'Transfer' },
-    { value: 'mixed', label: 'Half Cash / Half Transfer' },
+    { value: "cash", label: t("workerManagement.filters.cash") },
+    { value: "transfer", label: t("workerManagement.filters.transfer") },
+    { value: "mixed", label: "Half Cash / Half Transfer" },
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-          <h3 className="text-lg font-bold text-gray-800">
-            {initialData ? "Edit Worker" : "Register Worker"}
-          </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="p-6 grid grid-cols-2 gap-4">
-          <div className="col-span-2">
-             <CustomInput name="fullname" type="text" label="Full Name" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} required />
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
+        <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-bold">
+              {initialData
+                ? t("common.edit") +
+                  " " +
+                  t("workerManagement.table.workers").slice(0, -1)
+                : t("workerManagement.addWorker")}
+            </h3>
+            <CustomButton
+              type="button"
+              variant="transparent"
+              onClick={onClose}
+              Icon={<CrossIcon className="size-6" />}
+              className="text-white hover:text-gray-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
+            />
           </div>
-          
-          {/* Use the helper function here */}
-          <CustomInput 
-            name="dob" 
-            label="Date of Birth" 
-            type="date" 
-            value={getInputValue(formData.dateOfBirth)} 
-            onChange={e => setFormData({...formData, dateOfBirth: e.target.value})} 
+        </div>
+
+        <div className="p-8 grid grid-cols-2 gap-4">
+          <div className="col-span-2">
+            <CustomInput
+              name="fullname"
+              type="text"
+              label={t("userManagement.modal.fullName")}
+              value={formData.name || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              required
+              inputClasses="py-2"
+            />
+          </div>
+
+          <DatePicker
+            label={t("workerManagement.modal.dateOfBirth")}
+            value={formData.dateOfBirth}
+            onChange={(value) =>
+              setFormData({ ...formData, dateOfBirth: value })
+            }
+            placeholder="Select date of birth"
           />
-          
-          <CustomInput name="id" type="tel" label="ID Number (DNI/NIE)" value={formData.idNumber || ''} onChange={e => setFormData({...formData, idNumber: e.target.value})} />
-          
-          <CustomInput name="phone" type="tel" label="Phone Number" value={formData.phoneNumber || ''} onChange={e => setFormData({...formData, phoneNumber: e.target.value})} />
-          <CustomSelect placeholder="Payment Method" options={paymentOptions} value={formData.paymentMethod || 'transfer'} onChange={val => setFormData({...formData, paymentMethod: val as any})} label="Payment Method" className="px-2!" />
+
+          <CustomInput
+            name="id"
+            type="tel"
+            label="ID Number (DNI/NIE)"
+            value={formData.idNumber || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, idNumber: e.target.value })
+            }
+            inputClasses="py-2"
+          />
+
+          <CustomInput
+            name="phone"
+            type="tel"
+            label={t("userManagement.modal.phoneNumber")}
+            value={formData.phoneNumber || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, phoneNumber: e.target.value })
+            }
+            inputClasses="py-2"
+          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t("workerManagement.filters.paymentMethod")}
+            </label>
+            <CustomSelect
+              options={paymentOptions}
+              value={formData.paymentMethod || "transfer"}
+              onChange={(val) =>
+                setFormData({ ...formData, paymentMethod: val as any })
+              }
+              placeholder="Select payment method"
+            />
+          </div>
 
           <div className="col-span-2 border-t pt-4 mt-2">
-            <h4 className="text-sm font-semibold text-gray-700 mb-2">Banking Details</h4>
+            <h4 className="text-sm font-semibold text-gray-700 mb-2">
+              Banking Details
+            </h4>
           </div>
-          
-          <CustomInput type="text" name="bankName" label="Bank Name" value={formData.bankName || ''} onChange={e => setFormData({...formData, bankName: e.target.value})} />
-          <CustomInput type="tel" name="account" label="Account Number" value={formData.bankAccountNumber || ''} onChange={e => setFormData({...formData, bankAccountNumber: e.target.value})} />
 
-          <div className="col-span-2 flex justify-end gap-3 mt-6">
-            <CustomButton type="button" label="Cancel" onClick={onClose} variant="secondary" />
-            <CustomButton type="submit" label="Save Worker" />
-          </div>
-        </form>
+          <CustomInput
+            type="text"
+            name="bankName"
+            label="Bank Name"
+            value={formData.bankName || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, bankName: e.target.value })
+            }
+            inputClasses="py-2"
+          />
+          <CustomInput
+            type="tel"
+            name="account"
+            label="Account Number"
+            value={formData.bankAccountNumber || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, bankAccountNumber: e.target.value })
+            }
+            inputClasses="py-2"
+          />
+        </div>
+
+        <div className="p-6 border-t border-gray-100 flex justify-end gap-3">
+          <CustomButton
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            label={t("common.cancel")}
+            className="hover:scale-105"
+          />
+          <CustomButton
+            type="submit"
+            label={t("common.save")}
+            className="bg-gradient-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 hover:scale-105"
+            onClick={handleSubmit}
+          />
+        </div>
       </div>
     </div>
   );

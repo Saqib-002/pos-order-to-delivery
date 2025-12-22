@@ -1,6 +1,12 @@
 import { TOAST_DEBOUNCE_MS } from "@/constants";
 import { debounce } from "lodash";
 import { toast } from "react-toastify";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export const showToast = {
   success: debounce(

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useConfirm } from "../hooks/useConfirm";
 import { useVehicleData } from "../hooks/useVehicleData";
 import { Vehicle } from "@/types/vehicles";
@@ -16,6 +17,7 @@ import { MaintenanceModal } from "../components/vehicle/modals/MaintenanceModal"
 import { AddIcon, SearchIcon } from "../public/Svg";
 
 export const VehicleManagement = () => {
+  const { t } = useTranslation();
   const confirm = useConfirm();
   const {
     vehiclesData,
@@ -40,54 +42,90 @@ export const VehicleManagement = () => {
 
   // --- Filter Handlers ---
   const handleFilterChange = (key: string, value: any) => {
-    setVehicleFilters(prev => ({ ...prev, [key]: value, page: 1 }));
+    setVehicleFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
   };
 
   const handlePageChange = (zeroIndexedPage: number) => {
-    setVehicleFilters(prev => ({ ...prev, page: zeroIndexedPage + 1 }));
+    setVehicleFilters((prev) => ({ ...prev, page: zeroIndexedPage + 1 }));
   };
 
   // --- Modal Handlers ---
-  const handleOpenAdd = () => setModalState({ isOpen: true, type: "add", vehicle: null });
-  const handleOpenEdit = (vehicle: Vehicle) => setModalState({ isOpen: true, type: "edit", vehicle });
-  const handleOpenMaintenance = (vehicle: Vehicle) => setModalState({ isOpen: true, type: "maintenance", vehicle });
+  const handleOpenAdd = () =>
+    setModalState({ isOpen: true, type: "add", vehicle: null });
+  const handleOpenEdit = (vehicle: Vehicle) =>
+    setModalState({ isOpen: true, type: "edit", vehicle });
+  const handleOpenMaintenance = (vehicle: Vehicle) =>
+    setModalState({ isOpen: true, type: "maintenance", vehicle });
   const handleClose = () => setModalState({ ...modalState, isOpen: false });
 
   const handleSaveVehicle = async (data: Partial<Vehicle>) => {
-    const result = modalState.type === "edit" && modalState.vehicle
-      ? await updateVehicle(modalState.vehicle.id, data)
-      : await createVehicle(data);
+    const result =
+      modalState.type === "edit" && modalState.vehicle
+        ? await updateVehicle(modalState.vehicle.id, data)
+        : await createVehicle(data);
     return result;
   };
 
   const handleDelete = async (id: string) => {
-    if (await confirm({ title: "Delete Vehicle", message: "Are you sure?", confirmText: "Delete", type: "danger" })) {
-        await deleteVehicle(id);
+    if (
+      await confirm({
+        title: t("vehicleManagement.deleteConfirm.title"),
+        message: t("vehicleManagement.deleteConfirm.message"),
+        confirmText: t("common.delete"),
+        type: "danger",
+      })
+    ) {
+      await deleteVehicle(id);
     }
   };
 
   // --- Options ---
   const driverOptions = [
-      { value: '', label: 'All Drivers' },
-      { value: 'unassigned', label: 'Unassigned' },
-      ...drivers.map(d => ({ value: d.id, label: d.name }))
+    { value: "", label: t("vehicleManagement.filters.allDrivers") },
+    { value: "unassigned", label: t("vehicleManagement.filters.unassigned") },
+    ...drivers.map((d) => ({ value: d.id, label: d.name })),
   ];
 
   const typeOptions = [
-      { value: 'all', label: 'All Types' },
-      { value: 'bike', label: 'Bike' },
-      { value: 'car', label: 'Car' }
+    { value: "all", label: t("vehicleManagement.filters.allTypes") },
+    { value: "bike", label: t("vehicleManagement.filters.bike") },
+    { value: "car", label: t("vehicleManagement.filters.car") },
   ];
 
   const alertOptions = [
-      { value: 'all', label: 'All Status' },
-      { value: 'has_alerts', label: 'Has Alerts' },
-      { value: 'expiring_soon', label: 'Expiring Soon' },
-      { value: 'expired', label: 'Expired' }
+    { value: "all", label: t("vehicleManagement.filters.allStatus") },
+    { value: "has_alerts", label: t("vehicleManagement.filters.hasAlerts") },
+    {
+      value: "expiring_soon",
+      label: t("vehicleManagement.filters.expiringSoon"),
+    },
+    { value: "expired", label: t("vehicleManagement.filters.expired") },
   ];
 
+  const gpsOptions = [
+    { value: "all", label: t("vehicleManagement.filters.all") },
+    { value: "yes", label: t("vehicleManagement.filters.yes") },
+    { value: "no", label: t("vehicleManagement.filters.no") },
+  ];
+
+  const handleClearFilters = () => {
+    setVehicleFilters({
+      page: 1,
+      pageSize: 10,
+      search: "",
+      type: "all",
+      driverId: "",
+      alertStatus: "all",
+      hasGps: null,
+    });
+  };
+
   if (loading && vehiclesData.data.length === 0) {
-    return <div className="flex justify-center min-h-screen items-center"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div></div>;
+    return (
+      <div className="flex justify-center min-h-screen items-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div>
+      </div>
+    );
   }
 
   return (
@@ -95,89 +133,118 @@ export const VehicleManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-black">Vehicle Management</h2>
-          <p className="text-gray-600 mt-1">Manage your fleet and maintenance</p>
+          <h2 className="text-2xl font-bold text-black">
+            {t("vehicleManagement.title")}
+          </h2>
+          <p className="text-gray-600 mt-1">
+            {t("vehicleManagement.subtitle")}
+          </p>
         </div>
-        <CustomButton type="button" onClick={handleOpenAdd} label="Add Vehicle" Icon={<AddIcon className="size-5" />} />
+        <CustomButton
+          type="button"
+          onClick={handleOpenAdd}
+          label={t("vehicleManagement.addVehicle")}
+          Icon={<AddIcon className="size-5" />}
+        />
       </div>
 
       {/* Filter Bar */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div className="md:col-span-1">
-                  <CustomInput
-                      name="search"
-                      type="text"
-                      placeholder="Search Model/Plate..."
-                      value={vehicleFilters.search || ''}
-                      onChange={(e) => handleFilterChange('search', e.target.value)}
-                      preLabel={<SearchIcon className="size-5 text-gray-400" />}
-                      inputClasses="pl-8"
-                      secLabelClasses="top-3 left-1.5!"
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 flex-1">
+            <div className="sm:col-span-1 lg:col-span-1">
+              <CustomInput
+                name="search"
+                type="text"
+                placeholder={t("vehicleManagement.searchPlaceholder")}
+                value={vehicleFilters.search || ""}
+                onChange={(e) => handleFilterChange("search", e.target.value)}
+                preLabel={<SearchIcon className="size-5 text-gray-400" />}
+                inputClasses="pl-8"
+                secLabelClasses="top-3 left-1.5!"
+              />
+            </div>
+            <CustomSelect
+              options={typeOptions}
+              value={vehicleFilters.type || "all"}
+              onChange={(val) => handleFilterChange("type", val)}
+              placeholder={t("vehicleManagement.filters.type")}
+            />
+            <CustomSelect
+              options={driverOptions}
+              value={vehicleFilters.driverId || ""}
+              onChange={(val) => handleFilterChange("driverId", val)}
+              placeholder={t("vehicleManagement.filters.driver")}
+            />
+            <CustomSelect
+              options={alertOptions}
+              value={vehicleFilters.alertStatus || "all"}
+              onChange={(val) => handleFilterChange("alertStatus", val)}
+              placeholder={t("vehicleManagement.filters.status")}
+            />
+            <div className="flex items-center justify-center">
+              <label className="flex items-center cursor-pointer gap-2">
+                <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                  {t("vehicleManagement.filters.gps")}
+                </span>
+                <div
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                    vehicleFilters.hasGps ? "bg-green-500" : "bg-gray-200"
+                  }`}
+                  onClick={() =>
+                    handleFilterChange("hasGps", !vehicleFilters.hasGps)
+                  }
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      vehicleFilters.hasGps ? "translate-x-6" : "translate-x-1"
+                    }`}
                   />
-              </div>
-              <CustomSelect
-                  options={typeOptions}
-                  value={vehicleFilters.type || 'all'}
-                  onChange={(val) => handleFilterChange('type', val)}
-                  placeholder="Type"
-              />
-              <CustomSelect
-                  options={driverOptions}
-                  value={vehicleFilters.driverId || ''}
-                  onChange={(val) => handleFilterChange('driverId', val)}
-                  placeholder="Driver"
-              />
-              <CustomSelect
-                  options={alertOptions}
-                  value={vehicleFilters.alertStatus || 'all'}
-                  onChange={(val) => handleFilterChange('alertStatus', val)}
-                  placeholder="Status"
-              />
-              <div className="flex items-center justify-center border rounded-lg bg-gray-50 px-4">
-                 <label className="flex items-center cursor-pointer gap-2">
-                     <input 
-                        type="checkbox" 
-                        className="w-4 h-4 text-black rounded focus:ring-black accent-black"
-                        checked={vehicleFilters.hasGps === true}
-                        ref={(input) => {
-                            if (input) input.indeterminate = vehicleFilters.hasGps === null;
-                        }}
-                        onChange={() => {
-                            const nextState = vehicleFilters.hasGps === null ? true : (vehicleFilters.hasGps === true ? false : null);
-                            handleFilterChange('hasGps', nextState);
-                        }}
-                     />
-                     <span className="text-sm font-medium text-gray-700">
-                         GPS: {vehicleFilters.hasGps === null ? 'All' : (vehicleFilters.hasGps ? 'Yes' : 'No')}
-                     </span>
-                 </label>
-              </div>
+                </div>
+              </label>
+            </div>
           </div>
+          <div className="flex-shrink-0">
+            <CustomButton
+              type="button"
+              variant="secondary"
+              onClick={handleClearFilters}
+              label={t("vehicleManagement.filters.clearFilters")}
+              className="hover:scale-105 whitespace-nowrap"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[500px]">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-black">Vehicles ({vehiclesData.pagination.total})</h3>
-          {loading && <span className="text-sm text-gray-500 animate-pulse">Updating...</span>}
+          <h3 className="text-lg font-semibold text-black">
+            {t("vehicleManagement.table.vehicles")} (
+            {vehiclesData.pagination.total})
+          </h3>
+          {loading && (
+            <span className="text-sm text-gray-500 animate-pulse">
+              {t("vehicleManagement.table.updating")}
+            </span>
+          )}
         </div>
-        
+
         <div className="flex-grow">
-            <VehicleTable
-              vehicles={vehiclesData.data}
-              onEdit={handleOpenEdit}
-              onDelete={handleDelete}
-              onMaintenance={handleOpenMaintenance}
-            />
+          <VehicleTable
+            vehicles={vehiclesData.data}
+            onEdit={handleOpenEdit}
+            onDelete={handleDelete}
+            onMaintenance={handleOpenMaintenance}
+          />
         </div>
 
         <div className="p-4 border-t border-gray-200">
-            <Pagination
-                currentPage={vehiclesData.pagination.page - 1}
-                totalPages={vehiclesData.pagination.totalPages}
-                onPageChange={handlePageChange}
-            />
+          <Pagination
+            currentPage={vehiclesData.pagination.page - 1}
+            totalPages={vehiclesData.pagination.totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       </div>
 
