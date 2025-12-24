@@ -458,6 +458,18 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getMarketPurchaseById: (token: string, purchaseId: string) =>
     ipcRenderer.invoke("get-market-purchase-by-id", token, purchaseId),
 
+  // Expense operations
+  createExpense: (token: string, expenseData: any) =>
+    ipcRenderer.invoke("create-expense", token, expenseData),
+  updateExpense: (token: string, expenseId: string, expenseData: any) =>
+    ipcRenderer.invoke("update-expense", token, expenseId, expenseData),
+  deleteExpense: (token: string, expenseId: string) =>
+    ipcRenderer.invoke("delete-expense", token, expenseId),
+  getAllExpenses: (token: string, filters?: any) =>
+    ipcRenderer.invoke("get-all-expenses", token, filters),
+  getExpenseById: (token: string, expenseId: string) =>
+    ipcRenderer.invoke("get-expense-by-id", token, expenseId),
+
   // Order change notifications
   onOrderChange: (callback: (change: any) => void) => {
     const orderChangeCallback = (event: any, change: any) => {

@@ -89,9 +89,10 @@ export const Navigation = ({
       customers: "./images/customer.png",
       configurations: "./images/configuration.png",
       logout: "./images/logout.png",
-      vehicles: "./images/delivery-truck.png",
-      workers: "./images/users.png",
+      vehicles: "./images/car-maintainence.png",
+      workers: "./images/workers.png",
       "market-purchases": "./images/market-purchase.png",
+      expenses: "./images/expenses.png",
     };
     return iconMap[view] || "./images/order.png";
   };
@@ -112,6 +113,7 @@ export const Navigation = ({
       vehicles: t("navigation.vehicles"),
       workers: t("navigation.workers"),
       "market-purchases": t("navigation.marketPurchases"),
+      expenses: t("navigation.expenses"),
     };
     return labelMap[view] || view;
   };

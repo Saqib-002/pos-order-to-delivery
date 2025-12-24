@@ -162,6 +162,13 @@ import {
   getAllMarketPurchases,
   getMarketPurchaseById,
 } from "./handlers/marketPurchases.js";
+import {
+  createExpense,
+  updateExpense,
+  deleteExpense,
+  getAllExpenses,
+  getExpenseById,
+} from "./handlers/expenses.js";
 interface DbCredentials {
   host: string;
   port: number;
@@ -384,6 +391,13 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-expense-type", deleteExpenseType);
   ipcMain.handle("get-all-expense-types", getAllExpenseTypes);
   ipcMain.handle("get-expense-type-by-id", getExpenseTypeById);
+
+  // expenses
+  ipcMain.handle("create-expense", createExpense);
+  ipcMain.handle("update-expense", updateExpense);
+  ipcMain.handle("delete-expense", deleteExpense);
+  ipcMain.handle("get-all-expenses", getAllExpenses);
+  ipcMain.handle("get-expense-by-id", getExpenseById);
 
   // market purchases
   ipcMain.handle("create-market-purchase", createMarketPurchase);

@@ -1684,6 +1684,55 @@
       "selectDate": "Seleccionar fecha de salario"
     }
   },
+  "expenseManagement": {
+    "title": "Gestión de Gastos",
+    "subtitle": "Gestionar gastos y pagos",
+    "addExpense": "Agregar Gasto",
+    "searchPlaceholder": "Buscar Nombre o Descripción...",
+    "filters": {
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Fin",
+      "clearFilters": "Limpiar Filtros"
+    },
+    "table": {
+      "expenses": "Gastos",
+      "date": "Fecha",
+      "name": "Nombre",
+      "description": "Descripción",
+      "total": "Total",
+      "paymentType": "Tipo de Pago",
+      "actions": "Acciones",
+      "noExpenses": "No se encontraron gastos",
+      "updating": "Actualizando..."
+    },
+    "modal": {
+      "addTitle": "Agregar Gasto",
+      "editTitle": "Editar Gasto",
+      "name": "Nombre del Gasto",
+      "description": "Descripción",
+      "date": "Fecha",
+      "total": "Monto Total",
+      "enterName": "Ingrese el nombre del gasto",
+      "enterDescription": "Ingrese la descripción",
+      "selectDate": "Seleccionar fecha",
+      "complete": "Completar Gasto",
+      "step1": {
+        "title": "Información del Gasto"
+      },
+      "step2": {
+        "title": "Pago"
+      },
+      "errors": {
+        "nameRequired": "El nombre del gasto es requerido",
+        "totalRequired": "El monto total debe ser mayor que 0",
+        "dateRequired": "La fecha es requerida"
+      },
+      "deleteConfirm": {
+        "title": "Eliminar Gasto",
+        "message": "¿Estás seguro de que quieres eliminar este gasto? Esta acción no se puede deshacer."
+      }
+    }
+  },
   "marketPurchaseManagement": {
     "title": "Gestión de Compras de Mercado",
     "subtitle": "Gestionar compras de mercado y gastos",
