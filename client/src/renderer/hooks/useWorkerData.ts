@@ -4,7 +4,9 @@ import { useAuth } from "../contexts/AuthContext";
 import { Worker, WorkerFilters, PaginatedResult } from "@/types/workers";
 
 export const useWorkerData = () => {
-  const { auth: { token } } = useAuth();
+  const {
+    auth: { token },
+  } = useAuth();
   const [loading, setLoading] = useState(false);
   const [workersData, setWorkersData] = useState<PaginatedResult<Worker>>({
     data: [],
@@ -14,7 +16,6 @@ export const useWorkerData = () => {
     page: 1,
     pageSize: 10,
     search: "",
-    paymentMethod: "all",
   });
 
   const fetchWorkers = useCallback(async () => {
@@ -58,7 +59,11 @@ export const useWorkerData = () => {
 
   const updateWorker = async (id: string, data: Partial<Worker>) => {
     try {
-      const res = await (window as any).electronAPI.updateWorker(token, id, data);
+      const res = await (window as any).electronAPI.updateWorker(
+        token,
+        id,
+        data
+      );
       if (res.status) {
         toast.success("Worker updated successfully");
         fetchWorkers();
@@ -90,25 +95,48 @@ export const useWorkerData = () => {
   // Salary Operations Wrapper
   const addSalary = async (data: any) => {
     const res = await (window as any).electronAPI.addSalaryRecord(token, data);
-    if(res.status) { toast.success("Salary recorded"); return true; }
-    else { toast.error(res.error); return false; }
+    if (res.status) {
+      toast.success("Salary recorded");
+      return true;
+    } else {
+      toast.error(res.error);
+      return false;
+    }
   };
 
   const fetchSalaryRecords = async (workerId: string, filters: any) => {
-    const res = await (window as any).electronAPI.getSalaryRecords(token, workerId, filters);
-    if(res.status) return res.data;
+    const res = await (window as any).electronAPI.getSalaryRecords(
+      token,
+      workerId,
+      filters
+    );
+    if (res.status) return res.data;
     return { data: [], pagination: { total: 0 } };
   };
   const updateSalary = async (id: string, data: any) => {
-    const res = await (window as any).electronAPI.updateSalaryRecord(token, id, data);
-    if(res.status) { toast.success("Salary updated"); return true; }
-    else { toast.error(res.error); return false; }
+    const res = await (window as any).electronAPI.updateSalaryRecord(
+      token,
+      id,
+      data
+    );
+    if (res.status) {
+      toast.success("Salary updated");
+      return true;
+    } else {
+      toast.error(res.error);
+      return false;
+    }
   };
 
   const deleteSalary = async (id: string) => {
     const res = await (window as any).electronAPI.deleteSalaryRecord(token, id);
-    if(res.status) { toast.success("Record deleted"); return true; }
-    else { toast.error(res.error); return false; }
+    if (res.status) {
+      toast.success("Record deleted");
+      return true;
+    } else {
+      toast.error(res.error);
+      return false;
+    }
   };
 
   return {
@@ -122,6 +150,6 @@ export const useWorkerData = () => {
     addSalary,
     updateSalary,
     fetchSalaryRecords,
-    deleteSalary
+    deleteSalary,
   };
 };

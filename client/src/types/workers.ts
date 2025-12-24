@@ -6,7 +6,6 @@ export interface Worker {
   phoneNumber?: string;
   bankAccountNumber?: string;
   bankName?: string;
-  paymentMethod?: 'cash' | 'transfer' | 'mixed';
   createdAt: string;
   updatedAt: string;
 }
@@ -23,6 +22,7 @@ export interface WorkerSalary {
   extraServices: number;
   total: number;
   date: string;
+  paymentType?: string;
   createdAt?: string;
 }
 
@@ -30,7 +30,6 @@ export interface WorkerFilters {
   page?: number;
   pageSize?: number;
   search?: string;
-  paymentMethod?: string;
 }
 
 export interface SalaryFilters {

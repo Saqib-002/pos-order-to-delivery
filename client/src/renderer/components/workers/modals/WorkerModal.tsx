@@ -25,7 +25,7 @@ export const WorkerModal = ({
 
   useEffect(() => {
     if (isOpen) {
-      setFormData(initialData || { paymentMethod: "transfer" });
+      setFormData(initialData || {});
     }
   }, [isOpen, initialData]);
 
@@ -47,12 +47,6 @@ export const WorkerModal = ({
     }
     return "";
   };
-
-  const paymentOptions = [
-    { value: "cash", label: t("workerManagement.filters.cash") },
-    { value: "transfer", label: t("workerManagement.filters.transfer") },
-    { value: "mixed", label: "Half Cash / Half Transfer" },
-  ];
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -121,19 +115,6 @@ export const WorkerModal = ({
             }
             inputClasses="py-2"
           />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("workerManagement.filters.paymentMethod")}
-            </label>
-            <CustomSelect
-              options={paymentOptions}
-              value={formData.paymentMethod || "transfer"}
-              onChange={(val) =>
-                setFormData({ ...formData, paymentMethod: val as any })
-              }
-              placeholder="Select payment method"
-            />
-          </div>
 
           <div className="col-span-2 border-t pt-4 mt-2">
             <h4 className="text-sm font-semibold text-gray-700 mb-2">

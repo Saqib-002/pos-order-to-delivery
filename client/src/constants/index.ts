@@ -15,6 +15,7 @@ export const VIEWS = {
   CONFIGURATIONS: "configurations",
   VEHICLES: "vehicles",
   WORKERS: "workers",
+  MARKET_PURCHASES: "market-purchases",
 } as const;
 
 export const navItems = [
@@ -36,6 +37,7 @@ export const navItems = [
   { view: VIEWS.CONFIGURATIONS, label: "Configurations", roles: ["admin"] },
   { view: VIEWS.VEHICLES, label: "Vehicles", roles: ["admin"] },
   { view: VIEWS.WORKERS, label: "Workers", roles: ["admin"] },
+  { view: VIEWS.MARKET_PURCHASES, label: "Market Purchases", roles: ["admin"] },
   { view: VIEWS.MENU_STRUCTURE, label: "Menu Structure", roles: ["admin"] },
   { view: VIEWS.REPORTS, label: "Reports", roles: ["admin"] },
   { view: VIEWS.USERS, label: "Users", roles: ["admin"] },
@@ -79,6 +81,7 @@ export const MODULES = {
   CONFIGURATIONS: "configurations",
   VEHICLES: "vehicles",
   WORKERS: "workers",
+  MARKET_PURCHASES: "market-purchases",
 } as const;
 
 export const MODULE_LABELS = {
@@ -95,6 +98,7 @@ export const MODULE_LABELS = {
   [MODULES.CONFIGURATIONS]: "Configurations",
   [MODULES.VEHICLES]: "Vehicle Management",
   [MODULES.WORKERS]: "Worker Management",
+  [MODULES.MARKET_PURCHASES]: "Market Purchase Management",
 } as const;
 
 export const AVAILABLE_MODULES = Object.values(MODULES) as string[];

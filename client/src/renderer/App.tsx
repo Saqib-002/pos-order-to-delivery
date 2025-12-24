@@ -24,6 +24,7 @@ import { DatabaseSetupView } from "./Views/DatabaseSetupView";
 import { hasModuleAccess } from "./utils/permissions";
 import { VehicleManagement } from "./Views/VehicleManagement";
 import { WorkerManagement } from "./Views/WorkerManagement";
+import { MarketPurchaseManagement } from "./Views/MarketPurchaseManagement";
 
 interface ViewConfig {
   component: JSX.Element;
@@ -157,6 +158,10 @@ const App: React.FC = () => {
     },
     [VIEWS.WORKERS]: {
       component: <WorkerManagement />,
+      roles: ["admin"],
+    },
+    [VIEWS.MARKET_PURCHASES]: {
+      component: <MarketPurchaseManagement />,
       roles: ["admin"],
     },
   };

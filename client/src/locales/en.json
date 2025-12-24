@@ -11,7 +11,9 @@
     "close": "Close",
     "yes": "Yes",
     "no": "No",
-    "apply": "Apply"
+    "apply": "Apply",
+    "actions": "Actions",
+    "confirmDelete": "Are you sure you want to delete this item?"
   },
   "welcome": "Welcome to our website.",
   "configurations": {
@@ -291,6 +293,92 @@
     "messages": {
       "platformAddedSuccessfully": "Platform added successfully",
       "platformUpdatedSuccessfully": "Platform updated successfully"
+    }
+  },
+  "suppliers": {
+    "title": "Suppliers",
+    "subtitle": "Manage your suppliers",
+    "addSupplier": "Add Supplier",
+    "manageDescription": "Add and manage suppliers for market purchases",
+    "suppliersList": "Suppliers List",
+    "noSuppliers": "No suppliers added yet. Add one above.",
+    "table": {
+      "supplierName": "Supplier Name",
+      "createdAt": "Created At",
+      "actions": "Actions"
+    },
+    "deleteTitle": "Delete Supplier",
+    "deleteMessage": "Are you sure you want to delete this supplier?",
+    "deleteConfirm": "Delete",
+    "deleteCancel": "Cancel",
+    "deletedSuccess": "Supplier deleted successfully",
+    "deletedFailed": "Failed to delete supplier",
+    "deletedError": "An error occurred while deleting the supplier",
+    "fetchError": "Error fetching suppliers"
+  },
+  "supplierModal": {
+    "viewSupplier": "View Supplier",
+    "editSupplier": "Edit Supplier",
+    "addNewSupplier": "Add New Supplier",
+    "supplierName": "Supplier Name *",
+    "enterSupplierName": "Enter supplier name",
+    "updateSupplier": "Update Supplier",
+    "addSupplier": "Add Supplier",
+    "errors": {
+      "pleaseEnterSupplierName": "Please enter supplier name",
+      "unableToAddSupplier": "Unable to add supplier",
+      "unableToUpdateSupplier": "Unable to update supplier",
+      "anErrorOccurred": "An error occurred"
+    },
+    "warnings": {
+      "supplierAlreadyAdded": "This supplier already exists!"
+    },
+    "messages": {
+      "supplierAddedSuccessfully": "Supplier added successfully",
+      "supplierUpdatedSuccessfully": "Supplier updated successfully"
+    }
+  },
+  "expenseTypes": {
+    "title": "Expense Types",
+    "subtitle": "Manage expense categories",
+    "addExpenseType": "Add Expense Type",
+    "manageDescription": "Add and manage expense types for market purchases",
+    "expenseTypesList": "Expense Types List",
+    "noExpenseTypes": "No expense types added yet. Add one above.",
+    "table": {
+      "expenseTypeName": "Expense Type Name",
+      "createdAt": "Created At",
+      "actions": "Actions"
+    },
+    "deleteTitle": "Delete Expense Type",
+    "deleteMessage": "Are you sure you want to delete this expense type?",
+    "deleteConfirm": "Delete",
+    "deleteCancel": "Cancel",
+    "deletedSuccess": "Expense type deleted successfully",
+    "deletedFailed": "Failed to delete expense type",
+    "deletedError": "An error occurred while deleting the expense type",
+    "fetchError": "Error fetching expense types"
+  },
+  "expenseTypeModal": {
+    "viewExpenseType": "View Expense Type",
+    "editExpenseType": "Edit Expense Type",
+    "addNewExpenseType": "Add New Expense Type",
+    "expenseTypeName": "Expense Type Name *",
+    "enterExpenseTypeName": "Enter expense type name",
+    "updateExpenseType": "Update Expense Type",
+    "addExpenseType": "Add Expense Type",
+    "errors": {
+      "pleaseEnterExpenseTypeName": "Please enter expense type name",
+      "unableToAddExpenseType": "Unable to add expense type",
+      "unableToUpdateExpenseType": "Unable to update expense type",
+      "anErrorOccurred": "An error occurred"
+    },
+    "warnings": {
+      "expenseTypeAlreadyAdded": "This expense type already exists!"
+    },
+    "messages": {
+      "expenseTypeAddedSuccessfully": "Expense type added successfully",
+      "expenseTypeUpdatedSuccessfully": "Expense type updated successfully"
     }
   },
   "platformOrders": {
@@ -1568,6 +1656,130 @@
       "deleteConfirm": {
         "title": "Delete Worker",
         "message": "Are you sure? This will delete all salary records too."
+      }
+    },
+    "salaryModal": {
+      "title": "Salary Records",
+      "history": "History",
+      "addEntry": "Add New Entry",
+      "editEntry": "Edit Entry",
+      "date": "Date",
+      "base": "Base",
+      "ssCompany": "SS(Comp)",
+      "ssWorker": "SS(Work)",
+      "bonusExtra": "Bonus/Extra",
+      "total": "Total",
+      "noRecords": "No salary history found",
+      "baseSalary": "Base Salary",
+      "socialSecurityCompany": "Social Security (Company)",
+      "socialSecurityWorker": "Social Security (Worker)",
+      "irpf": "IRPF",
+      "extraPayment": "Extra Payment",
+      "bonus": "Bonus",
+      "extraServices": "Extra Services (Transport/Rent)",
+      "autoCalculated": "Auto Calculated",
+      "nextToPayment": "Next to Payment",
+      "paymentTitle": "Payment",
+      "selectDate": "Select salary date"
+    }
+  },
+  "marketPurchaseManagement": {
+    "title": "Market Purchase Management",
+    "subtitle": "Manage market purchases and expenses",
+    "addPurchase": "Add Purchase",
+    "searchPlaceholder": "Search Ticket Number...",
+    "filters": {
+      "supplier": "Supplier",
+      "expenseType": "Expense Type",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "allSuppliers": "All Suppliers",
+      "allExpenseTypes": "All Expense Types",
+      "clearFilters": "Clear Filters"
+    },
+    "table": {
+      "purchases": "Purchases",
+      "ticketNumber": "Ticket Number",
+      "supplier": "Supplier",
+      "expenseType": "Expense Type",
+      "ticketDate": "Ticket Date",
+      "paymentType": "Payment Type",
+      "totalAmount": "Total Amount",
+      "actions": "Actions",
+      "noPurchases": "No purchases found",
+      "updating": "Updating..."
+    },
+    "modal": {
+      "addTitle": "Add Market Purchase",
+      "editTitle": "Edit Market Purchase",
+      "supplier": "Supplier",
+      "ticketDate": "Ticket Date",
+      "expenseType": "Expense Type",
+      "ticketNumber": "Ticket Number",
+      "paymentType": "Payment Type",
+      "cash": "Cash",
+      "card": "Card",
+      "mixed": "Mixed",
+      "products": "Products",
+      "addProduct": "Add Product",
+      "product": "Product",
+      "box": "Box",
+      "unit": "Unit",
+      "totalUnit": "Total Unit",
+      "unitPrice": "Unit Price",
+      "tax": "Tax",
+      "total": "Total",
+      "totalAmount": "Total Amount",
+      "actions": "Actions",
+      "noProducts": "No products added",
+      "create": "Create Purchase",
+      "complete": "Complete Purchase",
+      "next": "Next",
+      "previous": "Previous",
+      "enterProductName": "Enter product name",
+      "productAdded": "Product added successfully",
+      "productUpdated": "Product updated successfully",
+      "deleteProductTitle": "Delete Product",
+      "confirmDeleteProduct": "Are you sure you want to delete this product?",
+      "finishEditingFirst": "Please finish editing the current product first",
+      "step1": {
+        "title": "Purchase Information"
+      },
+      "step2": {
+        "title": "Add Products",
+        "addProduct": "Add New Product",
+        "productsList": "Products List",
+        "totalBase": "TOTAL BASE",
+        "tax": "TAX",
+        "total": "TOTAL"
+      },
+      "step3": {
+        "title": "Payment",
+        "selectPaymentMethod": "Select Payment Method",
+        "amount": "Amount",
+        "addPayment": "Add Payment",
+        "addedPayments": "Added Payments",
+        "totalPaid": "Total Paid",
+        "remaining": "Remaining",
+        "change": "Change"
+      },
+      "errors": {
+        "supplierRequired": "Supplier is required",
+        "expenseTypeRequired": "Expense Type is required",
+        "ticketDateRequired": "Ticket Date is required",
+        "ticketNumberRequired": "Ticket Number is required",
+        "itemsRequired": "At least one product is required",
+        "productNameRequired": "Product name is required",
+        "boxRequired": "Box quantity must be greater than 0",
+        "unitRequired": "Unit quantity must be greater than 0",
+        "unitPriceRequired": "Unit price must be greater than 0",
+        "paymentRequired": "Please add at least one payment method",
+        "paymentIncomplete": "Payment incomplete. Remaining: €{remaining}",
+        "pleaseEnterValidAmount": "Please enter a valid amount"
+      },
+      "deleteConfirm": {
+        "title": "Delete Purchase",
+        "message": "Are you sure you want to delete this purchase? This action cannot be undone."
       }
     }
   },

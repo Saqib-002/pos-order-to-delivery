@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
 import { Worker, WorkerSalary } from "@/types/workers";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { DatePicker } from "../../ui/shadcn/date-picker";
-import { DeleteIcon, EditIcon, CrossIcon } from "@/renderer/public/Svg";
+import {
+  DeleteIcon,
+  EditIcon,
+  CrossIcon,
+  AddIcon,
+} from "@/renderer/public/Svg";
 import Pagination from "../../shared/Pagination";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 
@@ -18,6 +24,11 @@ interface Props {
   fetchRecords: (workerId: string, filters: any) => Promise<any>;
 }
 
+interface PaymentMethod {
+  type: "cash" | "card";
+  amount: number;
+}
+
 export const SalaryModal = ({
   isOpen,
   onClose,
@@ -28,12 +39,15 @@ export const SalaryModal = ({
   fetchRecords,
 }: Props) => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<"list" | "form">("list");
+  const [activeTab, setActiveTab] = useState<"list" | "form" | "payment">(
+    "list"
+  );
   const [records, setRecords] = useState<WorkerSalary[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const confirm = useConfirm();
+
   // Form State
   const initialForm = {
     base: 0,
@@ -45,12 +59,73 @@ export const SalaryModal = ({
     extraServices: 0,
     total: 0,
     date: new Date().toISOString().split("T")[0],
+    paymentType: "cash",
   };
   const [formData, setFormData] = useState<Partial<WorkerSalary>>(initialForm);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [currentPaymentAmount, setCurrentPaymentAmount] = useState<number>(0);
+  const [selectedPaymentType, setSelectedPaymentType] = useState<
+    "cash" | "card"
+  >("cash");
+
+  // Auto-calculate total whenever relevant fields change
+  useEffect(() => {
+    const base =
+      typeof formData.base === "number"
+        ? formData.base
+        : parseFloat(String(formData.base || 0)) || 0;
+    const socialSecurityCompany =
+      typeof formData.socialSecurityCompany === "number"
+        ? formData.socialSecurityCompany
+        : parseFloat(String(formData.socialSecurityCompany || 0)) || 0;
+    const socialSecurityWorker =
+      typeof formData.socialSecurityWorker === "number"
+        ? formData.socialSecurityWorker
+        : parseFloat(String(formData.socialSecurityWorker || 0)) || 0;
+    const irpf =
+      typeof formData.irpf === "number"
+        ? formData.irpf
+        : parseFloat(String(formData.irpf || 0)) || 0;
+    const extraPayment =
+      typeof formData.extraPayment === "number"
+        ? formData.extraPayment
+        : parseFloat(String(formData.extraPayment || 0)) || 0;
+    const bonus =
+      typeof formData.bonus === "number"
+        ? formData.bonus
+        : parseFloat(String(formData.bonus || 0)) || 0;
+    const extraServices =
+      typeof formData.extraServices === "number"
+        ? formData.extraServices
+        : parseFloat(String(formData.extraServices || 0)) || 0;
+
+    // Total = base + bonus + extraPayment + extraServices - socialSecurityCompany - socialSecurityWorker - irpf
+    const calculatedTotal =
+      base +
+      bonus +
+      extraPayment +
+      extraServices -
+      socialSecurityCompany -
+      socialSecurityWorker -
+      irpf;
+
+    setFormData((prev) => ({
+      ...prev,
+      total: Math.max(0, calculatedTotal), // Ensure total is not negative
+    }));
+  }, [
+    formData.base,
+    formData.socialSecurityCompany,
+    formData.socialSecurityWorker,
+    formData.irpf,
+    formData.extraPayment,
+    formData.bonus,
+    formData.extraServices,
+  ]);
 
   const loadRecords = async () => {
     if (!worker) return;
-    const res = await fetchRecords(worker.id, { page, pageSize: 5 });
+    const res = await fetchRecords(worker.id, { page, pageSize: 10 });
     setRecords(res.data);
     setTotal(res.pagination.total);
   };
@@ -61,32 +136,80 @@ export const SalaryModal = ({
       setEditingId(null);
       setFormData(initialForm);
       setActiveTab("list");
+      setPaymentMethods([]);
+      setCurrentPaymentAmount(0);
     }
-  }, [isOpen, worker, page, activeTab]);
+  }, [isOpen, worker, page]);
 
   // Handle Edit Click
   const handleEditClick = (record: WorkerSalary) => {
     setEditingId(record.id);
     setFormData({
       base: record.base,
-      socialSecurityCompany: record.socialSecurityCompany,
-      socialSecurityWorker: record.socialSecurityWorker,
+      socialSecurityCompany:
+        typeof record.socialSecurityCompany === "number"
+          ? record.socialSecurityCompany
+          : parseFloat(String(record.socialSecurityCompany || 0)) || 0,
+      socialSecurityWorker:
+        typeof record.socialSecurityWorker === "number"
+          ? record.socialSecurityWorker
+          : parseFloat(String(record.socialSecurityWorker || 0)) || 0,
       irpf: record.irpf,
       extraPayment: record.extraPayment,
       bonus: record.bonus,
       extraServices: record.extraServices,
       total: record.total,
       date: new Date(record.date).toISOString().split("T")[0],
+      paymentType: record.paymentType || "cash",
     });
+
+    // Parse existing payment type
+    if (record.paymentType) {
+      if (record.paymentType.includes(":")) {
+        try {
+          const payments: PaymentMethod[] = record.paymentType
+            .split(", ")
+            .map((payment) => {
+              const [type, amount] = payment.split(":");
+              return {
+                type: type.trim() as "cash" | "card",
+                amount: parseFloat(amount) || 0,
+              };
+            })
+            .filter((payment) => payment.amount > 0);
+          setPaymentMethods(payments);
+        } catch (error) {
+          setPaymentMethods([]);
+        }
+      } else {
+        if (record.paymentType === "cash" || record.paymentType === "card") {
+          const amount =
+            typeof record.total === "string"
+              ? parseFloat(record.total)
+              : record.total || 0;
+          setPaymentMethods([
+            {
+              type: record.paymentType as "cash" | "card",
+              amount: isNaN(amount) ? 0 : amount,
+            },
+          ]);
+        }
+      }
+    } else {
+      setPaymentMethods([]);
+    }
+
     setActiveTab("form");
   };
 
   const resetForm = () => {
     setFormData(initialForm);
     setEditingId(null);
+    setPaymentMethods([]);
+    setCurrentPaymentAmount(0);
   };
 
-  const handleTabChange = (tab: "list" | "form") => {
+  const handleTabChange = (tab: "list" | "form" | "payment") => {
     if (tab === "form" && activeTab === "list" && !editingId) {
       resetForm();
     }
@@ -96,15 +219,100 @@ export const SalaryModal = ({
     setActiveTab(tab);
   };
 
+  const handleAddPayment = () => {
+    if (currentPaymentAmount <= 0) {
+      toast.error(
+        t("marketPurchaseManagement.modal.errors.pleaseEnterValidAmount")
+      );
+      return;
+    }
+
+    const totalAmount =
+      typeof formData.total === "number"
+        ? formData.total
+        : parseFloat(String(formData.total || 0)) || 0;
+    const totalPaid = paymentMethods.reduce(
+      (sum, method) => sum + method.amount,
+      0
+    );
+    const remainingAmount = totalAmount - totalPaid;
+    const actualAmount = Math.min(currentPaymentAmount, remainingAmount);
+
+    const existingMethodIndex = paymentMethods.findIndex(
+      (method) => method.type === selectedPaymentType
+    );
+
+    if (existingMethodIndex !== -1) {
+      const updatedMethods = [...paymentMethods];
+      updatedMethods[existingMethodIndex].amount += actualAmount;
+      setPaymentMethods(updatedMethods);
+    } else {
+      setPaymentMethods([
+        ...paymentMethods,
+        {
+          type: selectedPaymentType,
+          amount: actualAmount,
+        },
+      ]);
+    }
+
+    setCurrentPaymentAmount(0);
+  };
+
+  const handleRemovePayment = (index: number) => {
+    setPaymentMethods(paymentMethods.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!worker) return;
 
+    // Validate payment
+    const totalAmount =
+      typeof formData.total === "number"
+        ? formData.total
+        : parseFloat(String(formData.total || 0)) || 0;
+    const totalPaid = paymentMethods.reduce(
+      (sum, method) => sum + method.amount,
+      0
+    );
+
+    if (paymentMethods.length === 0) {
+      toast.error(t("marketPurchaseManagement.modal.errors.paymentRequired"));
+      return;
+    }
+
+    if (totalPaid < totalAmount) {
+      toast.error(
+        t("marketPurchaseManagement.modal.errors.paymentIncomplete", {
+          remaining: (totalAmount - totalPaid).toFixed(2),
+        })
+      );
+      return;
+    }
+
+    const paymentTypeString = paymentMethods
+      .map((method) => `${method.type}:${method.amount}`)
+      .join(", ");
+
+    const salaryData = {
+      ...formData,
+      paymentType: paymentTypeString,
+      socialSecurityCompany:
+        typeof formData.socialSecurityCompany === "number"
+          ? formData.socialSecurityCompany
+          : parseFloat(String(formData.socialSecurityCompany || 0)) || 0,
+      socialSecurityWorker:
+        typeof formData.socialSecurityWorker === "number"
+          ? formData.socialSecurityWorker
+          : parseFloat(String(formData.socialSecurityWorker || 0)) || 0,
+    };
+
     let success = false;
     if (editingId) {
-      success = await onUpdateRecord(editingId, formData);
+      success = await onUpdateRecord(editingId, salaryData);
     } else {
-      success = await onAddRecord({ ...formData, workerId: worker.id });
+      success = await onAddRecord({ ...salaryData, workerId: worker.id });
     }
 
     if (success) {
@@ -117,9 +325,10 @@ export const SalaryModal = ({
   const handleDelete = async (id: string) => {
     if (
       await confirm({
-        title: "Delete Record",
-        message: "Are you sure?",
-        confirmText: "Delete",
+        title: t("common.delete"),
+        message: t("common.confirmDelete"),
+        confirmText: t("common.delete"),
+        cancelText: t("common.cancel"),
         type: "danger",
       })
     ) {
@@ -130,13 +339,43 @@ export const SalaryModal = ({
 
   if (!isOpen || !worker) return null;
 
+  const totalAmount =
+    typeof formData.total === "number"
+      ? formData.total
+      : parseFloat(String(formData.total || 0)) || 0;
+  const totalPaid = paymentMethods.reduce((sum, method) => {
+    const amount =
+      typeof method.amount === "string"
+        ? parseFloat(method.amount)
+        : method.amount || 0;
+    return sum + amount;
+  }, 0);
+  const remainingAmount = totalAmount - totalPaid;
+
+  const formatCurrency = (amount: number | string | null | undefined) => {
+    if (amount === null || amount === undefined) return "€0.00";
+    const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
+    if (isNaN(numAmount)) return "€0.00";
+    return `€${numAmount.toFixed(2)}`;
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col">
+      <div
+        className={`bg-white rounded-2xl shadow-2xl w-full flex flex-col max-h-[90vh] ${
+          activeTab === "payment"
+            ? "max-w-xl"
+            : activeTab === "form" && editingId
+              ? "max-w-5xl"
+              : "max-w-7xl"
+        }`}
+      >
         <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex-shrink-0">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-xl font-bold">Salary Records</h3>
+              <h3 className="text-xl font-bold">
+                {t("workerManagement.salaryModal.title")}
+              </h3>
               <p className="text-sm text-gray-300 opacity-90">
                 {worker.name} - {worker.idNumber}
               </p>
@@ -151,133 +390,347 @@ export const SalaryModal = ({
           </div>
         </div>
 
-        <div className="p-6 border-b border-gray-100 flex gap-4 bg-white shrink-0">
-          <button
-            onClick={() => handleTabChange("list")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "list" ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-          >
-            History
-          </button>
-          <button
-            onClick={() => handleTabChange("form")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "form" ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-          >
-            {editingId ? "Edit Entry" : "Add New Entry"}
-          </button>
-        </div>
+        {/* Hide tabs when editing */}
+        {!editingId && (
+          <div className="p-6 border-b border-gray-100 flex gap-4 bg-white shrink-0">
+            <button
+              onClick={() => handleTabChange("list")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "list"
+                  ? "bg-black text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              {t("workerManagement.salaryModal.history")}
+            </button>
+            <button
+              onClick={() => handleTabChange("form")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "form"
+                  ? "bg-black text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              {t("workerManagement.salaryModal.addEntry")}
+            </button>
+          </div>
+        )}
 
         <div className="p-8 overflow-y-auto flex-1">
           {activeTab === "list" ? (
             <div className="flex flex-col h-full">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50 text-gray-600">
-                  <tr>
-                    <th className="p-2">Date</th>
-                    <th className="p-2">Base</th>
-                    <th className="p-2">SS(Comp)</th>
-                    <th className="p-2">SS(Work)</th>
-                    <th className="p-2">Bonus/Extra</th>
-                    <th className="p-2 font-bold">Total</th>
-                    <th className="p-2 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {records.length === 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <td
-                        colSpan={7}
-                        className="px-6 py-8 text-center text-gray-500"
-                      >
-                        No salary history found
-                      </td>
+                      <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+                        {t("workerManagement.salaryModal.date")}
+                      </th>
+                      <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+                        {t("workerManagement.salaryModal.base")}
+                      </th>
+                      <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+                        {t("workerManagement.salaryModal.ssCompany")}
+                      </th>
+                      <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+                        {t("workerManagement.salaryModal.ssWorker")}
+                      </th>
+                      <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+                        {t("workerManagement.salaryModal.irpf")}
+                      </th>
+                      <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+                        {t("workerManagement.salaryModal.extraPayment")}
+                      </th>
+                      <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+                        {t("workerManagement.salaryModal.bonus")}
+                      </th>
+                      <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+                        {t("workerManagement.salaryModal.extraServices")}
+                      </th>
+                      <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+                        {t("workerManagement.salaryModal.total")}
+                      </th>
+                      <th className="px-6 py-3 text-sm font-semibold text-gray-700 text-right">
+                        {t("common.actions")}
+                      </th>
                     </tr>
-                  ) : (
-                    records.map((r) => (
-                      <tr key={r.id}>
-                        <td className="p-2">
-                          {new Date(r.date).toLocaleDateString()}
-                        </td>
-                        <td className="p-2">{r.base}€</td>
-                        <td className="p-2">{r.socialSecurityCompany}€</td>
-                        <td className="p-2">{r.socialSecurityWorker}€</td>
-                        <td className="p-2">
-                          {(
-                            Number(r.bonus) +
-                            Number(r.extraServices) +
-                            Number(r.extraPayment)
-                          ).toFixed(2)}
-                          €
-                        </td>
-                        <td className="p-2 font-bold">{r.total}€</td>
-                        <td className="p-2 text-right flex justify-end gap-2">
-                          <button
-                            onClick={() => handleEditClick(r)}
-                            className="text-blue-500 hover:bg-blue-50 p-1 rounded"
-                          >
-                            <EditIcon className="size-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(r.id)}
-                            className="text-red-500 hover:bg-red-50 p-1 rounded"
-                          >
-                            <DeleteIcon className="size-4" />
-                          </button>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {records.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={10}
+                          className="px-6 py-8 text-center text-gray-500"
+                        >
+                          {t("workerManagement.salaryModal.noRecords")}
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      records.map((r) => (
+                        <tr
+                          key={r.id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                            {new Date(r.date).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {formatCurrency(r.base)}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {formatCurrency(r.socialSecurityCompany)}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {formatCurrency(r.socialSecurityWorker)}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {formatCurrency(r.irpf)}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {formatCurrency(r.extraPayment)}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {formatCurrency(r.bonus)}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {formatCurrency(r.extraServices)}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                            {formatCurrency(r.total)}
+                          </td>
+                          <td className="px-6 py-4 text-right flex justify-end gap-2">
+                            <button
+                              onClick={() => handleEditClick(r)}
+                              className="p-2 hover:bg-gray-200 rounded-full text-gray-600"
+                              title={t("common.edit")}
+                            >
+                              <EditIcon className="size-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(r.id)}
+                              className="p-2 hover:bg-red-100 rounded-full text-red-600"
+                              title={t("common.delete")}
+                            >
+                              <DeleteIcon className="size-5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
               <div className="mt-4">
                 <Pagination
                   currentPage={page - 1}
-                  totalPages={Math.ceil(total / 5)}
+                  totalPages={Math.ceil(total / 10)}
                   onPageChange={(p) => setPage(p + 1)}
                 />
               </div>
             </div>
+          ) : activeTab === "payment" ? (
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                {t("workerManagement.salaryModal.paymentTitle")}
+              </h3>
+
+              {/* Total Amount Display */}
+              <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-semibold text-gray-700">
+                    {t("marketPurchaseManagement.modal.totalAmount")}:
+                  </span>
+                  <span className="text-2xl font-bold text-gray-900">
+                    €{totalAmount.toFixed(2)}
+                  </span>
+                </div>
+                {totalPaid > 0 && (
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-sm text-gray-600">
+                      {t("marketPurchaseManagement.modal.step3.totalPaid")}:
+                    </span>
+                    <span className="text-lg font-semibold text-green-600">
+                      €{totalPaid.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {remainingAmount > 0 && (
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-sm text-gray-600">
+                      {t("marketPurchaseManagement.modal.step3.remaining")}:
+                    </span>
+                    <span className="text-lg font-semibold text-red-600">
+                      €{remainingAmount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {totalPaid > totalAmount && (
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-sm text-gray-600">
+                      {t("marketPurchaseManagement.modal.step3.change")}:
+                    </span>
+                    <span className="text-lg font-semibold text-blue-600">
+                      €{(totalPaid - totalAmount).toFixed(2)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Payment Method Selection */}
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  {t(
+                    "marketPurchaseManagement.modal.step3.selectPaymentMethod"
+                  )}
+                </label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPaymentType("cash")}
+                    className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
+                      selectedPaymentType === "cash"
+                        ? "border-green-400 bg-green-50 text-green-800"
+                        : "border-gray-200 hover:border-green-300"
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="text-2xl">💵</span>
+                      <span className="font-medium text-lg">
+                        {t("marketPurchaseManagement.modal.cash")}
+                      </span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPaymentType("card")}
+                    className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
+                      selectedPaymentType === "card"
+                        ? "border-blue-400 bg-blue-50 text-blue-800"
+                        : "border-gray-200 hover:border-blue-300"
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="text-2xl">💳</span>
+                      <span className="font-medium text-lg">
+                        {t("marketPurchaseManagement.modal.card")}
+                      </span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Amount Input */}
+              <div className="space-y-3">
+                <CustomInput
+                  label={t("marketPurchaseManagement.modal.step3.amount")}
+                  name="paymentAmount"
+                  type="number"
+                  step="0.01"
+                  value={currentPaymentAmount.toString()}
+                  onChange={(e) =>
+                    setCurrentPaymentAmount(parseFloat(e.target.value) || 0)
+                  }
+                  placeholder="0.00"
+                  min="0"
+                />
+                <CustomButton
+                  type="button"
+                  onClick={handleAddPayment}
+                  label={t("marketPurchaseManagement.modal.step3.addPayment")}
+                  Icon={<AddIcon className="size-5" />}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Payment Methods List */}
+              {paymentMethods.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-gray-800">
+                    {t("marketPurchaseManagement.modal.step3.addedPayments")}
+                  </h4>
+                  <div className="space-y-2">
+                    {paymentMethods.map((method, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">
+                            {method.type === "cash" ? "💵" : "💳"}
+                          </span>
+                          <div>
+                            <div className="font-medium text-gray-900 capitalize">
+                              {method.type}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              €{method.amount.toFixed(2)}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePayment(index)}
+                          className="p-2 hover:bg-red-100 rounded-full text-red-600"
+                          title={t("common.delete")}
+                        >
+                          <DeleteIcon className="size-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           ) : (
-            <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleTabChange("payment");
+              }}
+              className="grid grid-cols-3 gap-4"
+            >
               <DatePicker
-                label="Date"
+                label={t("workerManagement.salaryModal.date")}
                 value={formData.date}
                 onChange={(value) => setFormData({ ...formData, date: value })}
-                placeholder="Select salary date"
+                placeholder={t("workerManagement.salaryModal.selectDate")}
               />
-              <div className="col-span-1"></div> {/* Spacer */}
               <CustomInput
                 name="baseSalary"
                 type="number"
                 step="0.01"
-                label="Base Salary"
-                value={formData.base}
-                onChange={(e) =>
-                  setFormData({ ...formData, base: parseFloat(e.target.value) })
-                }
-              />
-              <CustomInput
-                name="socialSecurity(Company)"
-                type="number"
-                step="0.01"
-                label="Social Security (Company)"
-                value={formData.socialSecurityCompany}
+                label={t("workerManagement.salaryModal.baseSalary")}
+                value={formData.base?.toString() || "0"}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    socialSecurityCompany: parseFloat(e.target.value),
+                    base: parseFloat(e.target.value) || 0,
                   })
                 }
               />
               <CustomInput
-                name="socialSecurity(Worker)"
+                name="socialSecurityCompany"
                 type="number"
                 step="0.01"
-                label="Social Security (Worker)"
-                value={formData.socialSecurityWorker}
+                label={t("workerManagement.salaryModal.socialSecurityCompany")}
+                value={formData.socialSecurityCompany?.toString() || "0"}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    socialSecurityWorker: parseFloat(e.target.value),
+                    socialSecurityCompany: parseFloat(e.target.value) || 0,
+                  })
+                }
+              />
+              <CustomInput
+                name="socialSecurityWorker"
+                type="number"
+                step="0.01"
+                label={t("workerManagement.salaryModal.socialSecurityWorker")}
+                value={formData.socialSecurityWorker?.toString() || "0"}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    socialSecurityWorker: parseFloat(e.target.value) || 0,
                   })
                 }
               />
@@ -285,22 +738,25 @@ export const SalaryModal = ({
                 name="irpf"
                 type="number"
                 step="0.01"
-                label="IRPF"
-                value={formData.irpf}
+                label={t("workerManagement.salaryModal.irpf")}
+                value={formData.irpf?.toString() || "0"}
                 onChange={(e) =>
-                  setFormData({ ...formData, irpf: parseFloat(e.target.value) })
+                  setFormData({
+                    ...formData,
+                    irpf: parseFloat(e.target.value) || 0,
+                  })
                 }
               />
               <CustomInput
                 name="extraPayment"
                 type="number"
                 step="0.01"
-                label="Extra Payment"
-                value={formData.extraPayment}
+                label={t("workerManagement.salaryModal.extraPayment")}
+                value={formData.extraPayment?.toString() || "0"}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    extraPayment: parseFloat(e.target.value),
+                    extraPayment: parseFloat(e.target.value) || 0,
                   })
                 }
               />
@@ -308,12 +764,12 @@ export const SalaryModal = ({
                 name="bonus"
                 type="number"
                 step="0.01"
-                label="Bonus"
-                value={formData.bonus}
+                label={t("workerManagement.salaryModal.bonus")}
+                value={formData.bonus?.toString() || "0"}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    bonus: parseFloat(e.target.value),
+                    bonus: parseFloat(e.target.value) || 0,
                   })
                 }
               />
@@ -321,45 +777,76 @@ export const SalaryModal = ({
                 name="extraServices"
                 type="number"
                 step="0.01"
-                label="Extra Services (Transport/Rent)"
-                value={formData.extraServices}
+                label={t("workerManagement.salaryModal.extraServices")}
+                value={formData.extraServices?.toString() || "0"}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    extraServices: parseFloat(e.target.value),
+                    extraServices: parseFloat(e.target.value) || 0,
                   })
                 }
               />
-              <CustomInput
-                name="total"
-                type="number"
-                step="0.01"
-                label="TOTAL (Final)"
-                value={formData.total}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    total: parseFloat(e.target.value),
-                  })
-                }
-                required
-              />
-              <div className="col-span-2 mt-4 flex justify-end gap-2">
-                <CustomButton
-                  type="button"
-                  variant="secondary"
-                  onClick={() => handleTabChange("list")}
-                  label="Cancel"
-                />
-                <CustomButton
-                  type="submit"
-                  label={
-                    editingId ? "Update Salary Record" : "Save Salary Record"
-                  }
-                />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("workerManagement.salaryModal.total")} (
+                  {t("workerManagement.salaryModal.autoCalculated")})
+                </label>
+                <div className="px-3 py-2.5 bg-gray-50 border border-gray-300 rounded-md text-sm font-semibold text-gray-900">
+                  €{totalAmount.toFixed(2)}
+                </div>
               </div>
             </form>
           )}
+        </div>
+
+        {/* Footer with buttons */}
+        <div className="flex justify-between gap-4 pt-4 px-8 pb-8 border-t border-gray-200 flex-shrink-0">
+          {activeTab === "form" ? (
+            <>
+              <div>
+                {editingId && (
+                  <CustomButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      resetForm();
+                      setActiveTab("list");
+                    }}
+                    label={t("common.cancel")}
+                  />
+                )}
+              </div>
+              <div className="flex gap-4">
+                {!editingId && (
+                  <CustomButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() => handleTabChange("list")}
+                    label={t("common.cancel")}
+                  />
+                )}
+                <CustomButton
+                  type="button"
+                  onClick={() => handleTabChange("payment")}
+                  label={t("workerManagement.salaryModal.nextToPayment")}
+                />
+              </div>
+            </>
+          ) : activeTab === "payment" ? (
+            <div className="flex justify-end gap-4 w-full">
+              <CustomButton
+                type="button"
+                variant="secondary"
+                onClick={() => handleTabChange("form")}
+                label={t("marketPurchaseManagement.modal.previous")}
+              />
+              <CustomButton
+                type="button"
+                onClick={handleSubmit}
+                label={editingId ? t("common.update") : t("common.save")}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

@@ -3,33 +3,33 @@ import { AddIcon, DeleteIcon, EditIcon, EyeIcon } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { toast } from "react-toastify";
-import { PlatformModal } from "./Modals/PlatformModal";
+import { ExpenseTypeModal } from "./Modals/ExpenseTypeModal";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import { useTranslation } from "react-i18next";
 
-const fetchPlatforms = async (
+const fetchExpenseTypes = async (
   token: string | null,
-  setPlatforms: any,
+  setExpenseTypes: any,
   t: any
 ) => {
   if (!token) return;
   try {
-    const res = await (window as any).electronAPI.getAllPlatforms(token);
+    const res = await (window as any).electronAPI.getAllExpenseTypes(token);
     if (res.status) {
-      setPlatforms(res.data || []);
+      setExpenseTypes(res.data || []);
     } else {
-      toast.error(t("platforms.fetchError"));
+      toast.error(t("expenseTypes.fetchError"));
     }
   } catch (error) {
-    toast.error(t("platforms.fetchError"));
+    toast.error(t("expenseTypes.fetchError"));
   }
 };
 
-const Platforms = () => {
-  const [platforms, setPlatforms] = useState([]);
-  const [showPlatformModal, setShowPlatformModal] = useState(false);
+const ExpenseTypes = () => {
+  const [expenseTypes, setExpenseTypes] = useState([]);
+  const [showExpenseTypeModal, setShowExpenseTypeModal] = useState(false);
   const [mode, setMode] = useState<"add" | "edit" | "view">("add");
-  const [currentPlatform, setCurrentPlatform] = useState<any>(null);
+  const [currentExpenseType, setCurrentExpenseType] = useState<any>(null);
   const {
     auth: { token },
   } = useAuth();
@@ -37,134 +37,139 @@ const Platforms = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    fetchPlatforms(token, setPlatforms, t);
+    fetchExpenseTypes(token, setExpenseTypes, t);
   }, [token, t]);
 
-  const handleAddPlatform = () => {
+  const handleAddExpenseType = () => {
     setMode("add");
-    setCurrentPlatform(null);
-    setShowPlatformModal(true);
+    setCurrentExpenseType(null);
+    setShowExpenseTypeModal(true);
   };
 
-  const handleEdit = (platform: any) => {
+  const handleEdit = (expenseType: any) => {
     setMode("edit");
-    setCurrentPlatform(platform);
-    setShowPlatformModal(true);
+    setCurrentExpenseType(expenseType);
+    setShowExpenseTypeModal(true);
   };
 
-  const handleView = (platform: any) => {
+  const handleView = (expenseType: any) => {
     setMode("view");
-    setCurrentPlatform(platform);
-    setShowPlatformModal(true);
+    setCurrentExpenseType(expenseType);
+    setShowExpenseTypeModal(true);
   };
 
-  const handleDelete = async (id: string, platformName: string) => {
+  const handleDelete = async (id: string, expenseTypeName: string) => {
     const ok = await confirm({
-      title: t("platforms.deleteTitle"),
-      message: t("platforms.deleteMessage"),
-      confirmText: t("platforms.deleteConfirm"),
-      cancelText: t("platforms.deleteCancel"),
-      itemName: platformName,
+      title: t("expenseTypes.deleteTitle"),
+      message: t("expenseTypes.deleteMessage"),
+      confirmText: t("expenseTypes.deleteConfirm"),
+      cancelText: t("expenseTypes.deleteCancel"),
+      itemName: expenseTypeName,
     });
     if (!ok) return;
     try {
-      const res = await (window as any).electronAPI.deletePlatform(token, id);
+      const res = await (window as any).electronAPI.deleteExpenseType(
+        token,
+        id
+      );
       if (res.status) {
-        toast.success(t("platforms.deletedSuccess"));
-        fetchPlatforms(token, setPlatforms, t);
+        toast.success(t("expenseTypes.deletedSuccess"));
+        fetchExpenseTypes(token, setExpenseTypes, t);
       } else {
-        toast.error(t("platforms.deletedFailed"));
+        toast.error(t("expenseTypes.deletedFailed"));
       }
     } catch (error) {
-      toast.error(t("platforms.deletedError"));
+      toast.error(t("expenseTypes.deletedError"));
     }
   };
 
   const onCloseModal = () => {
-    setShowPlatformModal(false);
-    setCurrentPlatform(null);
+    setShowExpenseTypeModal(false);
+    setCurrentExpenseType(null);
     setMode("add");
   };
 
   return (
     <div className="relative">
-      {showPlatformModal && (
-        <PlatformModal
+      {showExpenseTypeModal && (
+        <ExpenseTypeModal
           onClose={onCloseModal}
           mode={mode}
-          platform={currentPlatform}
+          expenseType={currentExpenseType}
           token={token}
-          onSuccess={() => fetchPlatforms(token, setPlatforms, t)}
+          onSuccess={() => fetchExpenseTypes(token, setExpenseTypes, t)}
         />
       )}
       <div className="pb-6 flex-1">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-green-100">
+              <div className="p-3 rounded-lg bg-orange-100">
                 <img
-                  src="./images/platform.png"
-                  alt="Platform"
+                  src="./images/expense.png"
+                  alt="Expense Type"
                   className="size-10"
                 />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-black">
-                  {t("platforms.title")}
+                  {t("expenseTypes.title")}
                 </h2>
-                <p className="text-gray-600 mt-1">{t("platforms.subtitle")}</p>
+                <p className="text-gray-600 mt-1">
+                  {t("expenseTypes.subtitle")}
+                </p>
               </div>
             </div>
             <CustomButton
               type="button"
-              label={t("platforms.addPlatform")}
-              onClick={handleAddPlatform}
+              label={t("expenseTypes.addExpenseType")}
+              onClick={handleAddExpenseType}
               Icon={<AddIcon className="size-7" />}
             />
           </div>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-black mb-4">
-            {t("platforms.platformsList")}
+            {t("expenseTypes.expenseTypesList")}
           </h3>
-          {platforms.length === 0 ? (
-            <p className="text-gray-500">{t("platforms.noPlatforms")}</p>
+          {expenseTypes.length === 0 ? (
+            <p className="text-gray-500">{t("expenseTypes.noExpenseTypes")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("platforms.table.platformName")}
+                      {t("expenseTypes.table.expenseTypeName")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("platforms.table.createdAt")}
+                      {t("expenseTypes.table.createdAt")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("platforms.table.actions")}
+                      {t("expenseTypes.table.actions")}
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {platforms.map((platform: any) => (
-                    <tr key={platform.id}>
+                  {expenseTypes.map((expenseType: any) => (
+                    <tr key={expenseType.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {platform.name}
+                        {expenseType.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {new Date(platform.createdAt).toLocaleDateString()}
+                        {new Date(expenseType.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
                         <CustomButton
                           type="button"
-                          onClick={() => handleView(platform)}
+                          onClick={() => handleView(expenseType)}
                           Icon={<EyeIcon className="size-5" />}
                           variant="transparent"
                           className="!p-0"
                         />
                         <CustomButton
                           type="button"
-                          onClick={() => handleEdit(platform)}
+                          onClick={() => handleEdit(expenseType)}
                           Icon={<EditIcon className="size-5" />}
                           variant="transparent"
                           className="!p-0 !text-blue-500 hover:!text-blue-700"
@@ -172,7 +177,7 @@ const Platforms = () => {
                         <CustomButton
                           type="button"
                           onClick={() =>
-                            handleDelete(platform.id, platform.name)
+                            handleDelete(expenseType.id, expenseType.name)
                           }
                           Icon={<DeleteIcon className="size-5" />}
                           variant="transparent"
@@ -191,4 +196,4 @@ const Platforms = () => {
   );
 };
 
-export default Platforms;
+export default ExpenseTypes;

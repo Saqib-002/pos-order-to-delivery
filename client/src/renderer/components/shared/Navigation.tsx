@@ -91,6 +91,7 @@ export const Navigation = ({
       logout: "./images/logout.png",
       vehicles: "./images/delivery-truck.png",
       workers: "./images/users.png",
+      "market-purchases": "./images/market-purchase.png",
     };
     return iconMap[view] || "./images/order.png";
   };
@@ -110,6 +111,7 @@ export const Navigation = ({
       configurations: t("navigation.configurations"),
       vehicles: t("navigation.vehicles"),
       workers: t("navigation.workers"),
+      "market-purchases": t("navigation.marketPurchases"),
     };
     return labelMap[view] || view;
   };

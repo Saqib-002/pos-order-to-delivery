@@ -127,11 +127,41 @@ import {
   addVehicleMaintenance,
   getVehicleMaintenance,
   deleteVehicleMaintenance,
-  updateVehicleMaintenance
+  updateVehicleMaintenance,
 } from "./handlers/vehicles.js";
 import Store from "electron-store";
 import { initDatabase } from "./database/index.js";
-import { createWorker, getWorkers, updateWorker, deleteWorker, addSalaryRecord, getSalaryRecords, deleteSalaryRecord, updateSalaryRecord } from "./handlers/workers.js";
+import {
+  createWorker,
+  getWorkers,
+  updateWorker,
+  deleteWorker,
+  addSalaryRecord,
+  getSalaryRecords,
+  deleteSalaryRecord,
+  updateSalaryRecord,
+} from "./handlers/workers.js";
+import {
+  createSupplier,
+  updateSupplier,
+  deleteSupplier,
+  getAllSuppliers,
+  getSupplierById,
+} from "./handlers/suppliers.js";
+import {
+  createExpenseType,
+  updateExpenseType,
+  deleteExpenseType,
+  getAllExpenseTypes,
+  getExpenseTypeById,
+} from "./handlers/expenseTypes.js";
+import {
+  createMarketPurchase,
+  updateMarketPurchase,
+  deleteMarketPurchase,
+  getAllMarketPurchases,
+  getMarketPurchaseById,
+} from "./handlers/marketPurchases.js";
 interface DbCredentials {
   host: string;
   port: number;
@@ -340,4 +370,25 @@ export function registerIpcHandlers() {
   ipcMain.handle("create-configurations", createConfigurations);
   ipcMain.handle("get-configurations", getConfigurations);
   ipcMain.handle("update-configurations", updateConfigurations);
+
+  // suppliers
+  ipcMain.handle("create-supplier", createSupplier);
+  ipcMain.handle("update-supplier", updateSupplier);
+  ipcMain.handle("delete-supplier", deleteSupplier);
+  ipcMain.handle("get-all-suppliers", getAllSuppliers);
+  ipcMain.handle("get-supplier-by-id", getSupplierById);
+
+  // expense types
+  ipcMain.handle("create-expense-type", createExpenseType);
+  ipcMain.handle("update-expense-type", updateExpenseType);
+  ipcMain.handle("delete-expense-type", deleteExpenseType);
+  ipcMain.handle("get-all-expense-types", getAllExpenseTypes);
+  ipcMain.handle("get-expense-type-by-id", getExpenseTypeById);
+
+  // market purchases
+  ipcMain.handle("create-market-purchase", createMarketPurchase);
+  ipcMain.handle("update-market-purchase", updateMarketPurchase);
+  ipcMain.handle("delete-market-purchase", deleteMarketPurchase);
+  ipcMain.handle("get-all-market-purchases", getAllMarketPurchases);
+  ipcMain.handle("get-market-purchase-by-id", getMarketPurchaseById);
 }

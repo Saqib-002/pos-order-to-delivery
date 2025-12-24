@@ -404,6 +404,60 @@ contextBridge.exposeInMainWorld("electronAPI", {
   updateConfigurations: (token: string, id: string, updates: Partial<any>) =>
     ipcRenderer.invoke("update-configurations", token, id, updates),
 
+  // suppliers
+  createSupplier: (token: string, supplierData: any) =>
+    ipcRenderer.invoke("create-supplier", token, supplierData),
+  updateSupplier: (token: string, supplierId: string, supplierData: any) =>
+    ipcRenderer.invoke("update-supplier", token, supplierId, supplierData),
+  deleteSupplier: (token: string, supplierId: string) =>
+    ipcRenderer.invoke("delete-supplier", token, supplierId),
+  getAllSuppliers: (token: string) =>
+    ipcRenderer.invoke("get-all-suppliers", token),
+  getSupplierById: (token: string, supplierId: string) =>
+    ipcRenderer.invoke("get-supplier-by-id", token, supplierId),
+
+  // expense types
+  createExpenseType: (token: string, expenseTypeData: any) =>
+    ipcRenderer.invoke("create-expense-type", token, expenseTypeData),
+  updateExpenseType: (
+    token: string,
+    expenseTypeId: string,
+    expenseTypeData: any
+  ) =>
+    ipcRenderer.invoke(
+      "update-expense-type",
+      token,
+      expenseTypeId,
+      expenseTypeData
+    ),
+  deleteExpenseType: (token: string, expenseTypeId: string) =>
+    ipcRenderer.invoke("delete-expense-type", token, expenseTypeId),
+  getAllExpenseTypes: (token: string) =>
+    ipcRenderer.invoke("get-all-expense-types", token),
+  getExpenseTypeById: (token: string, expenseTypeId: string) =>
+    ipcRenderer.invoke("get-expense-type-by-id", token, expenseTypeId),
+
+  // market purchases
+  createMarketPurchase: (token: string, purchaseData: any) =>
+    ipcRenderer.invoke("create-market-purchase", token, purchaseData),
+  updateMarketPurchase: (
+    token: string,
+    purchaseId: string,
+    purchaseData: any
+  ) =>
+    ipcRenderer.invoke(
+      "update-market-purchase",
+      token,
+      purchaseId,
+      purchaseData
+    ),
+  deleteMarketPurchase: (token: string, purchaseId: string) =>
+    ipcRenderer.invoke("delete-market-purchase", token, purchaseId),
+  getAllMarketPurchases: (token: string, filters?: any) =>
+    ipcRenderer.invoke("get-all-market-purchases", token, filters),
+  getMarketPurchaseById: (token: string, purchaseId: string) =>
+    ipcRenderer.invoke("get-market-purchase-by-id", token, purchaseId),
+
   // Order change notifications
   onOrderChange: (callback: (change: any) => void) => {
     const orderChangeCallback = (event: any, change: any) => {

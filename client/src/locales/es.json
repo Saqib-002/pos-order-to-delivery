@@ -11,7 +11,9 @@
     "close": "Cerrar",
     "yes": "Sí",
     "no": "No",
-    "apply": "Aplicar"
+    "apply": "Aplicar",
+    "actions": "Acciones",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar este elemento?"
   },
   "welcome": "Bienvenido a nuestro sitio web.",
 
@@ -111,6 +113,92 @@
     "messages": {
       "platformAddedSuccessfully": "Plataforma agregada exitosamente",
       "platformUpdatedSuccessfully": "Plataforma actualizada exitosamente"
+    }
+  },
+  "suppliers": {
+    "title": "Proveedores",
+    "subtitle": "Gestionar tus proveedores",
+    "addSupplier": "Agregar Proveedor",
+    "manageDescription": "Agregar y gestionar proveedores para compras de mercado",
+    "suppliersList": "Lista de Proveedores",
+    "noSuppliers": "No se han agregado proveedores todavía. Agrega uno arriba.",
+    "table": {
+      "supplierName": "Nombre del Proveedor",
+      "createdAt": "Fecha de Creación",
+      "actions": "Acciones"
+    },
+    "deleteTitle": "Eliminar Proveedor",
+    "deleteMessage": "¿Estás seguro de que quieres eliminar este proveedor?",
+    "deleteConfirm": "Eliminar",
+    "deleteCancel": "Cancelar",
+    "deletedSuccess": "Proveedor eliminado exitosamente",
+    "deletedFailed": "Error al eliminar el proveedor",
+    "deletedError": "Ocurrió un error al eliminar el proveedor",
+    "fetchError": "Error al obtener los proveedores"
+  },
+  "supplierModal": {
+    "viewSupplier": "Ver Proveedor",
+    "editSupplier": "Editar Proveedor",
+    "addNewSupplier": "Agregar Nuevo Proveedor",
+    "supplierName": "Nombre del Proveedor *",
+    "enterSupplierName": "Ingrese el nombre del proveedor",
+    "updateSupplier": "Actualizar Proveedor",
+    "addSupplier": "Agregar Proveedor",
+    "errors": {
+      "pleaseEnterSupplierName": "Por favor ingrese el nombre del proveedor",
+      "unableToAddSupplier": "No se pudo agregar el proveedor",
+      "unableToUpdateSupplier": "No se pudo actualizar el proveedor",
+      "anErrorOccurred": "Ocurrió un error"
+    },
+    "warnings": {
+      "supplierAlreadyAdded": "¡Este proveedor ya existe!"
+    },
+    "messages": {
+      "supplierAddedSuccessfully": "Proveedor agregado exitosamente",
+      "supplierUpdatedSuccessfully": "Proveedor actualizado exitosamente"
+    }
+  },
+  "expenseTypes": {
+    "title": "Tipos de Gasto",
+    "subtitle": "Gestionar categorías de gastos",
+    "addExpenseType": "Agregar Tipo de Gasto",
+    "manageDescription": "Agregar y gestionar tipos de gasto para compras de mercado",
+    "expenseTypesList": "Lista de Tipos de Gasto",
+    "noExpenseTypes": "No se han agregado tipos de gasto todavía. Agrega uno arriba.",
+    "table": {
+      "expenseTypeName": "Nombre del Tipo de Gasto",
+      "createdAt": "Fecha de Creación",
+      "actions": "Acciones"
+    },
+    "deleteTitle": "Eliminar Tipo de Gasto",
+    "deleteMessage": "¿Estás seguro de que quieres eliminar este tipo de gasto?",
+    "deleteConfirm": "Eliminar",
+    "deleteCancel": "Cancelar",
+    "deletedSuccess": "Tipo de gasto eliminado exitosamente",
+    "deletedFailed": "Error al eliminar el tipo de gasto",
+    "deletedError": "Ocurrió un error al eliminar el tipo de gasto",
+    "fetchError": "Error al obtener los tipos de gasto"
+  },
+  "expenseTypeModal": {
+    "viewExpenseType": "Ver Tipo de Gasto",
+    "editExpenseType": "Editar Tipo de Gasto",
+    "addNewExpenseType": "Agregar Nuevo Tipo de Gasto",
+    "expenseTypeName": "Nombre del Tipo de Gasto *",
+    "enterExpenseTypeName": "Ingrese el nombre del tipo de gasto",
+    "updateExpenseType": "Actualizar Tipo de Gasto",
+    "addExpenseType": "Agregar Tipo de Gasto",
+    "errors": {
+      "pleaseEnterExpenseTypeName": "Por favor ingrese el nombre del tipo de gasto",
+      "unableToAddExpenseType": "No se pudo agregar el tipo de gasto",
+      "unableToUpdateExpenseType": "No se pudo actualizar el tipo de gasto",
+      "anErrorOccurred": "Ocurrió un error"
+    },
+    "warnings": {
+      "expenseTypeAlreadyAdded": "¡Este tipo de gasto ya existe!"
+    },
+    "messages": {
+      "expenseTypeAddedSuccessfully": "Tipo de gasto agregado exitosamente",
+      "expenseTypeUpdatedSuccessfully": "Tipo de gasto actualizado exitosamente"
     }
   },
   "platformOrders": {
@@ -1569,6 +1657,130 @@
       "deleteConfirm": {
         "title": "Eliminar Trabajador",
         "message": "¿Estás seguro? Esto eliminará todos los registros salariales también."
+      }
+    },
+    "salaryModal": {
+      "title": "Registros de Salario",
+      "history": "Historial",
+      "addEntry": "Agregar Nueva Entrada",
+      "editEntry": "Editar Entrada",
+      "date": "Fecha",
+      "base": "Base",
+      "ssCompany": "SS(Emp)",
+      "ssWorker": "SS(Trab)",
+      "bonusExtra": "Bonus/Extra",
+      "total": "Total",
+      "noRecords": "No se encontró historial de salario",
+      "baseSalary": "Salario Base",
+      "socialSecurityCompany": "Seguridad Social (Empresa)",
+      "socialSecurityWorker": "Seguridad Social (Trabajador)",
+      "irpf": "IRPF",
+      "extraPayment": "Pago Extra",
+      "bonus": "Bonus",
+      "extraServices": "Servicios Extra (Transporte/Alquiler)",
+      "autoCalculated": "Calculado Automáticamente",
+      "nextToPayment": "Siguiente a Pago",
+      "paymentTitle": "Pago",
+      "selectDate": "Seleccionar fecha de salario"
+    }
+  },
+  "marketPurchaseManagement": {
+    "title": "Gestión de Compras de Mercado",
+    "subtitle": "Gestionar compras de mercado y gastos",
+    "addPurchase": "Agregar Compra",
+    "searchPlaceholder": "Buscar Número de Ticket...",
+    "filters": {
+      "supplier": "Proveedor",
+      "expenseType": "Tipo de Gasto",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Fin",
+      "allSuppliers": "Todos los Proveedores",
+      "allExpenseTypes": "Todos los Tipos de Gasto",
+      "clearFilters": "Limpiar Filtros"
+    },
+    "table": {
+      "purchases": "Compras",
+      "ticketNumber": "Número de Ticket",
+      "supplier": "Proveedor",
+      "expenseType": "Tipo de Gasto",
+      "ticketDate": "Fecha de Ticket",
+      "paymentType": "Tipo de Pago",
+      "totalAmount": "Monto Total",
+      "actions": "Acciones",
+      "noPurchases": "No se encontraron compras",
+      "updating": "Actualizando..."
+    },
+    "modal": {
+      "addTitle": "Agregar Compra de Mercado",
+      "editTitle": "Editar Compra de Mercado",
+      "supplier": "Proveedor",
+      "ticketDate": "Fecha de Ticket",
+      "expenseType": "Tipo de Gasto",
+      "ticketNumber": "Número de Ticket",
+      "paymentType": "Tipo de Pago",
+      "cash": "Efectivo",
+      "card": "Tarjeta",
+      "mixed": "Mixto",
+      "products": "Productos",
+      "addProduct": "Agregar Producto",
+      "product": "Producto",
+      "box": "Caja",
+      "unit": "Unidad",
+      "totalUnit": "Unidad Total",
+      "unitPrice": "Precio Unitario",
+      "tax": "Impuesto",
+      "total": "Total",
+      "totalAmount": "Monto Total",
+      "actions": "Acciones",
+      "noProducts": "No se agregaron productos",
+      "create": "Crear Compra",
+      "complete": "Completar Compra",
+      "next": "Siguiente",
+      "previous": "Anterior",
+      "enterProductName": "Ingrese el nombre del producto",
+      "productAdded": "Producto agregado exitosamente",
+      "productUpdated": "Producto actualizado exitosamente",
+      "deleteProductTitle": "Eliminar Producto",
+      "confirmDeleteProduct": "¿Está seguro de que desea eliminar este producto?",
+      "finishEditingFirst": "Por favor termine de editar el producto actual primero",
+      "step1": {
+        "title": "Información de Compra"
+      },
+      "step2": {
+        "title": "Agregar Productos",
+        "addProduct": "Agregar Nuevo Producto",
+        "productsList": "Lista de Productos",
+        "totalBase": "TOTAL BASE",
+        "tax": "IVA",
+        "total": "TOTAL"
+      },
+      "step3": {
+        "title": "Pago",
+        "selectPaymentMethod": "Seleccionar Método de Pago",
+        "amount": "Monto",
+        "addPayment": "Agregar Pago",
+        "addedPayments": "Pagos Agregados",
+        "totalPaid": "Total Pagado",
+        "remaining": "Pendiente",
+        "change": "Cambio"
+      },
+      "errors": {
+        "supplierRequired": "El proveedor es obligatorio",
+        "expenseTypeRequired": "El tipo de gasto es obligatorio",
+        "ticketDateRequired": "La fecha del ticket es obligatoria",
+        "ticketNumberRequired": "El número de ticket es obligatorio",
+        "itemsRequired": "Se requiere al menos un producto",
+        "productNameRequired": "El nombre del producto es obligatorio",
+        "boxRequired": "La cantidad de cajas debe ser mayor que 0",
+        "unitRequired": "La cantidad de unidades debe ser mayor que 0",
+        "unitPriceRequired": "El precio unitario debe ser mayor que 0",
+        "paymentRequired": "Por favor agregue al menos un método de pago",
+        "paymentIncomplete": "Pago incompleto. Pendiente: €{remaining}",
+        "pleaseEnterValidAmount": "Por favor ingrese un monto válido"
+      },
+      "deleteConfirm": {
+        "title": "Eliminar Compra",
+        "message": "¿Estás seguro de que deseas eliminar esta compra? Esta acción no se puede deshacer."
       }
     }
   },

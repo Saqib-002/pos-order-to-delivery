@@ -3,33 +3,33 @@ import { AddIcon, DeleteIcon, EditIcon, EyeIcon } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { toast } from "react-toastify";
-import { PlatformModal } from "./Modals/PlatformModal";
+import { SupplierModal } from "./Modals/SupplierModal";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import { useTranslation } from "react-i18next";
 
-const fetchPlatforms = async (
+const fetchSuppliers = async (
   token: string | null,
-  setPlatforms: any,
+  setSuppliers: any,
   t: any
 ) => {
   if (!token) return;
   try {
-    const res = await (window as any).electronAPI.getAllPlatforms(token);
+    const res = await (window as any).electronAPI.getAllSuppliers(token);
     if (res.status) {
-      setPlatforms(res.data || []);
+      setSuppliers(res.data || []);
     } else {
-      toast.error(t("platforms.fetchError"));
+      toast.error(t("suppliers.fetchError"));
     }
   } catch (error) {
-    toast.error(t("platforms.fetchError"));
+    toast.error(t("suppliers.fetchError"));
   }
 };
 
-const Platforms = () => {
-  const [platforms, setPlatforms] = useState([]);
-  const [showPlatformModal, setShowPlatformModal] = useState(false);
+const Suppliers = () => {
+  const [suppliers, setSuppliers] = useState([]);
+  const [showSupplierModal, setShowSupplierModal] = useState(false);
   const [mode, setMode] = useState<"add" | "edit" | "view">("add");
-  const [currentPlatform, setCurrentPlatform] = useState<any>(null);
+  const [currentSupplier, setCurrentSupplier] = useState<any>(null);
   const {
     auth: { token },
   } = useAuth();
@@ -37,134 +37,134 @@ const Platforms = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    fetchPlatforms(token, setPlatforms, t);
+    fetchSuppliers(token, setSuppliers, t);
   }, [token, t]);
 
-  const handleAddPlatform = () => {
+  const handleAddSupplier = () => {
     setMode("add");
-    setCurrentPlatform(null);
-    setShowPlatformModal(true);
+    setCurrentSupplier(null);
+    setShowSupplierModal(true);
   };
 
-  const handleEdit = (platform: any) => {
+  const handleEdit = (supplier: any) => {
     setMode("edit");
-    setCurrentPlatform(platform);
-    setShowPlatformModal(true);
+    setCurrentSupplier(supplier);
+    setShowSupplierModal(true);
   };
 
-  const handleView = (platform: any) => {
+  const handleView = (supplier: any) => {
     setMode("view");
-    setCurrentPlatform(platform);
-    setShowPlatformModal(true);
+    setCurrentSupplier(supplier);
+    setShowSupplierModal(true);
   };
 
-  const handleDelete = async (id: string, platformName: string) => {
+  const handleDelete = async (id: string, supplierName: string) => {
     const ok = await confirm({
-      title: t("platforms.deleteTitle"),
-      message: t("platforms.deleteMessage"),
-      confirmText: t("platforms.deleteConfirm"),
-      cancelText: t("platforms.deleteCancel"),
-      itemName: platformName,
+      title: t("suppliers.deleteTitle"),
+      message: t("suppliers.deleteMessage"),
+      confirmText: t("suppliers.deleteConfirm"),
+      cancelText: t("suppliers.deleteCancel"),
+      itemName: supplierName,
     });
     if (!ok) return;
     try {
-      const res = await (window as any).electronAPI.deletePlatform(token, id);
+      const res = await (window as any).electronAPI.deleteSupplier(token, id);
       if (res.status) {
-        toast.success(t("platforms.deletedSuccess"));
-        fetchPlatforms(token, setPlatforms, t);
+        toast.success(t("suppliers.deletedSuccess"));
+        fetchSuppliers(token, setSuppliers, t);
       } else {
-        toast.error(t("platforms.deletedFailed"));
+        toast.error(t("suppliers.deletedFailed"));
       }
     } catch (error) {
-      toast.error(t("platforms.deletedError"));
+      toast.error(t("suppliers.deletedError"));
     }
   };
 
   const onCloseModal = () => {
-    setShowPlatformModal(false);
-    setCurrentPlatform(null);
+    setShowSupplierModal(false);
+    setCurrentSupplier(null);
     setMode("add");
   };
 
   return (
     <div className="relative">
-      {showPlatformModal && (
-        <PlatformModal
+      {showSupplierModal && (
+        <SupplierModal
           onClose={onCloseModal}
           mode={mode}
-          platform={currentPlatform}
+          supplier={currentSupplier}
           token={token}
-          onSuccess={() => fetchPlatforms(token, setPlatforms, t)}
+          onSuccess={() => fetchSuppliers(token, setSuppliers, t)}
         />
       )}
       <div className="pb-6 flex-1">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-green-100">
+              <div className="p-3 rounded-lg bg-amber-100">
                 <img
-                  src="./images/platform.png"
-                  alt="Platform"
+                  src="./images/supplier.png"
+                  alt="Supplier"
                   className="size-10"
                 />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-black">
-                  {t("platforms.title")}
+                  {t("suppliers.title")}
                 </h2>
-                <p className="text-gray-600 mt-1">{t("platforms.subtitle")}</p>
+                <p className="text-gray-600 mt-1">{t("suppliers.subtitle")}</p>
               </div>
             </div>
             <CustomButton
               type="button"
-              label={t("platforms.addPlatform")}
-              onClick={handleAddPlatform}
+              label={t("suppliers.addSupplier")}
+              onClick={handleAddSupplier}
               Icon={<AddIcon className="size-7" />}
             />
           </div>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-black mb-4">
-            {t("platforms.platformsList")}
+            {t("suppliers.suppliersList")}
           </h3>
-          {platforms.length === 0 ? (
-            <p className="text-gray-500">{t("platforms.noPlatforms")}</p>
+          {suppliers.length === 0 ? (
+            <p className="text-gray-500">{t("suppliers.noSuppliers")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("platforms.table.platformName")}
+                      {t("suppliers.table.supplierName")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("platforms.table.createdAt")}
+                      {t("suppliers.table.createdAt")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("platforms.table.actions")}
+                      {t("suppliers.table.actions")}
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {platforms.map((platform: any) => (
-                    <tr key={platform.id}>
+                  {suppliers.map((supplier: any) => (
+                    <tr key={supplier.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {platform.name}
+                        {supplier.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {new Date(platform.createdAt).toLocaleDateString()}
+                        {new Date(supplier.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
                         <CustomButton
                           type="button"
-                          onClick={() => handleView(platform)}
+                          onClick={() => handleView(supplier)}
                           Icon={<EyeIcon className="size-5" />}
                           variant="transparent"
                           className="!p-0"
                         />
                         <CustomButton
                           type="button"
-                          onClick={() => handleEdit(platform)}
+                          onClick={() => handleEdit(supplier)}
                           Icon={<EditIcon className="size-5" />}
                           variant="transparent"
                           className="!p-0 !text-blue-500 hover:!text-blue-700"
@@ -172,7 +172,7 @@ const Platforms = () => {
                         <CustomButton
                           type="button"
                           onClick={() =>
-                            handleDelete(platform.id, platform.name)
+                            handleDelete(supplier.id, supplier.name)
                           }
                           Icon={<DeleteIcon className="size-5" />}
                           variant="transparent"
@@ -191,4 +191,4 @@ const Platforms = () => {
   );
 };
 
-export default Platforms;
+export default Suppliers;

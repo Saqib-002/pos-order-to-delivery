@@ -3,7 +3,6 @@ import {
   fetchPrinters,
 } from "@/renderer/utils/printer";
 import { useEffect, useState } from "react";
-import Header from "../shared/Header.order";
 import {
   DeleteIcon,
   EditIcon,
@@ -91,28 +90,25 @@ const Printers = () => {
           onSuccess={() => fetchPrinters(token, setPrinters)}
         />
       )}
-      <Header
-        title={t("printers.title")}
-        subtitle={t("printers.subtitle")}
-        icon={<PrinterIcon className="size-8 text-blue-500" />}
-        iconbgClasses="bg-blue-100"
-      />
       <div className="pb-6 flex-1">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-lg font-semibold text-black">
-                {t("printers.title")}
-              </h3>
-              <p className="text-sm text-gray-500 mt-1">
-                {t("printers.manageDescription")}
-              </p>
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-lg bg-blue-100">
+                <PrinterIcon className="size-8 text-blue-500" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-black">
+                  {t("printers.title")}
+                </h2>
+                <p className="text-gray-600 mt-1">{t("printers.subtitle")}</p>
+              </div>
             </div>
             <CustomButton
               type="button"
               label={t("printers.addPrinter")}
               onClick={handleAddPrinter}
-              Icon={<PrinterIcon className="size-5" />}
+              Icon={<PrinterIcon className="size-7" />}
             />
           </div>
         </div>

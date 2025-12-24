@@ -2,6 +2,8 @@ import { useState } from "react";
 import Printers from "../components/configurations/Printers";
 import ConfigurationsTab from "../components/configurations/ConfiguraionsTab";
 import Platforms from "../components/configurations/Platforms";
+import Suppliers from "../components/configurations/Suppliers";
+import ExpenseTypes from "../components/configurations/ExpenseTypes";
 import { useTranslation } from "react-i18next";
 
 const Configurations = () => {
@@ -14,6 +16,10 @@ const Configurations = () => {
         return <Printers />;
       case "platforms":
         return <Platforms />;
+      case "suppliers":
+        return <Suppliers />;
+      case "expenseTypes":
+        return <ExpenseTypes />;
       case "config":
         return <ConfigurationsTab />;
       default:
@@ -35,6 +41,18 @@ const Configurations = () => {
           className={`px-5 py-3 ${currentSubview === "platforms" ? "border-b-2 border-black " : " text-gray-700 hover:bg-gray-200 cursor-pointer"} touch-manipulation transition-colors duration-300`}
         >
           {t("platforms.title")}
+        </button>
+        <button
+          onClick={() => setCurrentSubview("suppliers")}
+          className={`px-5 py-3 ${currentSubview === "suppliers" ? "border-b-2 border-black " : " text-gray-700 hover:bg-gray-200 cursor-pointer"} touch-manipulation transition-colors duration-300`}
+        >
+          {t("suppliers.title")}
+        </button>
+        <button
+          onClick={() => setCurrentSubview("expenseTypes")}
+          className={`px-5 py-3 ${currentSubview === "expenseTypes" ? "border-b-2 border-black " : " text-gray-700 hover:bg-gray-200 cursor-pointer"} touch-manipulation transition-colors duration-300`}
+        >
+          {t("expenseTypes.title")}
         </button>
         <button
           onClick={() => setCurrentSubview("config")}

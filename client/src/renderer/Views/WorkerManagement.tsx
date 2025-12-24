@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useConfirm } from "../hooks/useConfirm";
 import { useWorkerData } from "../hooks/useWorkerData";
@@ -35,7 +35,6 @@ export const WorkerManagement = () => {
       page: 1,
       pageSize: 10,
       search: "",
-      paymentMethod: "all",
     });
   };
 
@@ -96,12 +95,6 @@ export const WorkerManagement = () => {
     }
   };
 
-  const paymentOptions = [
-    { value: "all", label: t("workerManagement.filters.allPaymentTypes") },
-    { value: "cash", label: t("workerManagement.filters.cash") },
-    { value: "transfer", label: t("workerManagement.filters.transfer") },
-    { value: "mixed", label: t("workerManagement.filters.mixed") },
-  ];
   return (
     <div className="p-4">
       <div className="flex justify-between items-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -134,12 +127,6 @@ export const WorkerManagement = () => {
                 secLabelClasses="top-3 left-1.5!"
               />
             </div>
-            <CustomSelect
-              options={paymentOptions}
-              value={filters.paymentMethod || "all"}
-              onChange={(val) => handleFilterChange("paymentMethod", val)}
-              placeholder={t("workerManagement.filters.paymentMethod")}
-            />
           </div>
           <div className="flex-shrink-0">
             <CustomButton
