@@ -88,7 +88,11 @@
         "menu-structure": "Menu Structure",
         "users": "Users",
         "customers": "Customers",
-        "configurations": "Configurations"
+        "configurations": "Configurations",
+        "vehicles": "Vehicle Management",
+        "workers": "Worker Management",
+        "market-purchases": "Market Purchase Management",
+        "expenses": "Expense Management"
       },
       "username": "Username",
       "password": "Password",
