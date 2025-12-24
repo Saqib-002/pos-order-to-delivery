@@ -36,7 +36,7 @@ export const Navigation = ({
     ...navItems.filter(({ view, roles }) =>
       hasModuleAccess(view, userModulePermissions, userRole, roles)
     ),
-    { view: "logout", roles: [] }, // Add logout as a regular nav item
+    { view: "logout", roles: [] }, 
   ];
 
   const scrollUp = () => {
