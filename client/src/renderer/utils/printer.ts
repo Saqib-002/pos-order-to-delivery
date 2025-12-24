@@ -147,7 +147,7 @@ export const generateReceiptHTML = (
     <html>
         <head>
         <style>
-            body { font-family: 'Courier New', monospace; font-size: 12px; width: 70mm; margin: 0; padding: 1mm;  }
+            body { font-family: sans-serif, 'Courier New', monospace; font-size: 12px; width: 70mm; margin: 0; padding: 1mm;  }
             .line { width: 100%; height: 1px; background: black; margin: 5px 0; }
             .bold { font-weight: bold; }
             .center { text-align: center; }
@@ -419,7 +419,7 @@ export const generateItemsReceiptHTML = (
     <html>
         <head>
         <style>
-            body { font-family: 'Courier New', monospace; font-size: 12px; width: 70mm; margin: 0; padding: 1mm;  }
+            body { font-family: sans-serif, 'Courier New', monospace; font-size: 12px; width: 70mm; margin: 0; padding: 1mm;  }
             .line { width: 100%; height: 1px; background: black; margin: 5px 0; }
             .bold { font-weight: bold; font-size: 16px; }
             .center { text-align: center; }
