@@ -36,7 +36,7 @@ export const Navigation = ({
     ...navItems.filter(({ view, roles }) =>
       hasModuleAccess(view, userModulePermissions, userRole, roles)
     ),
-    { view: "logout", roles: [] }, // Add logout as a regular nav item
+    { view: "logout", roles: [] }, 
   ];
 
   const scrollUp = () => {
@@ -92,7 +92,7 @@ export const Navigation = ({
       vehicles: "./images/car-maintainence.png",
       workers: "./images/workers.png",
       "market-purchases": "./images/market-purchase.png",
-      expenses: "./images/expenses.png",
+      expenses: "./images/expense.png",
     };
     return iconMap[view] || "./images/order.png";
   };
