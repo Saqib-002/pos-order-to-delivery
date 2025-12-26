@@ -520,7 +520,7 @@ export const SalaryModal = ({
                 e.preventDefault();
                 handleTabChange("payment");
               }}
-              className="grid grid-cols-3 gap-4"
+              className="grid grid-cols-3 gap-4 p-6"
             >
               <DatePicker
                 label={t("workerManagement.salaryModal.date")}

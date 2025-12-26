@@ -142,15 +142,15 @@ export const PaymentStep = ({
   const getPaymentIcon = (type: string) => {
     switch (type) {
       case "cash":
-        return "💵";
+        return "./images/cash.png";
       case "card":
-        return "💳";
+        return "./images/card.png";
       case "bizum":
-        return "📱";
+        return "./images/bizum.png";
       case "bank-transfer":
-        return "🏦";
+        return "./images/bank-transfer.png";
       default:
-        return "💵";
+        return "./images/cash.png";
     }
   };
 
@@ -245,7 +245,7 @@ export const PaymentStep = ({
             }`}
           >
             <div className="flex flex-col items-center justify-center gap-3">
-              <span className="text-2xl">💵</span>
+              <img src="./images/cash.png" alt="cash" className="size-10" />
               <span className="font-medium text-lg">
                 {t("marketPurchaseManagement.modal.cash")}
               </span>
@@ -261,7 +261,7 @@ export const PaymentStep = ({
             }`}
           >
             <div className="flex flex-col items-center justify-center gap-3">
-              <span className="text-2xl">💳</span>
+              <img src="./images/card.png" alt="card" className="size-10" />
               <span className="font-medium text-lg">
                 {t("marketPurchaseManagement.modal.card")}
               </span>
@@ -277,7 +277,7 @@ export const PaymentStep = ({
             }`}
           >
             <div className="flex flex-col items-center justify-center gap-3">
-              <span className="text-2xl">📱</span>
+              <img src="./images/bizum.png" alt="bizum" className="size-10" />
               <span className="font-medium text-lg">
                 {t("marketPurchaseManagement.modal.bizum")}
               </span>
@@ -293,7 +293,7 @@ export const PaymentStep = ({
             }`}
           >
             <div className="flex flex-col items-center justify-center gap-3">
-              <span className="text-2xl">🏦</span>
+              <img src="./images/bank-transfer.png" alt="bank-transfer" className="size-10" />
               <span className="font-medium text-lg">
                 {t("marketPurchaseManagement.modal.bankTransfer")}
               </span>
@@ -338,9 +338,7 @@ export const PaymentStep = ({
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">
-                    {getPaymentIcon(method.type)}
-                  </span>
+                  <img src={getPaymentIcon(method.type)} alt={method.type} className="size-10" />
                   <div>
                     <div className="font-medium text-gray-900">
                       {getPaymentLabel(method.type)}
