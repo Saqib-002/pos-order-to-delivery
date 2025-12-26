@@ -379,7 +379,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
                 <div className="flex gap-4">
                   {/* Shortcuts Panel */}
-                  <div className="w-44 flex-shrink-0">
+                  <div className="w-44 shrink-0">
                     <div className="space-y-2">
                       {shortcuts.map((shortcut, index) => {
                         const isActive = isShortcutActive(shortcut);

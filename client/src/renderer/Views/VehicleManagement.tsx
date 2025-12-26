@@ -204,7 +204,7 @@ export const VehicleManagement = () => {
               </label>
             </div>
           </div>
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <CustomButton
               type="button"
               variant="secondary"
@@ -217,7 +217,7 @@ export const VehicleManagement = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[500px]">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-125">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-semibold text-black">
             {t("vehicleManagement.table.vehicles")} (
@@ -230,7 +230,7 @@ export const VehicleManagement = () => {
           )}
         </div>
 
-        <div className="flex-grow">
+        <div className="grow">
           <VehicleTable
             vehicles={vehiclesData.data}
             onEdit={handleOpenEdit}

@@ -1657,6 +1657,13 @@
       "clearFilters": "Clear Filters"
     },
     "table": {
+      "columns":{
+        "fullName":"Full Name",
+        "dob":"DOB",
+        "idNumber":"ID Number",
+        "phone":"Phone",
+        "bankInfo":"Bank Info"
+      },
       "workers": "Workers",
       "noWorkersFound": "No workers found",
       "getStartedMessage": "Get started by registering your first worker.",

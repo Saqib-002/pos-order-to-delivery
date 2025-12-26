@@ -1,5 +1,7 @@
 import { Worker } from "@/types/workers";
 import { EditIcon, DocumentIcon, DeleteIcon } from "@/renderer/public/Svg";
+import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 interface Props {
   workers: Worker[];
   onEdit: (worker: Worker) => void;
@@ -8,25 +10,29 @@ interface Props {
 }
 
 export const WorkerTable = ({ workers, onEdit, onDelete, onSalary }: Props) => {
+  const { t } = useTranslation();
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
-              Name
+              {t("workerManagement.table.columns.fullName")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
-              ID Number
+              {t("workerManagement.table.columns.dob")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
-              Phone
+              {t("workerManagement.table.columns.idNumber")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
-              Bank Info
+              {t("workerManagement.table.columns.phone")}
+            </th>
+            <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+              {t("workerManagement.table.columns.bankInfo")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700 text-right">
-              Actions
+              {t("vehicleManagement.table.actions")}
             </th>
           </tr>
         </thead>
@@ -34,7 +40,7 @@ export const WorkerTable = ({ workers, onEdit, onDelete, onSalary }: Props) => {
           {workers.length === 0 ? (
             <tr>
               <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                No workers found
+                {t("workerManagement.table.noWorkersFound")}
               </td>
             </tr>
           ) : (
@@ -45,6 +51,9 @@ export const WorkerTable = ({ workers, onEdit, onDelete, onSalary }: Props) => {
               >
                 <td className="px-6 py-4 text-sm text-gray-900 font-medium">
                   {worker.name}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                  {worker.dateOfBirth?dayjs(worker.dateOfBirth).format("DD/MM/YYYY"):"-"}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
                   {worker.idNumber || "-"}

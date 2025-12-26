@@ -2,23 +2,16 @@
 
 import * as React from "react";
 import { CalendarIcon } from "lucide-react";
-
-import { Button } from "./button";
 import { Calendar } from "./calendar";
-import { Input } from "./input";
-import { Label } from "./label";
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
+import dayjs from "dayjs";
 
 function formatDate(date: Date | undefined) {
   if (!date) {
     return "";
   }
 
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
+  return dayjs(date.toLocaleDateString()).format("DD/MM/YYYY");
 }
 
 function isValidDate(date: Date | undefined) {

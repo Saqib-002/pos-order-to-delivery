@@ -128,7 +128,7 @@ export const WorkerManagement = () => {
               />
             </div>
           </div>
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <CustomButton
               type="button"
               variant="secondary"
@@ -140,7 +140,7 @@ export const WorkerManagement = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[500px] relative">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-125 relative">
         {loading && (
           <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
@@ -159,7 +159,7 @@ export const WorkerManagement = () => {
           )}
         </div>
 
-        <div className="flex-grow">
+        <div className="grow">
           <WorkerTable
             workers={workersData.data}
             onEdit={handleOpenEdit}

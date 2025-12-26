@@ -1657,9 +1657,17 @@
       "clearFilters": "Limpiar Filtros"
     },
     "table": {
+      "columns":{
+        "fullName":"Nombre completo",
+        "dob":"fecha de nacimiento",
+        "idNumber":"Número de identificación",
+        "phone":"Teléfono",
+        "bankInfo":"Información bancaria"
+      },
       "workers": "Trabajadores",
       "noWorkersFound": "No se encontraron trabajadores",
-      "getStartedMessage": "Comienza registrando tu primer trabajador."
+      "getStartedMessage": "Comienza registrando tu primer trabajador.",
+      "updating": "Actualizando..."
     },
     "modal": {
       "dateOfBirth": "Fecha de Nacimiento",

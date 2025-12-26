@@ -4,6 +4,7 @@ import { Vehicle } from "@/types/vehicles";
 import CustomButton from "../ui/CustomButton";
 import { Car, Bike, LocateFixed, Toolbox } from "lucide-react";
 import { ExclamationIcon, EditIcon, DeleteIcon } from "../../public/Svg";
+import dayjs from "dayjs";
 
 interface VehicleTableProps {
   vehicles: Vehicle[];
@@ -14,7 +15,7 @@ interface VehicleTableProps {
 
 const formatDate = (dateString: string | Date | undefined) => {
   if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("en-GB");
+  return dayjs(new Date(dateString).toLocaleDateString()).format("DD/MM/YYYY");
 };
 
 export const VehicleTable: React.FC<VehicleTableProps> = ({
@@ -69,7 +70,7 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
             <tr key={vehicle.id} className="hover:bg-gray-50 transition-colors">
               <td className="px-6 py-4">
                 <div className="flex items-center">
-                  <div className="flex-shrink-0 h-12 w-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center shadow-sm">
+                  <div className="shrink-0 h-12 w-12 bg-linear-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center shadow-sm">
                     {vehicle.type === "bike" ? (
                       <Bike className="size-6 text-blue-600" />
                     ) : (
@@ -151,7 +152,7 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
                   variant="transparent"
                   onClick={() => onMaintenance(vehicle)}
                   Icon={<Toolbox className="size-5" />}
-                  className="text-orange-600 hover:text-orange-900 hover:bg-orange-50 hover:scale-105 !px-3 !py-2 rounded-lg transition-all duration-200"
+                  className="text-orange-600 hover:text-orange-900 hover:bg-orange-50 hover:scale-105 px-3! py-2! rounded-lg transition-all duration-200"
                   title="View Maintenance Records"
                 />
                 <CustomButton
@@ -159,7 +160,7 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
                   variant="transparent"
                   onClick={() => onEdit(vehicle)}
                   Icon={<EditIcon className="size-5" />}
-                  className="text-blue-600 hover:text-blue-900 hover:bg-blue-50 hover:scale-105 !px-3 !py-2 rounded-lg transition-all duration-200"
+                  className="text-blue-600 hover:text-blue-900 hover:bg-blue-50 hover:scale-105 px-3! py-2! rounded-lg transition-all duration-200"
                   title="Edit Vehicle"
                 />
                 <CustomButton
@@ -167,7 +168,7 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
                   variant="transparent"
                   onClick={() => onDelete(vehicle.id)}
                   Icon={<DeleteIcon className="size-5" />}
-                  className="text-red-600 hover:text-red-900 hover:bg-red-50 hover:scale-105 !px-3 !py-2 rounded-lg transition-all duration-200"
+                  className="text-red-600 hover:text-red-900 hover:bg-red-50 hover:scale-105 px-3! py-2! rounded-lg transition-all duration-200"
                   title="Delete Vehicle"
                 />
               </td>
