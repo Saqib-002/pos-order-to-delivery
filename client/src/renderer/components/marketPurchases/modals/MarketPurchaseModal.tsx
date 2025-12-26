@@ -24,6 +24,7 @@ interface Props {
   initialData?: MarketPurchase | null;
   suppliers: any[];
   expenseTypes: any[];
+  inventoryProducts: any[];
 }
 
 export const MarketPurchaseModal = ({
@@ -33,6 +34,7 @@ export const MarketPurchaseModal = ({
   initialData,
   suppliers,
   expenseTypes,
+  inventoryProducts,
 }: Props) => {
   const { t } = useTranslation();
   const confirm = useConfirm();
@@ -397,6 +399,11 @@ export const MarketPurchaseModal = ({
     label: e.name,
   }));
 
+  const inventoryProductOptions = inventoryProducts.map((p) => ({
+    value: p.id,
+    label: p.name,
+  }));
+
   const totalAmount = calculateTotalAmount();
   const totalPaid = paymentMethods.reduce((sum, method) => {
     const amount =
@@ -501,20 +508,25 @@ export const MarketPurchaseModal = ({
             {t("marketPurchaseManagement.modal.step2.addProduct")}
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <CustomInput
+            <CustomSelect
               label={t("marketPurchaseManagement.modal.product")}
-              name="productName"
-              type="text"
-              value={newProduct.productName}
-              onChange={(e) =>
+              options={inventoryProductOptions}
+              value={
+                inventoryProducts.find((p) => p.name === newProduct.productName)
+                  ?.id || ""
+              }
+              onChange={(val) => {
+                const selectedProduct = inventoryProducts.find(
+                  (p) => p.id === val
+                );
                 setNewProduct(
                   updateNewProductCalculations({
                     ...newProduct,
-                    productName: e.target.value,
+                    productName: selectedProduct?.name || "",
                   })
-                )
-              }
-              placeholder={t("marketPurchaseManagement.modal.enterProductName")}
+                );
+              }}
+              placeholder={t("marketPurchaseManagement.modal.selectProduct")}
             />
             <CustomInput
               label={t("marketPurchaseManagement.modal.box")}

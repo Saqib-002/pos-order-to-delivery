@@ -156,6 +156,13 @@ import {
   getExpenseTypeById,
 } from "./handlers/expenseTypes.js";
 import {
+  createInventoryProduct,
+  updateInventoryProduct,
+  deleteInventoryProduct,
+  getAllInventoryProducts,
+  getInventoryProductById,
+} from "./handlers/inventoryProducts.js";
+import {
   createMarketPurchase,
   updateMarketPurchase,
   deleteMarketPurchase,
@@ -391,6 +398,13 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-expense-type", deleteExpenseType);
   ipcMain.handle("get-all-expense-types", getAllExpenseTypes);
   ipcMain.handle("get-expense-type-by-id", getExpenseTypeById);
+
+  // inventory products
+  ipcMain.handle("create-inventory-product", createInventoryProduct);
+  ipcMain.handle("update-inventory-product", updateInventoryProduct);
+  ipcMain.handle("delete-inventory-product", deleteInventoryProduct);
+  ipcMain.handle("get-all-inventory-products", getAllInventoryProducts);
+  ipcMain.handle("get-inventory-product-by-id", getInventoryProductById);
 
   // expenses
   ipcMain.handle("create-expense", createExpense);

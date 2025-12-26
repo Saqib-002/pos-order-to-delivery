@@ -11,7 +11,7 @@ import Pagination from "../components/shared/Pagination";
 import { MarketPurchaseTable } from "../components/marketPurchases/MarketPurchaseTable";
 import { MarketPurchaseModal } from "../components/marketPurchases/modals/MarketPurchaseModal";
 import { AddIcon, SearchIcon } from "../public/Svg";
-import { DatePicker } from "../components/ui/DatePicker";
+import { DateRangePicker } from "../components/ui/DateRangePicker";
 
 export const MarketPurchaseManagement = () => {
   const { t } = useTranslation();
@@ -20,6 +20,7 @@ export const MarketPurchaseManagement = () => {
     purchasesData,
     suppliers,
     expenseTypes,
+    inventoryProducts,
     loading,
     filters,
     setFilters,
@@ -39,6 +40,18 @@ export const MarketPurchaseManagement = () => {
       endDate: undefined,
       ticketNumber: undefined,
     });
+  };
+
+  const handleDateRangeChange = (
+    startDate: Date | null,
+    endDate: Date | null
+  ) => {
+    setFilters((prev) => ({
+      ...prev,
+      startDate: startDate ? startDate.toISOString().split("T")[0] : undefined,
+      endDate: endDate ? endDate.toISOString().split("T")[0] : undefined,
+      page: 1,
+    }));
   };
 
   const [modalState, setModalState] = useState<{
@@ -130,7 +143,7 @@ export const MarketPurchaseManagement = () => {
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
             <div className="sm:col-span-1 lg:col-span-1">
               <CustomInput
                 name="search"
@@ -159,22 +172,19 @@ export const MarketPurchaseManagement = () => {
               }
               placeholder={t("marketPurchaseManagement.filters.expenseType")}
             />
-            <DatePicker
-              //   label={t("marketPurchaseManagement.filters.startDate")}
-              value={filters.startDate || ""}
-              onChange={(date) =>
-                handleFilterChange("startDate", date || undefined)
-              }
-              placeholder={t("marketPurchaseManagement.filters.startDate")}
-            />
-            <DatePicker
-              //   label={t("marketPurchaseManagement.filters.endDate")}
-              value={filters.endDate || ""}
-              onChange={(date) =>
-                handleFilterChange("endDate", date || undefined)
-              }
-              placeholder={t("marketPurchaseManagement.filters.endDate")}
-            />
+            <div className="sm:col-span-1 lg:col-span-1">
+              <DateRangePicker
+                startDate={
+                  filters.startDate ? new Date(filters.startDate) : null
+                }
+                endDate={filters.endDate ? new Date(filters.endDate) : null}
+                selectedDate={
+                  filters.startDate ? new Date(filters.startDate) : null
+                }
+                onChange={handleDateRangeChange}
+                className="w-full"
+              />
+            </div>
           </div>
           <div className="flex-shrink-0">
             <CustomButton
@@ -232,6 +242,7 @@ export const MarketPurchaseManagement = () => {
         initialData={modalState.type === "edit" ? modalState.purchase : null}
         suppliers={suppliers}
         expenseTypes={expenseTypes}
+        inventoryProducts={inventoryProducts}
       />
     </div>
   );

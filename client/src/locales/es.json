@@ -207,6 +207,48 @@
       "expenseTypeUpdatedSuccessfully": "Tipo de gasto actualizado exitosamente"
     }
   },
+  "inventory": {
+    "title": "Inventario",
+    "subtitle": "Gestionar productos de inventario",
+    "addProduct": "Agregar Producto",
+    "productsList": "Lista de Productos",
+    "noProducts": "Aún no se han agregado productos. Agregue uno arriba.",
+    "table": {
+      "productName": "Nombre del Producto",
+      "createdAt": "Fecha de Creación",
+      "actions": "Acciones"
+    },
+    "deleteTitle": "Eliminar Producto",
+    "deleteMessage": "¿Estás seguro de que quieres eliminar este producto?",
+    "deleteConfirm": "Eliminar",
+    "deleteCancel": "Cancelar",
+    "deletedSuccess": "Producto eliminado exitosamente",
+    "deletedFailed": "Error al eliminar producto",
+    "deletedError": "Error al eliminar producto",
+    "fetchError": "Error al obtener productos de inventario"
+  },
+  "inventoryModal": {
+    "viewProduct": "Ver Producto",
+    "editProduct": "Editar Producto",
+    "addNewProduct": "Agregar Nuevo Producto",
+    "productName": "Nombre del Producto *",
+    "enterProductName": "Ingrese el nombre del producto",
+    "updateProduct": "Actualizar Producto",
+    "addProduct": "Agregar Producto",
+    "errors": {
+      "pleaseEnterProductName": "Por favor ingrese el nombre del producto",
+      "unableToAddProduct": "No se pudo agregar el producto",
+      "unableToUpdateProduct": "No se pudo actualizar el producto",
+      "anErrorOccurred": "Ocurrió un error"
+    },
+    "warnings": {
+      "productAlreadyAdded": "¡Este producto ya existe!"
+    },
+    "messages": {
+      "productAddedSuccessfully": "Producto agregado exitosamente",
+      "productUpdatedSuccessfully": "Producto actualizado exitosamente"
+    }
+  },
   "platformOrders": {
     "title": "Pedidos de Plataforma",
     "subtitle": "Registrar pedidos de plataformas de entrega",
@@ -1819,6 +1861,7 @@
       "next": "Siguiente",
       "previous": "Anterior",
       "enterProductName": "Ingrese el nombre del producto",
+      "selectProduct": "Seleccionar producto",
       "productAdded": "Producto agregado exitosamente",
       "productUpdated": "Producto actualizado exitosamente",
       "deleteProductTitle": "Eliminar Producto",
