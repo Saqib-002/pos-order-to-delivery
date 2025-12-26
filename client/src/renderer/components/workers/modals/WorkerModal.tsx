@@ -90,13 +90,13 @@ export const WorkerModal = ({
             onChange={(value) =>
               setFormData({ ...formData, dateOfBirth: value })
             }
-            placeholder="Select date of birth"
+            placeholder={t("workerManagement.modal.dobPlaceholder")}
           />
 
           <CustomInput
             name="id"
             type="tel"
-            label="ID Number (DNI/NIE)"
+            label={t("workerManagement.modal.idLabel")}
             value={formData.idNumber || ""}
             onChange={(e) =>
               setFormData({ ...formData, idNumber: e.target.value })
@@ -117,14 +117,14 @@ export const WorkerModal = ({
 
           <div className="col-span-2 border-t pt-4 mt-2">
             <h4 className="text-sm font-semibold text-gray-700 mb-2">
-              Banking Details
+              {t("workerManagement.modal.bankingDetails")}
             </h4>
           </div>
 
           <CustomInput
             type="text"
             name="bankName"
-            label="Bank Name"
+            label={t("workerManagement.modal.bankName")}
             value={formData.bankName || ""}
             onChange={(e) =>
               setFormData({ ...formData, bankName: e.target.value })
@@ -134,7 +134,7 @@ export const WorkerModal = ({
           <CustomInput
             type="tel"
             name="account"
-            label="Account Number"
+            label={t("workerManagement.modal.accountNumber")}
             value={formData.bankAccountNumber || ""}
             onChange={(e) =>
               setFormData({ ...formData, bankAccountNumber: e.target.value })

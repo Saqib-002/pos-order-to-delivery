@@ -142,6 +142,7 @@ export function DatePicker({
         <MobileDatePicker
           value={dateValue}
           onChange={handleChange}
+          format="DD/MM/YYYY"
           enableAccessibleFieldDOMStructure={false}
           localeText={{
             cancelButtonLabel: cancelLabel,

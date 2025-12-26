@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { Expense } from "@/types/expenses";
+import { Income } from "@/types/incomes";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { DatePicker } from "../../ui/DatePicker";
@@ -16,8 +16,8 @@ import { PaymentStep, PaymentMethod } from "../../shared/PaymentStep";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Expense) => Promise<boolean>;
-  initialData?: Expense | null;
+  onSubmit: (data: Income) => Promise<boolean>;
+  initialData?: Income | null;
 }
 
 export const ExpenseModal = ({
@@ -28,7 +28,7 @@ export const ExpenseModal = ({
 }: Props) => {
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<Partial<Expense>>({
+  const [formData, setFormData] = useState<Partial<Income>>({
     name: "",
     description: "",
     total: 0,
@@ -107,15 +107,15 @@ export const ExpenseModal = ({
 
   const validateStep1 = (): boolean => {
     if (!formData.name || !formData.name.trim()) {
-      toast.error(t("expenseManagement.modal.errors.nameRequired"));
+      toast.error(t("incomesManagement.modal.errors.nameRequired"));
       return false;
     }
     if (!formData.total || formData.total <= 0) {
-      toast.error(t("expenseManagement.modal.errors.totalRequired"));
+      toast.error(t("incomesManagement.modal.errors.totalRequired"));
       return false;
     }
     if (!formData.date) {
-      toast.error(t("expenseManagement.modal.errors.dateRequired"));
+      toast.error(t("incomesManagement.modal.errors.dateRequired"));
       return false;
     }
     return true;
@@ -156,14 +156,14 @@ export const ExpenseModal = ({
             .join(", ")
         : "";
 
-    const expenseData: Expense = {
+    const expenseData: Income = {
       ...formData,
       name: formData.name!,
       total: Number(totalAmount),
       date: formData.date!,
       paymentType: paymentTypeString,
       ticketId: formData.ticketId || undefined,
-    } as Expense;
+    } as Income;
 
     const success = await onSubmit(expenseData);
     if (success) {
@@ -189,39 +189,39 @@ export const ExpenseModal = ({
   const renderStep1 = () => (
     <div className="space-y-6 max-w-2xl mx-auto">
       <h3 className="text-xl font-semibold text-gray-800 mb-4">
-        {t("expenseManagement.modal.step1.title")}
+        {t("incomesManagement.modal.step1.title")}
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="md:col-span-2">
           <CustomInput
-            label={t("expenseManagement.modal.name")}
+            label={t("incomesManagement.modal.name")}
             name="name"
             type="text"
             value={formData.name || ""}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder={t("expenseManagement.modal.enterName")}
+            placeholder={t("incomesManagement.modal.enterName")}
           />
         </div>
         <div className="md:col-span-2">
           <CustomInput
-            label={t("expenseManagement.modal.description")}
+            label={t("incomesManagement.modal.description")}
             name="description"
             type="text"
             value={formData.description || ""}
             onChange={(e) =>
               setFormData({ ...formData, description: e.target.value })
             }
-            placeholder={t("expenseManagement.modal.enterDescription")}
+            placeholder={t("incomesManagement.modal.enterDescription")}
           />
         </div>
         <DatePicker
-          label={t("expenseManagement.modal.date")}
+          label={t("incomesManagement.modal.date")}
           value={formData.date || ""}
           onChange={(date) => setFormData({ ...formData, date: date || "" })}
-          placeholder={t("expenseManagement.modal.selectDate")}
+          placeholder={t("incomesManagement.modal.selectDate")}
         />
         <CustomInput
-          label={t("expenseManagement.modal.total")}
+          label={t("incomesManagement.modal.total")}
           name="total"
           type="number"
           step="0.01"
@@ -236,14 +236,14 @@ export const ExpenseModal = ({
         />
         <div className="md:col-span-2">
           <CustomInput
-            label={t("expenseManagement.modal.ticketId")}
+            label={t("incomesManagement.modal.ticketId")}
             name="ticketId"
             type="text"
             value={formData.ticketId || ""}
             onChange={(e) =>
               setFormData({ ...formData, ticketId: e.target.value })
             }
-            placeholder={t("expenseManagement.modal.enterTicketId")}
+            placeholder={t("incomesManagement.modal.enterTicketId")}
           />
         </div>
       </div>
@@ -266,12 +266,12 @@ export const ExpenseModal = ({
           currentStep === 1 ? "max-w-2xl" : "max-w-xl"
         }`}
       >
-        <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex justify-between items-center flex-shrink-0">
+        <div className="bg-linear-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex justify-between items-center shrink-0">
           <div>
             <h2 className="text-2xl font-bold">
               {initialData
-                ? t("expenseManagement.modal.editTitle")
-                : t("expenseManagement.modal.addTitle")}
+                ? t("incomesManagement.modal.editTitle")
+                : t("incomesManagement.modal.addTitle")}
             </h2>
             <div className="flex gap-2 mt-2">
               {[1, 2].map((step) => (
@@ -302,7 +302,7 @@ export const ExpenseModal = ({
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between gap-4 pt-4 px-8 pb-8 border-t border-gray-200 flex-shrink-0">
+        <div className="flex justify-between gap-4 pt-4 px-8 pb-8 border-t border-gray-200 shrink-0">
           <div>
             {currentStep > 1 && (
               <CustomButton
@@ -339,7 +339,7 @@ export const ExpenseModal = ({
                 label={
                   initialData
                     ? t("common.update")
-                    : t("expenseManagement.modal.complete")
+                    : t("incomesManagement.modal.complete")
                 }
               />
             )}

@@ -1,4 +1,4 @@
-export interface Expense {
+export interface Income {
   id?: string;
   name: string;
   description?: string;
@@ -10,7 +10,7 @@ export interface Expense {
   updatedAt?: string;
 }
 
-export interface ExpenseFilters {
+export interface IncomeFilters {
   page?: number;
   pageSize?: number;
   search?: string;

@@ -1,9 +1,9 @@
 import { randomUUID } from "crypto";
 import { db } from "./index.js";
-import { Expense, ExpenseFilters, PaginatedResult } from "@/types/expenses";
+import { Income, IncomeFilters, PaginatedResult } from "@/types/incomes.js";
 
 export class ExpenseDatabaseOperations {
-  static async createExpense(expenseData: Expense): Promise<Expense> {
+  static async createExpense(expenseData: Income): Promise<Income> {
     try {
       const now = new Date().toISOString();
       const newExpense = {
@@ -27,8 +27,8 @@ export class ExpenseDatabaseOperations {
 
   static async updateExpense(
     id: string,
-    expenseData: Partial<Expense>
-  ): Promise<Expense> {
+    expenseData: Partial<Income>
+  ): Promise<Income> {
     try {
       const now = new Date().toISOString();
       const { id: _id, createdAt, ...updates } = expenseData as any;
@@ -42,8 +42,8 @@ export class ExpenseDatabaseOperations {
   }
 
   static async getExpenses(
-    filters: ExpenseFilters
-  ): Promise<PaginatedResult<Expense>> {
+    filters: IncomeFilters
+  ): Promise<PaginatedResult<Income>> {
     try {
       const { page = 1, pageSize = 10, search, startDate, endDate } = filters;
       const query = db("expenses");
@@ -92,7 +92,7 @@ export class ExpenseDatabaseOperations {
     }
   }
 
-  static async getExpenseById(id: string): Promise<Expense | null> {
+  static async getExpenseById(id: string): Promise<Income | null> {
     try {
       return await db("expenses").where("id", id).first();
     } catch (error) {

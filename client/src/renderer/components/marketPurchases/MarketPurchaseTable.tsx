@@ -5,6 +5,7 @@ import {
   calculatePaymentStatus,
   getPaymentStatusStyle,
 } from "@/renderer/utils/paymentStatus";
+import dayjs from "dayjs";
 
 interface Props {
   purchases: MarketPurchase[];
@@ -17,7 +18,7 @@ export const MarketPurchaseTable = ({ purchases, onEdit, onDelete }: Props) => {
 
   const formatDate = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleDateString();
+      return dayjs(new Date(dateString).toLocaleDateString()).format("DD/MM/YYYY");
     } catch {
       return dateString;
     }

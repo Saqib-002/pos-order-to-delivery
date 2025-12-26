@@ -1,18 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
-import { Expense, ExpenseFilters, PaginatedResult } from "@/types/expenses";
+import { Income, IncomeFilters, PaginatedResult } from "@/types/incomes";
 
 export const useExpenseData = () => {
   const {
     auth: { token },
   } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [expensesData, setExpensesData] = useState<PaginatedResult<Expense>>({
+  const [expensesData, setExpensesData] = useState<PaginatedResult<Income>>({
     data: [],
     pagination: { total: 0, page: 1, pageSize: 10, totalPages: 1 },
   });
-  const [filters, setFilters] = useState<ExpenseFilters>({
+  const [filters, setFilters] = useState<IncomeFilters>({
     page: 1,
     pageSize: 10,
     search: "",
@@ -43,7 +43,7 @@ export const useExpenseData = () => {
     fetchExpenses();
   }, [fetchExpenses]);
 
-  const createExpense = async (data: Expense) => {
+  const createExpense = async (data: Income) => {
     try {
       const res = await (window as any).electronAPI.createExpense(token, data);
       if (res.status) {
@@ -60,7 +60,7 @@ export const useExpenseData = () => {
     }
   };
 
-  const updateExpense = async (id: string, data: Partial<Expense>) => {
+  const updateExpense = async (id: string, data: Partial<Income>) => {
     try {
       const res = await (window as any).electronAPI.updateExpense(
         token,

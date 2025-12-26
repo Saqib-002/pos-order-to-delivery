@@ -1735,11 +1735,16 @@
     },
     "modal": {
       "dateOfBirth": "Fecha de Nacimiento",
+      "dobPlaceholder": "Selecciona fecha de nacimiento",
       "deleteConfirm": {
         "title": "Eliminar Trabajador",
         "message": "¿Estás seguro? Esto eliminará todos los registros salariales también."
       },
-      "phoneNumber": "Número de teléfono"
+      "phoneNumber": "Número de teléfono",
+      "idLabel": "Número de Identificación (DNI/NIE)",
+      "bankingDetails": "Detalles Bancarios",
+      "bankName": "Nombre del Banco",
+      "accountNumber": "Número de Cuenta"
     },
     "salaryModal": {
       "title": "Registros de Salario",
@@ -1767,7 +1772,7 @@
       "paymentStatus": "Estado de Pago"
     }
   },
-  "expenseManagement": {
+  "incomesManagement": {
     "title": "Otra Fuente de Ingresos",
     "subtitle": "Gestionar fuentes de ingresos externas y pagos",
     "addExpense": "Agregar Fuente de Ingresos",

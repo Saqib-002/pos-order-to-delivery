@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import { navItems } from "@/constants";
-import { NavItem } from "@/types/view";
 import { DoubleBackArrowIcon } from "@/renderer/public/Svg";
 import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";

@@ -1735,11 +1735,16 @@
     },
     "modal": {
       "dateOfBirth": "Date of Birth",
+      "dobPlaceholder": "Select date of birth",
       "deleteConfirm": {
         "title": "Delete Worker",
         "message": "Are you sure? This will delete all salary records too."
       },
-      "phoneNumber": "Phone Number"
+      "phoneNumber": "Phone Number",
+      "idLabel": "ID Number (DNI/NIE)",
+      "bankingDetails": "Banking Details",
+      "bankName": "Bank Name",
+      "accountNumber": "Account Number"
     },
     "salaryModal": {
       "title": "Salary Records",
@@ -1767,7 +1772,7 @@
       "paymentStatus": "Payment Status"
     }
   },
-  "expenseManagement": {
+  "incomesManagement": {
     "title": "Other Source of Income",
     "subtitle": "Manage external income sources and payments",
     "addExpense": "Add Income Source",

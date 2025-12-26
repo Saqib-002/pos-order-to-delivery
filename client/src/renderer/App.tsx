@@ -25,7 +25,7 @@ import { hasModuleAccess } from "./utils/permissions";
 import { VehicleManagement } from "./Views/VehicleManagement";
 import { WorkerManagement } from "./Views/WorkerManagement";
 import { MarketPurchaseManagement } from "./Views/MarketPurchaseManagement";
-import { ExpensesManagement } from "./Views/ExpensesManagement";
+import { IncomesManagement } from "./Views/IncomesManagement";
 
 interface ViewConfig {
   component: JSX.Element;
@@ -170,7 +170,7 @@ const App: React.FC = () => {
       roles: ["admin"],
     },
     [VIEWS.EXPENSES]: {
-      component: <ExpensesManagement />,
+      component: <IncomesManagement />,
       roles: ["admin"],
     },
   };

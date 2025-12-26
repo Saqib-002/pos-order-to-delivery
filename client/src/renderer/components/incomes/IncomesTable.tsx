@@ -1,23 +1,24 @@
-import { Expense } from "@/types/expenses";
+import { Income } from "@/types/incomes";
 import { EditIcon, DeleteIcon } from "@/renderer/public/Svg";
 import { useTranslation } from "react-i18next";
 import {
   calculatePaymentStatus,
   getPaymentStatusStyle,
 } from "@/renderer/utils/paymentStatus";
+import dayjs from "dayjs";
 
 interface Props {
-  expenses: Expense[];
-  onEdit: (expense: Expense) => void;
+  incomes: Income[];
+  onEdit: (income: Income) => void;
   onDelete: (id: string) => void;
 }
 
-export const ExpensesTable = ({ expenses, onEdit, onDelete }: Props) => {
+export const IncomeTable = ({ incomes, onEdit, onDelete }: Props) => {
   const { t } = useTranslation();
 
   const formatDate = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleDateString();
+      return dayjs(new Date(dateString).toLocaleDateString()).format("DD/MM/YYYY");
     } catch {
       return dateString;
     }
@@ -36,40 +37,40 @@ export const ExpensesTable = ({ expenses, onEdit, onDelete }: Props) => {
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
-              {t("expenseManagement.table.date")}
+              {t("incomesManagement.table.date")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
-              {t("expenseManagement.table.name")}
+              {t("incomesManagement.table.name")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
-              {t("expenseManagement.table.description")}
+              {t("incomesManagement.table.description")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
-              {t("expenseManagement.table.ticketId")}
+              {t("incomesManagement.table.ticketId")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
-              {t("expenseManagement.table.total")}
+              {t("incomesManagement.table.total")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
-              {t("expenseManagement.table.paymentType")}
+              {t("incomesManagement.table.paymentType")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
-              {t("expenseManagement.table.paymentStatus")}
+              {t("incomesManagement.table.paymentStatus")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700 text-right">
-              {t("expenseManagement.table.actions")}
+              {t("incomesManagement.table.actions")}
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
-          {expenses.length === 0 ? (
+          {incomes.length === 0 ? (
             <tr>
               <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
-                {t("expenseManagement.table.noExpenses")}
+                {t("incomesManagement.table.noincomes")}
               </td>
             </tr>
           ) : (
-            expenses.map((expense) => (
+            incomes.map((expense) => (
               <tr
                 key={expense.id}
                 className="hover:bg-gray-50 transition-colors"

@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useConfirm } from "../hooks/useConfirm";
-import { useExpenseData } from "../hooks/useExpenseData";
-import { Expense } from "@/types/expenses";
+import { useExpenseData } from "../hooks/useIncomeData";
+import { Income } from "@/types/incomes";
 
 import CustomButton from "../components/ui/CustomButton";
 import CustomInput from "../components/shared/CustomInput";
 import { DateRangePicker } from "../components/ui/DateRangePicker";
 import Pagination from "../components/shared/Pagination";
-import { ExpensesTable } from "../components/expenses/ExpensesTable";
-import { ExpenseModal } from "../components/expenses/modals/ExpenseModal";
+import { ExpenseModal } from "../components/incomes/modals/ExpenseModal";
 import { AddIcon, SearchIcon } from "../public/Svg";
+import { IncomeTable } from "../components/incomes/IncomesTable";
 
-export const ExpensesManagement = () => {
+export const IncomesManagement = () => {
   const { t } = useTranslation();
   const confirm = useConfirm();
   const {
@@ -50,7 +50,7 @@ export const ExpensesManagement = () => {
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: "add" | "edit";
-    expense: Expense | null;
+    expense: Income | null;
   }>({ isOpen: false, type: "add", expense: null });
 
   const [searchTerm, setSearchTerm] = useState(filters.search || "");
@@ -77,11 +77,11 @@ export const ExpensesManagement = () => {
 
   const handleOpenAdd = () =>
     setModalState({ isOpen: true, type: "add", expense: null });
-  const handleOpenEdit = (expense: Expense) =>
+  const handleOpenEdit = (expense: Income) =>
     setModalState({ isOpen: true, type: "edit", expense });
   const handleClose = () => setModalState({ ...modalState, isOpen: false });
 
-  const handleSaveExpense = async (data: Expense) => {
+  const handleSaveExpense = async (data: Income) => {
     const result =
       modalState.type === "edit" && modalState.expense
         ? await updateExpense(modalState.expense.id!, data)
@@ -95,8 +95,8 @@ export const ExpensesManagement = () => {
   const handleDelete = async (id: string) => {
     if (
       await confirm({
-        title: t("expenseManagement.modal.deleteConfirm.title"),
-        message: t("expenseManagement.modal.deleteConfirm.message"),
+        title: t("incomesManagement.modal.deleteConfirm.title"),
+        message: t("incomesManagement.modal.deleteConfirm.message"),
         confirmText: t("common.delete"),
         cancelText: t("common.cancel"),
         type: "danger",
@@ -111,16 +111,16 @@ export const ExpensesManagement = () => {
       <div className="flex justify-between items-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div>
           <h2 className="text-2xl font-bold text-black">
-            {t("expenseManagement.title")}
+            {t("incomesManagement.title")}
           </h2>
           <p className="text-gray-600 mt-1">
-            {t("expenseManagement.subtitle")}
+            {t("incomesManagement.subtitle")}
           </p>
         </div>
         <CustomButton
           type="button"
           onClick={handleOpenAdd}
-          label={t("expenseManagement.addExpense")}
+          label={t("incomesManagement.addExpense")}
           Icon={<AddIcon className="size-5" />}
         />
       </div>
@@ -132,7 +132,7 @@ export const ExpensesManagement = () => {
               <CustomInput
                 name="search"
                 type="text"
-                placeholder={t("expenseManagement.searchPlaceholder")}
+                placeholder={t("incomesManagement.searchPlaceholder")}
                 value={searchTerm}
                 onChange={handleSearchChange}
                 preLabel={<SearchIcon className="size-5 text-gray-400" />}
@@ -154,19 +154,19 @@ export const ExpensesManagement = () => {
               />
             </div>
           </div>
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <CustomButton
               type="button"
               variant="secondary"
               onClick={handleClearFilters}
-              label={t("expenseManagement.filters.clearFilters")}
+              label={t("incomesManagement.filters.clearFilters")}
               className="hover:scale-105 whitespace-nowrap"
             />
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[500px] relative">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-125 relative">
         {loading && (
           <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
@@ -175,19 +175,19 @@ export const ExpensesManagement = () => {
 
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-semibold text-black">
-            {t("expenseManagement.table.expenses")} (
+            {t("incomesManagement.table.expenses")} (
             {expensesData.pagination.total})
           </h3>
           {loading && (
             <span className="text-sm text-gray-500 animate-pulse">
-              {t("expenseManagement.table.updating")}
+              {t("incomesManagement.table.updating")}
             </span>
           )}
         </div>
 
-        <div className="flex-grow">
-          <ExpensesTable
-            expenses={expensesData.data}
+        <div className="grow">
+          <IncomeTable
+            incomes={expensesData.data}
             onEdit={handleOpenEdit}
             onDelete={handleDelete}
           />
