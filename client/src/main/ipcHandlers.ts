@@ -169,6 +169,7 @@ import {
   getAllExpenses,
   getExpenseById,
 } from "./handlers/expenses.js";
+import { getFinancialAnalytics } from "./handlers/financialOperations.js";
 interface DbCredentials {
   host: string;
   port: number;
@@ -344,10 +345,12 @@ export function registerIpcHandlers() {
   ipcMain.handle("update-order-items", updateOrderItems);
   ipcMain.handle("get-order-items", getOrderItems);
   ipcMain.handle("update-order", updateOrder);
-  ipcMain.handle("get-order-analytics", getOrderAnalytics);
   ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
   ipcMain.handle("duplicate-menu-in-order", duplicateMenuInOrder);
   ipcMain.handle("create-platform-order", createPlatformOrder);
+  // reports
+  ipcMain.handle("get-order-analytics", getOrderAnalytics);
+  ipcMain.handle("get-financial-analytics", getFinancialAnalytics);
 
   // delivery person handlers
   ipcMain.handle("create-delivery-person", createDeliveryPerson);

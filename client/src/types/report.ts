@@ -18,3 +18,21 @@ export interface AnalyticsType {
   orders: Order[];
   ordersTotalCount: number;
 }
+export interface FinancialAnalyticsType {
+  summary: {
+    income: number;
+    totalExpenses: number;
+    netProfit: number;
+    breakdown: {
+      vehicleExpenses: number;
+      workerExpenses: number;
+      marketExpenses: number;
+      generalExpenses: number;
+    };
+  };
+  graphData: Array<{
+    date: string;
+    income: number;
+    expense: number;
+  }>;
+}

@@ -269,8 +269,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("update-order", token, orderId, orderData),
   getOrdersByFilter: (token: string, filter: any) =>
     ipcRenderer.invoke("get-orders-by-filter", token, filter),
-  getOrderAnalytics: (token: string, filter: any) =>
-    ipcRenderer.invoke("get-order-analytics", token, filter),
   createPlatformOrder: (token: string, orderData: any) =>
     ipcRenderer.invoke("create-platform-order", token, orderData),
   duplicateMenuInOrder: (
@@ -286,6 +284,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
       menuId,
       menuSecondaryId
     ),
+
+  // 
+  getFinancialAnalytics: (token: string, filter: any) =>
+    ipcRenderer.invoke("get-financial-analytics", token, filter),
 
   // User operations
   registerUser: (

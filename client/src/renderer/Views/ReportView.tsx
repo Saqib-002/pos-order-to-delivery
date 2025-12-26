@@ -1,4 +1,4 @@
-import { AnalyticsType } from "@/types/report";
+import { AnalyticsType, FinancialAnalyticsType } from "@/types/report";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import {
@@ -26,9 +26,14 @@ import { useTranslation } from "react-i18next";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
 import Pagination from "../components/shared/Pagination";
 import dayjs from "dayjs";
+import { FinancialReport } from "../components/report/FinancialReport";
 
 export const ReportView = () => {
   const { t } = useTranslation();
+  
+  // Tab State
+  const [activeTab, setActiveTab] = useState<'orders' | 'financial'>('orders');
+
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -39,50 +44,71 @@ export const ReportView = () => {
 
   const [dateRange, setDateRange] = useState<string>("today");
   const [orderTypeFilter, setOrderTypeFilter] = useState<string | null>(null);
+  
   const [analytics, setAnalytics] = useState<AnalyticsType | null>(null);
+  const [financialAnalytics, setFinancialAnalytics] = useState<FinancialAnalyticsType | null>(null);
+
   const {
     auth: { token },
   } = useAuth();
 
   useEffect(() => {
     setCurrentPage(0);
-  }, [dateRange, selectedDate, startDateRange, endDateRange, orderTypeFilter]);
+  }, [dateRange, selectedDate, startDateRange, endDateRange, orderTypeFilter, activeTab]);
+
   useEffect(() => {
     const fetchAnalytics = async () => {
-      const res = await (window as any).electronAPI.getOrderAnalytics(token, {
-        dateRange,
-        selectedDate,
-        startDateRange,
-        endDateRange,
-        orderType: orderTypeFilter,
-        page: currentPage,
-        limit: DEFAULT_PAGE_LIMIT,
-      });
-      if (!res.status) {
-        toast.error(t("reports.errors.fetchFailed"));
-        return;
+      // 1. Fetch Order Analytics
+      if (activeTab === 'orders') {
+        const res = await (window as any).electronAPI.getOrderAnalytics(token, {
+            dateRange,
+            selectedDate,
+            startDateRange,
+            endDateRange,
+            orderType: orderTypeFilter,
+            page: currentPage,
+            limit: DEFAULT_PAGE_LIMIT,
+        });
+        if (!res.status) {
+            toast.error(t("reports.errors.fetchFailed"));
+            return;
+        }
+        const totalOrders =
+            res.data.totalCancelled +
+            res.data.totalDelivered +
+            res.data.totalOutForDelivery +
+            res.data.totalReadyForDelivery +
+            res.data.totalSentToKitchen +
+            res.data.totalCompleted +
+            res.data.totalPending;
+        setAnalytics({
+            ...res.data,
+            totalOrders,
+            inProgress:
+            res.data.totalReadyForDelivery +
+            res.data.totalOutForDelivery +
+            res.data.totalSentToKitchen +
+            res.data.totalPending,
+            successRate:
+            totalOrders > 0
+                ? Math.round((res.data.totalDelivered / totalOrders) * 100)
+                : 0,
+        });
+      } 
+      // 2. Fetch Financial Analytics
+      else if (activeTab === 'financial') {
+        const res = await (window as any).electronAPI.getFinancialAnalytics(token, {
+            dateRange,
+            selectedDate,
+            startDateRange,
+            endDateRange,
+        });
+        if (!res.status) {
+            toast.error(t("reports.errors.fetchFailed"));
+            return;
+        }
+        setFinancialAnalytics(res.data);
       }
-      const totalOrders =
-        res.data.totalCancelled +
-        res.data.totalDelivered +
-        res.data.totalOutForDelivery +
-        res.data.totalReadyForDelivery +
-        res.data.totalSentToKitchen +
-        res.data.totalCompleted +
-        res.data.totalPending;
-      setAnalytics({
-        ...res.data,
-        totalOrders,
-        inProgress:
-          res.data.totalReadyForDelivery +
-          res.data.totalOutForDelivery +
-          res.data.totalSentToKitchen +
-          res.data.totalPending,
-        successRate:
-          totalOrders > 0
-            ? Math.round((res.data.totalDelivered / totalOrders) * 100)
-            : 0,
-      });
     };
     fetchAnalytics();
   }, [
@@ -92,6 +118,7 @@ export const ReportView = () => {
     endDateRange,
     orderTypeFilter,
     currentPage,
+    activeTab
   ]);
 
   const renderOrderRow = (order: any) => (
@@ -130,24 +157,47 @@ export const ReportView = () => {
         <div className="text-sm text-black">
           {dayjs(order.createdAt).format("DD/MM/YYYY HH:mm:ss")}
         </div>
-        <div className="text-sm text-gray-500">
-          {dayjs(order.createdAt).format("DD/MM/YYYY HH:mm:ss")}
-        </div>
       </td>
     </tr>
   );
+  
   const ordersData = analytics?.orders || [];
   const totalOrdersCount = analytics?.ordersTotalCount || 0;
   const totalPages = Math.ceil(totalOrdersCount / DEFAULT_PAGE_LIMIT);
 
   return (
-    <div className="p-4 flex flex-col">
+    <div className="p-4 flex flex-col h-full overflow-y-auto">
       <Header
         title={t("reports.title")}
         subtitle={t("reports.subtitle")}
         icon={<AnalyticsIcon className="size-8 text-purple-600" />}
         iconbgClasses="bg-purple-100"
       />
+
+      {/* TABS */}
+      <div className="flex border-b border-gray-200 mb-6">
+        <button
+            className={`px-6 py-3 font-medium text-sm transition-colors duration-200 border-b-2 ${
+                activeTab === 'orders' 
+                ? 'border-purple-600 text-purple-600' 
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setActiveTab('orders')}
+        >
+            {t('reports.tabs.orders')}
+        </button>
+        <button
+            className={`px-6 py-3 font-medium text-sm transition-colors duration-200 border-b-2 ${
+                activeTab === 'financial' 
+                ? 'border-purple-600 text-purple-600' 
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setActiveTab('financial')}
+        >
+            {t('reports.tabs.financial')}
+        </button>
+      </div>
+
       <DateRangeSelector
         dateRange={dateRange}
         setDateRange={setDateRange}
@@ -157,91 +207,101 @@ export const ReportView = () => {
         endDateRange={endDateRange}
         setStartDateRange={setStartDateRange}
         setEndDateRange={setEndDateRange}
-        orderType={orderTypeFilter}
-        setOrderType={setOrderTypeFilter}
+        // Only show order type filter in Orders tab
+        orderType={activeTab === 'orders' ? orderTypeFilter : undefined}
+        setOrderType={activeTab === 'orders' ? setOrderTypeFilter : undefined}
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-4">
-        <StatsCard
-          title={t("reports.totalOrders")}
-          value={analytics?.totalOrders || 0}
-          icon={<ClipboardIcon className="size-8 text-blue-600" />}
-          bgColor="bg-blue-100"
-        />
-        <StatsCard
-          title={t("reports.delivered")}
-          value={
-            (analytics?.totalDelivered || 0) + (analytics?.totalCompleted || 0)
-          }
-          icon={<CheckIcon className="size-8 text-green-600" />}
-          subtext={`${analytics?.successRate || 0}% ${t("reports.successRate")}`}
-          bgColor="bg-green-100"
-        />
-        <StatsCard
-          title={t("reports.avgDeliveryTime")}
-          value={analytics?.avgDeliveryTime || 0}
-          icon={<ClockIcon className="size-8 text-orange-600" />}
-          bgColor="bg-orange-100"
-          subtext={t("reports.minutes")}
-          format={(value: number) => value?.toFixed(2)}
-        />
-        <StatsCard
-          title={t("reports.inProgress")}
-          value={analytics?.inProgress || 0}
-          icon={<LightningBoltIcon className="size-8 text-purple-600" />}
-          bgColor="bg-purple-100"
-        />
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <StatusDistribution analytics={analytics} />
-        <HourlyDistribution analytics={analytics} />
-      </div>
-      <div className="flex flex-col gap-4">
-        {analytics?.topItems && analytics.topItems.length > 0 && (
-          <TopItems
-            topItems={analytics?.topItems}
-            title={t("reports.topOrderedItems")}
-          />
-        )}
-        {analytics?.topMenus && analytics.topMenus.length > 0 && (
-          <TopItems
-            topItems={analytics?.topMenus}
-            title={t("reports.topOrderedMenus")}
-          />
-        )}
-        {analytics?.orderTypeTotals && analytics.orderTypeTotals.length > 0 && (
-          <OrderTypeTotals
-            orderTypeTotals={analytics.orderTypeTotals}
-            title={t("reports.orderTypeTotals")}
-          />
-        )}
-      </div>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden my-4">
-        <OrderTable
-          data={ordersData}
-          title={t("reports.orderDetails")}
-          columns={[
-            t("reports.orderId"),
-            t("reports.customer"),
-            t("reports.items"),
-            t("reports.status"),
-            t("reports.time"),
-          ]}
-          renderRow={renderOrderRow}
-          emptyStateIcon={
-            <ClipboardIcon className="mx-auto h-12 w-12 text-gray-400" />
-          }
-          emptyStateTitle={t("reports.noOrdersFound")}
-          subtitle={t("reports.noOrdersSubtitle")}
-        />
-        {totalOrdersCount > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            containerClasses="border-t border-gray-200"
-            subContainerClasses="px-0 py-0"
-          />
-        )}
+
+      <div className="mt-6">
+          {activeTab === 'orders' ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <StatsCard
+                    title={t("reports.totalOrders")}
+                    value={analytics?.totalOrders || 0}
+                    icon={<ClipboardIcon className="size-8 text-blue-600" />}
+                    bgColor="bg-blue-100"
+                    />
+                    <StatsCard
+                    title={t("reports.delivered")}
+                    value={
+                        (analytics?.totalDelivered || 0) + (analytics?.totalCompleted || 0)
+                    }
+                    icon={<CheckIcon className="size-8 text-green-600" />}
+                    subtext={`${analytics?.successRate || 0}% ${t("reports.successRate")}`}
+                    bgColor="bg-green-100"
+                    />
+                    <StatsCard
+                    title={t("reports.avgDeliveryTime")}
+                    value={analytics?.avgDeliveryTime || 0}
+                    icon={<ClockIcon className="size-8 text-orange-600" />}
+                    bgColor="bg-orange-100"
+                    subtext={t("reports.minutes")}
+                    format={(value: number) => value?.toFixed(2)}
+                    />
+                    <StatsCard
+                    title={t("reports.inProgress")}
+                    value={analytics?.inProgress || 0}
+                    icon={<LightningBoltIcon className="size-8 text-purple-600" />}
+                    bgColor="bg-purple-100"
+                    />
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <StatusDistribution analytics={analytics} />
+                    <HourlyDistribution analytics={analytics} />
+                </div>
+                <div className="flex flex-col gap-4 mb-6">
+                    {analytics?.topItems && analytics.topItems.length > 0 && (
+                    <TopItems
+                        topItems={analytics?.topItems}
+                        title={t("reports.topOrderedItems")}
+                    />
+                    )}
+                    {analytics?.topMenus && analytics.topMenus.length > 0 && (
+                    <TopItems
+                        topItems={analytics?.topMenus}
+                        title={t("reports.topOrderedMenus")}
+                    />
+                    )}
+                    {analytics?.orderTypeTotals && analytics.orderTypeTotals.length > 0 && (
+                    <OrderTypeTotals
+                        orderTypeTotals={analytics.orderTypeTotals}
+                        title={t("reports.orderTypeTotals")}
+                    />
+                    )}
+                </div>
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-4">
+                    <OrderTable
+                    data={ordersData}
+                    title={t("reports.orderDetails")}
+                    columns={[
+                        t("reports.orderId"),
+                        t("reports.customer"),
+                        t("reports.items"),
+                        t("reports.status"),
+                        t("reports.time"),
+                    ]}
+                    renderRow={renderOrderRow}
+                    emptyStateIcon={
+                        <ClipboardIcon className="mx-auto h-12 w-12 text-gray-400" />
+                    }
+                    emptyStateTitle={t("reports.noOrdersFound")}
+                    subtitle={t("reports.noOrdersSubtitle")}
+                    />
+                    {totalOrdersCount > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        containerClasses="border-t border-gray-200"
+                        subContainerClasses="px-0 py-0"
+                    />
+                    )}
+                </div>
+              </>
+          ) : (
+            <FinancialReport data={financialAnalytics} />
+          )}
       </div>
     </div>
   );
