@@ -444,48 +444,85 @@ const MenuOrderTakingForm = ({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Modern Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-black to-gray-800 rounded-t-2xl">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-gray-100 rounded-xl">
-              <DocumentIcon className="w-6 h-6 text-gray-600" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-white">
-                {selectedMenu.name}
-              </h2>
-              <div className="flex items-center space-x-2 mt-1">
-                <span className="text-sm text-white">
-                  {menuPages.length > 0
-                    ? t("menuOrderTakingForm.pageOf", {
-                        current: currentMenuPageIndex + 1,
-                        total: menuPages.length,
-                      })
-                    : t("menuOrderTakingForm.noPagesAvailable")}
-                </span>
-                {menuPages.length > 0 && (
-                  <div className="flex space-x-1">
-                    {menuPages.map((_, index) => (
-                      <div
-                        key={index}
-                        className={`w-2 h-2 rounded-full ${
-                          index === currentMenuPageIndex
-                            ? "bg-gray-600"
-                            : "bg-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
+        <div className="border-b border-gray-700 bg-gradient-to-r from-black to-gray-800 rounded-t-2xl">
+          <div className="flex items-center justify-between p-6 pb-4">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-gray-700 rounded-xl">
+                <DocumentIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">
+                  {selectedMenu.name}
+                </h2>
+                <div className="flex items-center space-x-2 mt-1">
+                  <span className="text-sm text-gray-300">
+                    {menuPages.length > 0
+                      ? t("menuOrderTakingForm.pageOf", {
+                          current: currentMenuPageIndex + 1,
+                          total: menuPages.length,
+                        })
+                      : t("menuOrderTakingForm.noPagesAvailable")}
+                  </span>
+                </div>
               </div>
             </div>
+            <button
+              type="button"
+              onClick={() => handleCancel()}
+              className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors duration-200"
+            >
+              <CrossIcon className="w-6 h-6" />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => handleCancel()}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-          >
-            <CrossIcon className="w-6 h-6" />
-          </button>
+          
+          {/* Page Tabs */}
+          {menuPages.length > 0 && (
+            <div className="px-6 pb-4">
+              <div className="flex space-x-2 overflow-x-auto scrollbar-hide">
+                {menuPages.map((page, index) => {
+                  const isActive = index === currentMenuPageIndex;
+                  const isComplete = (processedCounts[page.id] || 0) >= page.minComplements;
+                  
+                  return (
+                    <button
+                      key={page.id}
+                      type="button"
+                      onClick={() => setCurrentMenuPageIndex(index)}
+                      className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200 flex items-center space-x-2 ${
+                        isActive
+                          ? "bg-white text-gray-900 shadow-lg"
+                          : isComplete
+                          ? "bg-gray-700 text-white hover:bg-gray-600"
+                          : "bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
+                      }`}
+                    >
+                      <span>{page.name}</span>
+                      {isComplete && (
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                      {!isComplete && (processedCounts[page.id] || 0) > 0 && (
+                        <span className={`px-1.5 py-0.5 rounded text-xs font-semibold ${
+                          isActive ? "bg-gray-200 text-gray-700" : "bg-gray-600 text-white"
+                        }`}>
+                          {processedCounts[page.id]}/{page.minComplements}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
         {/* Content */}
         <div className="p-6 overflow-y-auto flex-1">
@@ -505,7 +542,7 @@ const MenuOrderTakingForm = ({
             <>
               {/* Page Header */}
               <div className="mb-8">
-                <div className="flex items-start justify-between mb-4">
+                {/* <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">
                       {currentMenuPage.name}
@@ -516,7 +553,7 @@ const MenuOrderTakingForm = ({
                       </p>
                     )}
                   </div>
-                </div>
+                </div> */}
 
                 {/* Progress Indicator */}
                 <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-100">
