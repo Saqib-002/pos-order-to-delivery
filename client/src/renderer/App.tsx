@@ -100,7 +100,11 @@ const App: React.FC = () => {
     };
   }, [handleLogout]);
   if (loading) {
-    return <div>Loading...</div>; // Or a splash screen
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <div className="size-12 border-4 border-gray-800 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   if (!isDbConnected) {
