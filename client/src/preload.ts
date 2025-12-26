@@ -286,6 +286,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ),
 
   // 
+  getOrderAnalytics: (token: string, filter: any) =>
+    ipcRenderer.invoke("get-order-analytics", token, filter),
   getFinancialAnalytics: (token: string, filter: any) =>
     ipcRenderer.invoke("get-financial-analytics", token, filter),
 

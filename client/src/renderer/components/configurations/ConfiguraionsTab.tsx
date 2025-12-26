@@ -296,7 +296,7 @@ const ConfigurationsTab = () => {
             <label className="text-sm font-medium text-gray-700">
               {t("configurations.companyLogo")}
             </label>
-            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-[200px] flex items-center justify-center">
+            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-50 flex items-center justify-center">
               <input
                 type="file"
                 accept="image/*"

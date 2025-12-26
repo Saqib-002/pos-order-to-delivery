@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { SupplierModal } from "./Modals/SupplierModal";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import { useTranslation } from "react-i18next";
+import dayjs from "dayjs";
 
 const fetchSuppliers = async (
   token: string | null,
@@ -152,7 +153,7 @@ const Suppliers = () => {
                         {supplier.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {new Date(supplier.createdAt).toLocaleDateString()}
+                        {dayjs(new Date(supplier.createdAt).toLocaleDateString()).format("DD/MM/YYYY")}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
                         <CustomButton
@@ -160,14 +161,14 @@ const Suppliers = () => {
                           onClick={() => handleView(supplier)}
                           Icon={<EyeIcon className="size-5" />}
                           variant="transparent"
-                          className="!p-0"
+                          className="p-0!"
                         />
                         <CustomButton
                           type="button"
                           onClick={() => handleEdit(supplier)}
                           Icon={<EditIcon className="size-5" />}
                           variant="transparent"
-                          className="!p-0 !text-blue-500 hover:!text-blue-700"
+                          className="p-0! text-blue-500! hover:text-blue-700!"
                         />
                         <CustomButton
                           type="button"
@@ -176,7 +177,7 @@ const Suppliers = () => {
                           }
                           Icon={<DeleteIcon className="size-5" />}
                           variant="transparent"
-                          className="!p-0 !text-red-500 hover:!text-red-700"
+                          className="p-0! text-red-500! hover:text-red-700!"
                         />
                       </td>
                     </tr>

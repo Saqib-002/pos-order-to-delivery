@@ -15,6 +15,7 @@ import { toast } from "react-toastify";
 import { PrinterModal } from "./Modals/PrinterModal";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import { useTranslation } from "react-i18next";
+import dayjs from "dayjs";
 
 const Printers = () => {
   const [connectedPrinters, setConnectedPrinters] = useState([]);
@@ -150,7 +151,7 @@ const Printers = () => {
                         {printer.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {new Date(printer.createdAt).toLocaleDateString()}
+                        {dayjs(new Date(printer.createdAt).toLocaleDateString()).format("DD/MM/YYYY")}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
                         {printer.isMain ? t("printers.yes") : t("printers.no")}
@@ -161,14 +162,14 @@ const Printers = () => {
                           onClick={() => handleView(printer)}
                           Icon={<EyeIcon className="size-5" />}
                           variant="transparent"
-                          className="!p-0"
+                          className="p-0!"
                         />
                         <CustomButton
                           type="button"
                           onClick={() => handleEdit(printer)}
                           Icon={<EditIcon className="size-5" />}
                           variant="transparent"
-                          className="!p-0 !text-blue-500 hover:!text-blue-700"
+                          className="p-0! text-blue-500! hover:text-blue-700!"
                         />
                         <CustomButton
                           type="button"
@@ -177,7 +178,7 @@ const Printers = () => {
                           }
                           Icon={<DeleteIcon className="size-5" />}
                           variant="transparent"
-                          className="!p-0 !text-red-500 hover:!text-red-700"
+                          className="p-0! text-red-500! hover:text-red-700!"
                         />
                       </td>
                     </tr>
