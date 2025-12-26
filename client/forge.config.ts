@@ -8,7 +8,9 @@ module.exports = {
         asar: true,
         extraResource: [".env", "migrations"],
     },
-    rebuildConfig: {},
+    rebuildConfig: {
+        force: true,
+    },
     makers: [
         {
             // Windows Installer (NSIS) - *No* external toolset required

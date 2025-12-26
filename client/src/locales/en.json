@@ -1662,7 +1662,8 @@
       "deleteConfirm": {
         "title": "Delete Worker",
         "message": "Are you sure? This will delete all salary records too."
-      }
+      },
+      "phoneNumber":"Phone Number"
     },
     "salaryModal": {
       "title": "Salary Records",

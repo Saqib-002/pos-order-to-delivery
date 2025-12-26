@@ -1657,7 +1657,8 @@
       "deleteConfirm": {
         "title": "Eliminar Trabajador",
         "message": "¿Estás seguro? Esto eliminará todos los registros salariales también."
-      }
+      },
+      "phoneNumber":"Número de teléfono"
     },
     "salaryModal": {
       "title": "Registros de Salario",

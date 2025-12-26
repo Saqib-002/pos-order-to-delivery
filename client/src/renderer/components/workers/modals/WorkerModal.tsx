@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Worker } from "@/types/workers";
 import CustomInput from "../../shared/CustomInput";
-import { CustomSelect } from "../../ui/CustomSelect";
 import CustomButton from "../../ui/CustomButton";
 import { DatePicker } from "../../ui/shadcn/date-picker";
 import { CrossIcon } from "../../../public/Svg";
@@ -51,7 +50,7 @@ export const WorkerModal = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
-        <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl">
+        <div className="bg-linear-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-bold">
               {initialData
@@ -65,7 +64,7 @@ export const WorkerModal = ({
               variant="transparent"
               onClick={onClose}
               Icon={<CrossIcon className="size-6" />}
-              className="text-white hover:text-gray-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
+              className="text-white hover:text-gray-500 p-2! rounded-full! hover:bg-white hover:bg-opacity-20"
             />
           </div>
         </div>
@@ -108,7 +107,7 @@ export const WorkerModal = ({
           <CustomInput
             name="phone"
             type="tel"
-            label={t("userManagement.modal.phoneNumber")}
+            label={t("workerManagement.modal.phoneNumber")}
             value={formData.phoneNumber || ""}
             onChange={(e) =>
               setFormData({ ...formData, phoneNumber: e.target.value })
@@ -155,7 +154,7 @@ export const WorkerModal = ({
           <CustomButton
             type="submit"
             label={t("common.save")}
-            className="bg-gradient-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 hover:scale-105"
+            className="bg-linear-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 hover:scale-105"
             onClick={handleSubmit}
           />
         </div>

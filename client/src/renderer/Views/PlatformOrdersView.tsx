@@ -384,7 +384,7 @@ const PlatformOrdersView = () => {
       <Header
         title={t("platformOrders.title")}
         subtitle={t("platformOrders.subtitle")}
-        icon={<img src="/images/platform.png" width={48} height={48} />}
+        icon={<img src="./images/platform.png" width={48} height={48} />}
         iconbgClasses="bg-red-100"
       />
 

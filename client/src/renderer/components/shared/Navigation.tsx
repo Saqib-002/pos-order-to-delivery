@@ -29,8 +29,7 @@ export const Navigation = ({
   } = useAuth();
   const { t } = useTranslation();
   const navContainerRef = useRef<HTMLDivElement>(null);
-
-  const VISIBLE_ITEMS_COLLAPSED = 10;
+  const [visibleItemsCount, setVisibleItemsCount] = useState(10);
 
   const accessibleNavItems = [
     ...navItems.filter(({ view, roles }) =>
@@ -38,15 +37,38 @@ export const Navigation = ({
     ),
     { view: "logout", roles: [] }, 
   ];
+  useEffect(() => {
+    const calculateVisibleItems = () => {
+      const headerHeight = 64;
+      const itemHeight = 56; 
+      const scrollButtonsHeight = 100;
 
+      const availableHeight = window.innerHeight - headerHeight;
+      const totalItemsHeight = accessibleNavItems.length * itemHeight;
+
+      if (totalItemsHeight <= availableHeight) {
+        setVisibleItemsCount(accessibleNavItems.length);
+      } else {
+        const availableSpaceForItems = availableHeight - scrollButtonsHeight;
+        const count = Math.floor(availableSpaceForItems / itemHeight);
+        setVisibleItemsCount(Math.max(1, count));
+      }
+    };
+
+    calculateVisibleItems();
+    window.addEventListener("resize", calculateVisibleItems);
+
+    return () => {
+      window.removeEventListener("resize", calculateVisibleItems);
+    };
+  }, [accessibleNavItems.length]);
   const scrollUp = () => {
     setScrollPosition(Math.max(0, scrollPosition - 1));
   };
-
   const scrollDown = () => {
     const maxScroll = Math.max(
       0,
-      accessibleNavItems.length - VISIBLE_ITEMS_COLLAPSED
+      accessibleNavItems.length - visibleItemsCount
     );
     setScrollPosition(Math.min(maxScroll, scrollPosition + 1));
   };
@@ -54,7 +76,7 @@ export const Navigation = ({
   const canScrollUp = scrollPosition > 0;
   const canScrollDown =
     scrollPosition <
-    Math.max(0, accessibleNavItems.length - VISIBLE_ITEMS_COLLAPSED);
+    Math.max(0, accessibleNavItems.length - visibleItemsCount);
 
   const getConfigurations = async () => {
     const res = await (window as any).electronAPI.getConfigurations(token);
@@ -124,7 +146,7 @@ export const Navigation = ({
     }
     return accessibleNavItems.slice(
       scrollPosition,
-      scrollPosition + VISIBLE_ITEMS_COLLAPSED
+      scrollPosition + visibleItemsCount
     );
   };
 
@@ -154,7 +176,7 @@ export const Navigation = ({
       <img
         src={getIcon(view)}
         alt={`${label} icon`}
-        className="size-9 flex-shrink-0 object-contain"
+        className="size-9 shrink-0 object-contain"
         onError={(e) => {
           e.currentTarget.src = "./images/order.png";
         }}
@@ -202,7 +224,7 @@ export const Navigation = ({
         {/* Navigation Items Container */}
         <div className="flex-1 flex flex-col">
           {/* Scroll Up Button (Collapsed Mode Only) */}
-          {!isOpen && accessibleNavItems.length > VISIBLE_ITEMS_COLLAPSED && (
+          {!isOpen && accessibleNavItems.length > visibleItemsCount && (
             <button
               onClick={scrollUp}
               disabled={!canScrollUp}
@@ -239,7 +261,7 @@ export const Navigation = ({
           </div>
 
           {/* Scroll Down Button (Collapsed Mode Only) */}
-          {!isOpen && accessibleNavItems.length > VISIBLE_ITEMS_COLLAPSED && (
+          {!isOpen && accessibleNavItems.length > visibleItemsCount && (
             <button
               onClick={scrollDown}
               disabled={!canScrollDown}
