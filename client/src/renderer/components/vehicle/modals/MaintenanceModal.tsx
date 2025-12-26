@@ -566,8 +566,8 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
             </div>
           )}
 
-          {/* Filters - Only show when not editing */}
-          {!editingId && (
+          {/* Filters - Only show when not editing and on step 1 */}
+          {!editingId && currentStep === 1 && (
             <div className="flex gap-3 mb-4 flex-shrink-0">
               <div className="flex-1">
                 <CustomInput
@@ -615,8 +615,8 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
             </div>
           )}
 
-          {/* Table - Only show when not editing */}
-          {!editingId && (
+          {/* Table - Only show when not editing and on step 1 */}
+          {!editingId && currentStep === 1 && (
             <div className="flex-1 rounded-lg overflow-hidden flex flex-col">
               <div className="overflow-y-auto flex-1">
                 <table className="min-w-full text-sm">
@@ -729,8 +729,8 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
             </div>
           )}
 
-          {/* Pagination - Only show when not editing */}
-          {!editingId && (
+          {/* Pagination - Only show when not editing and on step 1 */}
+          {!editingId && currentStep === 1 && (
             <div className="mt-4 flex-shrink-0">
               <Pagination
                 currentPage={data.pagination.page - 1}

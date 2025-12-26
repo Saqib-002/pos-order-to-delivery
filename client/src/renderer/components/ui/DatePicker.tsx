@@ -3,8 +3,11 @@ import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
+import "dayjs/locale/es";
+import "dayjs/locale/en";
 import { TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 
 interface DatePickerProps {
   label?: string;
@@ -26,12 +29,12 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
       borderColor: "#9ca3af", // gray-400
     },
     "&.Mui-focused fieldset": {
-      borderColor: "#000000", // black
+      borderColor: "#000000",
       borderWidth: "2px",
     },
   },
   "& .MuiInputBase-input": {
-    padding: "0.5rem 0.75rem",
+    padding: "0.75rem 0.75rem", // py-3 equivalent
     fontSize: "0.875rem",
     color: "#111827", // gray-900
     "&::placeholder": {
@@ -43,7 +46,7 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
     fontSize: "0.875rem",
     color: "#374151", // gray-700
     "&.Mui-focused": {
-      color: "#000000", // black
+      color: "#000000",
     },
   },
 }));
@@ -52,10 +55,22 @@ export function DatePicker({
   label,
   value,
   onChange,
-  placeholder = "Select date",
+  placeholder,
   className = "",
   inputClassName = "",
 }: DatePickerProps) {
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language === "es" ? "es" : "en";
+
+  React.useEffect(() => {
+    dayjs.locale(currentLocale);
+  }, [currentLocale]);
+
+  const defaultPlaceholder =
+    placeholder || t("datePicker.selectDate", "Select date");
+  const cancelLabel = t("common.cancel", "Cancel");
+  const acceptLabel = t("datePicker.accept", "OK");
+
   const [dateValue, setDateValue] = React.useState<Dayjs | null>(() => {
     if (!value) return null;
     if (value instanceof Date) {
@@ -101,20 +116,40 @@ export function DatePicker({
   };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
+    <LocalizationProvider
+      dateAdapter={AdapterDayjs}
+      adapterLocale={currentLocale}
+    >
       <div className={`flex flex-col gap-2 ${className}`}>
         {label && (
           <label className="block text-sm font-medium text-gray-700">
             {label}
           </label>
         )}
+        <style>{`
+          .MuiPickersYear-yearButton.Mui-selected,
+          .MuiYearCalendar-root button.Mui-selected,
+          .MuiPickersLayout-root button.Mui-selected {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+          }
+          .MuiPickersYear-yearButton.Mui-selected:hover,
+          .MuiYearCalendar-root button.Mui-selected:hover,
+          .MuiPickersLayout-root button.Mui-selected:hover {
+            background-color: #1f2937 !important;
+          }
+        `}</style>
         <MobileDatePicker
           value={dateValue}
           onChange={handleChange}
           enableAccessibleFieldDOMStructure={false}
+          localeText={{
+            cancelButtonLabel: cancelLabel,
+            okButtonLabel: acceptLabel,
+          }}
           slotProps={{
             textField: {
-              placeholder: placeholder,
+              placeholder: defaultPlaceholder,
               className: inputClassName,
               fullWidth: true,
             },
@@ -123,57 +158,59 @@ export function DatePicker({
                 sx: {
                   borderRadius: "0.75rem",
                   backgroundColor: "#ffffff",
-                  "& .MuiPickersCalendarHeader-root": {
-                    backgroundColor: "#f9fafb",
-                    borderBottom: "1px solid #e5e7eb",
-                    padding: "16px",
-                    "& .MuiPickersCalendarHeader-label": {
-                      color: "#111827",
-                      fontWeight: 600,
-                      fontSize: "1rem",
-                    },
-                    "& .MuiIconButton-root": {
-                      color: "#374151",
-                      "&:hover": {
-                        backgroundColor: "#f3f4f6",
-                      },
-                    },
-                  },
-                  "& .MuiDayCalendar-root": {
-                    padding: "8px",
-                    "& .MuiDayCalendar-weekContainer": {
-                      "& .MuiPickersDay-root": {
+                  "& .MuiPickersLayout-root": {
+                    "& .MuiPickersCalendarHeader-root": {
+                      backgroundColor: "#f9fafb",
+                      borderBottom: "1px solid #e5e7eb",
+                      padding: "16px",
+                      "& .MuiPickersCalendarHeader-label": {
                         color: "#111827",
-                        fontSize: "0.875rem",
-                        "&.Mui-selected": {
-                          backgroundColor: "#000000 !important",
-                          color: "#ffffff !important",
-                          "&:hover": {
-                            backgroundColor: "#1f2937 !important",
-                          },
-                          "&:focus": {
-                            backgroundColor: "#000000 !important",
-                          },
-                        },
+                        fontWeight: 600,
+                        fontSize: "1rem",
+                      },
+                      "& .MuiIconButton-root": {
+                        color: "#374151",
                         "&:hover": {
                           backgroundColor: "#f3f4f6",
                         },
-                        "&.MuiPickersDay-today": {
-                          border: "1px solid #000000 !important",
-                          fontWeight: 600,
+                      },
+                    },
+                    "& .MuiDayCalendar-root": {
+                      padding: "8px",
+                      "& .MuiDayCalendar-weekContainer": {
+                        "& .MuiPickersDay-root": {
+                          color: "#111827",
+                          fontSize: "0.875rem",
+                          "&.Mui-selected": {
+                            backgroundColor: "#000000 !important",
+                            color: "#ffffff !important",
+                            "&:hover": {
+                              backgroundColor: "#1f2937 !important",
+                            },
+                            "&:focus": {
+                              backgroundColor: "#000000 !important",
+                            },
+                          },
+                          "&:hover": {
+                            backgroundColor: "#f3f4f6",
+                          },
+                          "&.MuiPickersDay-today": {
+                            border: "1px solid #000000 !important",
+                            fontWeight: 600,
+                          },
                         },
                       },
                     },
-                  },
-                  "& .MuiPickersActionBar-root": {
-                    padding: "16px",
-                    borderTop: "1px solid #e5e7eb",
-                    "& .MuiButton-root": {
-                      color: "#000000",
-                      fontWeight: 600,
-                      textTransform: "none",
-                      "&:hover": {
-                        backgroundColor: "#f3f4f6",
+                    "& .MuiPickersActionBar-root": {
+                      padding: "16px",
+                      borderTop: "1px solid #e5e7eb",
+                      "& .MuiButton-root": {
+                        color: "#000000",
+                        fontWeight: 600,
+                        textTransform: "none",
+                        "&:hover": {
+                          backgroundColor: "#f3f4f6",
+                        },
                       },
                     },
                   },
@@ -182,6 +219,18 @@ export function DatePicker({
             },
             actionBar: {
               actions: ["cancel", "accept"],
+              sx: {
+                padding: "16px",
+                borderTop: "1px solid #e5e7eb",
+                "& .MuiButton-root": {
+                  color: "#000000 !important",
+                  fontWeight: 600,
+                  textTransform: "none",
+                  "&:hover": {
+                    backgroundColor: "#f3f4f6",
+                  },
+                },
+              },
             },
           }}
           slots={{

@@ -1151,6 +1151,10 @@
       "december": "Dic"
     }
   },
+  "datePicker": {
+    "selectDate": "Seleccionar fecha",
+    "accept": "Aceptar"
+  },
   "menuComponents": {
     "common": {
       "add": "Agregar",
@@ -1658,12 +1662,12 @@
       "clearFilters": "Limpiar Filtros"
     },
     "table": {
-      "columns":{
-        "fullName":"Nombre completo",
-        "dob":"fecha de nacimiento",
-        "idNumber":"Número de identificación",
-        "phone":"Teléfono",
-        "bankInfo":"Información bancaria"
+      "columns": {
+        "fullName": "Nombre completo",
+        "dob": "fecha de nacimiento",
+        "idNumber": "Número de identificación",
+        "phone": "Teléfono",
+        "bankInfo": "Información bancaria"
       },
       "workers": "Trabajadores",
       "noWorkersFound": "No se encontraron trabajadores",
