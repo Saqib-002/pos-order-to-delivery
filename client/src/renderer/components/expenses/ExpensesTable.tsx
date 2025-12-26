@@ -1,6 +1,10 @@
 import { Expense } from "@/types/expenses";
 import { EditIcon, DeleteIcon } from "@/renderer/public/Svg";
 import { useTranslation } from "react-i18next";
+import {
+  calculatePaymentStatus,
+  getPaymentStatusStyle,
+} from "@/renderer/utils/paymentStatus";
 
 interface Props {
   expenses: Expense[];
@@ -41,10 +45,16 @@ export const ExpensesTable = ({ expenses, onEdit, onDelete }: Props) => {
               {t("expenseManagement.table.description")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+              {t("expenseManagement.table.ticketId")}
+            </th>
+            <th className="px-6 py-3 text-sm font-semibold text-gray-700">
               {t("expenseManagement.table.total")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
               {t("expenseManagement.table.paymentType")}
+            </th>
+            <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+              {t("expenseManagement.table.paymentStatus")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700 text-right">
               {t("expenseManagement.table.actions")}
@@ -54,7 +64,7 @@ export const ExpensesTable = ({ expenses, onEdit, onDelete }: Props) => {
         <tbody className="divide-y divide-gray-200">
           {expenses.length === 0 ? (
             <tr>
-              <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+              <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                 {t("expenseManagement.table.noExpenses")}
               </td>
             </tr>
@@ -73,6 +83,9 @@ export const ExpensesTable = ({ expenses, onEdit, onDelete }: Props) => {
                 <td className="px-6 py-4 text-sm text-gray-600">
                   {expense.description || "-"}
                 </td>
+                <td className="px-6 py-4 text-sm text-gray-600">
+                  {expense.ticketId || "-"}
+                </td>
                 <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
                   {formatCurrency(expense.total)}
                 </td>
@@ -81,6 +94,27 @@ export const ExpensesTable = ({ expenses, onEdit, onDelete }: Props) => {
                     ? expense.paymentType
                     : expense.paymentType.charAt(0).toUpperCase() +
                       expense.paymentType.slice(1)}
+                </td>
+                <td className="px-6 py-4 text-sm">
+                  {(() => {
+                    const total =
+                      typeof expense.total === "number"
+                        ? expense.total
+                        : parseFloat(String(expense.total || 0)) || 0;
+                    const paymentStatus = calculatePaymentStatus(
+                      expense.paymentType || "",
+                      total
+                    );
+                    return (
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPaymentStatusStyle(paymentStatus.status)}`}
+                      >
+                        {t(
+                          `common.paymentStatus.${paymentStatus.status.toLowerCase()}`
+                        )}
+                      </span>
+                    );
+                  })()}
                 </td>
                 <td className="px-6 py-4 text-right flex justify-end gap-2">
                   <button

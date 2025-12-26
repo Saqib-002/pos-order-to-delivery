@@ -15,6 +15,7 @@ import {
   ChevronRightIcon,
   EditIcon,
 } from "../../../public/Svg";
+import { PaymentStep, PaymentMethod } from "../../shared/PaymentStep";
 
 interface Props {
   isOpen: boolean;
@@ -23,11 +24,6 @@ interface Props {
   initialData?: MarketPurchase | null;
   suppliers: any[];
   expenseTypes: any[];
-}
-
-interface PaymentMethod {
-  type: "cash" | "card";
-  amount: number;
 }
 
 export const MarketPurchaseModal = ({
@@ -47,10 +43,6 @@ export const MarketPurchaseModal = ({
   });
   const [items, setItems] = useState<MarketPurchaseItem[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [currentPaymentAmount, setCurrentPaymentAmount] = useState<number>(0);
-  const [selectedPaymentType, setSelectedPaymentType] = useState<
-    "cash" | "card"
-  >("cash");
 
   // Form state for adding new product
   const [newProduct, setNewProduct] = useState<MarketPurchaseItem>({
@@ -78,7 +70,11 @@ export const MarketPurchaseModal = ({
                 .map((payment) => {
                   const [type, amount] = payment.split(":");
                   return {
-                    type: type.trim() as "cash" | "card",
+                    type: type.trim() as
+                      | "cash"
+                      | "card"
+                      | "bizum"
+                      | "bank-transfer",
                     amount: parseFloat(amount) || 0,
                   };
                 })
@@ -90,7 +86,9 @@ export const MarketPurchaseModal = ({
           } else {
             if (
               initialData.paymentType === "cash" ||
-              initialData.paymentType === "card"
+              initialData.paymentType === "card" ||
+              initialData.paymentType === "bizum" ||
+              initialData.paymentType === "bank-transfer"
             ) {
               const amount =
                 typeof initialData.totalAmount === "string"
@@ -98,7 +96,11 @@ export const MarketPurchaseModal = ({
                   : initialData.totalAmount || 0;
               setPaymentMethods([
                 {
-                  type: initialData.paymentType as "cash" | "card",
+                  type: initialData.paymentType as
+                    | "cash"
+                    | "card"
+                    | "bizum"
+                    | "bank-transfer",
                   amount: isNaN(amount) ? 0 : amount,
                 },
               ]);
@@ -157,7 +159,6 @@ export const MarketPurchaseModal = ({
   ) => {
     const totalUnit = product.box * product.unit;
     const subtotal = product.unitPrice * totalUnit;
-    // Calculate tax amount from percentage
     const taxPercentValue =
       taxPercent !== undefined ? taxPercent : taxPercentage;
     const taxAmount = (subtotal * taxPercentValue) / 100;
@@ -282,47 +283,6 @@ export const MarketPurchaseModal = ({
     }
   };
 
-  const handleAddPayment = () => {
-    if (currentPaymentAmount <= 0) {
-      toast.error(
-        t("marketPurchaseManagement.modal.errors.pleaseEnterValidAmount")
-      );
-      return;
-    }
-
-    const totalAmount = calculateTotalAmount();
-    const totalPaid = paymentMethods.reduce(
-      (sum, method) => sum + method.amount,
-      0
-    );
-    const remainingAmount = totalAmount - totalPaid;
-    const actualAmount = Math.min(currentPaymentAmount, remainingAmount);
-
-    const existingMethodIndex = paymentMethods.findIndex(
-      (method) => method.type === selectedPaymentType
-    );
-
-    if (existingMethodIndex !== -1) {
-      const updatedMethods = [...paymentMethods];
-      updatedMethods[existingMethodIndex].amount += actualAmount;
-      setPaymentMethods(updatedMethods);
-    } else {
-      setPaymentMethods([
-        ...paymentMethods,
-        {
-          type: selectedPaymentType,
-          amount: actualAmount,
-        },
-      ]);
-    }
-
-    setCurrentPaymentAmount(0);
-  };
-
-  const handleRemovePayment = (index: number) => {
-    setPaymentMethods(paymentMethods.filter((_, i) => i !== index));
-  };
-
   const validateStep1 = (): boolean => {
     if (!formData.supplierId) {
       toast.error(t("marketPurchaseManagement.modal.errors.supplierRequired"));
@@ -441,7 +401,6 @@ export const MarketPurchaseModal = ({
         total: 0,
       });
       setTaxPercentage(0);
-      setCurrentPaymentAmount(0);
     }
   };
 
@@ -892,178 +851,20 @@ export const MarketPurchaseModal = ({
     );
   };
 
-  const renderStep3 = () => (
-    <div className="space-y-6 max-w-2xl mx-auto">
-      <h3 className="text-xl font-semibold text-gray-800 mb-4">
-        {t("marketPurchaseManagement.modal.step3.title")}
-      </h3>
-
-      {/* Total Amount Display */}
-      <div className="bg-gray-50 rounded-lg p-6 mb-6">
-        <div className="flex justify-between items-center">
-          <span className="text-lg font-semibold text-gray-700">
-            {t("marketPurchaseManagement.modal.totalAmount")}:
-          </span>
-          <span className="text-2xl font-bold text-gray-900">
-            €
-            {(typeof totalAmount === "string"
-              ? parseFloat(totalAmount)
-              : totalAmount || 0
-            ).toFixed(2)}
-          </span>
-        </div>
-        {totalPaid > 0 && (
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-sm text-gray-600">
-              {t("marketPurchaseManagement.modal.step3.totalPaid")}:
-            </span>
-            <span className="text-lg font-semibold text-green-600">
-              €
-              {(typeof totalPaid === "string"
-                ? parseFloat(totalPaid)
-                : totalPaid || 0
-              ).toFixed(2)}
-            </span>
-          </div>
-        )}
-        {remainingAmount > 0 && (
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-sm text-gray-600">
-              {t("marketPurchaseManagement.modal.step3.remaining")}:
-            </span>
-            <span className="text-lg font-semibold text-red-600">
-              €
-              {(typeof remainingAmount === "string"
-                ? parseFloat(remainingAmount)
-                : remainingAmount || 0
-              ).toFixed(2)}
-            </span>
-          </div>
-        )}
-        {totalPaid >
-          (typeof totalAmount === "string"
-            ? parseFloat(totalAmount)
-            : totalAmount || 0) && (
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-sm text-gray-600">
-              {t("marketPurchaseManagement.modal.step3.change")}:
-            </span>
-            <span className="text-lg font-semibold text-blue-600">
-              €
-              {(
-                totalPaid -
-                (typeof totalAmount === "string"
-                  ? parseFloat(totalAmount)
-                  : totalAmount || 0)
-              ).toFixed(2)}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Payment Method Selection */}
-      <div className="space-y-4">
-        <label className="block text-sm font-medium text-gray-700">
-          {t("marketPurchaseManagement.modal.step3.selectPaymentMethod")}
-        </label>
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={() => setSelectedPaymentType("cash")}
-            className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
-              selectedPaymentType === "cash"
-                ? "border-green-400 bg-green-50 text-green-800"
-                : "border-gray-200 hover:border-green-300"
-            }`}
-          >
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-2xl">💵</span>
-              <span className="font-medium text-lg">
-                {t("marketPurchaseManagement.modal.cash")}
-              </span>
-            </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedPaymentType("card")}
-            className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
-              selectedPaymentType === "card"
-                ? "border-blue-400 bg-blue-50 text-blue-800"
-                : "border-gray-200 hover:border-blue-300"
-            }`}
-          >
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-2xl">💳</span>
-              <span className="font-medium text-lg">
-                {t("marketPurchaseManagement.modal.card")}
-              </span>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* Amount Input */}
-      <div className="space-y-3">
-        <CustomInput
-          label={t("marketPurchaseManagement.modal.step3.amount")}
-          name="paymentAmount"
-          type="number"
-          step="0.01"
-          value={currentPaymentAmount.toString()}
-          onChange={(e) =>
-            setCurrentPaymentAmount(parseFloat(e.target.value) || 0)
-          }
-          placeholder="0.00"
-          min="0"
-        />
-        <CustomButton
-          type="button"
-          onClick={handleAddPayment}
-          label={t("marketPurchaseManagement.modal.step3.addPayment")}
-          className="w-full"
-        />
-      </div>
-
-      {/* Payment Methods List */}
-      {paymentMethods.length > 0 && (
-        <div className="space-y-3">
-          <h4 className="font-semibold text-gray-800">
-            {t("marketPurchaseManagement.modal.step3.addedPayments")}
-          </h4>
-          <div className="space-y-2">
-            {paymentMethods.map((method, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">
-                    {method.type === "cash" ? "💵" : "💳"}
-                  </span>
-                  <div>
-                    <div className="font-medium text-gray-900 capitalize">
-                      {method.type}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      €{method.amount.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleRemovePayment(index)}
-                  className="p-2 hover:bg-red-100 rounded-full text-red-600"
-                  title={t("common.delete")}
-                >
-                  <DeleteIcon className="size-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  const renderStep3 = () => {
+    const total =
+      typeof totalAmount === "string"
+        ? parseFloat(totalAmount)
+        : totalAmount || 0;
+    return (
+      <PaymentStep
+        totalAmount={total}
+        paymentMethods={paymentMethods}
+        onPaymentMethodsChange={setPaymentMethods}
+        initialPaymentType={initialData?.paymentType}
+      />
+    );
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">

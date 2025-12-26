@@ -13,7 +13,12 @@
     "no": "No",
     "apply": "Aplicar",
     "actions": "Acciones",
-    "confirmDelete": "¿Estás seguro de que quieres eliminar este elemento?"
+    "confirmDelete": "¿Estás seguro de que quieres eliminar este elemento?",
+    "paymentStatus": {
+      "paid": "PAGADO",
+      "unpaid": "NO PAGADO",
+      "partial": "PARCIAL"
+    }
   },
   "welcome": "Bienvenido a nuestro sitio web.",
 
@@ -314,7 +319,11 @@
         "menu-structure": "Estructura de Menú",
         "users": "Usuarios",
         "customers": "Clientes",
-        "configurations": "Configuraciones"
+        "configurations": "Configuraciones",
+        "vehicles": "Gestión de Vehículos",
+        "workers": "Gestión de Trabajadores",
+        "market-purchases": "Gestión de Compras de Mercado",
+        "expenses": "Otra Fuente de Ingresos"
       },
       "username": "Nombre de usuario",
       "password": "Contraseña",
@@ -1658,7 +1667,7 @@
         "title": "Eliminar Trabajador",
         "message": "¿Estás seguro? Esto eliminará todos los registros salariales también."
       },
-      "phoneNumber":"Número de teléfono"
+      "phoneNumber": "Número de teléfono"
     },
     "salaryModal": {
       "title": "Registros de Salario",
@@ -1682,55 +1691,60 @@
       "autoCalculated": "Calculado Automáticamente",
       "nextToPayment": "Siguiente a Pago",
       "paymentTitle": "Pago",
-      "selectDate": "Seleccionar fecha de salario"
+      "selectDate": "Seleccionar fecha de salario",
+      "paymentStatus": "Estado de Pago"
     }
   },
   "expenseManagement": {
-    "title": "Gestión de Gastos",
-    "subtitle": "Gestionar gastos y pagos",
-    "addExpense": "Agregar Gasto",
-    "searchPlaceholder": "Buscar Nombre o Descripción...",
+    "title": "Otra Fuente de Ingresos",
+    "subtitle": "Gestionar fuentes de ingresos externas y pagos",
+    "addExpense": "Agregar Fuente de Ingresos",
+    "searchPlaceholder": "Buscar Nombre, Descripción o ID de Ticket...",
     "filters": {
       "startDate": "Fecha de Inicio",
       "endDate": "Fecha de Fin",
       "clearFilters": "Limpiar Filtros"
     },
     "table": {
-      "expenses": "Gastos",
+      "expenses": "Fuentes de Ingresos",
       "date": "Fecha",
       "name": "Nombre",
       "description": "Descripción",
+      "ticketId": "ID de Ticket",
       "total": "Total",
       "paymentType": "Tipo de Pago",
+      "paymentStatus": "Estado de Pago",
       "actions": "Acciones",
-      "noExpenses": "No se encontraron gastos",
+      "noExpenses": "No se encontraron fuentes de ingresos",
       "updating": "Actualizando..."
     },
     "modal": {
-      "addTitle": "Agregar Gasto",
-      "editTitle": "Editar Gasto",
-      "name": "Nombre del Gasto",
+      "addTitle": "Agregar Fuente de Ingresos",
+      "editTitle": "Editar Fuente de Ingresos",
+      "name": "Nombre de la Fuente de Ingresos",
       "description": "Descripción",
       "date": "Fecha",
       "total": "Monto Total",
-      "enterName": "Ingrese el nombre del gasto",
+      "ticketId": "ID de Ticket (si está disponible)",
+      "enterName": "Ingrese el nombre de la fuente de ingresos",
       "enterDescription": "Ingrese la descripción",
+      "enterTicketId": "Ingrese el ID de ticket (opcional)",
       "selectDate": "Seleccionar fecha",
-      "complete": "Completar Gasto",
+      "complete": "Completar",
       "step1": {
-        "title": "Información del Gasto"
+        "title": "Información de la Fuente de Ingresos"
       },
       "step2": {
         "title": "Pago"
       },
       "errors": {
-        "nameRequired": "El nombre del gasto es requerido",
+        "nameRequired": "El nombre de la fuente de ingresos es requerido",
         "totalRequired": "El monto total debe ser mayor que 0",
         "dateRequired": "La fecha es requerida"
       },
       "deleteConfirm": {
-        "title": "Eliminar Gasto",
-        "message": "¿Estás seguro de que quieres eliminar este gasto? Esta acción no se puede deshacer."
+        "title": "Eliminar Fuente de Ingresos",
+        "message": "¿Estás seguro de que quieres eliminar esta fuente de ingresos? Esta acción no se puede deshacer."
       }
     }
   },
@@ -1756,6 +1770,7 @@
       "ticketDate": "Fecha de Ticket",
       "paymentType": "Tipo de Pago",
       "totalAmount": "Monto Total",
+      "paymentStatus": "Estado de Pago",
       "actions": "Acciones",
       "noPurchases": "No se encontraron compras",
       "updating": "Actualizando..."
@@ -1770,7 +1785,10 @@
       "paymentType": "Tipo de Pago",
       "cash": "Efectivo",
       "card": "Tarjeta",
+      "bizum": "Bizum",
+      "bankTransfer": "Transferencia Bancaria",
       "mixed": "Mixto",
+      "paymentStatus": "Estado de Pago",
       "products": "Productos",
       "addProduct": "Agregar Producto",
       "product": "Producto",
@@ -1826,6 +1844,7 @@
         "unitPriceRequired": "El precio unitario debe ser mayor que 0",
         "paymentRequired": "Por favor agregue al menos un método de pago",
         "paymentIncomplete": "Pago incompleto. Pendiente: €{remaining}",
+        "noRemainingAmount": "No hay monto pendiente por pagar. El total ya ha sido pagado.",
         "pleaseEnterValidAmount": "Por favor ingrese un monto válido"
       },
       "deleteConfirm": {
@@ -1906,12 +1925,20 @@
       "searchPlaceholder": "Buscar registros...",
       "minPrice": "Mín €",
       "maxPrice": "Máx €",
+      "date": "Fecha",
+      "selectDate": "Seleccionar fecha",
+      "errors": {
+        "sparePartRequired": "El nombre del repuesto/servicio es requerido",
+        "priceRequired": "El precio debe ser mayor que 0",
+        "dateRequired": "La fecha es requerida"
+      },
       "table": {
         "date": "Fecha",
         "servicePart": "Servicio/Repuesto",
         "unit": "Unidad",
         "price": "Precio",
         "total": "Total",
+        "paymentStatus": "Estado de Pago",
         "actions": "Acciones",
         "noRecordsFound": "No se encontraron registros que coincidan con los filtros"
       },

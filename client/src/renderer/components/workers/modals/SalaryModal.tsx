@@ -5,14 +5,14 @@ import { Worker, WorkerSalary } from "@/types/workers";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { DatePicker } from "../../ui/shadcn/date-picker";
-import {
-  DeleteIcon,
-  EditIcon,
-  CrossIcon,
-  AddIcon,
-} from "@/renderer/public/Svg";
+import { DeleteIcon, EditIcon, CrossIcon } from "@/renderer/public/Svg";
 import Pagination from "../../shared/Pagination";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
+import {
+  calculatePaymentStatus,
+  getPaymentStatusStyle,
+} from "@/renderer/utils/paymentStatus";
+import { PaymentStep, PaymentMethod } from "../../shared/PaymentStep";
 
 interface Props {
   isOpen: boolean;
@@ -22,11 +22,6 @@ interface Props {
   onUpdateRecord: (id: string, data: any) => Promise<boolean>;
   onDeleteRecord: (id: string) => Promise<boolean>;
   fetchRecords: (workerId: string, filters: any) => Promise<any>;
-}
-
-interface PaymentMethod {
-  type: "cash" | "card";
-  amount: number;
 }
 
 export const SalaryModal = ({
@@ -63,10 +58,6 @@ export const SalaryModal = ({
   };
   const [formData, setFormData] = useState<Partial<WorkerSalary>>(initialForm);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [currentPaymentAmount, setCurrentPaymentAmount] = useState<number>(0);
-  const [selectedPaymentType, setSelectedPaymentType] = useState<
-    "cash" | "card"
-  >("cash");
 
   // Auto-calculate total whenever relevant fields change
   useEffect(() => {
@@ -137,7 +128,6 @@ export const SalaryModal = ({
       setFormData(initialForm);
       setActiveTab("list");
       setPaymentMethods([]);
-      setCurrentPaymentAmount(0);
     }
   }, [isOpen, worker, page]);
 
@@ -172,7 +162,11 @@ export const SalaryModal = ({
             .map((payment) => {
               const [type, amount] = payment.split(":");
               return {
-                type: type.trim() as "cash" | "card",
+                type: type.trim() as
+                  | "cash"
+                  | "card"
+                  | "bizum"
+                  | "bank-transfer",
                 amount: parseFloat(amount) || 0,
               };
             })
@@ -182,14 +176,23 @@ export const SalaryModal = ({
           setPaymentMethods([]);
         }
       } else {
-        if (record.paymentType === "cash" || record.paymentType === "card") {
+        if (
+          record.paymentType === "cash" ||
+          record.paymentType === "card" ||
+          record.paymentType === "bizum" ||
+          record.paymentType === "bank-transfer"
+        ) {
           const amount =
             typeof record.total === "string"
               ? parseFloat(record.total)
               : record.total || 0;
           setPaymentMethods([
             {
-              type: record.paymentType as "cash" | "card",
+              type: record.paymentType as
+                | "cash"
+                | "card"
+                | "bizum"
+                | "bank-transfer",
               amount: isNaN(amount) ? 0 : amount,
             },
           ]);
@@ -206,7 +209,6 @@ export const SalaryModal = ({
     setFormData(initialForm);
     setEditingId(null);
     setPaymentMethods([]);
-    setCurrentPaymentAmount(0);
   };
 
   const handleTabChange = (tab: "list" | "form" | "payment") => {
@@ -217,50 +219,6 @@ export const SalaryModal = ({
       resetForm();
     }
     setActiveTab(tab);
-  };
-
-  const handleAddPayment = () => {
-    if (currentPaymentAmount <= 0) {
-      toast.error(
-        t("marketPurchaseManagement.modal.errors.pleaseEnterValidAmount")
-      );
-      return;
-    }
-
-    const totalAmount =
-      typeof formData.total === "number"
-        ? formData.total
-        : parseFloat(String(formData.total || 0)) || 0;
-    const totalPaid = paymentMethods.reduce(
-      (sum, method) => sum + method.amount,
-      0
-    );
-    const remainingAmount = totalAmount - totalPaid;
-    const actualAmount = Math.min(currentPaymentAmount, remainingAmount);
-
-    const existingMethodIndex = paymentMethods.findIndex(
-      (method) => method.type === selectedPaymentType
-    );
-
-    if (existingMethodIndex !== -1) {
-      const updatedMethods = [...paymentMethods];
-      updatedMethods[existingMethodIndex].amount += actualAmount;
-      setPaymentMethods(updatedMethods);
-    } else {
-      setPaymentMethods([
-        ...paymentMethods,
-        {
-          type: selectedPaymentType,
-          amount: actualAmount,
-        },
-      ]);
-    }
-
-    setCurrentPaymentAmount(0);
-  };
-
-  const handleRemovePayment = (index: number) => {
-    setPaymentMethods(paymentMethods.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -282,14 +240,7 @@ export const SalaryModal = ({
       return;
     }
 
-    if (totalPaid < totalAmount) {
-      toast.error(
-        t("marketPurchaseManagement.modal.errors.paymentIncomplete", {
-          remaining: (totalAmount - totalPaid).toFixed(2),
-        })
-      );
-      return;
-    }
+    // Allow partial payments - no need to check if totalPaid < totalAmount
 
     const paymentTypeString = paymentMethods
       .map((method) => `${method.type}:${method.amount}`)
@@ -416,7 +367,7 @@ export const SalaryModal = ({
           </div>
         )}
 
-        <div className="p-8 overflow-y-auto flex-1">
+        <div className="overflow-y-auto flex-1">
           {activeTab === "list" ? (
             <div className="flex flex-col h-full">
               <div className="overflow-x-auto">
@@ -450,6 +401,9 @@ export const SalaryModal = ({
                       <th className="px-6 py-3 text-sm font-semibold text-gray-700">
                         {t("workerManagement.salaryModal.total")}
                       </th>
+                      <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+                        {t("workerManagement.salaryModal.paymentStatus")}
+                      </th>
                       <th className="px-6 py-3 text-sm font-semibold text-gray-700 text-right">
                         {t("common.actions")}
                       </th>
@@ -459,7 +413,7 @@ export const SalaryModal = ({
                     {records.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={10}
+                          colSpan={11}
                           className="px-6 py-8 text-center text-gray-500"
                         >
                           {t("workerManagement.salaryModal.noRecords")}
@@ -498,6 +452,27 @@ export const SalaryModal = ({
                           <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
                             {formatCurrency(r.total)}
                           </td>
+                          <td className="px-6 py-4 text-sm">
+                            {(() => {
+                              const total =
+                                typeof r.total === "number"
+                                  ? r.total
+                                  : parseFloat(String(r.total || 0)) || 0;
+                              const paymentStatus = calculatePaymentStatus(
+                                r.paymentType || "",
+                                total
+                              );
+                              return (
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPaymentStatusStyle(paymentStatus.status)}`}
+                                >
+                                  {t(
+                                    `common.paymentStatus.${paymentStatus.status.toLowerCase()}`
+                                  )}
+                                </span>
+                              );
+                            })()}
+                          </td>
                           <td className="px-6 py-4 text-right flex justify-end gap-2">
                             <button
                               onClick={() => handleEditClick(r)}
@@ -529,158 +504,16 @@ export const SalaryModal = ({
               </div>
             </div>
           ) : activeTab === "payment" ? (
-            <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                {t("workerManagement.salaryModal.paymentTitle")}
-              </h3>
-
-              {/* Total Amount Display */}
-              <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold text-gray-700">
-                    {t("marketPurchaseManagement.modal.totalAmount")}:
-                  </span>
-                  <span className="text-2xl font-bold text-gray-900">
-                    €{totalAmount.toFixed(2)}
-                  </span>
-                </div>
-                {totalPaid > 0 && (
-                  <div className="flex justify-between items-center mt-2">
-                    <span className="text-sm text-gray-600">
-                      {t("marketPurchaseManagement.modal.step3.totalPaid")}:
-                    </span>
-                    <span className="text-lg font-semibold text-green-600">
-                      €{totalPaid.toFixed(2)}
-                    </span>
-                  </div>
-                )}
-                {remainingAmount > 0 && (
-                  <div className="flex justify-between items-center mt-2">
-                    <span className="text-sm text-gray-600">
-                      {t("marketPurchaseManagement.modal.step3.remaining")}:
-                    </span>
-                    <span className="text-lg font-semibold text-red-600">
-                      €{remainingAmount.toFixed(2)}
-                    </span>
-                  </div>
-                )}
-                {totalPaid > totalAmount && (
-                  <div className="flex justify-between items-center mt-2">
-                    <span className="text-sm text-gray-600">
-                      {t("marketPurchaseManagement.modal.step3.change")}:
-                    </span>
-                    <span className="text-lg font-semibold text-blue-600">
-                      €{(totalPaid - totalAmount).toFixed(2)}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Payment Method Selection */}
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  {t(
-                    "marketPurchaseManagement.modal.step3.selectPaymentMethod"
-                  )}
-                </label>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentType("cash")}
-                    className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
-                      selectedPaymentType === "cash"
-                        ? "border-green-400 bg-green-50 text-green-800"
-                        : "border-gray-200 hover:border-green-300"
-                    }`}
-                  >
-                    <div className="flex items-center justify-center gap-3">
-                      <span className="text-2xl">💵</span>
-                      <span className="font-medium text-lg">
-                        {t("marketPurchaseManagement.modal.cash")}
-                      </span>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentType("card")}
-                    className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
-                      selectedPaymentType === "card"
-                        ? "border-blue-400 bg-blue-50 text-blue-800"
-                        : "border-gray-200 hover:border-blue-300"
-                    }`}
-                  >
-                    <div className="flex items-center justify-center gap-3">
-                      <span className="text-2xl">💳</span>
-                      <span className="font-medium text-lg">
-                        {t("marketPurchaseManagement.modal.card")}
-                      </span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              {/* Amount Input */}
-              <div className="space-y-3">
-                <CustomInput
-                  label={t("marketPurchaseManagement.modal.step3.amount")}
-                  name="paymentAmount"
-                  type="number"
-                  step="0.01"
-                  value={currentPaymentAmount.toString()}
-                  onChange={(e) =>
-                    setCurrentPaymentAmount(parseFloat(e.target.value) || 0)
-                  }
-                  placeholder="0.00"
-                  min="0"
-                />
-                <CustomButton
-                  type="button"
-                  onClick={handleAddPayment}
-                  label={t("marketPurchaseManagement.modal.step3.addPayment")}
-                  Icon={<AddIcon className="size-5" />}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Payment Methods List */}
-              {paymentMethods.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-800">
-                    {t("marketPurchaseManagement.modal.step3.addedPayments")}
-                  </h4>
-                  <div className="space-y-2">
-                    {paymentMethods.map((method, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">
-                            {method.type === "cash" ? "💵" : "💳"}
-                          </span>
-                          <div>
-                            <div className="font-medium text-gray-900 capitalize">
-                              {method.type}
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              €{method.amount.toFixed(2)}
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleRemovePayment(index)}
-                          className="p-2 hover:bg-red-100 rounded-full text-red-600"
-                          title={t("common.delete")}
-                        >
-                          <DeleteIcon className="size-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <PaymentStep
+              totalAmount={totalAmount}
+              paymentMethods={paymentMethods}
+              onPaymentMethodsChange={setPaymentMethods}
+              initialPaymentType={
+                editingId
+                  ? records.find((r) => r.id === editingId)?.paymentType
+                  : undefined
+              }
+            />
           ) : (
             <form
               onSubmit={(e) => {

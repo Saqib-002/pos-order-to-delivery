@@ -13,6 +13,7 @@ export class ExpenseDatabaseOperations {
         total: expenseData.total,
         paymentType: expenseData.paymentType,
         date: expenseData.date,
+        ticketId: expenseData.ticketId || undefined,
         createdAt: now,
         updatedAt: now,
       };
@@ -51,7 +52,8 @@ export class ExpenseDatabaseOperations {
         query.where((builder) => {
           builder
             .whereILike("name", `%${search}%`)
-            .orWhereILike("description", `%${search}%`);
+            .orWhereILike("description", `%${search}%`)
+            .orWhereILike("ticketId", `%${search}%`);
         });
       }
 

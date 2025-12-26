@@ -5,6 +5,7 @@ export interface Expense {
   total: number;
   paymentType: string;
   date: string;
+  ticketId?: string;
   createdAt?: string;
   updatedAt?: string;
 }

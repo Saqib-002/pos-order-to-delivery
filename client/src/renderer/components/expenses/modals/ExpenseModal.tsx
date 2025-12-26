@@ -8,22 +8,16 @@ import { DatePicker } from "../../ui/shadcn/date-picker";
 import { useConfirm } from "../../../hooks/useConfirm";
 import {
   CrossIcon,
-  AddIcon,
-  DeleteIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "../../../public/Svg";
+import { PaymentStep, PaymentMethod } from "../../shared/PaymentStep";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: Expense) => Promise<boolean>;
   initialData?: Expense | null;
-}
-
-interface PaymentMethod {
-  type: "cash" | "card";
-  amount: number;
 }
 
 export const ExpenseModal = ({
@@ -40,12 +34,9 @@ export const ExpenseModal = ({
     total: 0,
     date: new Date().toISOString().split("T")[0],
     paymentType: "cash",
+    ticketId: "",
   });
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [currentPaymentAmount, setCurrentPaymentAmount] = useState<number>(0);
-  const [selectedPaymentType, setSelectedPaymentType] = useState<
-    "cash" | "card"
-  >("cash");
 
   useEffect(() => {
     if (isOpen) {
@@ -59,7 +50,11 @@ export const ExpenseModal = ({
                 .map((payment) => {
                   const [type, amount] = payment.split(":");
                   return {
-                    type: type.trim() as "cash" | "card",
+                    type: type.trim() as
+                      | "cash"
+                      | "card"
+                      | "bizum"
+                      | "bank-transfer",
                     amount: parseFloat(amount) || 0,
                   };
                 })
@@ -71,7 +66,9 @@ export const ExpenseModal = ({
           } else {
             if (
               initialData.paymentType === "cash" ||
-              initialData.paymentType === "card"
+              initialData.paymentType === "card" ||
+              initialData.paymentType === "bizum" ||
+              initialData.paymentType === "bank-transfer"
             ) {
               const amount =
                 typeof initialData.total === "string"
@@ -79,7 +76,11 @@ export const ExpenseModal = ({
                   : initialData.total || 0;
               setPaymentMethods([
                 {
-                  type: initialData.paymentType as "cash" | "card",
+                  type: initialData.paymentType as
+                    | "cash"
+                    | "card"
+                    | "bizum"
+                    | "bank-transfer",
                   amount: isNaN(amount) ? 0 : amount,
                 },
               ]);
@@ -94,59 +95,15 @@ export const ExpenseModal = ({
           total: 0,
           date: new Date().toISOString().split("T")[0],
           paymentType: "cash",
+          ticketId: "",
         });
         setPaymentMethods([]);
         setCurrentStep(1);
       }
-      setCurrentPaymentAmount(0);
     }
   }, [isOpen, initialData]);
 
   if (!isOpen) return null;
-
-  const handleAddPayment = () => {
-    if (currentPaymentAmount <= 0) {
-      toast.error(
-        t("marketPurchaseManagement.modal.errors.pleaseEnterValidAmount")
-      );
-      return;
-    }
-
-    const totalAmount =
-      typeof formData.total === "number"
-        ? formData.total
-        : parseFloat(String(formData.total || 0)) || 0;
-    const totalPaid = paymentMethods.reduce(
-      (sum, method) => sum + method.amount,
-      0
-    );
-    const remainingAmount = totalAmount - totalPaid;
-    const actualAmount = Math.min(currentPaymentAmount, remainingAmount);
-
-    const existingMethodIndex = paymentMethods.findIndex(
-      (method) => method.type === selectedPaymentType
-    );
-
-    if (existingMethodIndex !== -1) {
-      const updatedMethods = [...paymentMethods];
-      updatedMethods[existingMethodIndex].amount += actualAmount;
-      setPaymentMethods(updatedMethods);
-    } else {
-      setPaymentMethods([
-        ...paymentMethods,
-        {
-          type: selectedPaymentType,
-          amount: actualAmount,
-        },
-      ]);
-    }
-
-    setCurrentPaymentAmount(0);
-  };
-
-  const handleRemovePayment = (index: number) => {
-    setPaymentMethods(paymentMethods.filter((_, i) => i !== index));
-  };
 
   const validateStep1 = (): boolean => {
     if (!formData.name || !formData.name.trim()) {
@@ -165,26 +122,8 @@ export const ExpenseModal = ({
   };
 
   const validateStep2 = (): boolean => {
-    const totalAmount =
-      typeof formData.total === "number"
-        ? formData.total
-        : parseFloat(String(formData.total || 0)) || 0;
-    const totalPaid = paymentMethods.reduce(
-      (sum, method) => sum + method.amount,
-      0
-    );
-
     if (paymentMethods.length === 0) {
       toast.error(t("marketPurchaseManagement.modal.errors.paymentRequired"));
-      return false;
-    }
-
-    if (totalPaid < totalAmount) {
-      toast.error(
-        t("marketPurchaseManagement.modal.errors.paymentIncomplete", {
-          remaining: (totalAmount - totalPaid).toFixed(2),
-        })
-      );
       return false;
     }
 
@@ -224,6 +163,7 @@ export const ExpenseModal = ({
       total: Number(totalAmount),
       date: formData.date!,
       paymentType: paymentTypeString,
+      ticketId: formData.ticketId || undefined,
     } as Expense;
 
     const success = await onSubmit(expenseData);
@@ -235,10 +175,10 @@ export const ExpenseModal = ({
         total: 0,
         date: new Date().toISOString().split("T")[0],
         paymentType: "cash",
+        ticketId: "",
       });
       setPaymentMethods([]);
       setCurrentStep(1);
-      setCurrentPaymentAmount(0);
     }
   };
 
@@ -246,14 +186,6 @@ export const ExpenseModal = ({
     typeof formData.total === "number"
       ? formData.total
       : parseFloat(String(formData.total || 0)) || 0;
-  const totalPaid = paymentMethods.reduce((sum, method) => {
-    const amount =
-      typeof method.amount === "string"
-        ? parseFloat(method.amount)
-        : method.amount || 0;
-    return sum + amount;
-  }, 0);
-  const remainingAmount = totalAmount - totalPaid;
 
   const renderStep1 = () => (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -303,161 +235,29 @@ export const ExpenseModal = ({
           }
           min="0"
         />
+        <div className="md:col-span-2">
+          <CustomInput
+            label={t("expenseManagement.modal.ticketId")}
+            name="ticketId"
+            type="text"
+            value={formData.ticketId || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, ticketId: e.target.value })
+            }
+            placeholder={t("expenseManagement.modal.enterTicketId")}
+          />
+        </div>
       </div>
     </div>
   );
 
   const renderStep2 = () => (
-    <div className="space-y-6 max-w-xl mx-auto">
-      <h3 className="text-xl font-semibold text-gray-800 mb-4">
-        {t("expenseManagement.modal.step2.title")}
-      </h3>
-
-      {/* Total Amount Display */}
-      <div className="bg-gray-50 rounded-lg p-6 mb-6">
-        <div className="flex justify-between items-center">
-          <span className="text-lg font-semibold text-gray-700">
-            {t("marketPurchaseManagement.modal.totalAmount")}:
-          </span>
-          <span className="text-2xl font-bold text-gray-900">
-            €{totalAmount.toFixed(2)}
-          </span>
-        </div>
-        {totalPaid > 0 && (
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-sm text-gray-600">
-              {t("marketPurchaseManagement.modal.step3.totalPaid")}:
-            </span>
-            <span className="text-lg font-semibold text-green-600">
-              €{totalPaid.toFixed(2)}
-            </span>
-          </div>
-        )}
-        {remainingAmount > 0 && (
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-sm text-gray-600">
-              {t("marketPurchaseManagement.modal.step3.remaining")}:
-            </span>
-            <span className="text-lg font-semibold text-red-600">
-              €{remainingAmount.toFixed(2)}
-            </span>
-          </div>
-        )}
-        {totalPaid > totalAmount && (
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-sm text-gray-600">
-              {t("marketPurchaseManagement.modal.step3.change")}:
-            </span>
-            <span className="text-lg font-semibold text-blue-600">
-              €{(totalPaid - totalAmount).toFixed(2)}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Payment Method Selection */}
-      <div className="space-y-4">
-        <label className="block text-sm font-medium text-gray-700">
-          {t("marketPurchaseManagement.modal.step3.selectPaymentMethod")}
-        </label>
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={() => setSelectedPaymentType("cash")}
-            className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
-              selectedPaymentType === "cash"
-                ? "border-green-400 bg-green-50 text-green-800"
-                : "border-gray-200 hover:border-green-300"
-            }`}
-          >
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-2xl">💵</span>
-              <span className="font-medium text-lg">
-                {t("marketPurchaseManagement.modal.cash")}
-              </span>
-            </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedPaymentType("card")}
-            className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
-              selectedPaymentType === "card"
-                ? "border-blue-400 bg-blue-50 text-blue-800"
-                : "border-gray-200 hover:border-blue-300"
-            }`}
-          >
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-2xl">💳</span>
-              <span className="font-medium text-lg">
-                {t("marketPurchaseManagement.modal.card")}
-              </span>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* Amount Input */}
-      <div className="space-y-3">
-        <CustomInput
-          label={t("marketPurchaseManagement.modal.step3.amount")}
-          name="paymentAmount"
-          type="number"
-          step="0.01"
-          value={currentPaymentAmount.toString()}
-          onChange={(e) =>
-            setCurrentPaymentAmount(parseFloat(e.target.value) || 0)
-          }
-          placeholder="0.00"
-          min="0"
-        />
-        <CustomButton
-          type="button"
-          onClick={handleAddPayment}
-          label={t("marketPurchaseManagement.modal.step3.addPayment")}
-          Icon={<AddIcon className="size-5" />}
-          className="w-full"
-        />
-      </div>
-
-      {/* Payment Methods List */}
-      {paymentMethods.length > 0 && (
-        <div className="space-y-3">
-          <h4 className="font-semibold text-gray-800">
-            {t("marketPurchaseManagement.modal.step3.addedPayments")}
-          </h4>
-          <div className="space-y-2">
-            {paymentMethods.map((method, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">
-                    {method.type === "cash" ? "💵" : "💳"}
-                  </span>
-                  <div>
-                    <div className="font-medium text-gray-900 capitalize">
-                      {method.type}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      €{method.amount.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleRemovePayment(index)}
-                  className="p-2 hover:bg-red-100 rounded-full text-red-600"
-                  title={t("common.delete")}
-                >
-                  <DeleteIcon className="size-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    <PaymentStep
+      totalAmount={totalAmount}
+      paymentMethods={paymentMethods}
+      onPaymentMethodsChange={setPaymentMethods}
+      initialPaymentType={initialData?.paymentType}
+    />
   );
 
   return (

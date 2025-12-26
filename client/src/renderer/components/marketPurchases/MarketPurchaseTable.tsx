@@ -1,6 +1,10 @@
 import { MarketPurchase } from "@/types/marketPurchases";
 import { EditIcon, DeleteIcon } from "@/renderer/public/Svg";
 import { useTranslation } from "react-i18next";
+import {
+  calculatePaymentStatus,
+  getPaymentStatusStyle,
+} from "@/renderer/utils/paymentStatus";
 
 interface Props {
   purchases: MarketPurchase[];
@@ -49,6 +53,9 @@ export const MarketPurchaseTable = ({ purchases, onEdit, onDelete }: Props) => {
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
               {t("marketPurchaseManagement.table.totalAmount")}
             </th>
+            <th className="px-6 py-3 text-sm font-semibold text-gray-700">
+              {t("marketPurchaseManagement.table.paymentStatus")}
+            </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700 text-right">
               {t("marketPurchaseManagement.table.actions")}
             </th>
@@ -57,7 +64,7 @@ export const MarketPurchaseTable = ({ purchases, onEdit, onDelete }: Props) => {
         <tbody className="divide-y divide-gray-200">
           {purchases.length === 0 ? (
             <tr>
-              <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+              <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                 {t("marketPurchaseManagement.table.noPurchases")}
               </td>
             </tr>
@@ -87,6 +94,27 @@ export const MarketPurchaseTable = ({ purchases, onEdit, onDelete }: Props) => {
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
                   {formatCurrency(purchase.totalAmount)}
+                </td>
+                <td className="px-6 py-4 text-sm">
+                  {(() => {
+                    const total =
+                      typeof purchase.totalAmount === "number"
+                        ? purchase.totalAmount
+                        : parseFloat(String(purchase.totalAmount || 0)) || 0;
+                    const paymentStatus = calculatePaymentStatus(
+                      purchase.paymentType || "",
+                      total
+                    );
+                    return (
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPaymentStatusStyle(paymentStatus.status)}`}
+                      >
+                        {t(
+                          `common.paymentStatus.${paymentStatus.status.toLowerCase()}`
+                        )}
+                      </span>
+                    );
+                  })()}
                 </td>
                 <td className="px-6 py-4 text-right flex justify-end gap-2">
                   <button

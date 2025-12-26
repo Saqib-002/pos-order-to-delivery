@@ -4,7 +4,7 @@ export interface Vehicle {
   licensePlate: string;
   color: string;
   hasGps: boolean;
-  type: 'bike' | 'car';
+  type: "bike" | "car";
   driverId?: string;
   driverName?: string;
   itvDate: string;
@@ -23,6 +23,7 @@ export interface VehicleMaintenance {
   price: number;
   total: number;
   date: string;
+  paymentType?: string;
 }
 
 export interface PaginatedResult<T> {
@@ -37,10 +38,10 @@ export interface PaginatedResult<T> {
 
 export interface VehicleFilters {
   search?: string;
-  type?: 'bike' | 'car' | 'all';
+  type?: "bike" | "car" | "all";
   hasGps?: boolean | null;
   driverId?: string;
-  alertStatus?: 'all' | 'has_alerts' | 'expired' | 'expiring_soon';
+  alertStatus?: "all" | "has_alerts" | "expired" | "expiring_soon";
   page: number;
   pageSize: number;
 }
