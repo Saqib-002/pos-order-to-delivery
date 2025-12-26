@@ -505,6 +505,23 @@
     }
   },
   "reports": {
+    "tabs": {
+      "orders": "Orders",
+      "financial": "Financial"
+    },
+    "financial": {
+      "vehicles": "Vehicles",
+      "workers": "Workers",
+      "market": "Market Purchases",
+      "general": "Other Expenses",
+      "income": "Income",
+      "expenses": "Expenses",
+      "totalIncome": "Total Income",
+      "totalExpenses": "Total Expenses",
+      "netProfit": "Net Profit",
+      "expenseBreakdown": "Expense Breakdown",
+      "incomeVsExpense": "Income vs Expenses"
+    },
     "title": "Analytics & Reports",
     "subtitle": "Comprehensive insights into order performance and trends",
     "totalOrders": "Total Orders",

@@ -507,6 +507,23 @@
     }
   },
   "reports": {
+    "tabs": {
+      "orders": "Pedidos",
+      "financial": "Financiero"
+    },
+    "financial": {
+      "vehicles": "Vehículos",
+      "workers": "Trabajadores",
+      "market": "Compras de Mercado",
+      "general": "Otros Gastos",
+      "income": "Ingresos",
+      "expenses": "Gastos",
+      "totalIncome": "Ingresos Totales",
+      "totalExpenses": "Gastos Totales",
+      "netProfit": "Beneficio Neto",
+      "expenseBreakdown": "Desglose de Gastos",
+      "incomeVsExpense": "Ingresos vs Gastos"
+    },
     "title": "Análisis e Informes",
     "subtitle": "Información completa sobre el rendimiento de pedidos y tendencias",
     "totalOrders": "Total de Pedidos",
