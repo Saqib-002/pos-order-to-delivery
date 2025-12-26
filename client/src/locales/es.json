@@ -1759,7 +1759,7 @@
       "irpf": "IRPF",
       "extraPayment": "Pago Extra",
       "bonus": "Bonus",
-      "extraServices": "Servicios Extra (Transporte/Alquiler)",
+      "extraServices": "Servicios Extra",
       "autoCalculated": "Calculado Automáticamente",
       "nextToPayment": "Siguiente a Pago",
       "paymentTitle": "Pago",

@@ -13,6 +13,7 @@ import {
   getPaymentStatusStyle,
 } from "@/renderer/utils/paymentStatus";
 import { PaymentStep, PaymentMethod } from "../../shared/PaymentStep";
+import dayjs from "dayjs";
 
 interface Props {
   isOpen: boolean;
@@ -317,7 +318,7 @@ export const SalaryModal = ({
               : "max-w-7xl"
         }`}
       >
-        <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex-shrink-0">
+        <div className="bg-linear-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl shrink-0">
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-xl font-bold">
@@ -332,7 +333,7 @@ export const SalaryModal = ({
               variant="transparent"
               onClick={onClose}
               Icon={<CrossIcon className="size-6" />}
-              className="text-white hover:text-gray-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
+              className="text-white hover:text-gray-500 p-2! rounded-full! hover:bg-white hover:bg-opacity-20"
             />
           </div>
         </div>
@@ -422,7 +423,7 @@ export const SalaryModal = ({
                           className="hover:bg-gray-50 transition-colors"
                         >
                           <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                            {new Date(r.date).toLocaleDateString()}
+                            {dayjs(new Date(r.date).toLocaleDateString()).format("DD/MM/YYYY")}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-600">
                             {formatCurrency(r.base)}
@@ -629,7 +630,7 @@ export const SalaryModal = ({
         </div>
 
         {/* Footer with buttons */}
-        <div className="flex justify-between gap-4 pt-4 px-8 pb-8 border-t border-gray-200 flex-shrink-0">
+        <div className="flex justify-between gap-4 pt-4 px-8 pb-8 border-t border-gray-200 shrink-0">
           {activeTab === "form" ? (
             <>
               <div>
