@@ -235,16 +235,12 @@ export const SalaryModal = ({
       0
     );
 
-    if (paymentMethods.length === 0) {
-      toast.error(t("marketPurchaseManagement.modal.errors.paymentRequired"));
-      return;
-    }
-
-    // Allow partial payments - no need to check if totalPaid < totalAmount
-
-    const paymentTypeString = paymentMethods
-      .map((method) => `${method.type}:${method.amount}`)
-      .join(", ");
+    const paymentTypeString =
+      paymentMethods.length > 0
+        ? paymentMethods
+            .map((method) => `${method.type}:${method.amount}`)
+            .join(", ")
+        : "pending";
 
     const salaryData = {
       ...formData,

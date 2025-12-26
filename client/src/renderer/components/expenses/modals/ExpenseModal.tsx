@@ -122,11 +122,7 @@ export const ExpenseModal = ({
   };
 
   const validateStep2 = (): boolean => {
-    if (paymentMethods.length === 0) {
-      toast.error(t("marketPurchaseManagement.modal.errors.paymentRequired"));
-      return false;
-    }
-
+    // Allow pending payments - no validation needed
     return true;
   };
 
@@ -153,9 +149,12 @@ export const ExpenseModal = ({
       typeof formData.total === "number"
         ? formData.total
         : parseFloat(String(formData.total || 0)) || 0;
-    const paymentTypeString = paymentMethods
-      .map((method) => `${method.type}:${method.amount}`)
-      .join(", ");
+    const paymentTypeString =
+      paymentMethods.length > 0
+        ? paymentMethods
+            .map((method) => `${method.type}:${method.amount}`)
+            .join(", ")
+        : "pending";
 
     const expenseData: Expense = {
       ...formData,

@@ -17,7 +17,8 @@
     "paymentStatus": {
       "paid": "PAID",
       "unpaid": "UNPAID",
-      "partial": "PARTIAL"
+      "partial": "PARTIAL",
+      "pending": "PENDING"
     }
   },
   "welcome": "Welcome to our website.",
@@ -1657,12 +1658,12 @@
       "clearFilters": "Clear Filters"
     },
     "table": {
-      "columns":{
-        "fullName":"Full Name",
-        "dob":"DOB",
-        "idNumber":"ID Number",
-        "phone":"Phone",
-        "bankInfo":"Bank Info"
+      "columns": {
+        "fullName": "Full Name",
+        "dob": "DOB",
+        "idNumber": "ID Number",
+        "phone": "Phone",
+        "bankInfo": "Bank Info"
       },
       "workers": "Workers",
       "noWorkersFound": "No workers found",

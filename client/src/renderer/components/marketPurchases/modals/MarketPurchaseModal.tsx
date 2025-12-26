@@ -318,26 +318,6 @@ export const MarketPurchaseModal = ({
   };
 
   const validateStep3 = (): boolean => {
-    const totalAmount = calculateTotalAmount();
-    const totalPaid = paymentMethods.reduce(
-      (sum, method) => sum + method.amount,
-      0
-    );
-
-    if (paymentMethods.length === 0) {
-      toast.error(t("marketPurchaseManagement.modal.errors.paymentRequired"));
-      return false;
-    }
-
-    if (totalPaid < totalAmount) {
-      toast.error(
-        t("marketPurchaseManagement.modal.errors.paymentIncomplete", {
-          remaining: (totalAmount - totalPaid).toFixed(2),
-        })
-      );
-      return false;
-    }
-
     return true;
   };
 
@@ -365,9 +345,12 @@ export const MarketPurchaseModal = ({
     }
 
     const totalAmount = calculateTotalAmount();
-    const paymentTypeString = paymentMethods
-      .map((method) => `${method.type}:${method.amount}`)
-      .join(", ");
+    const paymentTypeString =
+      paymentMethods.length > 0
+        ? paymentMethods
+            .map((method) => `${method.type}:${method.amount}`)
+            .join(", ")
+        : "pending";
 
     const purchaseData: MarketPurchase = {
       ...formData,

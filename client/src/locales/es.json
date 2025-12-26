@@ -17,7 +17,8 @@
     "paymentStatus": {
       "paid": "PAGADO",
       "unpaid": "NO PAGADO",
-      "partial": "PARCIAL"
+      "partial": "PARCIAL",
+      "pending": "PENDIENTE"
     }
   },
   "welcome": "Bienvenido a nuestro sitio web.",

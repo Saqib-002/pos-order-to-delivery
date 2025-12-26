@@ -148,10 +148,6 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   };
 
   const validateStep2 = (): boolean => {
-    if (paymentMethods.length === 0) {
-      toast.error(t("marketPurchaseManagement.modal.errors.paymentRequired"));
-      return false;
-    }
     return true;
   };
 
@@ -177,9 +173,12 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
     if (isNaN(priceVal)) return;
 
     const total = priceVal * (isNaN(unitVal) ? 1 : unitVal);
-    const paymentTypeString = paymentMethods
-      .map((method) => `${method.type}:${method.amount}`)
-      .join(", ");
+    const paymentTypeString =
+      paymentMethods.length > 0
+        ? paymentMethods
+            .map((method) => `${method.type}:${method.amount}`)
+            .join(", ")
+        : "pending";
 
     const payload = {
       sparePart: form.sparePart,
