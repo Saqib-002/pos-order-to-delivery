@@ -21,22 +21,19 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
       labels: [
         t('reports.financial.vehicles'), 
         t('reports.financial.workers'), 
-        t('reports.financial.market'), 
-        t('reports.financial.general')
+        t('reports.financial.market')
       ],
       datasets: [
         {
           data: [
             data.summary.breakdown.vehicleExpenses,
             data.summary.breakdown.workerExpenses,
-            data.summary.breakdown.marketExpenses,
-            data.summary.breakdown.generalExpenses
+            data.summary.breakdown.marketExpenses
           ],
           backgroundColor: [
             '#F87171',
             '#60A5FA',
-            '#34D399',
-            '#A78BFA',
+            '#34D399'
           ],
           borderWidth: 1,
         },

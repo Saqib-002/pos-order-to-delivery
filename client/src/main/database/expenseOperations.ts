@@ -18,7 +18,7 @@ export class ExpenseDatabaseOperations {
         updatedAt: now,
       };
 
-      await db("expenses").insert(newExpense);
+      await db("other_incomes").insert(newExpense);
       return newExpense;
     } catch (error) {
       throw error;
@@ -32,10 +32,10 @@ export class ExpenseDatabaseOperations {
     try {
       const now = new Date().toISOString();
       const { id: _id, createdAt, ...updates } = expenseData as any;
-      await db("expenses")
+      await db("other_incomes")
         .where("id", id)
         .update({ ...updates, updatedAt: now });
-      return await db("expenses").where("id", id).first();
+      return await db("other_incomes").where("id", id).first();
     } catch (error) {
       throw error;
     }
@@ -46,7 +46,7 @@ export class ExpenseDatabaseOperations {
   ): Promise<PaginatedResult<Income>> {
     try {
       const { page = 1, pageSize = 10, search, startDate, endDate } = filters;
-      const query = db("expenses");
+      const query = db("other_incomes");
 
       if (search) {
         query.where((builder) => {
@@ -94,7 +94,7 @@ export class ExpenseDatabaseOperations {
 
   static async getExpenseById(id: string): Promise<Income | null> {
     try {
-      return await db("expenses").where("id", id).first();
+      return await db("other_incomes").where("id", id).first();
     } catch (error) {
       throw error;
     }
@@ -102,7 +102,7 @@ export class ExpenseDatabaseOperations {
 
   static async deleteExpense(id: string): Promise<void> {
     try {
-      await db("expenses").where("id", id).delete();
+      await db("other_incomes").where("id", id).delete();
     } catch (error) {
       throw error;
     }

@@ -27,7 +27,6 @@ export interface FinancialAnalyticsType {
       vehicleExpenses: number;
       workerExpenses: number;
       marketExpenses: number;
-      generalExpenses: number;
     };
   };
   graphData: Array<{

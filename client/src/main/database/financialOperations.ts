@@ -60,17 +60,25 @@ export class FinancialDatabaseOperations {
     const endISO = endDate.toISOString();
 
     // 1. Calculate Income (Orders)
-    // Status NOT: pending, sent to kitchen, cancelled
-    const incomeResult = await db("order_items")
+    const ordersIncomeResult = await db("order_items")
       .join("orders", "order_items.orderId", "orders.id")
       .whereBetween("orders.createdAt", [startISO, endISO])
       .whereNotIn("orders.status", ["pending", "sent to kitchen", "cancelled"])
       .sum("order_items.totalPrice as total")
       .first();
     
-    const income = Number(incomeResult?.total || 0);
+    const ordersIncome = Number(ordersIncomeResult?.total || 0);
 
-    // 2. Calculate Expenses
+    // 2. Calculate Other Income (formerly general expenses)
+    const otherIncomeResult = await db("other_incomes")
+      .whereBetween("date", [startISO, endISO])
+      .sum("total as total")
+      .first();
+    const otherIncome = Number(otherIncomeResult?.total || 0);
+
+    const totalIncome = ordersIncome + otherIncome;
+
+    // 3. Calculate Expenses
 
     // A. Vehicle Maintenance
     const vehicleResult = await db("vehicle_maintenance")
@@ -93,17 +101,10 @@ export class FinancialDatabaseOperations {
       .first();
     const marketExpenses = Number(marketResult?.total || 0);
 
-    // D. General Expenses
-    const generalResult = await db("expenses")
-      .whereBetween("date", [startISO, endISO])
-      .sum("total as total")
-      .first();
-    const generalExpenses = Number(generalResult?.total || 0);
+    const totalExpenses = vehicleExpenses + workerExpenses + marketExpenses;
+    const netProfit = totalIncome - totalExpenses;
 
-    const totalExpenses = vehicleExpenses + workerExpenses + marketExpenses + generalExpenses;
-    const netProfit = income - totalExpenses;
-
-    // 3. Graph Data (Daily distribution for the selected range)
+    // 4. Graph Data (Daily distribution for the selected range)
     // group by day (YYYY-MM-DD)
     
     // Helper to get daily sums
@@ -120,7 +121,7 @@ export class FinancialDatabaseOperations {
         return q.groupBy("date");
     };
 
-    const dailyIncomeRaw = await db("order_items")
+    const dailyOrdersIncomeRaw = await db("order_items")
         .join("orders", "order_items.orderId", "orders.id")
         .select(db.raw(`TO_CHAR(orders."createdAt"::timestamp, 'YYYY-MM-DD') as date`))
         .sum("order_items.totalPrice as total")
@@ -128,10 +129,11 @@ export class FinancialDatabaseOperations {
         .whereNotIn("orders.status", ["pending", "sent to kitchen", "cancelled"])
         .groupBy("date");
 
+    const dailyOtherIncomeRaw = await getDailySums("other_incomes", "date", "total");
+
     const dailyVehicleRaw = await getDailySums("vehicle_maintenance", "date", "total");
     const dailyWorkerRaw = await getDailySums("worker_salaries", "date", "total");
     const dailyMarketRaw = await getDailySums("market_purchases", "ticketDate", "totalAmount");
-    const dailyGeneralRaw = await getDailySums("expenses", "date", "total");
 
     // Merge Data
     const graphDataMap = new Map<string, { income: number; expense: number }>();
@@ -149,11 +151,11 @@ export class FinancialDatabaseOperations {
         });
     };
 
-    addToMap(dailyIncomeRaw, 'income');
+    addToMap(dailyOrdersIncomeRaw, 'income');
+    addToMap(dailyOtherIncomeRaw, 'income');
     addToMap(dailyVehicleRaw, 'expense');
     addToMap(dailyWorkerRaw, 'expense');
     addToMap(dailyMarketRaw, 'expense');
-    addToMap(dailyGeneralRaw, 'expense');
 
     // Convert map to sorted array
     const graphData = Array.from(graphDataMap.entries())
@@ -166,14 +168,13 @@ export class FinancialDatabaseOperations {
 
     return {
       summary: {
-        income,
+        income: totalIncome,
         totalExpenses,
         netProfit,
         breakdown: {
             vehicleExpenses,
             workerExpenses,
             marketExpenses,
-            generalExpenses
         }
       },
       graphData
