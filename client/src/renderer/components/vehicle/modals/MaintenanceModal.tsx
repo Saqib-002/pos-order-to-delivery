@@ -277,7 +277,9 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col">
+      <div
+        className={`bg-white rounded-2xl shadow-2xl w-full h-[90vh] flex flex-col ${currentStep === 2 ? "max-w-xl" : "max-w-4xl"}`}
+      >
         {/* Header */}
         <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex-shrink-0">
           <div className="flex justify-between items-center">
@@ -325,7 +327,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                     {t("vehicleManagement.maintenanceModal.editRecord")}
                   </h4>
                   <div className="grid grid-cols-12 gap-3 items-end">
-                    <div className="col-span-5">
+                    <div className="col-span-3">
                       <CustomInput
                         name="sparePart"
                         type="text"
@@ -342,6 +344,18 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                         inputClasses="bg-white py-2"
                       />
                     </div>
+                    <div className="col-span-3">
+                      <DatePicker
+                        label={t("vehicleManagement.maintenanceModal.date")}
+                        value={form.date}
+                        onChange={(date) =>
+                          setForm({ ...form, date: date || "" })
+                        }
+                        placeholder={t(
+                          "vehicleManagement.maintenanceModal.selectDate"
+                        )}
+                      />
+                    </div>
                     <div className="col-span-2">
                       <CustomInput
                         name="unit"
@@ -354,7 +368,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                         inputClasses="bg-white py-2"
                       />
                     </div>
-                    <div className="col-span-3">
+                    <div className="col-span-2">
                       <CustomInput
                         name="price"
                         type="number"
@@ -389,18 +403,6 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                       />
                     </div>
                   </div>
-                  <div className="mt-3">
-                    <DatePicker
-                      label={t("vehicleManagement.maintenanceModal.date")}
-                      value={form.date}
-                      onChange={(date) =>
-                        setForm({ ...form, date: date || "" })
-                      }
-                      placeholder={t(
-                        "vehicleManagement.maintenanceModal.selectDate"
-                      )}
-                    />
-                  </div>
                 </div>
               )}
 
@@ -427,7 +429,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                     {t("vehicleManagement.maintenanceModal.addNewRecord")}
                   </h4>
                   <div className="grid grid-cols-12 gap-3 items-end">
-                    <div className="col-span-5">
+                    <div className="col-span-3">
                       <CustomInput
                         name="sparePart"
                         type="text"
@@ -444,6 +446,18 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                         inputClasses="bg-white py-2"
                       />
                     </div>
+                    <div className="col-span-3">
+                      <DatePicker
+                        label={t("vehicleManagement.maintenanceModal.date")}
+                        value={form.date}
+                        onChange={(date) =>
+                          setForm({ ...form, date: date || "" })
+                        }
+                        placeholder={t(
+                          "vehicleManagement.maintenanceModal.selectDate"
+                        )}
+                      />
+                    </div>
                     <div className="col-span-2">
                       <CustomInput
                         name="unit"
@@ -456,7 +470,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                         inputClasses="bg-white py-2"
                       />
                     </div>
-                    <div className="col-span-3">
+                    <div className="col-span-2">
                       <CustomInput
                         name="price"
                         type="number"
@@ -481,18 +495,6 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                         className="w-full justify-center bg-black hover:bg-gray-800 text-white py-2"
                       />
                     </div>
-                  </div>
-                  <div className="mt-3">
-                    <DatePicker
-                      label={t("vehicleManagement.maintenanceModal.date")}
-                      value={form.date}
-                      onChange={(date) =>
-                        setForm({ ...form, date: date || "" })
-                      }
-                      placeholder={t(
-                        "vehicleManagement.maintenanceModal.selectDate"
-                      )}
-                    />
                   </div>
                 </div>
               )}

@@ -1831,7 +1831,8 @@
         "addedPayments": "Added Payments",
         "totalPaid": "Total Paid",
         "remaining": "Remaining",
-        "change": "Change"
+        "change": "Change",
+        "amountTendered": "Amount Tendered"
       },
       "errors": {
         "supplierRequired": "Supplier is required",

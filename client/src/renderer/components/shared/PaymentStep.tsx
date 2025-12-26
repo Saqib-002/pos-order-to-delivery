@@ -8,6 +8,7 @@ import { AddIcon, DeleteIcon } from "../../public/Svg";
 export interface PaymentMethod {
   type: "cash" | "card" | "bizum" | "bank-transfer";
   amount: number;
+  amountTendered?: number;
 }
 
 interface PaymentStepProps {
@@ -81,7 +82,12 @@ export const PaymentStep = ({
         : method.amount || 0;
     return sum + amount;
   }, 0);
+  const totalCustomerGiven = paymentMethods.reduce(
+    (sum, method) => sum + (method.amountTendered || method.amount || 0),
+    0
+  );
   const remainingAmount = totalAmount - totalPaid;
+  const changeAmount = Math.max(0, totalCustomerGiven - totalAmount);
 
   const handleAddPayment = () => {
     if (currentPaymentAmount <= 0) {
@@ -111,6 +117,9 @@ export const PaymentStep = ({
     if (existingMethodIndex !== -1) {
       const updatedMethods = [...paymentMethods];
       updatedMethods[existingMethodIndex].amount += actualAmount;
+      updatedMethods[existingMethodIndex].amountTendered =
+        (updatedMethods[existingMethodIndex].amountTendered || 0) +
+        currentPaymentAmount;
       onPaymentMethodsChange(updatedMethods);
     } else {
       onPaymentMethodsChange([
@@ -118,6 +127,7 @@ export const PaymentStep = ({
         {
           type: selectedPaymentType,
           amount: actualAmount,
+          amountTendered: currentPaymentAmount,
         },
       ]);
     }
@@ -185,23 +195,35 @@ export const PaymentStep = ({
             </span>
           </div>
         )}
-        {remainingAmount > 0 && (
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-sm text-gray-600">
+            {t("marketPurchaseManagement.modal.step3.remaining")}:
+          </span>
+          <span
+            className={`text-lg font-semibold ${
+              remainingAmount > 0.01 ? "text-red-600" : "text-green-600"
+            }`}
+          >
+            €{remainingAmount.toFixed(2)}
+          </span>
+        </div>
+        {totalCustomerGiven > 0 && (
           <div className="flex justify-between items-center mt-2">
-            <span className="text-sm text-gray-600">
-              {t("marketPurchaseManagement.modal.step3.remaining")}:
+            <span className="text-sm font-normal text-gray-600">
+              {t("marketPurchaseManagement.modal.step3.amountTendered")}:
             </span>
-            <span className="text-lg font-semibold text-red-600">
-              €{remainingAmount.toFixed(2)}
+            <span className="text-lg font-bold text-blue-700">
+              €{totalCustomerGiven.toFixed(2)}
             </span>
           </div>
         )}
-        {totalPaid > totalAmount && (
+        {changeAmount > 0 && (
           <div className="flex justify-between items-center mt-2">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm font-normal text-gray-600">
               {t("marketPurchaseManagement.modal.step3.change")}:
             </span>
-            <span className="text-lg font-semibold text-blue-600">
-              €{(totalPaid - totalAmount).toFixed(2)}
+            <span className="text-lg font-bold text-red-600">
+              €{changeAmount.toFixed(2)}
             </span>
           </div>
         )}
@@ -212,7 +234,7 @@ export const PaymentStep = ({
         <label className="block text-sm font-medium text-gray-700">
           {t("marketPurchaseManagement.modal.step3.selectPaymentMethod")}
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-4 gap-3">
           <button
             type="button"
             onClick={() => setSelectedPaymentType("cash")}
@@ -222,7 +244,7 @@ export const PaymentStep = ({
                 : "border-gray-200 hover:border-green-300"
             }`}
           >
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex flex-col items-center justify-center gap-3">
               <span className="text-2xl">💵</span>
               <span className="font-medium text-lg">
                 {t("marketPurchaseManagement.modal.cash")}
@@ -238,7 +260,7 @@ export const PaymentStep = ({
                 : "border-gray-200 hover:border-blue-300"
             }`}
           >
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex flex-col items-center justify-center gap-3">
               <span className="text-2xl">💳</span>
               <span className="font-medium text-lg">
                 {t("marketPurchaseManagement.modal.card")}
@@ -254,7 +276,7 @@ export const PaymentStep = ({
                 : "border-gray-200 hover:border-purple-300"
             }`}
           >
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex flex-col items-center justify-center gap-3">
               <span className="text-2xl">📱</span>
               <span className="font-medium text-lg">
                 {t("marketPurchaseManagement.modal.bizum")}
@@ -270,7 +292,7 @@ export const PaymentStep = ({
                 : "border-gray-200 hover:border-orange-300"
             }`}
           >
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex flex-col items-center justify-center gap-3">
               <span className="text-2xl">🏦</span>
               <span className="font-medium text-lg">
                 {t("marketPurchaseManagement.modal.bankTransfer")}
