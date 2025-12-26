@@ -439,6 +439,27 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getExpenseTypeById: (token: string, expenseTypeId: string) =>
     ipcRenderer.invoke("get-expense-type-by-id", token, expenseTypeId),
 
+  // inventory products
+  createInventoryProduct: (token: string, productData: any) =>
+    ipcRenderer.invoke("create-inventory-product", token, productData),
+  updateInventoryProduct: (
+    token: string,
+    productId: string,
+    productData: any
+  ) =>
+    ipcRenderer.invoke(
+      "update-inventory-product",
+      token,
+      productId,
+      productData
+    ),
+  deleteInventoryProduct: (token: string, productId: string) =>
+    ipcRenderer.invoke("delete-inventory-product", token, productId),
+  getAllInventoryProducts: (token: string) =>
+    ipcRenderer.invoke("get-all-inventory-products", token),
+  getInventoryProductById: (token: string, productId: string) =>
+    ipcRenderer.invoke("get-inventory-product-by-id", token, productId),
+
   // market purchases
   createMarketPurchase: (token: string, purchaseData: any) =>
     ipcRenderer.invoke("create-market-purchase", token, purchaseData),

@@ -24,6 +24,7 @@ export const useMarketPurchaseData = () => {
   });
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [expenseTypes, setExpenseTypes] = useState<any[]>([]);
+  const [inventoryProducts, setInventoryProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [filters, setFilters] =
@@ -89,6 +90,17 @@ export const useMarketPurchaseData = () => {
     }
   }, [auth.token]);
 
+  const fetchInventoryProducts = useCallback(async () => {
+    try {
+      const res = await (window as any).electronAPI.getAllInventoryProducts(
+        auth.token
+      );
+      if (res.status) setInventoryProducts(res.data || []);
+    } catch (error) {
+      console.error("Error fetching inventory products:", error);
+    }
+  }, [auth.token]);
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -96,6 +108,7 @@ export const useMarketPurchaseData = () => {
         fetchPurchases(),
         fetchSuppliers(),
         fetchExpenseTypes(),
+        fetchInventoryProducts(),
       ]);
       setLoading(false);
     };
@@ -149,6 +162,7 @@ export const useMarketPurchaseData = () => {
     purchasesData,
     suppliers,
     expenseTypes,
+    inventoryProducts,
     loading,
     filters,
     setFilters,

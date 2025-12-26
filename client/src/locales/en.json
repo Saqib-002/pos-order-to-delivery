@@ -391,6 +391,48 @@
       "expenseTypeUpdatedSuccessfully": "Expense type updated successfully"
     }
   },
+  "inventory": {
+    "title": "Inventory",
+    "subtitle": "Manage inventory products",
+    "addProduct": "Add Product",
+    "productsList": "Products List",
+    "noProducts": "No products added yet. Add one above.",
+    "table": {
+      "productName": "Product Name",
+      "createdAt": "Created At",
+      "actions": "Actions"
+    },
+    "deleteTitle": "Delete Product",
+    "deleteMessage": "Are you sure you want to delete this product?",
+    "deleteConfirm": "Delete",
+    "deleteCancel": "Cancel",
+    "deletedSuccess": "Product deleted successfully",
+    "deletedFailed": "Failed to delete product",
+    "deletedError": "Error deleting product",
+    "fetchError": "Error fetching inventory products"
+  },
+  "inventoryModal": {
+    "viewProduct": "View Product",
+    "editProduct": "Edit Product",
+    "addNewProduct": "Add New Product",
+    "productName": "Product Name *",
+    "enterProductName": "Enter product name",
+    "updateProduct": "Update Product",
+    "addProduct": "Add Product",
+    "errors": {
+      "pleaseEnterProductName": "Please enter product name",
+      "unableToAddProduct": "Unable to add product",
+      "unableToUpdateProduct": "Unable to update product",
+      "anErrorOccurred": "An error occurred"
+    },
+    "warnings": {
+      "productAlreadyAdded": "This product already exists!"
+    },
+    "messages": {
+      "productAddedSuccessfully": "Product added successfully",
+      "productUpdatedSuccessfully": "Product updated successfully"
+    }
+  },
   "platformOrders": {
     "title": "Platform Orders",
     "subtitle": "Register orders from delivery platforms",
@@ -1819,6 +1861,7 @@
       "next": "Next",
       "previous": "Previous",
       "enterProductName": "Enter product name",
+      "selectProduct": "Select product",
       "productAdded": "Product added successfully",
       "productUpdated": "Product updated successfully",
       "deleteProductTitle": "Delete Product",
