@@ -471,7 +471,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             )}
 
             {/* Custom Customer Fields - Show when no customer is selected */}
-            {!selectedCustomer && (
+            {/* {!selectedCustomer && (
               <div className="mt-6 p-6 bg-gradient-to-br from-gray-50 to-blue-50 border-2 border-gray-200 rounded-xl">
                 <div className="flex items-center space-x-2 mb-4">
                   <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -527,7 +527,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   />
                 </div>
 
-                {/* Address field - only show for delivery orders */}
                 {orderType === "delivery" && (
                   <div className="mt-4">
                     <AddressAutocomplete
@@ -639,7 +638,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                       )}
                 </div>
               </div>
-            )}
+            )} */}
           </div>
 
           {/* Order Type */}
