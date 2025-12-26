@@ -17,7 +17,7 @@ import {
 } from "../../../public/Svg";
 import { useConfirm } from "../../../hooks/useConfirm";
 import { PaymentStep, PaymentMethod } from "../../shared/PaymentStep";
-import { DatePicker } from "../../ui/shadcn/date-picker";
+import { DatePicker } from "../../ui/DatePicker";
 import { toast } from "react-toastify";
 import { ChevronLeftIcon, ChevronRightIcon } from "../../../public/Svg";
 import {

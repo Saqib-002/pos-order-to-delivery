@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { Worker, WorkerSalary } from "@/types/workers";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
-import { DatePicker } from "../../ui/shadcn/date-picker";
+import { DatePicker } from "../../ui/DatePicker";
 import { DeleteIcon, EditIcon, CrossIcon } from "@/renderer/public/Svg";
 import Pagination from "../../shared/Pagination";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
@@ -363,7 +363,7 @@ export const SalaryModal = ({
           </div>
         )}
 
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto flex-1 p-6">
           {activeTab === "list" ? (
             <div className="flex flex-col h-full">
               <div className="overflow-x-auto">
@@ -516,7 +516,7 @@ export const SalaryModal = ({
                 e.preventDefault();
                 handleTabChange("payment");
               }}
-              className="grid grid-cols-3 gap-4 p-6"
+              className="grid grid-cols-3 gap-4"
             >
               <DatePicker
                 label={t("workerManagement.salaryModal.date")}

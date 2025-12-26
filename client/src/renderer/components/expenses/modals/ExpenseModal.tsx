@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { Expense } from "@/types/expenses";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
-import { DatePicker } from "../../ui/shadcn/date-picker";
+import { DatePicker } from "../../ui/DatePicker";
 import { useConfirm } from "../../../hooks/useConfirm";
 import {
   CrossIcon,

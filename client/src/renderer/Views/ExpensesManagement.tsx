@@ -6,7 +6,7 @@ import { Expense } from "@/types/expenses";
 
 import CustomButton from "../components/ui/CustomButton";
 import CustomInput from "../components/shared/CustomInput";
-import { DatePicker } from "../components/ui/shadcn/date-picker";
+import { DatePicker } from "../components/ui/DatePicker";
 import Pagination from "../components/shared/Pagination";
 import { ExpensesTable } from "../components/expenses/ExpensesTable";
 import { ExpenseModal } from "../components/expenses/modals/ExpenseModal";
@@ -129,13 +129,13 @@ export const ExpensesManagement = () => {
               />
             </div>
             <DatePicker
-            //   label={t("expenseManagement.filters.startDate")}
+              //   label={t("expenseManagement.filters.startDate")}
               value={filters.startDate}
               onChange={(date) => handleFilterChange("startDate", date)}
               placeholder={t("expenseManagement.filters.startDate")}
             />
             <DatePicker
-            //   label={t("expenseManagement.filters.endDate")}
+              //   label={t("expenseManagement.filters.endDate")}
               value={filters.endDate}
               onChange={(date) => handleFilterChange("endDate", date)}
               placeholder={t("expenseManagement.filters.endDate")}

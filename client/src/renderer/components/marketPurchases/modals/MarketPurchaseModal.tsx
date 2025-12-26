@@ -5,7 +5,7 @@ import { MarketPurchase, MarketPurchaseItem } from "@/types/marketPurchases";
 import CustomInput from "../../shared/CustomInput";
 import { CustomSelect } from "../../ui/CustomSelect";
 import CustomButton from "../../ui/CustomButton";
-import { DatePicker } from "../../ui/shadcn/date-picker";
+import { DatePicker } from "../../ui/DatePicker";
 import { useConfirm } from "../../../hooks/useConfirm";
 import {
   CrossIcon,

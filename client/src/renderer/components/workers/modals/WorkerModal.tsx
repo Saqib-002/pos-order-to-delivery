@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Worker } from "@/types/workers";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
-import { DatePicker } from "../../ui/shadcn/date-picker";
+import { DatePicker } from "../../ui/DatePicker";
 import { CrossIcon } from "../../../public/Svg";
 
 interface Props {

@@ -11,7 +11,7 @@ import Pagination from "../components/shared/Pagination";
 import { MarketPurchaseTable } from "../components/marketPurchases/MarketPurchaseTable";
 import { MarketPurchaseModal } from "../components/marketPurchases/modals/MarketPurchaseModal";
 import { AddIcon, SearchIcon } from "../public/Svg";
-import { DatePicker } from "../components/ui/shadcn/date-picker";
+import { DatePicker } from "../components/ui/DatePicker";
 
 export const MarketPurchaseManagement = () => {
   const { t } = useTranslation();
@@ -160,7 +160,7 @@ export const MarketPurchaseManagement = () => {
               placeholder={t("marketPurchaseManagement.filters.expenseType")}
             />
             <DatePicker
-            //   label={t("marketPurchaseManagement.filters.startDate")}
+              //   label={t("marketPurchaseManagement.filters.startDate")}
               value={filters.startDate || ""}
               onChange={(date) =>
                 handleFilterChange("startDate", date || undefined)
@@ -168,7 +168,7 @@ export const MarketPurchaseManagement = () => {
               placeholder={t("marketPurchaseManagement.filters.startDate")}
             />
             <DatePicker
-            //   label={t("marketPurchaseManagement.filters.endDate")}
+              //   label={t("marketPurchaseManagement.filters.endDate")}
               value={filters.endDate || ""}
               onChange={(date) =>
                 handleFilterChange("endDate", date || undefined)

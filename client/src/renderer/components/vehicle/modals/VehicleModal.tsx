@@ -5,7 +5,7 @@ import { DeliveryPerson } from "@/types/delivery";
 import CustomButton from "../../ui/CustomButton";
 import CustomInput from "../../shared/CustomInput";
 import { CustomSelect } from "../../ui/CustomSelect";
-import { DatePicker } from "../../ui/shadcn/date-picker";
+import { DatePicker } from "../../ui/DatePicker";
 import { CrossIcon } from "../../../public/Svg";
 
 interface VehicleModalProps {
