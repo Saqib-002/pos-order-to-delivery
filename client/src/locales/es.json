@@ -1838,7 +1838,8 @@
         "addedPayments": "Pagos Agregados",
         "totalPaid": "Total Pagado",
         "remaining": "Pendiente",
-        "change": "Cambio"
+        "change": "Cambio",
+        "amountTendered": "Monto Entregado"
       },
       "errors": {
         "supplierRequired": "El proveedor es obligatorio",

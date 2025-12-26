@@ -80,6 +80,14 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
 
     const actualAmount = Math.min(currentAmount, remainingAmount);
 
+    if (actualAmount <= 0) {
+      toast.error(
+        t("marketPurchaseManagement.modal.errors.noRemainingAmount") ||
+          "No remaining amount to pay. The total has already been paid."
+      );
+      return;
+    }
+
     const existingMethodIndex = paymentMethods.findIndex(
       (method) => method.type === selectedType
     );

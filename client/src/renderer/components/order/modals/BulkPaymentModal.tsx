@@ -125,6 +125,14 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
     );
     const actualAmount = Math.min(amount, totalAmount - totalPaid);
 
+    if (actualAmount <= 0) {
+      toast.error(
+        t("marketPurchaseManagement.modal.errors.noRemainingAmount") ||
+          "No remaining amount to pay. The total has already been paid."
+      );
+      return;
+    }
+
     const existingMethodIndex = bulkPaymentMethods.findIndex(
       (method) => method.type === bulkPaymentMethod
     );
