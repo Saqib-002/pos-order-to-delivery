@@ -252,7 +252,7 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
                 }`}
               >
                 <div className="flex items-center justify-center gap-3">
-                  <span className="text-2xl">💵</span>
+                  <img src="./images/cash.png" alt="cash" className="w-8 h-8" />
                   <span className="font-medium text-lg">
                     {t("paymentProcessingModal.cash")}
                   </span>
@@ -267,7 +267,7 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
                 }`}
               >
                 <div className="flex items-center justify-center gap-3">
-                  <span className="text-2xl">💳</span>
+                  <img src="./images/card.png" alt="card" className="w-8 h-8" />
                   <span className="font-medium text-lg">
                     {t("paymentProcessingModal.card")}
                   </span>
@@ -319,9 +319,15 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
                     className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">
-                        {method.type === "cash" ? "💵" : "💳"}
-                      </span>
+                      <img
+                        src={
+                          method.type === "cash"
+                            ? "./images/cash.png"
+                            : "./images/card.png"
+                        }
+                        alt={method.type}
+                        className="w-6 h-6"
+                      />
                       <div>
                         <div className="font-medium text-gray-800 capitalize text-lg">
                           {method.type === "cash"

@@ -350,7 +350,7 @@ export const MarketPurchaseModal = ({
         ? paymentMethods
             .map((method) => `${method.type}:${method.amount}`)
             .join(", ")
-        : "pending";
+        : "";
 
     const purchaseData: MarketPurchase = {
       ...formData,

@@ -211,23 +211,23 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 rounded-t-xl">
+        <div className="flex items-center justify-between p-6 border-b border-gray-700 bg-gradient-to-r from-black to-gray-800 text-white rounded-t-xl">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <LightningBoltIcon className="w-6 h-6 text-blue-600" />
+            <div className="p-2 bg-gray-700 rounded-lg">
+              <LightningBoltIcon className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-black">
+              <h2 className="text-xl font-bold text-white">
                 {t("individualPaymentModal.title")}
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-300">
                 {t("individualPaymentModal.subtitle")}
               </p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors duration-200"
           >
             <svg
               className="w-5 h-5"
@@ -248,11 +248,11 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
         {/* Content */}
         <div className="p-6 space-y-6 overflow-y-auto flex-1">
           {/* Order Info */}
-          <div className="bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-5">
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="p-1.5 bg-blue-100 rounded-lg">
+              <div className="p-1.5 bg-gray-200 rounded-lg">
                 <svg
-                  className="w-4 h-4 text-blue-600"
+                  className="w-4 h-4 text-gray-700"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -265,7 +265,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                   />
                 </svg>
               </div>
-              <h3 className="font-semibold text-black text-lg">
+              <h3 className="font-semibold text-gray-900 text-lg">
                 {t("individualPaymentModal.orderDetails")}
               </h3>
             </div>
@@ -293,7 +293,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                 <span className="text-sm font-medium text-gray-600">
                   {t("individualPaymentModal.totalAmount")}
                 </span>
-                <span className="text-lg font-bold text-green-600">
+                <span className="text-lg font-bold text-gray-900">
                   €{orderTotal.toFixed(2)}
                 </span>
               </div>
@@ -302,7 +302,11 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                 <span className="text-sm font-medium text-gray-600">
                   {t("individualPaymentModal.remainingAmount")}
                 </span>
-                <span className="text-lg font-bold text-orange-600">
+                <span
+                  className={`text-lg font-bold ${
+                    remainingAmount > 0.01 ? "text-red-600" : "text-green-600"
+                  }`}
+                >
                   €{remainingAmount.toFixed(2)}
                 </span>
               </div>
@@ -312,7 +316,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                   <span className="text-sm font-normal text-gray-600">
                     {t("individualPaymentModal.amountTendered")}:
                   </span>
-                  <span className="text-lg font-bold text-blue-700">
+                  <span className="text-lg font-bold text-gray-900">
                     €{totalCustomerGiven.toFixed(2)}
                   </span>
                 </div>
@@ -334,7 +338,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
           {/* Delivery Person Display */}
           <div className="space-y-2">
             <label className="flex items-center text-sm font-semibold text-gray-700">
-              <PersonIcon className="w-4 h-4 mr-2 text-blue-600" />
+              <PersonIcon className="w-4 h-4 mr-2 text-gray-600" />
               {t("individualPaymentModal.deliveryPerson")}
             </label>
             <div className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-black">
@@ -359,7 +363,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
             <div className="flex items-center justify-between">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <svg
-                  className="w-4 h-4 mr-2 text-purple-600"
+                  className="w-4 h-4 mr-2 text-gray-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -398,36 +402,36 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                 min="0"
                 preLabel="€"
                 otherClasses="flex-1"
-                inputClasses="pl-8 focus:ring-blue-500 focus:border-blue-500"
+                inputClasses="pl-8 focus:ring-gray-500 focus:border-gray-500"
               />
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("cash")}
-                  className={`px-3 py-2 border-2 rounded-lg text-center transition-all duration-200 ${
+                  className={`p-1 border-2 rounded-lg transition-all duration-200 flex items-center justify-center ${
                     paymentMethod === "cash"
-                      ? "border-green-500 bg-green-50 text-green-700"
+                      ? "border-green-400 bg-green-50"
                       : "border-gray-200 hover:border-green-300"
                   }`}
                 >
-                  {t("individualPaymentModal.cash")}
+                  <img src="./images/cash.png" alt="cash" className="w-8 h-8" />
                 </button>
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("card")}
-                  className={`px-3 py-2 border-2 rounded-lg text-center transition-all duration-200 ${
+                  className={`p-1 border-2 rounded-lg transition-all duration-200 flex items-center justify-center ${
                     paymentMethod === "card"
-                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      ? "border-blue-400 bg-blue-50"
                       : "border-gray-200 hover:border-blue-300"
                   }`}
                 >
-                  {t("individualPaymentModal.card")}
+                  <img src="./images/card.png" alt="card" className="w-8 h-8" />
                 </button>
               </div>
               <button
                 type="button"
                 onClick={handleAddPayment}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                className="px-4 py-2 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white rounded-lg font-medium transition-all duration-200"
               >
                 {t("individualPaymentModal.addPayment")}
               </button>
@@ -445,16 +449,16 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                   >
                     <div className="flex items-center space-x-3">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
+                      <img
+                        src={
                           method.type === "cash"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
-                      >
-                        {method.type.toUpperCase()}
-                      </span>
-                      <span className="font-medium">
+                            ? "./images/cash.png"
+                            : "./images/card.png"
+                        }
+                        alt={method.type}
+                        className="w-6 h-6"
+                      />
+                      <span className="font-medium text-gray-900">
                         €{method.amount.toFixed(2)}
                       </span>
                     </div>

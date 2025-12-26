@@ -154,7 +154,7 @@ export const ExpenseModal = ({
         ? paymentMethods
             .map((method) => `${method.type}:${method.amount}`)
             .join(", ")
-        : "pending";
+        : "";
 
     const expenseData: Expense = {
       ...formData,

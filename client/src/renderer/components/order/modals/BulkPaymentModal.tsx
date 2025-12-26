@@ -322,23 +322,23 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 rounded-t-xl">
+        <div className="flex items-center justify-between p-6 border-b border-gray-700 bg-gradient-to-r from-black to-gray-800 text-white rounded-t-xl">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <LightningBoltIcon className="w-6 h-6 text-purple-600" />
+            <div className="p-2 bg-gray-700 rounded-lg">
+              <LightningBoltIcon className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-black">
+              <h2 className="text-xl font-bold text-white">
                 {t("bulkPaymentModal.title")}
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-300">
                 {t("bulkPaymentModal.subtitle")}
               </p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors duration-200"
           >
             <svg
               className="w-5 h-5"
@@ -361,7 +361,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
           {/* Delivery Person Selection */}
           <div className="space-y-2">
             <label className="flex items-center text-sm font-semibold text-gray-700">
-              <PersonIcon className="w-4 h-4 mr-2 text-purple-600" />
+              <PersonIcon className="w-4 h-4 mr-2 text-gray-600" />
               {t("bulkPaymentModal.selectDeliveryPerson")}
             </label>
             <CustomSelect
@@ -384,11 +384,11 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
 
           {/* Orders Summary */}
           {selectedBulkDeliveryPerson && (
-            <div className="bg-gradient-to-r from-gray-50 to-purple-50 border border-gray-200 rounded-xl p-5">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
               <div className="flex items-center space-x-2 mb-4">
-                <div className="p-1.5 bg-purple-100 rounded-lg">
+                <div className="p-1.5 bg-gray-200 rounded-lg">
                   <svg
-                    className="w-4 h-4 text-purple-600"
+                    className="w-4 h-4 text-gray-700"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -401,7 +401,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                     />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-black text-lg">
+                <h3 className="font-semibold text-gray-900 text-lg">
                   {t("bulkPaymentModal.ordersSummary")}
                 </h3>
               </div>
@@ -437,7 +437,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                   <span className="text-sm font-medium text-gray-600">
                     {t("bulkPaymentModal.totalAmountDue")}
                   </span>
-                  <span className="text-lg font-bold text-purple-600">
+                  <span className="text-lg font-bold text-gray-900">
                     €{totalAmount.toFixed(2)}
                   </span>
                 </div>
@@ -446,7 +446,11 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                   <span className="text-sm font-semibold text-gray-600">
                     {t("bulkPaymentModal.remainingAmount")}
                   </span>
-                  <span className="text-lg font-bold text-orange-600">
+                  <span
+                    className={`text-lg font-bold ${
+                      remainingAmount > 0.01 ? "text-red-600" : "text-green-600"
+                    }`}
+                  >
                     €{remainingAmount.toFixed(2)}
                   </span>
                 </div>
@@ -456,7 +460,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                     <span className="text-sm font-semibold text-gray-600">
                       {t("bulkPaymentModal.amountTendered")}:
                     </span>
-                    <span className="text-lg font-bold text-blue-700">
+                    <span className="text-lg font-bold text-gray-900">
                       €{totalCustomerGiven.toFixed(2)}
                     </span>
                   </div>
@@ -482,7 +486,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
               <div className="flex items-center justify-between">
                 <label className="flex items-center text-sm font-semibold text-gray-700">
                   <svg
-                    className="w-4 h-4 mr-2 text-purple-600"
+                    className="w-4 h-4 mr-2 text-gray-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -517,36 +521,44 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                   min="0"
                   preLabel="€"
                   otherClasses="flex-1"
-                  inputClasses="pl-8 focus:ring-purple-500 focus:border-purple-500"
+                  inputClasses="pl-8 focus:ring-gray-500 focus:border-gray-500"
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setBulkPaymentMethod("cash")}
-                    className={`px-3 py-2 border-2 rounded-lg text-center transition-all duration-200 ${
+                    className={`p-1 border-2 rounded-lg transition-all duration-200 flex items-center justify-center ${
                       bulkPaymentMethod === "cash"
-                        ? "border-green-500 bg-green-50 text-green-700"
+                        ? "border-green-400 bg-green-50"
                         : "border-gray-200 hover:border-green-300"
                     }`}
                   >
-                    {t("bulkPaymentModal.cash")}
+                    <img
+                      src="./images/cash.png"
+                      alt="cash"
+                      className="w-8 h-8"
+                    />
                   </button>
                   <button
                     type="button"
                     onClick={() => setBulkPaymentMethod("card")}
-                    className={`px-3 py-2 border-2 rounded-lg text-center transition-all duration-200 ${
+                    className={`p-1 border-2 rounded-lg transition-all duration-200 flex items-center justify-center ${
                       bulkPaymentMethod === "card"
-                        ? "border-blue-500 bg-blue-50 text-blue-700"
+                        ? "border-blue-400 bg-blue-50"
                         : "border-gray-200 hover:border-blue-300"
                     }`}
                   >
-                    {t("bulkPaymentModal.card")}
+                    <img
+                      src="./images/card.png"
+                      alt="card"
+                      className="w-8 h-8"
+                    />
                   </button>
                 </div>
                 <button
                   type="button"
                   onClick={handleBulkAddPayment}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+                  className="px-4 py-2 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white rounded-lg font-medium transition-all duration-200"
                 >
                   {t("bulkPaymentModal.add")}
                 </button>
@@ -564,16 +576,16 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                     >
                       <div className="flex items-center space-x-3">
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
+                        <img
+                          src={
                             method.type === "cash"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-blue-100 text-blue-800"
-                          }`}
-                        >
-                          {method.type.toUpperCase()}
-                        </span>
-                        <span className="font-medium">
+                              ? "./images/cash.png"
+                              : "./images/card.png"
+                          }
+                          alt={method.type}
+                          className="w-6 h-6"
+                        />
+                        <span className="font-medium text-gray-900">
                           €{method.amount.toFixed(2)}
                         </span>
                       </div>

@@ -240,7 +240,7 @@ export const SalaryModal = ({
         ? paymentMethods
             .map((method) => `${method.type}:${method.amount}`)
             .join(", ")
-        : "pending";
+        : "";
 
     const salaryData = {
       ...formData,

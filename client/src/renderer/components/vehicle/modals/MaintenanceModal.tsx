@@ -178,7 +178,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
         ? paymentMethods
             .map((method) => `${method.type}:${method.amount}`)
             .join(", ")
-        : "pending";
+        : "";
 
     const payload = {
       sparePart: form.sparePart,
