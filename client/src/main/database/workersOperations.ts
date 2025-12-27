@@ -29,7 +29,7 @@ export class WorkerDatabaseOperations {
     filters: WorkerFilters
   ): Promise<PaginatedResult<Worker>> {
     try {
-      const { page = 1, pageSize = 10, search } = filters;
+      const { page = 1, pageSize = 10, search, isActive } = filters;
       const query = db("workers");
 
       if (search) {
@@ -38,6 +38,12 @@ export class WorkerDatabaseOperations {
             .whereILike("name", `%${search}%`)
             .orWhereILike("idNumber", `%${search}%`);
         });
+      }
+
+      if (isActive !== undefined) {
+        query.where("isActive", isActive);
+      } else {
+        query.where("isActive", true);
       }
 
       const countQuery = query

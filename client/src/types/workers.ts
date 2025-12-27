@@ -6,6 +6,7 @@ export interface Worker {
   phoneNumber?: string;
   bankAccountNumber?: string;
   bankName?: string;
+  isActive?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -30,6 +31,7 @@ export interface WorkerFilters {
   page?: number;
   pageSize?: number;
   search?: string;
+  isActive?: boolean;
 }
 
 export interface SalaryFilters {

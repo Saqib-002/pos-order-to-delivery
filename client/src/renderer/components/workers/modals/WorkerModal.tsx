@@ -24,7 +24,7 @@ export const WorkerModal = ({
 
   useEffect(() => {
     if (isOpen) {
-      setFormData(initialData || {});
+      setFormData({ isActive: true, ...(initialData || {}) });
     }
   }, [isOpen, initialData]);
 
@@ -141,6 +141,37 @@ export const WorkerModal = ({
             }
             inputClasses="py-2"
           />
+
+          <div className="col-span-2 border-t pt-4 mt-2">
+            <div className="flex items-center gap-3">
+              <label
+                htmlFor="isActive"
+                className="text-sm font-medium text-gray-700 cursor-pointer"
+              >
+                {t("workerManagement.modal.isActive")}
+              </label>
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData({
+                    ...formData,
+                    isActive: formData.isActive !== false ? false : true,
+                  })
+                }
+                className={`cursor-pointer relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+                  formData.isActive !== false ? "bg-black" : "bg-gray-200"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                    formData.isActive !== false
+                      ? "translate-x-6"
+                      : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="p-6 border-t border-gray-100 flex justify-end gap-3">

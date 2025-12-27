@@ -5,7 +5,16 @@ import { Worker, WorkerSalary } from "@/types/workers";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { DatePicker } from "../../ui/DatePicker";
-import { DeleteIcon, EditIcon, CrossIcon } from "@/renderer/public/Svg";
+import { DateRangePicker } from "../../ui/DateRangePicker";
+import {
+  DeleteIcon,
+  EditIcon,
+  CrossIcon,
+  PrinterIcon,
+} from "@/renderer/public/Svg";
+import { generateSalaryReportHTML } from "@/renderer/utils/pdfService";
+import { useConfigurations } from "@/renderer/contexts/configurationContext";
+import { useAuth } from "@/renderer/contexts/AuthContext";
 import Pagination from "../../shared/Pagination";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import {
@@ -42,7 +51,15 @@ export const SalaryModal = ({
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [filters, setFilters] = useState<{
+    startDate?: string;
+    endDate?: string;
+  }>({});
   const confirm = useConfirm();
+  const { configurations } = useConfigurations();
+  const {
+    auth: { token },
+  } = useAuth();
 
   // Form State
   const initialForm = {
@@ -117,7 +134,11 @@ export const SalaryModal = ({
 
   const loadRecords = async () => {
     if (!worker) return;
-    const res = await fetchRecords(worker.id, { page, pageSize: 10 });
+    const res = await fetchRecords(worker.id, {
+      page,
+      pageSize: 10,
+      ...filters,
+    });
     setRecords(res.data);
     setTotal(res.pagination.total);
   };
@@ -129,8 +150,9 @@ export const SalaryModal = ({
       setFormData(initialForm);
       setActiveTab("list");
       setPaymentMethods([]);
+      setFilters({});
     }
-  }, [isOpen, worker, page]);
+  }, [isOpen, worker, page, filters]);
 
   // Handle Edit Click
   const handleEditClick = (record: WorkerSalary) => {
@@ -285,6 +307,38 @@ export const SalaryModal = ({
     }
   };
 
+  const handlePrint = async () => {
+    if (!token || !worker) return;
+
+    try {
+      const html = generateSalaryReportHTML(
+        worker,
+        records,
+        filters,
+        configurations,
+        t
+      );
+      const defaultFileName = `salary-report-${worker.name}-${new Date().toISOString().split("T")[0]}.pdf`;
+
+      const result = await (window as any).electronAPI.saveMaintenanceReportPDF(
+        token,
+        html,
+        defaultFileName
+      );
+
+      if (result.status) {
+        toast.success(t("workerManagement.salaryModal.pdfSaved"));
+      } else {
+        if (result.error !== "Save cancelled") {
+          toast.error(t("workerManagement.salaryModal.pdfError"));
+        }
+      }
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error(t("workerManagement.salaryModal.pdfError"));
+    }
+  };
+
   if (!isOpen || !worker) return null;
 
   const totalAmount =
@@ -367,6 +421,47 @@ export const SalaryModal = ({
         <div className="overflow-y-auto flex-1 p-6">
           {activeTab === "list" ? (
             <div className="flex flex-col h-full">
+              <div className="flex gap-3 mb-4 flex-shrink-0">
+                <div className="w-48">
+                  <DateRangePicker
+                    startDate={
+                      filters.startDate ? new Date(filters.startDate) : null
+                    }
+                    endDate={filters.endDate ? new Date(filters.endDate) : null}
+                    selectedDate={
+                      filters.startDate ? new Date(filters.startDate) : null
+                    }
+                    onChange={(startDate, endDate) => {
+                      setFilters({
+                        startDate: startDate
+                          ? startDate.toISOString().split("T")[0]
+                          : undefined,
+                        endDate: endDate
+                          ? endDate.toISOString().split("T")[0]
+                          : undefined,
+                      });
+                      setPage(1);
+                    }}
+                    className="w-full"
+                  />
+                </div>
+                <CustomButton
+                  type="button"
+                  onClick={() => {
+                    setFilters({});
+                    setPage(1);
+                  }}
+                  label={t("workerManagement.filters.clearFilters")}
+                  className="bg-gray-200 hover:bg-gray-300 text-black whitespace-nowrap"
+                />
+                <CustomButton
+                  type="button"
+                  onClick={handlePrint}
+                  label={t("workerManagement.salaryModal.print")}
+                  Icon={<PrinterIcon className="size-5" />}
+                  className="bg-black hover:bg-gray-800 text-white whitespace-nowrap"
+                />
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead className="bg-gray-50 border-b border-gray-200">
@@ -423,7 +518,9 @@ export const SalaryModal = ({
                           className="hover:bg-gray-50 transition-colors"
                         >
                           <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                            {dayjs(new Date(r.date).toLocaleDateString()).format("DD/MM/YYYY")}
+                            {dayjs(
+                              new Date(r.date).toLocaleDateString()
+                            ).format("DD/MM/YYYY")}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-600">
                             {formatCurrency(r.base)}

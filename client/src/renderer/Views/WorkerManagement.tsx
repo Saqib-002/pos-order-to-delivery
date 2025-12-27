@@ -30,12 +30,19 @@ export const WorkerManagement = () => {
     fetchSalaryRecords,
   } = useWorkerData();
 
+  const [activeStatusFilter, setActiveStatusFilter] = useState<
+    "all" | "active" | "inactive"
+  >("active");
+
   const handleClearFilters = () => {
-    setFilters({
+    setFilters((prev) => ({
+      ...prev,
       page: 1,
       pageSize: 10,
       search: "",
-    });
+      isActive: undefined,
+    }));
+    setActiveStatusFilter("all");
   };
 
   const [modalState, setModalState] = useState<{
@@ -125,6 +132,34 @@ export const WorkerManagement = () => {
                 preLabel={<SearchIcon className="size-5 text-gray-400" />}
                 inputClasses="pl-9"
                 secLabelClasses="top-3 left-1.5!"
+              />
+            </div>
+            <div className="sm:col-span-1 lg:col-span-1 max-w-48">
+              <CustomSelect
+                value={activeStatusFilter}
+                onChange={(value) => {
+                  setActiveStatusFilter(value as "all" | "active" | "inactive");
+                  handleFilterChange(
+                    "isActive",
+                    value === "all"
+                      ? undefined
+                      : value === "active"
+                        ? true
+                        : false
+                  );
+                }}
+                options={[
+                  { value: "all", label: t("workerManagement.filters.all") },
+                  {
+                    value: "active",
+                    label: t("workerManagement.filters.active"),
+                  },
+                  {
+                    value: "inactive",
+                    label: t("workerManagement.filters.inactive"),
+                  },
+                ]}
+                placeholder={t("workerManagement.filters.activeStatus")}
               />
             </div>
           </div>

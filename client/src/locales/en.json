@@ -1727,7 +1727,11 @@
       "cash": "Cash",
       "transfer": "Transfer",
       "mixed": "Mixed",
-      "clearFilters": "Clear Filters"
+      "clearFilters": "Clear Filters",
+      "activeStatus": "Active Status",
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
     },
     "table": {
       "columns": {
@@ -1753,7 +1757,10 @@
       "idLabel": "ID Number (DNI/NIE)",
       "bankingDetails": "Banking Details",
       "bankName": "Bank Name",
-      "accountNumber": "Account Number"
+      "accountNumber": "Account Number",
+      "isActive": "Active",
+      "name": "Name",
+      "idNumber": "ID Number"
     },
     "salaryModal": {
       "title": "Salary Records",
@@ -1778,7 +1785,29 @@
       "nextToPayment": "Next to Payment",
       "paymentTitle": "Payment",
       "selectDate": "Select salary date",
-      "paymentStatus": "Payment Status"
+      "paymentStatus": "Payment Status",
+      "print": "Print",
+      "reportTitle": "Salary Report",
+      "workerInfo": "Worker Information",
+      "dateRange": "Date Range",
+      "totalRecords": "Total Records",
+      "totalAmount": "Total Amount",
+      "totalPaid": "Total Paid",
+      "totalPending": "Total Pending",
+      "pdfSaved": "PDF saved successfully",
+      "pdfError": "Error saving PDF",
+      "table": {
+        "date": "Date",
+        "base": "Base",
+        "socialSecurityCompany": "SS (Company)",
+        "socialSecurityWorker": "SS (Worker)",
+        "irpf": "IRPF",
+        "extraPayment": "Extra Payment",
+        "bonus": "Bonus",
+        "extraServices": "Extra Services",
+        "total": "Total",
+        "paymentStatus": "Payment Status"
+      }
     }
   },
   "incomesManagement": {

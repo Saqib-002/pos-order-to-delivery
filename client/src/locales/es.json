@@ -1727,7 +1727,11 @@
       "cash": "Efectivo",
       "transfer": "Transferencia",
       "mixed": "Mixto",
-      "clearFilters": "Limpiar Filtros"
+      "clearFilters": "Limpiar Filtros",
+      "activeStatus": "Estado Activo",
+      "all": "Todos",
+      "active": "Activo",
+      "inactive": "Inactivo"
     },
     "table": {
       "columns": {
@@ -1753,7 +1757,10 @@
       "idLabel": "Número de Identificación (DNI/NIE)",
       "bankingDetails": "Detalles Bancarios",
       "bankName": "Nombre del Banco",
-      "accountNumber": "Número de Cuenta"
+      "accountNumber": "Número de Cuenta",
+      "isActive": "Activo",
+      "name": "Nombre",
+      "idNumber": "Número de Identificación"
     },
     "salaryModal": {
       "title": "Registros de Salario",
@@ -1778,7 +1785,29 @@
       "nextToPayment": "Siguiente a Pago",
       "paymentTitle": "Pago",
       "selectDate": "Seleccionar fecha de salario",
-      "paymentStatus": "Estado de Pago"
+      "paymentStatus": "Estado de Pago",
+      "print": "Imprimir",
+      "reportTitle": "Informe de Salarios",
+      "workerInfo": "Información del Trabajador",
+      "dateRange": "Rango de Fechas",
+      "totalRecords": "Total de Registros",
+      "totalAmount": "Importe Total",
+      "totalPaid": "Total Pagado",
+      "totalPending": "Total Pendiente",
+      "pdfSaved": "PDF guardado correctamente",
+      "pdfError": "Error al guardar el PDF",
+      "table": {
+        "date": "Fecha",
+        "base": "Base",
+        "socialSecurityCompany": "SS (Empresa)",
+        "socialSecurityWorker": "SS (Trabajador)",
+        "irpf": "IRPF",
+        "extraPayment": "Pago Extra",
+        "bonus": "Bonus",
+        "extraServices": "Servicios Extra",
+        "total": "Total",
+        "paymentStatus": "Estado de Pago"
+      }
     }
   },
   "incomesManagement": {
