@@ -11,7 +11,7 @@ import { MenuContentSections } from "./MenuContentSections";
 import { Category, Subcategory, Product } from "@/types/Menu";
 import {
   fetchCategories,
-  fetchProductsByCatIdForOrder,
+  fetchProductsByCatId,
   fetchSubcategories,
 } from "@/renderer/utils/menu";
 import { useAuth } from "@/renderer/contexts/AuthContext";
@@ -90,7 +90,7 @@ export const MenuComponent = () => {
       selectedSubcategory: subcategory,
     }));
     if (!subcategory.id) return;
-    fetchProductsByCatIdForOrder(token,subcategory.id, setProducts);
+    fetchProductsByCatId(token, subcategory.id, setProducts);
   };
 
   const handleBackToCategories = () => {
@@ -149,8 +149,12 @@ export const MenuComponent = () => {
 
   const handleProductSuccess = () => {
     closeModal("product");
-    if (navigation.selectedSubcategory){
-      fetchProductsByCatIdForOrder(token,navigation.selectedSubcategory.id, setProducts);
+    if (navigation.selectedSubcategory) {
+      fetchProductsByCatId(
+        token,
+        navigation.selectedSubcategory.id,
+        setProducts
+      );
     }
   };
 
@@ -187,8 +191,12 @@ export const MenuComponent = () => {
       toast.error(t("menuComponents.messages.errors.failedToDelete"));
       return;
     }
-    if (navigation.selectedSubcategory){
-      fetchProductsByCatIdForOrder(token,navigation.selectedSubcategory.id, setProducts);
+    if (navigation.selectedSubcategory) {
+      fetchProductsByCatId(
+        token,
+        navigation.selectedSubcategory.id,
+        setProducts
+      );
     }
   };
   const handleProductDragEnd = async (event: DragEndEvent) => {
@@ -199,7 +207,11 @@ export const MenuComponent = () => {
         const oldIndex = currentProducts.findIndex((p) => p.id === active.id);
         const newIndex = currentProducts.findIndex((p) => p.id === over.id);
 
-        const reorderedProducts = arrayMove(currentProducts, oldIndex, newIndex);
+        const reorderedProducts = arrayMove(
+          currentProducts,
+          oldIndex,
+          newIndex
+        );
         const newOrderProducts = reorderedProducts.map((product, index) => ({
           ...product,
           priority: index,
