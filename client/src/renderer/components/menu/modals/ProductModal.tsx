@@ -120,7 +120,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
         categoryId: product.categoryId || "",
         subcategoryId: product.subcategoryId || "",
         isAvailable: product.isAvailable ?? true,
-        isOutOfStock: false,
+        isOutOfStock: product.isOutOfStock ?? false,
         imgUrl: product.imgUrl || "",
         isDrink: product.isDrink || false,
         isByWeight: product.isByWeight || false,

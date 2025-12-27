@@ -18,7 +18,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   if (isLoading) {
     return (
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">{t("menuComponents.products.title")}</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">
+          {t("menuComponents.products.title")}
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {[...Array(8)].map((_, index) => (
             <div key={index} className="animate-pulse">
@@ -36,7 +38,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   if (!products || products.length === 0) {
     return (
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">{t("menuComponents.products.title")}</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-3">
+          {t("menuComponents.products.title")}
+        </h3>
         <div className="text-center py-8 text-gray-500">
           <div className="text-4xl mb-2">🍽️</div>
           <p>{t("menuComponents.products.noProducts")}</p>
@@ -45,11 +49,17 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     );
   }
 
+  const availableProducts = products.filter(
+    (product) => product.isAvailable !== false
+  );
+
   return (
     <div className="mb-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-3">{t("menuComponents.products.title")}</h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-3">
+        {t("menuComponents.products.title")}
+      </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {products.map((product) => (
+        {availableProducts.map((product) => (
           <div
             key={product.id}
             className="transform transition-all duration-200"
@@ -63,9 +73,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                 price: product.price,
                 color: product.color,
                 isAvailable: product.isAvailable,
+                isOutOfStock: (product as any).isOutOfStock,
               }}
               type="product"
-              onClick={() => onProductSelect(product)}
+              onClick={() => {
+                if (
+                  (product as any).isOutOfStock === true ||
+                  product.isAvailable === false
+                ) {
+                  return;
+                }
+                onProductSelect(product);
+              }}
               onEdit={() => {}} // No edit functionality in order context
               showActions={false}
             />

@@ -44,6 +44,7 @@ export interface Product extends BaseMenuEntity {
   image?: string;
   printerIds?: string[];
   type: "product";
+  isOutOfStock?: boolean;
 }
 
 
