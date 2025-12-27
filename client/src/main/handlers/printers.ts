@@ -1,195 +1,270 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, dialog } from "electron";
 import { IpcMainInvokeEvent } from "electron";
 import { PrinterDatabaseOperations } from "../database/printerOperations.js";
 import { verifyToken } from "./auth.js";
+import * as fs from "fs";
+import Logger from "electron-log";
 
 export const getConnectedPrinters = async (
-    event: IpcMainInvokeEvent,
-    token: string
+  event: IpcMainInvokeEvent,
+  token: string
 ) => {
-    try {
-        const printers = await event.sender.getPrintersAsync();
-        return {
-            status: true,
-            data: printers,
-        };
-    } catch (error) {
-        return {
-            status: false,
-            error: (error as Error).message,
-        };
-    }
+  try {
+    const printers = await event.sender.getPrintersAsync();
+    return {
+      status: true,
+      data: printers,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
 };
 export const createPrinter = async (
-    event: IpcMainInvokeEvent,
-    token: string,
-    printerData: any
+  event: IpcMainInvokeEvent,
+  token: string,
+  printerData: any
 ) => {
-    try {
-        await verifyToken(event, token);
-        const result =
-            await PrinterDatabaseOperations.createPrinter(printerData);
-        return {
-            status: true,
-            data: result,
-        };
-    } catch (error) {
-        return {
-            status: false,
-            error: (error as Error).message,
-        };
-    }
+  try {
+    await verifyToken(event, token);
+    const result = await PrinterDatabaseOperations.createPrinter(printerData);
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
 };
 export const updatePrinter = async (
-    event: IpcMainInvokeEvent,
-    token: string,
-    printerId: string,
-    printerData: any
+  event: IpcMainInvokeEvent,
+  token: string,
+  printerId: string,
+  printerData: any
 ) => {
-    try {
-        await verifyToken(event, token);
-        const result = await PrinterDatabaseOperations.updatePrinter(
-            printerId,
-            printerData
-        );
-        return {
-            status: true,
-            data: result,
-        };
-    } catch (error) {
-        return {
-            status: false,
-            error: (error as Error).message,
-        };
-    }
+  try {
+    await verifyToken(event, token);
+    const result = await PrinterDatabaseOperations.updatePrinter(
+      printerId,
+      printerData
+    );
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
 };
 export const deletePrinter = async (
-    event: IpcMainInvokeEvent,
-    token: string,
-    printerId: string
+  event: IpcMainInvokeEvent,
+  token: string,
+  printerId: string
 ) => {
-    try {
-        await verifyToken(event, token);
-        const result = await PrinterDatabaseOperations.deletePrinter(printerId);
-        return {
-            status: true,
-            data: result,
-        };
-    } catch (error) {
-        return {
-            status: false,
-            error: (error as Error).message,
-        };
-    }
+  try {
+    await verifyToken(event, token);
+    const result = await PrinterDatabaseOperations.deletePrinter(printerId);
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
 };
 export const getAllPrinters = async (
-    event: IpcMainInvokeEvent,
-    token: string
+  event: IpcMainInvokeEvent,
+  token: string
 ) => {
-    try {
-        await verifyToken(event, token);
-        const result = await PrinterDatabaseOperations.getAllPrinters();
-        return {
-            status: true,
-            data: result,
-        };
-    } catch (error) {
-        return {
-            status: false,
-            error: (error as Error).message,
-        };
-    }
+  try {
+    await verifyToken(event, token);
+    const result = await PrinterDatabaseOperations.getAllPrinters();
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
 };
 export const getProductPrinters = async (
-    event: IpcMainInvokeEvent,
-    token: string,
-    productId: string
+  event: IpcMainInvokeEvent,
+  token: string,
+  productId: string
 ) => {
-    try {
-        await verifyToken(event, token);
-        const result =
-            await PrinterDatabaseOperations.getProductPrinters(productId);
-        return {
-            status: true,
-            data: result,
-        };
-    } catch (error) {
-        return {
-            status: false,
-            error: (error as Error).message,
-        };
-    }
+  try {
+    await verifyToken(event, token);
+    const result =
+      await PrinterDatabaseOperations.getProductPrinters(productId);
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
 };
 
 export const printToPrinter = async (
-    event: IpcMainInvokeEvent,
-    token: string,
-    printerName: string,
-    printData: { html: string; options?: any }
+  event: IpcMainInvokeEvent,
+  token: string,
+  printerName: string,
+  printData: { html: string; options?: any }
 ) => {
-    try {
-        await verifyToken(event, token);
+  try {
+    await verifyToken(event, token);
 
-        // Create a new hidden BrowserWindow for printing
-        const printWindow = new BrowserWindow({
-            width: 800,
-            height: 600,
-            show: false,
-            webPreferences: {
-                nodeIntegration: false,
-                contextIsolation: true,
-            },
-        });
-        const printers = await event.sender.getPrintersAsync();
-        const targetPrinter = printers.find((p) => p.name === printerName);
-        if (!targetPrinter) {
-            return {
-                status: false,
-                error: "Printer not found among connected printers.",
-            };
-        }
-        // Load the HTML content and wait for it to finish loading
-        await printWindow.webContents.loadURL(
-            `data:text/html;charset=utf-8,${encodeURIComponent(printData.html)}`
-        );
-        const printOptions = {
-            silent: true,
-            deviceName: printerName,
-            printBackground: true,
-            color: false,
-            margins: {
-                marginType: "none",
-            },
-            ...printData.options,
-        };
-        
-        // Print silently to the specific printer
-        const printPromise = new Promise((resolve, reject) => {
-            printWindow.webContents.print(
-                printOptions,
-                (success, errorType) => {
-                    if (success) {
-                        resolve(success);
-                    } else {
-                        reject(new Error(`Print failed: ${errorType}`));
-                    }
-                }
-            );
-        });
-        
-        await printPromise;
-        
-        // Close the window
-        printWindow.close();
-
-        return {
-            status: true,
-            data: { message: "Print job sent successfully" },
-        };
-    } catch (error) {
-        return {
-            status: false,
-            error: (error as Error).message,
-        };
+    // Create a new hidden BrowserWindow for printing
+    const printWindow = new BrowserWindow({
+      width: 800,
+      height: 600,
+      show: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+      },
+    });
+    const printers = await event.sender.getPrintersAsync();
+    const targetPrinter = printers.find((p) => p.name === printerName);
+    if (!targetPrinter) {
+      return {
+        status: false,
+        error: "Printer not found among connected printers.",
+      };
     }
+    // Load the HTML content and wait for it to finish loading
+    await printWindow.webContents.loadURL(
+      `data:text/html;charset=utf-8,${encodeURIComponent(printData.html)}`
+    );
+    const printOptions = {
+      silent: true,
+      deviceName: printerName,
+      printBackground: true,
+      color: false,
+      margins: {
+        marginType: "none",
+      },
+      ...printData.options,
+    };
+
+    // Print silently to the specific printer
+    const printPromise = new Promise((resolve, reject) => {
+      printWindow.webContents.print(printOptions, (success, errorType) => {
+        if (success) {
+          resolve(success);
+        } else {
+          reject(new Error(`Print failed: ${errorType}`));
+        }
+      });
+    });
+
+    await printPromise;
+
+    // Close the window
+    printWindow.close();
+
+    return {
+      status: true,
+      data: { message: "Print job sent successfully" },
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};
+
+export const saveMaintenanceReportPDF = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  html: string,
+  defaultFileName: string
+) => {
+  try {
+    await verifyToken(event, token);
+
+    // Create a hidden BrowserWindow for PDF generation
+    const pdfWindow = new BrowserWindow({
+      width: 800,
+      height: 600,
+      show: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+      },
+    });
+
+    // Load the HTML content
+    await pdfWindow.webContents.loadURL(
+      `data:text/html;charset=utf-8,${encodeURIComponent(html)}`
+    );
+
+    // Wait for content to load
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Generate PDF
+    const pdfBuffer = await pdfWindow.webContents.printToPDF({
+      margins: {
+        top: 0.5,
+        bottom: 0.5,
+        left: 0.5,
+        right: 0.5,
+      },
+      printBackground: true,
+      pageSize: "A4",
+    });
+
+    pdfWindow.close();
+
+    // Show save dialog
+    const result = await dialog.showSaveDialog({
+      title: "Save Maintenance Report",
+      defaultPath: defaultFileName,
+      filters: [{ name: "PDF Files", extensions: ["pdf"] }],
+    });
+
+    if (result.canceled || !result.filePath) {
+      return {
+        status: false,
+        error: "Save cancelled",
+      };
+    }
+
+    // Write PDF to file
+    fs.writeFileSync(result.filePath, pdfBuffer);
+
+    Logger.info(`Maintenance report PDF saved to: ${result.filePath}`);
+
+    return {
+      status: true,
+      data: {
+        filePath: result.filePath,
+        message: "PDF saved successfully",
+      },
+    };
+  } catch (error) {
+    Logger.error("Error saving maintenance report PDF:", error);
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
 };

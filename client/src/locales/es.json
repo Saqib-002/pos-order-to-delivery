@@ -2048,7 +2048,19 @@
         "noRecordsFound": "No se encontraron registros que coincidan con los filtros"
       },
       "deleteTitle": "Eliminar Registro",
-      "deleteMessage": "¿Estás seguro?"
+      "deleteMessage": "¿Estás seguro?",
+      "print": "Imprimir",
+      "reportTitle": "Informe de Mantenimiento",
+      "vehicleInfo": "Información del Vehículo",
+      "reportInfo": "Información del Informe",
+      "dateRange": "Rango de Fechas",
+      "totalRecords": "Total de Registros",
+      "totalAmount": "Importe Total",
+      "totalPaid": "Total Pagado",
+      "totalPending": "Total Pendiente",
+      "pdfSaved": "PDF guardado correctamente",
+      "pdfError": "Error al guardar el PDF",
+      "savePDF": "Guardar PDF"
     },
     "deleteConfirm": {
       "title": "Eliminar Vehículo",

@@ -285,7 +285,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
       menuSecondaryId
     ),
 
-  // 
+  //
   getOrderAnalytics: (token: string, filter: any) =>
     ipcRenderer.invoke("get-order-analytics", token, filter),
   getFinancialAnalytics: (token: string, filter: any) =>
@@ -387,6 +387,17 @@ contextBridge.exposeInMainWorld("electronAPI", {
     printerName: string,
     printData: { html: string; options?: any }
   ) => ipcRenderer.invoke("print-to-printer", token, printerName, printData),
+  saveMaintenanceReportPDF: (
+    token: string,
+    html: string,
+    defaultFileName: string
+  ) =>
+    ipcRenderer.invoke(
+      "save-maintenance-report-pdf",
+      token,
+      html,
+      defaultFileName
+    ),
 
   // platforms
   createPlatform: (token: string, platformData: any) =>

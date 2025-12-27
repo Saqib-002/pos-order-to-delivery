@@ -18,8 +18,15 @@ import {
 import { useConfirm } from "../../../hooks/useConfirm";
 import { PaymentStep, PaymentMethod } from "../../shared/PaymentStep";
 import { DatePicker } from "../../ui/DatePicker";
+import { DateRangePicker } from "../../ui/DateRangePicker";
 import { toast } from "react-toastify";
-import { ChevronLeftIcon, ChevronRightIcon } from "../../../public/Svg";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PrinterIcon,
+} from "../../../public/Svg";
+import { useConfigurations } from "../../../contexts/configurationContext";
+import { useAuth } from "../../../contexts/AuthContext";
 import {
   calculatePaymentStatus,
   getPaymentStatusStyle,
@@ -56,6 +63,8 @@ const INITIAL_FILTERS: MaintenanceFilters = {
   page: 1,
   pageSize: 5,
   search: "",
+  startDate: undefined,
+  endDate: undefined,
   minPrice: undefined,
   maxPrice: undefined,
 };
@@ -76,6 +85,10 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const confirm = useConfirm();
+  const { configurations } = useConfigurations();
+  const {
+    auth: { token },
+  } = useAuth();
   const [data, setData] = useState<PaginatedResult<VehicleMaintenance>>({
     data: [],
     pagination: { total: 0, page: 1, pageSize: 5, totalPages: 0 },
@@ -262,6 +275,261 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
       }
     } else {
       setPaymentMethods([]);
+    }
+  };
+
+  const generateMaintenanceReportHTML = (): string => {
+    if (!vehicle) return "";
+    const vehicleData = vehicle;
+    const now = new Date();
+    const dateStr = now.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+    const timeStr = now.toLocaleTimeString("es-ES", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const dateTimeStr = `${dateStr} - ${timeStr}`;
+
+    const totalAmount = data.data.reduce(
+      (sum, record) => sum + (Number(record.total) || 0),
+      0
+    );
+    const totalPaid = data.data.reduce((sum, record) => {
+      if (record.paymentType) {
+        const recordTotal = Number(record.total) || 0;
+        const paymentStatus = calculatePaymentStatus(
+          record.paymentType || "",
+          recordTotal
+        );
+        if (paymentStatus.status === "PAID") {
+          return sum + recordTotal;
+        } else if (paymentStatus.status === "PARTIAL") {
+          const payments = record.paymentType.split(", ");
+          const paidAmount = payments.reduce((acc, payment) => {
+            const [, amount] = payment.split(":");
+            return acc + (parseFloat(amount) || 0);
+          }, 0);
+          return sum + paidAmount;
+        }
+      }
+      return sum;
+    }, 0);
+
+    const recordsHTML = data.data
+      .map((record) => {
+        const paymentStatus = calculatePaymentStatus(
+          record.paymentType || "",
+          record.total || 0
+        );
+        return `
+        <tr>
+          <td>${formatDate(record.date)}</td>
+          <td>${record.sparePart}</td>
+          <td style="text-align: center;">${record.unit}</td>
+          <td style="text-align: right;">${Number(record.price).toFixed(2)}€</td>
+          <td style="text-align: right;">${Number(record.total).toFixed(2)}€</td>
+          <td style="text-align: right;">${record.currentMileage ? `${record.currentMileage.toLocaleString()} km` : "-"}</td>
+          <td style="text-align: center;">
+            <span style="padding: 2px 8px; border-radius: 4px; font-size: 10px; ${getPaymentStatusStyle(paymentStatus.status)}">
+              ${paymentStatus.status}
+            </span>
+          </td>
+        </tr>
+      `;
+      })
+      .join("");
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            @media print {
+              @page {
+                margin: 15mm;
+                size: A4;
+              }
+            }
+            body {
+              font-family: 'Arial', sans-serif;
+              font-size: 11px;
+              color: #000;
+              margin: 0;
+              padding: 20px;
+            }
+            .header {
+              border-bottom: 3px solid #000;
+              padding-bottom: 15px;
+              margin-bottom: 20px;
+            }
+            .header h1 {
+              margin: 0 0 10px 0;
+              font-size: 24px;
+              font-weight: bold;
+            }
+            .header-info {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 20px;
+              margin-top: 15px;
+            }
+            .header-section {
+              margin-bottom: 10px;
+            }
+            .header-section h3 {
+              margin: 0 0 5px 0;
+              font-size: 12px;
+              font-weight: bold;
+              text-transform: uppercase;
+            }
+            .header-section p {
+              margin: 2px 0;
+              font-size: 11px;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 20px 0;
+            }
+            thead {
+              background-color: #000;
+              color: #fff;
+            }
+            th {
+              padding: 10px 8px;
+              text-align: left;
+              font-weight: bold;
+              font-size: 10px;
+              text-transform: uppercase;
+            }
+            td {
+              padding: 8px;
+              border-bottom: 1px solid #ddd;
+            }
+            tbody tr:hover {
+              background-color: #f5f5f5;
+            }
+            .summary {
+              margin-top: 30px;
+              padding-top: 15px;
+              border-top: 2px solid #000;
+            }
+            .summary-row {
+              display: flex;
+              justify-content: space-between;
+              margin: 8px 0;
+              font-size: 12px;
+            }
+            .summary-label {
+              font-weight: bold;
+            }
+            .summary-value {
+              font-weight: bold;
+              font-size: 14px;
+            }
+            .footer {
+              margin-top: 30px;
+              padding-top: 15px;
+              border-top: 1px solid #ddd;
+              text-align: center;
+              font-size: 9px;
+              color: #666;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${t("vehicleManagement.maintenanceModal.reportTitle")}</h1>
+            <div class="header-info">
+              <div>
+                <div class="header-section">
+                  <h3>${t("vehicleManagement.maintenanceModal.vehicleInfo")}</h3>
+                  <p><strong>${t("vehicleManagement.modal.model")}:</strong> ${vehicleData.model}</p>
+                  <p><strong>${t("vehicleManagement.modal.licensePlate")}:</strong> ${vehicleData.licensePlate}</p>
+                  ${vehicleData.color ? `<p><strong>${t("vehicleManagement.modal.color")}:</strong> ${vehicleData.color}</p>` : ""}
+                  ${vehicleData.type ? `<p><strong>${t("vehicleManagement.modal.type")}:</strong> ${t(`vehicleManagement.filters.${vehicleData.type}`)}</p>` : ""}
+                </div>
+              </div>
+              <div>
+                <div class="header-section">
+                  <h3>${t("vehicleManagement.maintenanceModal.reportInfo")}</h3>
+                  <p><strong>${t("receipt.date")}:</strong> ${dateTimeStr}</p>
+                  ${filters.startDate && filters.endDate ? `<p><strong>${t("vehicleManagement.maintenanceModal.dateRange")}:</strong> ${formatDate(filters.startDate)} - ${formatDate(filters.endDate)}</p>` : ""}
+                  <p><strong>${t("vehicleManagement.maintenanceModal.totalRecords")}:</strong> ${data.data.length}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>${t("vehicleManagement.maintenanceModal.table.date")}</th>
+                <th>${t("vehicleManagement.maintenanceModal.table.servicePart")}</th>
+                <th style="text-align: center;">${t("vehicleManagement.maintenanceModal.table.unit")}</th>
+                <th style="text-align: right;">${t("vehicleManagement.maintenanceModal.table.price")}</th>
+                <th style="text-align: right;">${t("vehicleManagement.maintenanceModal.table.total")}</th>
+                <th style="text-align: right;">${t("vehicleManagement.maintenanceModal.table.currentMileage")}</th>
+                <th style="text-align: center;">${t("vehicleManagement.maintenanceModal.table.paymentStatus")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${recordsHTML || `<tr><td colspan="7" style="text-align: center; padding: 20px;">${t("vehicleManagement.maintenanceModal.table.noRecordsFound")}</td></tr>`}
+            </tbody>
+          </table>
+
+          <div class="summary">
+            <div class="summary-row">
+              <span class="summary-label">${t("vehicleManagement.maintenanceModal.totalAmount")}:</span>
+              <span class="summary-value">${Number(totalAmount || 0).toFixed(2)}€</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">${t("vehicleManagement.maintenanceModal.totalPaid")}:</span>
+              <span class="summary-value">${Number(totalPaid || 0).toFixed(2)}€</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">${t("vehicleManagement.maintenanceModal.totalPending")}:</span>
+              <span class="summary-value">${Number((totalAmount || 0) - (totalPaid || 0)).toFixed(2)}€</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>${configurations.name || ""}</p>
+            ${configurations.address ? `<p>${configurations.address}</p>` : ""}
+            ${configurations.vatNumber ? `<p>${t("receipt.vat")}: ${configurations.vatNumber}</p>` : ""}
+          </div>
+        </body>
+      </html>
+    `;
+  };
+
+  const handlePrint = async () => {
+    if (!token || !vehicle) return;
+
+    try {
+      const html = generateMaintenanceReportHTML();
+      const defaultFileName = `maintenance-report-${vehicle.licensePlate}-${new Date().toISOString().split("T")[0]}.pdf`;
+
+      const result = await (window as any).electronAPI.saveMaintenanceReportPDF(
+        token,
+        html,
+        defaultFileName
+      );
+
+      if (result.status) {
+        toast.success(t("vehicleManagement.maintenanceModal.pdfSaved"));
+      } else {
+        if (result.error !== "Save cancelled") {
+          toast.error(t("vehicleManagement.maintenanceModal.pdfError"));
+        }
+      }
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error(t("vehicleManagement.maintenanceModal.pdfError"));
     }
   };
 
@@ -612,48 +880,89 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
 
           {/* Filters - Only show when not editing and on step 1 */}
           {!editingId && currentStep === 1 && (
-            <div className="flex gap-3 mb-4 flex-shrink-0">
-              <div className="flex-1">
-                <CustomInput
-                  name="search"
-                  type="text"
-                  placeholder={t(
-                    "vehicleManagement.maintenanceModal.searchPlaceholder"
-                  )}
-                  value={filters.search}
-                  onChange={(e) => handleFilterChange("search", e.target.value)}
-                  preLabel={<SearchIcon className="size-4 text-gray-400" />}
-                  inputClasses="pl-8 py-2 text-sm"
-                />
-              </div>
-              <div className="w-32">
-                <CustomInput
-                  name="minPrice"
-                  type="number"
-                  placeholder={t("vehicleManagement.maintenanceModal.minPrice")}
-                  value={filters.minPrice || ""}
-                  onChange={(e) =>
-                    handleFilterChange(
-                      "minPrice",
-                      e.target.value ? parseFloat(e.target.value) : undefined
-                    )
-                  }
-                  inputClasses="py-2 text-sm"
-                />
-              </div>
-              <div className="w-32">
-                <CustomInput
-                  name="maxPrice"
-                  type="number"
-                  placeholder={t("vehicleManagement.maintenanceModal.maxPrice")}
-                  value={filters.maxPrice || ""}
-                  onChange={(e) =>
-                    handleFilterChange(
-                      "maxPrice",
-                      e.target.value ? parseFloat(e.target.value) : undefined
-                    )
-                  }
-                  inputClasses="py-2 text-sm"
+            <div className="flex flex-col gap-3 mb-4 flex-shrink-0">
+              <div className="flex gap-3 justify-between">
+                <div className="w-full">
+                  <CustomInput
+                    name="search"
+                    type="text"
+                    placeholder={t(
+                      "vehicleManagement.maintenanceModal.searchPlaceholder"
+                    )}
+                    value={filters.search}
+                    onChange={(e) =>
+                      handleFilterChange("search", e.target.value)
+                    }
+                    preLabel={<SearchIcon className="size-4 text-gray-400" />}
+                    inputClasses="pl-8 py-3 text-sm"
+                  />
+                </div>
+                <div className="w-full">
+                  <DateRangePicker
+                    startDate={
+                      filters.startDate ? new Date(filters.startDate) : null
+                    }
+                    endDate={filters.endDate ? new Date(filters.endDate) : null}
+                    selectedDate={
+                      filters.startDate ? new Date(filters.startDate) : null
+                    }
+                    onChange={(startDate, endDate) => {
+                      handleFilterChange(
+                        "startDate",
+                        startDate
+                          ? startDate.toISOString().split("T")[0]
+                          : undefined
+                      );
+                      handleFilterChange(
+                        "endDate",
+                        endDate
+                          ? endDate.toISOString().split("T")[0]
+                          : undefined
+                      );
+                    }}
+                    className="w-full"
+                  />
+                </div>
+                <div className="w-full">
+                  <CustomInput
+                    name="minPrice"
+                    type="number"
+                    placeholder={t(
+                      "vehicleManagement.maintenanceModal.minPrice"
+                    )}
+                    value={filters.minPrice || ""}
+                    onChange={(e) =>
+                      handleFilterChange(
+                        "minPrice",
+                        e.target.value ? parseFloat(e.target.value) : undefined
+                      )
+                    }
+                    inputClasses="py-3 text-sm"
+                  />
+                </div>
+                <div className="w-full">
+                  <CustomInput
+                    name="maxPrice"
+                    type="number"
+                    placeholder={t(
+                      "vehicleManagement.maintenanceModal.maxPrice"
+                    )}
+                    value={filters.maxPrice || ""}
+                    onChange={(e) =>
+                      handleFilterChange(
+                        "maxPrice",
+                        e.target.value ? parseFloat(e.target.value) : undefined
+                      )
+                    }
+                    inputClasses="py-3 text-sm"
+                  />
+                </div>
+                <CustomButton
+                  type="button"
+                  onClick={handlePrint}
+                  label={t("vehicleManagement.maintenanceModal.print")}
+                  Icon={<PrinterIcon className="size-5" />}
+                  className="bg-black hover:bg-gray-800 text-white whitespace-nowrap"
                 />
               </div>
             </div>

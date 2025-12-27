@@ -106,6 +106,7 @@ import {
   getProductPrinters,
   printToPrinter,
   updatePrinter,
+  saveMaintenanceReportPDF,
 } from "./handlers/printers.js";
 import {
   createPlatform,
@@ -375,6 +376,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-all-printers", getAllPrinters);
   ipcMain.handle("get-product-printers", getProductPrinters);
   ipcMain.handle("print-to-printer", printToPrinter);
+  ipcMain.handle("save-maintenance-report-pdf", saveMaintenanceReportPDF);
 
   // platforms
   ipcMain.handle("create-platform", createPlatform);
