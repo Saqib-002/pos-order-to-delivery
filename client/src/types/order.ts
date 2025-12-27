@@ -51,6 +51,7 @@ export interface DeliveryPerson {
   email: string;
   vehicleType: string;
   licenseNo: string;
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

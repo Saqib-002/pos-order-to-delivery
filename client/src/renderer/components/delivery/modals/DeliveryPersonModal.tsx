@@ -126,6 +126,42 @@ export const DeliveryPersonModal: React.FC<DeliveryPersonModalProps> = ({
                 portalClassName="delivery-person-vehicle-type-dropdown-portal"
               />
             </div>
+            <div className="md:col-span-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-gray-700">
+                  {t("deliveryPersonModal.status")}
+                </label>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-700">
+                    {(deliveryPerson as any).isActive !== false
+                      ? t("deliveryPersonModal.active")
+                      : t("deliveryPersonModal.inactive")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setDeliveryPerson({
+                        ...deliveryPerson,
+                        isActive: !((deliveryPerson as any).isActive !== false),
+                      } as any)
+                    }
+                    className={`cursor-pointer relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+                      (deliveryPerson as any).isActive !== false
+                        ? "bg-black"
+                        : "bg-gray-200"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                        (deliveryPerson as any).isActive !== false
+                          ? "translate-x-6"
+                          : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="flex justify-end gap-4 mt-8">
             <CustomButton

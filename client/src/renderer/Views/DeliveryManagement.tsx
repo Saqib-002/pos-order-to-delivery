@@ -24,7 +24,7 @@ import { useConfirm } from "../hooks/useConfirm";
 
 export const DeliveryManagement = () => {
   const { t } = useTranslation();
-  const confirm=useConfirm();
+  const confirm = useConfirm();
   const [deliveryPersons, setDeliveryPersons] = useState<DeliveryPerson[]>([]);
   const [currentDeliveryPerson, setCurrentDeliveryPerson] =
     useState<DeliveryPerson | null>(null);
@@ -46,7 +46,7 @@ export const DeliveryManagement = () => {
   // Email validation function
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (email.trim()==="") {
+    if (email.trim() === "") {
       return "";
     }
     if (!emailRegex.test(email)) {
@@ -90,7 +90,7 @@ export const DeliveryManagement = () => {
     if (phoneRegex.test(value) && currentDeliveryPerson) {
       setCurrentDeliveryPerson({
         ...currentDeliveryPerson,
-        phone: value, 
+        phone: value,
       } as any);
       if (phoneError) {
         setPhoneError("");
@@ -162,6 +162,7 @@ export const DeliveryManagement = () => {
             phone: (currentDeliveryPerson as any).phone,
             vehicleType: (currentDeliveryPerson as any).vehicleType,
             licenseNo: (currentDeliveryPerson as any).licenseNo,
+            isActive: (currentDeliveryPerson as any).isActive !== false,
           }
         );
       } else {
@@ -171,6 +172,7 @@ export const DeliveryManagement = () => {
           phone: (currentDeliveryPerson as any).phone,
           vehicleType: (currentDeliveryPerson as any).vehicleType || "bike",
           licenseNo: (currentDeliveryPerson as any).licenseNo,
+          isActive: (currentDeliveryPerson as any).isActive !== false,
         });
       }
 
@@ -212,11 +214,11 @@ export const DeliveryManagement = () => {
   };
 
   const handleDeleteDeliveryPerson = async (userId: string) => {
-    const ok=await confirm({
-      title:t("deliveryManagement.errors.deleteConfirm"),
-      message:t("deliveryManagement.errors.deleteConfirmTitle"),
+    const ok = await confirm({
+      title: t("deliveryManagement.errors.deleteConfirm"),
+      message: t("deliveryManagement.errors.deleteConfirmTitle"),
     });
-    if(!ok) return;
+    if (!ok) return;
     try {
       const statsRes = await (window as any).electronAPI.getDeliveryPersonStats(
         token,
@@ -257,6 +259,7 @@ export const DeliveryManagement = () => {
       phone: "",
       vehicleType: "bike",
       licenseNo: "",
+      isActive: true,
     } as any);
     setIsEditing(false);
     setIsModalOpen(true);
@@ -345,6 +348,19 @@ export const DeliveryManagement = () => {
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-black">{person.licenseNo || "-"}</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            (person as any).isActive !== false
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {(person as any).isActive !== false
+            ? t("deliveryManagement.active")
+            : t("deliveryManagement.inactive")}
+        </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-black">{person.totalAssigned || 0}</div>
@@ -506,6 +522,7 @@ export const DeliveryManagement = () => {
             t("deliveryManagement.vehicle"),
             t("deliveryManagement.contact"),
             t("deliveryManagement.license"),
+            t("deliveryManagement.status"),
             t("deliveryManagement.totalAssigned"),
             t("deliveryManagement.totalDelivered"),
             t("deliveryManagement.totalCancelled"),

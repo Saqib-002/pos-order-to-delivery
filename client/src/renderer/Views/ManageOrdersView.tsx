@@ -401,18 +401,14 @@ export const ManageOrdersView = () => {
     return (
       <tr key={order.id} className="hover:bg-gray-50 transition-colors">
         <td className="px-6 py-4 whitespace-nowrap text-2xl font-bold text-black">
-          {
-            order.ticketNumber ? (
-              <>
-              {order.ticketNumber}
-              </>
-            ) : (
-              <>
+          {order.ticketNumber ? (
+            <>{order.ticketNumber}</>
+          ) : (
+            <>
               {configurations.orderPrefix || "K"}
               {order.orderId}
-              </>
-            )
-          }
+            </>
+          )}
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-sm font-medium text-black">
@@ -699,10 +695,12 @@ export const ManageOrdersView = () => {
                 <CustomSelect
                   options={[
                     { value: "", label: t("manageOrders.allDeliveryPersons") },
-                    ...deliveryPersons.map((person) => ({
-                      value: person.id,
-                      label: person.name,
-                    })),
+                    ...deliveryPersons
+                      .filter((person) => person.isActive !== false)
+                      .map((person) => ({
+                        value: person.id,
+                        label: person.name,
+                      })),
                   ]}
                   value={filter.selectedDeliveryPerson}
                   onChange={(value) => {

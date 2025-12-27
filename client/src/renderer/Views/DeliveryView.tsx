@@ -111,7 +111,15 @@ export const DeliveryView = () => {
           return;
         }
         refreshOrdersCallback();
-        setDeliveryPerson(null);
+        const orderDisplayId = order.ticketNumber
+          ? order.ticketNumber
+          : `${configurations.orderPrefix || "K"}${order.orderId}`;
+        toast.success(
+          t("deliveryView.messages.deliveryPersonAssigned", {
+            name: deliveryPerson.name,
+            orderId: orderDisplayId,
+          }) || `Delivery person ${deliveryPerson.name} assigned successfully`
+        );
       } catch (error) {
         console.error("Failed to assign delivery:", error);
         toast.error(t("deliveryView.messages.failedToAssignDelivery"));
@@ -292,18 +300,14 @@ export const DeliveryView = () => {
       >
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-2xl font-bold text-black">
-            {
-            order.ticketNumber ? (
-              <>
-              {order.ticketNumber}
-              </>
+            {order.ticketNumber ? (
+              <>{order.ticketNumber}</>
             ) : (
               <>
-              {configurations.orderPrefix || "K"}
-              {order.orderId}
+                {configurations.orderPrefix || "K"}
+                {order.orderId}
               </>
-            )
-          }
+            )}
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
@@ -377,18 +381,14 @@ export const DeliveryView = () => {
     >
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-2xl font-bold text-black">
-          {
-            order.ticketNumber ? (
-              <>
-              {order.ticketNumber}
-              </>
-            ) : (
-              <>
+          {order.ticketNumber ? (
+            <>{order.ticketNumber}</>
+          ) : (
+            <>
               {configurations.orderPrefix || "K"}
               {order.orderId}
-              </>
-            )
-          }
+            </>
+          )}
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
@@ -463,17 +463,21 @@ export const DeliveryView = () => {
             {selectedOrderForChange?.id === order.id ? (
               <div className="flex items-center gap-2">
                 <CustomSelect
-                  options={deliveryPersons.map((person) => ({
-                    value: person.id || person.name || "",
-                    label: `${person.name} (${person.vehicleType || "N/A"})`,
-                  }))}
+                  options={deliveryPersons
+                    .filter((person) => person.isActive !== false)
+                    .map((person) => ({
+                      value: person.id || person.name || "",
+                      label: `${person.name} (${person.vehicleType || "N/A"})`,
+                    }))}
                   value={
                     changeDeliveryPerson?.id || changeDeliveryPerson?.name || ""
                   }
                   onChange={(value) => {
-                    const selectedPerson = deliveryPersons.find(
-                      (p) => (p.id && p.id === value) || p.name === value
-                    );
+                    const selectedPerson = deliveryPersons
+                      .filter((person) => person.isActive !== false)
+                      .find(
+                        (p) => (p.id && p.id === value) || p.name === value
+                      );
                     if (selectedPerson) {
                       setChangeDeliveryPerson(selectedPerson);
                     }
@@ -483,6 +487,7 @@ export const DeliveryView = () => {
                     "Select new delivery person"
                   }
                   className="w-64"
+                  portalClassName="delivery-person-change-dropdown-portal"
                 />
                 <button
                   onClick={() => {

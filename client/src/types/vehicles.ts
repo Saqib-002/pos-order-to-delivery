@@ -9,6 +9,10 @@ export interface Vehicle {
   driverName?: string;
   itvDate: string;
   insuranceDate: string;
+  insuranceNumber?: string;
+  insuranceCompany?: string;
+  insurancePrice?: number;
+  insurancePaymentTerm?: "monthly" | "yearly";
   registrationDate?: string;
   createdAt: string;
   updatedAt: string;
@@ -23,6 +27,7 @@ export interface VehicleMaintenance {
   price: number;
   total: number;
   date: string;
+  currentMileage?: number;
   paymentType?: string;
 }
 

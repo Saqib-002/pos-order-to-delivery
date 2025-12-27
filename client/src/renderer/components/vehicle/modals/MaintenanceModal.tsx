@@ -49,6 +49,7 @@ interface MaintenanceForm {
   unit: string;
   price: string;
   date: string;
+  currentMileage: string;
 }
 
 const INITIAL_FILTERS: MaintenanceFilters = {
@@ -85,6 +86,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
     sparePart: "",
     price: "",
     date: new Date().toISOString().split("T")[0],
+    currentMileage: "",
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
@@ -104,6 +106,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
       sparePart: "",
       price: "",
       date: new Date().toISOString().split("T")[0],
+      currentMileage: "",
     });
     setEditingId(null);
     setCurrentStep(1);
@@ -186,6 +189,9 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
       unit: isNaN(unitVal) ? 1 : unitVal,
       total: total,
       date: form.date,
+      currentMileage: form.currentMileage
+        ? parseInt(form.currentMileage)
+        : undefined,
       paymentType: paymentTypeString,
     };
 
@@ -208,6 +214,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
       unit: record.unit.toString(),
       price: record.price.toString(),
       date: new Date(record.date).toISOString().split("T")[0],
+      currentMileage: record.currentMileage?.toString() || "",
     });
     setEditingId(record.id);
     setCurrentStep(1);
@@ -277,7 +284,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div
-        className={`bg-white rounded-2xl shadow-2xl w-full h-[90vh] flex flex-col ${currentStep === 2 ? "max-w-xl" : "max-w-4xl"}`}
+        className={`bg-white rounded-2xl shadow-2xl w-full h-[90vh] flex flex-col ${currentStep === 2 ? "max-w-xl" : "max-w-5xl"}`}
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex-shrink-0">
@@ -326,7 +333,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                     {t("vehicleManagement.maintenanceModal.editRecord")}
                   </h4>
                   <div className="grid grid-cols-12 gap-3 items-end">
-                    <div className="col-span-3">
+                    <div className="col-span-2">
                       <CustomInput
                         name="sparePart"
                         type="text"
@@ -343,7 +350,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                         inputClasses="bg-white py-2"
                       />
                     </div>
-                    <div className="col-span-3">
+                    <div className="col-span-2">
                       <DatePicker
                         label={t("vehicleManagement.maintenanceModal.date")}
                         value={form.date}
@@ -372,11 +379,31 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                         name="price"
                         type="number"
                         label={t("vehicleManagement.maintenanceModal.price")}
+                        placeholder={t(
+                          "vehicleManagement.maintenanceModal.pricePlaceholder"
+                        )}
                         value={form.price}
                         onChange={(e) =>
                           setForm({ ...form, price: e.target.value })
                         }
                         inputClasses="bg-white py-2"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <CustomInput
+                        name="currentMileage"
+                        type="number"
+                        label={t(
+                          "vehicleManagement.maintenanceModal.currentMileage"
+                        )}
+                        value={form.currentMileage}
+                        onChange={(e) =>
+                          setForm({ ...form, currentMileage: e.target.value })
+                        }
+                        inputClasses="bg-white py-2"
+                        placeholder={t(
+                          "vehicleManagement.maintenanceModal.currentMileagePlaceholder"
+                        )}
                       />
                     </div>
                     <div className="col-span-2 flex gap-1">
@@ -445,7 +472,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                         inputClasses="bg-white py-2"
                       />
                     </div>
-                    <div className="col-span-3">
+                    <div className="col-span-2">
                       <DatePicker
                         label={t("vehicleManagement.maintenanceModal.date")}
                         value={form.date}
@@ -457,7 +484,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                         )}
                       />
                     </div>
-                    <div className="col-span-2">
+                    <div className="col-span-1">
                       <CustomInput
                         name="unit"
                         type="number"
@@ -479,6 +506,23 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                           setForm({ ...form, price: e.target.value })
                         }
                         inputClasses="bg-white py-2"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <CustomInput
+                        name="currentMileage"
+                        type="number"
+                        label={t(
+                          "vehicleManagement.maintenanceModal.currentMileage"
+                        )}
+                        value={form.currentMileage}
+                        onChange={(e) =>
+                          setForm({ ...form, currentMileage: e.target.value })
+                        }
+                        inputClasses="bg-white py-2"
+                        placeholder={t(
+                          "vehicleManagement.maintenanceModal.currentMileagePlaceholder"
+                        )}
                       />
                     </div>
                     <div className="col-span-2">
@@ -639,6 +683,11 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                       <th className="p-3 text-right font-medium text-gray-500">
                         {t("vehicleManagement.maintenanceModal.table.total")}
                       </th>
+                      <th className="p-3 text-right font-medium text-gray-500">
+                        {t(
+                          "vehicleManagement.maintenanceModal.table.currentMileage"
+                        )}
+                      </th>
                       <th className="p-3 text-left font-medium text-gray-500">
                         {t(
                           "vehicleManagement.maintenanceModal.table.paymentStatus"
@@ -653,7 +702,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                     {data.data.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={7}
+                          colSpan={8}
                           className="p-8 text-center text-gray-400"
                         >
                           {t(
@@ -678,6 +727,11 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                           </td>
                           <td className="p-3 text-right font-semibold text-black">
                             {Number(r.total).toFixed(2)}€
+                          </td>
+                          <td className="p-3 text-right text-gray-600">
+                            {r.currentMileage
+                              ? `${r.currentMileage.toLocaleString()} km`
+                              : "-"}
                           </td>
                           <td className="p-3 text-sm">
                             {(() => {

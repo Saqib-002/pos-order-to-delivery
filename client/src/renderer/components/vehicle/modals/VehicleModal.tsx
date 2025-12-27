@@ -59,7 +59,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl">
         <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-bold">
@@ -77,11 +77,12 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
           </div>
         </div>
 
-        <div className="p-8 grid grid-cols-2 gap-4">
+        <div className="p-8 grid grid-cols-3 gap-4">
           <CustomInput
             name="model"
             type="text"
             label={t("vehicleManagement.modal.modelRequired")}
+            placeholder={t("vehicleManagement.modal.modelPlaceholder")}
             value={formData.model || ""}
             onChange={(e) =>
               setFormData({ ...formData, model: e.target.value })
@@ -92,6 +93,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
             name="licensePlate"
             type="text"
             label={t("vehicleManagement.modal.licensePlateRequired")}
+            placeholder={t("vehicleManagement.modal.licensePlatePlaceholder")}
             value={formData.licensePlate || ""}
             onChange={(e) =>
               setFormData({ ...formData, licensePlate: e.target.value })
@@ -102,6 +104,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
             name="color"
             type="text"
             label={t("vehicleManagement.modal.color")}
+            placeholder={t("vehicleManagement.modal.colorPlaceholder")}
             value={formData.color || ""}
             onChange={(e) =>
               setFormData({ ...formData, color: e.target.value })
@@ -121,7 +124,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
             />
           </div>
 
-          <div className="col-span-2">
+          <div className="col-span-1">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t("vehicleManagement.modal.assignDriver")}
             </label>
@@ -133,7 +136,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
             />
           </div>
 
-          <div className="col-span-2 flex items-center mt-2">
+          <div className="col-span-1 flex items-center mt-2">
             <input
               type="checkbox"
               id="hasGps"
@@ -162,6 +165,67 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
             }
             placeholder="Select insurance date"
           />
+          <CustomInput
+            name="insuranceNumber"
+            type="text"
+            label={t("vehicleManagement.modal.insuranceNumber")}
+            placeholder={t(
+              "vehicleManagement.modal.insuranceNumberPlaceholder"
+            )}
+            value={formData.insuranceNumber || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, insuranceNumber: e.target.value })
+            }
+            inputClasses="py-2"
+          />
+          <CustomInput
+            name="insuranceCompany"
+            type="text"
+            label={t("vehicleManagement.modal.insuranceCompany")}
+            placeholder={t(
+              "vehicleManagement.modal.insuranceCompanyPlaceholder"
+            )}
+            value={formData.insuranceCompany || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, insuranceCompany: e.target.value })
+            }
+            inputClasses="py-2"
+          />
+          <CustomInput
+            name="insurancePrice"
+            type="number"
+            label={t("vehicleManagement.modal.insurancePrice")}
+            placeholder={t("vehicleManagement.modal.insurancePricePlaceholder")}
+            value={formData.insurancePrice?.toString() || ""}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                insurancePrice: e.target.value
+                  ? parseFloat(e.target.value)
+                  : undefined,
+              })
+            }
+            inputClasses="py-2"
+          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t("vehicleManagement.modal.insurancePaymentTerm")}
+            </label>
+            <CustomSelect
+              options={[
+                {
+                  value: "monthly",
+                  label: t("vehicleManagement.modal.monthly"),
+                },
+                { value: "yearly", label: t("vehicleManagement.modal.yearly") },
+              ]}
+              value={formData.insurancePaymentTerm || ""}
+              onChange={(val) =>
+                setFormData({ ...formData, insurancePaymentTerm: val as any })
+              }
+              placeholder={t("vehicleManagement.modal.selectPaymentTerm")}
+            />
+          </div>
         </div>
 
         <div className="p-6 border-t border-gray-100 flex justify-end gap-3">

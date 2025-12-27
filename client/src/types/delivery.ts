@@ -3,8 +3,9 @@ export interface DeliveryPerson {
   name: string;
   email?: string;
   phone: string;
-  vehicleType: 'bike' | 'motorcycle' | 'car' | 'scooter';
+  vehicleType: "bike" | "motorcycle" | "car" | "scooter";
   licenseNo?: string;
+  isActive?: boolean;
   createdAt: string;
   updatedAt: string;
   syncedAt?: string;

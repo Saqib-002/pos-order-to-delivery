@@ -986,7 +986,7 @@
     }
   },
   "deliveryManagement": {
-    "title": "Delivery Management",
+    "title": "Delivery Personnel Management",
     "subtitle": "Manage delivery personnel and their vehicle information",
     "deliveryPersonnel": "Delivery Personnel",
     "addAndManageStaff": "Add and manage delivery staff",
@@ -1019,6 +1019,9 @@
     "delete": "Delete",
     "deliveryPersonnelLabel": "Delivery Personnel",
     "minutes": "min",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
     "errors": {
       "fetchFailed": "Failed to fetch delivery personnel",
       "enterName": "Please enter a name",
@@ -1057,6 +1060,9 @@
     "licenseNumberPlaceholder": "Enter license number",
     "vehicleType": "Vehicle Type",
     "selectVehicleType": "Select vehicle type",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
     "cancel": "Cancel",
     "updateDeliveryPerson": "Update Delivery Person",
     "addDeliveryPerson": "Add Delivery Person"
@@ -1064,7 +1070,9 @@
   "deliveryPersonInput": {
     "selectDeliveryPerson": "Select Delivery Person",
     "chooseDeliveryPerson": "Choose a delivery person...",
-    "quickAssign": "Quick Assign"
+    "quickAssign": "Quick Assign",
+    "clearSelection": "Clear selection",
+    "selectedPerson": "Selected: {{name}}. Click \"Assign\" on any order to assign this delivery person."
   },
   "deliveryView": {
     "title": "Delivery Management",
@@ -1103,6 +1111,7 @@
       "pleaseEnterDeliveryPersonName": "Please enter delivery person name",
       "failedToAssignDeliveryPerson": "Failed to assign delivery person",
       "failedToAssignDelivery": "Failed to assign delivery. Please try again.",
+      "deliveryPersonAssigned": "{{name}} assigned to order {{orderId}}",
       "failedToMarkAsDelivered": "Failed to mark as delivered",
       "orderMarkedAsDelivered": "Order marked as delivered",
       "failedToMarkAsDeliveredRetry": "Failed to mark as delivered. Please try again.",
@@ -1977,9 +1986,12 @@
       "editVehicle": "Edit Vehicle",
       "model": "Model",
       "modelRequired": "Model *",
+      "modelPlaceholder": "Enter vehicle model",
       "licensePlate": "License Plate",
       "licensePlateRequired": "License Plate *",
+      "licensePlatePlaceholder": "Enter license plate",
       "color": "Color",
+      "colorPlaceholder": "Enter vehicle color",
       "type": "Type",
       "selectType": "Select Type",
       "assignDriver": "Assign Driver",
@@ -1987,6 +1999,16 @@
       "hasGps": "Vehicle has GPS installed",
       "itvDate": "ITV Date",
       "insuranceDate": "Insurance Date",
+      "insuranceNumber": "Insurance Number",
+      "insuranceNumberPlaceholder": "Enter insurance number",
+      "insuranceCompany": "Insurance Company",
+      "insuranceCompanyPlaceholder": "Enter insurance company name",
+      "insurancePrice": "Insurance Price (€)",
+      "insurancePricePlaceholder": "Enter insurance price",
+      "insurancePaymentTerm": "Payment Term",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "selectPaymentTerm": "Select Payment Term",
       "cancel": "Cancel",
       "saveVehicle": "Save Vehicle"
     },
@@ -1998,6 +2020,9 @@
       "sparePartPlaceholder": "Service Name",
       "unit": "Unit",
       "price": "Price (€)",
+      "pricePlaceholder": "Enter price",
+      "currentMileage": "Current Mileage",
+      "currentMileagePlaceholder": "Enter mileage (km)",
       "add": "Add",
       "save": "Save",
       "cancelEdit": "Cancel Edit",
@@ -2017,6 +2042,7 @@
         "unit": "Unit",
         "price": "Price",
         "total": "Total",
+        "currentMileage": "Mileage",
         "paymentStatus": "Payment Status",
         "actions": "Actions",
         "noRecordsFound": "No records found matching filters"
