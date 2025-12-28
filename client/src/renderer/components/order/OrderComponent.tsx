@@ -401,7 +401,7 @@ const OrderComponent = () => {
                   );
                 })}
               </div>
-              <div className="flex-shrink-0 border-t border-gray-200 bg-white">
+              <div className="shrink-0 border-t border-gray-200 bg-white">
                 <Pagination
                   containerClasses="!mt-0"
                   subContainerClasses="!justify-center"

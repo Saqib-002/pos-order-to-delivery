@@ -217,7 +217,7 @@ const HistoryModal = ({ customer, onClose }: HistoryModalProps) => {
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex-shrink-0">
+        <div className="bg-linear-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl shrink-0">
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-xl font-bold">
@@ -232,7 +232,7 @@ const HistoryModal = ({ customer, onClose }: HistoryModalProps) => {
               variant="transparent"
               onClick={onClose}
               Icon={<CrossIcon className="size-6" />}
-              className="text-white hover:text-gray-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
+              className="text-white hover:text-gray-500 p-2! rounded-full! hover:bg-white hover:bg-opacity-20"
             />
           </div>
         </div>
@@ -257,22 +257,22 @@ const HistoryModal = ({ customer, onClose }: HistoryModalProps) => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t("table.orderId", "Order #")}
+                        {t("customerManagement.historyModal.table.orderId", "Order #")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t("table.date", "Date")}
+                        {t("customerManagement.historyModal.table.date", "Date")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t("table.type", "Type")}
+                        {t("customerManagement.historyModal.table.type", "Type")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t("table.status", "Status")}
+                        {t("customerManagement.historyModal.table.status", "Status")}
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t("table.total", "Total")}
+                        {t("customerManagement.historyModal.table.total", "Total")}
                       </th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t("common.actions", "Actions")}
+                        {t("customerManagement.historyModal.table.actions", "Actions")}
                       </th>
                     </tr>
                   </thead>

@@ -108,11 +108,12 @@ export const createSubCategory = async (
 export const getSubCategories = async (
   event: IpcMainInvokeEvent,
   token: string,
-  categoryId: string
+  categoryId: string,
+  isForOrder: boolean = false
 ) => {
   try {
     await verifyToken(event, token);
-    const result = await SubCategoriesOperations.getSubCategories(categoryId);
+    const result = await SubCategoriesOperations.getSubCategories(categoryId, isForOrder);
     return {
       status: true,
       data: result,

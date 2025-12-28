@@ -94,7 +94,7 @@ export class ProductsDatabaseOperations {
             throw error;
         }
     }
-    static async getProductsByCatId(subcatId: string) {
+    static async getProductsByCatId(subcatId: string, isForOrder: boolean = false) {
         try {
             let query = db("products")
                 .join(
@@ -107,6 +107,9 @@ export class ProductsDatabaseOperations {
                 .andWhere("products.name", "!=", "250f812e66c1afab64c57bcea36bb3b7")
                 .select("products.*", "sub_categories.categoryId")
                 .orderBy("products.priority", "asc");
+            if (isForOrder) {
+                query = query.andWhere("products.isAvailable", true);
+            }
             const products = await query;
             const productIds = products.map((p: any) => p.id);
             const allPrinters = await db("printers_products")

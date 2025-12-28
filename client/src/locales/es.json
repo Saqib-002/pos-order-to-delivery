@@ -450,6 +450,18 @@
       "add": "Agregar Cliente",
       "update": "Actualizar Cliente"
     },
+    "historyModal":{
+      "title": "Historial de pedidos",
+      "noOrders": "No se encontraron pedidos para este/esta cliente.",
+      "table": {
+        "orderId": "Orden #",
+        "date": "Fecha",
+        "type": "Tipo",
+        "actions": "Acciones",
+        "total": "Total",
+        "status": "estado"
+      }
+    },
     "validation": {
       "nameRequired": "Por favor ingresa un nombre de cliente",
       "phoneRequired": "Por favor ingresa un número de teléfono",

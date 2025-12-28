@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
+import { useTranslation } from "react-i18next";
 
 declare global {
   interface Window {
@@ -68,6 +69,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   provinceLabel = "Province/State",
   searchAddressLabel = "Search address",
 }) => {
+  const { t } = useTranslation();
   const { configurations } = useConfigurations();
   const apiKey = configurations?.googleMapsApiKey || "";
   const [isLoaded, setIsLoaded] = useState(false);
@@ -408,7 +410,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               setAddress1(val);
               if (onChange) onChange(val);
             }}
-            placeholder="Street address"
+            placeholder={t("customerManagement.modal.address")}
             required={required}
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-black outline-none transition-colors ${
               error

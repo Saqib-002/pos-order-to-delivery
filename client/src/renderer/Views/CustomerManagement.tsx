@@ -523,7 +523,7 @@ export const CustomerManagement = () => {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10">
+                          <div className="shrink-0 h-10 w-10">
                             <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                               <span className="text-sm font-medium text-black">
                                 {customer.name.charAt(0).toUpperCase()}
@@ -568,14 +568,14 @@ export const CustomerManagement = () => {
                           variant="transparent"
                           onClick={() => setHistoryCustomer(customer)}
                           Icon={<EyeIcon className="size-4" />}
-                          className="text-black hover:text-black hover:bg-gray-50 hover:scale-105 !px-2 !py-1 !gap-1"
+                          className="text-black hover:text-black hover:bg-gray-50 hover:scale-105 px-2! py-1! gap-1!"
                         />
                         <CustomButton
                           type="button"
                           variant="transparent"
                           onClick={() => openEditModal(customer)}
                           Icon={<EditIcon className="size-4" />}
-                          className="text-black hover:text-black hover:bg-gray-50 hover:scale-105 !px-2 !py-1 !gap-1"
+                          className="text-black hover:text-black hover:bg-gray-50 hover:scale-105 px-2! py-1! gap-1!"
                         />
                         <CustomButton
                           type="button"
@@ -584,7 +584,7 @@ export const CustomerManagement = () => {
                             customer.id && handleDeleteCustomer(customer.id)
                           }
                           Icon={<DeleteIcon className="size-4" />}
-                          className="text-red-600 hover:text-red-900 hover:bg-red-50 hover:scale-105 !px-2 !py-1 !gap-1"
+                          className="text-red-600 hover:text-red-900 hover:bg-red-50 hover:scale-105 px-2! py-1! gap-1!"
                         />
                       </td>
                     </tr>
@@ -618,7 +618,7 @@ export const CustomerManagement = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
             {/* Header */}
-            <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex-shrink-0">
+            <div className="bg-linear-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl shrink-0">
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-bold">
                   {t("customerManagement.bulkImport.title")}
@@ -631,7 +631,7 @@ export const CustomerManagement = () => {
                     setImportResults(null);
                   }}
                   Icon={<CrossIcon className="size-6" />}
-                  className="text-white hover:text-gray-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
+                  className="text-white hover:text-gray-500 p-2! rounded-full! hover:bg-white hover:bg-opacity-20"
                 />
               </div>
             </div>
@@ -791,7 +791,7 @@ export const CustomerManagement = () => {
                         setImportResults(null);
                       }}
                       label={t("customerManagement.bulkImport.importAnother")}
-                      className="bg-gradient-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 hover:scale-105"
+                      className="bg-linear-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 hover:scale-105"
                     />
                   </div>
                 </div>

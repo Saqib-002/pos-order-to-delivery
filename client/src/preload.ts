@@ -87,8 +87,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // sub categories
   createSubcategory: (token: string, subCategory: any) =>
     ipcRenderer.invoke("create-sub-category", token, subCategory),
-  getSubcategories: (token: string, categoryId: string) =>
-    ipcRenderer.invoke("get-sub-categories", token, categoryId),
+  getSubcategories: (token: string, categoryId: string, isForOrder: boolean = false) =>
+    ipcRenderer.invoke("get-sub-categories", token, categoryId, isForOrder),
   getAllSubcategories: (token: string) =>
     ipcRenderer.invoke("get-all-sub-categories", token),
   deleteSubcategory: (token: string, id: string) =>
@@ -142,8 +142,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("update-product-priorities", token, productIds),
   getAllProducts: (token: string) =>
     ipcRenderer.invoke("get-all-products", token),
-  getProductsByCatId: (token: string, catId: string) =>
-    ipcRenderer.invoke("get-products-by-cat-id", token, catId),
+  getProductsByCatId: (token: string, catId: string, isForOrder: boolean = false) =>
+    ipcRenderer.invoke("get-products-by-cat-id", token, catId, isForOrder),
   deleteProduct: (token: string, id: string) =>
     ipcRenderer.invoke("delete-product", token, id),
   updateProduct: (

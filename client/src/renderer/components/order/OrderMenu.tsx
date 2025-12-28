@@ -64,7 +64,7 @@ const OrderMenu = () => {
     setSelectedSubcategory(null);
     setProducts(null);
     setIsLoadingSubcategories(true);
-    await fetchSubcategories(category.id, token, setSubCategories);
+    await fetchSubcategories(category.id, token, setSubCategories, true);
     setIsLoadingSubcategories(false);
   };
 

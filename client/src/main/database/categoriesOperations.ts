@@ -119,14 +119,17 @@ export class SubCategoriesOperations {
             throw error;
         }
     }
-    static async getSubCategories(categoryId: string) {
+    static async getSubCategories(categoryId: string, isForOrder: boolean = false) {
         try {
+            const subCategoryConstraint = isForOrder 
+            ? ' AND "isAvailable" = true' 
+            : '';
             let query = db("sub_categories")
                 .where("categoryId", categoryId)
                 .select(
                     "sub_categories.*",
                     db.raw(
-                        '(SELECT COUNT(*) FROM products WHERE "subcategoryId" = sub_categories.id AND "name" <> \'250f812e66c1afab64c57bcea36bb3b7\') as "itemCount"'
+                        `(SELECT COUNT(*) FROM products WHERE "subcategoryId" = sub_categories.id AND "name" <> \'250f812e66c1afab64c57bcea36bb3b7\' ${subCategoryConstraint}) as "itemCount"`
                     ),
                     db.raw(
                         '(SELECT COUNT(*) FROM menus WHERE "subcategoryId" = sub_categories.id) as "menuCount"'

@@ -152,7 +152,7 @@ export const SalaryModal = ({
       setPaymentMethods([]);
       setFilters({});
     }
-  }, [isOpen, worker, page, filters]);
+  }, [isOpen, worker, page]);
 
   // Handle Edit Click
   const handleEditClick = (record: WorkerSalary) => {
@@ -421,7 +421,7 @@ export const SalaryModal = ({
         <div className="overflow-y-auto flex-1 p-6">
           {activeTab === "list" ? (
             <div className="flex flex-col h-full">
-              <div className="flex gap-3 mb-4 flex-shrink-0">
+              <div className="flex gap-3 mb-4 shrink-0">
                 <div className="w-48">
                   <DateRangePicker
                     startDate={

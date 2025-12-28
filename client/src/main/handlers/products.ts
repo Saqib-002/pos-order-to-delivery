@@ -53,12 +53,13 @@ export const getAllProducts = async (
 export const getProductsByCatId = async (
     event: IpcMainInvokeEvent,
     token: string,
-    subcatId: string
+    subcatId: string,
+    isForOrder: boolean = false
 ) => {
     try {
         await verifyToken(event, token);
         const result =
-            await ProductsDatabaseOperations.getProductsByCatId(subcatId);
+            await ProductsDatabaseOperations.getProductsByCatId(subcatId, isForOrder);
         return {
             status: true,
             data: result,

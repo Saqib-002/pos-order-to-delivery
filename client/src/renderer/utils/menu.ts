@@ -47,12 +47,14 @@ export const fetchCategories = async (
 export const fetchSubcategories = async (
     categoryId: string,
     token: string | null,
-    setSubcategories: React.Dispatch<React.SetStateAction<any>>
+    setSubcategories: React.Dispatch<React.SetStateAction<any>>,
+    isForOrder: boolean = false
 ) => {
     try {
         const res = await (window as any).electronAPI.getSubcategories(
             token,
-            categoryId
+            categoryId,
+            isForOrder
         );
         if (!res.status) {
             toast.error("Unable to get subcategories");
@@ -143,8 +145,9 @@ export const fetchProductsByCatIdForOrder = async (
 ) => {
     try {
         const res = await (window as any).electronAPI.getProductsByCatId(
-            token,
-            catId
+            token, 
+            catId,
+            true
         );
         if (!res.status) {
             toast.error("Unable to get products");

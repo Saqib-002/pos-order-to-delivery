@@ -182,6 +182,18 @@
       "add": "Add Customer",
       "update": "Update Customer"
     },
+    "historyModal":{
+      "title": "Order History",
+      "noOrders": "No orders found for this customer",
+      "table": {
+        "orderId": "Order #",
+        "date": "Date",
+        "type": "Type",
+        "actions": "Actions",
+        "total": "Total",
+        "status": "Status"
+      }
+    },
     "validation": {
       "nameRequired": "Please enter a customer name",
       "phoneRequired": "Please enter a phone number",

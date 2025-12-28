@@ -290,7 +290,7 @@ const CustomerModal = ({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex-shrink-0">
+        <div className="bg-linear-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl shrink-0">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-bold">
               {isEditMode
@@ -302,7 +302,7 @@ const CustomerModal = ({
               variant="transparent"
               onClick={onClose}
               Icon={<CrossIcon className="size-6" />}
-              className="text-white hover:text-gray-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
+              className="text-white hover:text-gray-500 p-2! rounded-full! hover:bg-white hover:bg-opacity-20"
             />
           </div>
         </div>
@@ -339,7 +339,7 @@ const CustomerModal = ({
                   inputClasses="py-3 px-4"
                 />
                 {showDropdown && searchResults.length > 0 && (
-                  <div className="absolute top-[100%] left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto bg-white rounded-lg shadow-xl border border-gray-100">
+                  <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto bg-white rounded-lg shadow-xl border border-gray-100">
                     {searchResults.map((customer) => (
                       <div
                         key={customer.id}
@@ -443,7 +443,7 @@ const CustomerModal = ({
               </div>
             </div>
           </div>
-          <div className="flex justify-end gap-4 p-4 flex-shrink-0 border-t border-gray-200">
+          <div className="flex justify-end gap-4 p-4 shrink-0 border-t border-gray-200">
             <CustomButton
               type="button"
               variant="secondary"
@@ -459,7 +459,7 @@ const CustomerModal = ({
                   ? t("customerManagement.modal.update")
                   : t("customerManagement.modal.add")
               }
-              className="bg-gradient-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 hover:scale-105"
+              className="bg-linear-to-r from-black to-gray-800 hover:from-gray-900 hover:to-gray-900 hover:scale-105"
             />
           </div>
         </form>
