@@ -2,36 +2,36 @@ import { randomUUID } from "crypto";
 import { db } from "./index.js";
 import { Income, IncomeFilters, PaginatedResult } from "@/types/incomes.js";
 
-export class ExpenseDatabaseOperations {
-  static async createExpense(expenseData: Income): Promise<Income> {
+export class OtherIncomeDatabaseOperations {
+  static async createOtherIncome(otherIncomesData: Income): Promise<Income> {
     try {
       const now = new Date().toISOString();
-      const newExpense = {
+      const newIncome = {
         id: randomUUID(),
-        name: expenseData.name,
-        description: expenseData.description || undefined,
-        total: expenseData.total,
-        paymentType: expenseData.paymentType,
-        date: expenseData.date,
-        ticketId: expenseData.ticketId || undefined,
+        name: otherIncomesData.name,
+        description: otherIncomesData.description || undefined,
+        total: otherIncomesData.total,
+        paymentType: otherIncomesData.paymentType,
+        date: otherIncomesData.date,
+        ticketId: otherIncomesData.ticketId || undefined,
         createdAt: now,
         updatedAt: now,
       };
 
-      await db("other_incomes").insert(newExpense);
-      return newExpense;
+      await db("other_incomes").insert(newIncome);
+      return newIncome;
     } catch (error) {
       throw error;
     }
   }
 
-  static async updateExpense(
+  static async updateOtherIncome(
     id: string,
-    expenseData: Partial<Income>
+    IncomeData: Partial<Income>
   ): Promise<Income> {
     try {
       const now = new Date().toISOString();
-      const { id: _id, createdAt, ...updates } = expenseData as any;
+      const { id: _id, createdAt, ...updates } = IncomeData as any;
       await db("other_incomes")
         .where("id", id)
         .update({ ...updates, updatedAt: now });
@@ -41,7 +41,7 @@ export class ExpenseDatabaseOperations {
     }
   }
 
-  static async getExpenses(
+  static async getOtherIncomes(
     filters: IncomeFilters
   ): Promise<PaginatedResult<Income>> {
     try {
@@ -73,13 +73,13 @@ export class ExpenseDatabaseOperations {
       const total = Number(totalResult?.count || 0);
 
       const offset = (page - 1) * pageSize;
-      const expenses = await query
+      const Incomes = await query
         .orderBy("date", "desc")
         .limit(pageSize)
         .offset(offset);
 
       return {
-        data: expenses,
+        data: Incomes,
         pagination: {
           total,
           page,
@@ -92,7 +92,7 @@ export class ExpenseDatabaseOperations {
     }
   }
 
-  static async getExpenseById(id: string): Promise<Income | null> {
+  static async getOtherIncomeById(id: string): Promise<Income | null> {
     try {
       return await db("other_incomes").where("id", id).first();
     } catch (error) {
@@ -100,7 +100,7 @@ export class ExpenseDatabaseOperations {
     }
   }
 
-  static async deleteExpense(id: string): Promise<void> {
+  static async deleteOtherIncome(id: string): Promise<void> {
     try {
       await db("other_incomes").where("id", id).delete();
     } catch (error) {

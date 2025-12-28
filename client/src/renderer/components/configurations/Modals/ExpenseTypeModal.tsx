@@ -102,7 +102,7 @@ export const ExpenseTypeModal: React.FC<ExpenseTypeModalProps> = ({
               variant="transparent"
               onClick={onClose}
               Icon={<CrossIcon className="size-5" />}
-              className="!p-0"
+              className="p-0!"
             />
           </div>
 

@@ -494,17 +494,17 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getMarketPurchaseById: (token: string, purchaseId: string) =>
     ipcRenderer.invoke("get-market-purchase-by-id", token, purchaseId),
 
-  // Expense operations
-  createExpense: (token: string, expenseData: any) =>
-    ipcRenderer.invoke("create-expense", token, expenseData),
-  updateExpense: (token: string, expenseId: string, expenseData: any) =>
-    ipcRenderer.invoke("update-expense", token, expenseId, expenseData),
-  deleteExpense: (token: string, expenseId: string) =>
-    ipcRenderer.invoke("delete-expense", token, expenseId),
-  getAllExpenses: (token: string, filters?: any) =>
-    ipcRenderer.invoke("get-all-expenses", token, filters),
-  getExpenseById: (token: string, expenseId: string) =>
-    ipcRenderer.invoke("get-expense-by-id", token, expenseId),
+  // other Income operations
+  createOtherIncome: (token: string, otherIncomeData: any) =>
+    ipcRenderer.invoke("create-other-income", token, otherIncomeData),
+  updateOtherIncome: (token: string, otherIncomeId: string, otherIncomeData: any) =>
+    ipcRenderer.invoke("update-other-income", token, otherIncomeId, otherIncomeData),
+  deleteOtherIncome: (token: string, otherIncomeId: string) =>
+    ipcRenderer.invoke("delete-other-income", token, otherIncomeId),
+  getAllOtherIncomes: (token: string, filters?: any) =>
+    ipcRenderer.invoke("get-all-other-incomes", token, filters),
+  getOtherIncomeById: (token: string, otherIncomeId: string) =>
+    ipcRenderer.invoke("get-other-income-by-id", token, otherIncomeId),
 
   // Order change notifications
   onOrderChange: (callback: (change: any) => void) => {

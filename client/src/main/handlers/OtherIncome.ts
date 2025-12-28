@@ -1,15 +1,15 @@
 import { IpcMainInvokeEvent } from "electron";
-import { ExpenseDatabaseOperations } from "../database/expenseOperations.js";
+import { OtherIncomeDatabaseOperations } from "../database/OtherIncomeOperations.js";
 import { verifyToken } from "./auth.js";
 
-export const createExpense = async (
+export const createOtherIncome = async (
   event: IpcMainInvokeEvent,
   token: string,
-  expenseData: any
+  otherIncomeData: any
 ) => {
   try {
     await verifyToken(event, token);
-    const result = await ExpenseDatabaseOperations.createExpense(expenseData);
+    const result = await OtherIncomeDatabaseOperations.createOtherIncome(otherIncomeData);
     return {
       status: true,
       data: result,
@@ -22,17 +22,17 @@ export const createExpense = async (
   }
 };
 
-export const updateExpense = async (
+export const updateOtherIncome = async (
   event: IpcMainInvokeEvent,
   token: string,
-  expenseId: string,
-  expenseData: any
+  otherIncomeId: string,
+  otherIncomeData: any
 ) => {
   try {
     await verifyToken(event, token);
-    const result = await ExpenseDatabaseOperations.updateExpense(
-      expenseId,
-      expenseData
+    const result = await OtherIncomeDatabaseOperations.updateOtherIncome(
+      otherIncomeId,
+      otherIncomeData
     );
     return {
       status: true,
@@ -46,14 +46,14 @@ export const updateExpense = async (
   }
 };
 
-export const deleteExpense = async (
+export const deleteOtherIncome = async (
   event: IpcMainInvokeEvent,
   token: string,
-  expenseId: string
+  otherIncomeId: string
 ) => {
   try {
     await verifyToken(event, token);
-    await ExpenseDatabaseOperations.deleteExpense(expenseId);
+    await OtherIncomeDatabaseOperations.deleteOtherIncome(otherIncomeId);
     return {
       status: true,
       data: null,
@@ -66,7 +66,7 @@ export const deleteExpense = async (
   }
 };
 
-export const getAllExpenses = async (
+export const getAllOtherIncomes = async (
   event: IpcMainInvokeEvent,
   token: string,
   filters?: {
@@ -79,7 +79,7 @@ export const getAllExpenses = async (
 ) => {
   try {
     await verifyToken(event, token);
-    const result = await ExpenseDatabaseOperations.getExpenses(filters || {});
+    const result = await OtherIncomeDatabaseOperations.getOtherIncomes(filters || {});
     return {
       status: true,
       data: result,
@@ -92,18 +92,18 @@ export const getAllExpenses = async (
   }
 };
 
-export const getExpenseById = async (
+export const getOtherIncomeById = async (
   event: IpcMainInvokeEvent,
   token: string,
-  expenseId: string
+  otherIncomeId: string
 ) => {
   try {
     await verifyToken(event, token);
-    const result = await ExpenseDatabaseOperations.getExpenseById(expenseId);
+    const result = await OtherIncomeDatabaseOperations.getOtherIncomeById(otherIncomeId);
     if (!result) {
       return {
         status: false,
-        error: "Expense not found",
+        error: "Other income not found",
       };
     }
     return {

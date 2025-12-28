@@ -1813,7 +1813,7 @@
   "incomesManagement": {
     "title": "Otra Fuente de Ingresos",
     "subtitle": "Gestionar fuentes de ingresos externas y pagos",
-    "addExpense": "Agregar Fuente de Ingresos",
+    "addOtherIncome": "Agregar Fuente de Ingresos",
     "searchPlaceholder": "Buscar Nombre, Descripción o ID de Ticket...",
     "filters": {
       "startDate": "Fecha de Inicio",
@@ -1821,7 +1821,7 @@
       "clearFilters": "Limpiar Filtros"
     },
     "table": {
-      "expenses": "Fuentes de Ingresos",
+      "otherIncomeSources": "Fuentes de Ingresos",
       "date": "Fecha",
       "name": "Nombre",
       "description": "Descripción",
@@ -1830,7 +1830,7 @@
       "paymentType": "Tipo de Pago",
       "paymentStatus": "Estado de Pago",
       "actions": "Acciones",
-      "noExpenses": "No se encontraron fuentes de ingresos",
+      "noOtherIncomes": "No se encontraron fuentes de ingresos",
       "updating": "Actualizando..."
     },
     "modal": {

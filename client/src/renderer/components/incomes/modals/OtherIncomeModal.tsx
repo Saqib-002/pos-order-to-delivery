@@ -20,7 +20,7 @@ interface Props {
   initialData?: Income | null;
 }
 
-export const ExpenseModal = ({
+export const OtherIncomeModal = ({
   isOpen,
   onClose,
   onSubmit,
@@ -156,7 +156,7 @@ export const ExpenseModal = ({
             .join(", ")
         : "";
 
-    const expenseData: Income = {
+    const otherIncomesData: Income = {
       ...formData,
       name: formData.name!,
       total: Number(totalAmount),
@@ -165,7 +165,7 @@ export const ExpenseModal = ({
       ticketId: formData.ticketId || undefined,
     } as Income;
 
-    const success = await onSubmit(expenseData);
+    const success = await onSubmit(otherIncomesData);
     if (success) {
       onClose();
       setFormData({

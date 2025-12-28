@@ -1,29 +1,29 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useConfirm } from "../hooks/useConfirm";
-import { useExpenseData } from "../hooks/useIncomeData";
+import { useOtherIncomesData } from "../hooks/useIncomeData";
 import { Income } from "@/types/incomes";
 
 import CustomButton from "../components/ui/CustomButton";
 import CustomInput from "../components/shared/CustomInput";
 import { DateRangePicker } from "../components/ui/DateRangePicker";
 import Pagination from "../components/shared/Pagination";
-import { ExpenseModal } from "../components/incomes/modals/ExpenseModal";
 import { AddIcon, SearchIcon } from "../public/Svg";
 import { IncomeTable } from "../components/incomes/IncomesTable";
+import { OtherIncomeModal } from "../components/incomes/modals/OtherIncomeModal";
 
 export const IncomesManagement = () => {
   const { t } = useTranslation();
   const confirm = useConfirm();
   const {
-    expensesData,
+    otherIncomesData,
     loading,
     filters,
     setFilters,
-    createExpense,
-    updateExpense,
-    deleteExpense,
-  } = useExpenseData();
+    createOtherIncome,
+    updateOtherIncome,
+    deleteOtherIncome,
+  } = useOtherIncomesData();
 
   const handleClearFilters = () => {
     setFilters({
@@ -50,8 +50,8 @@ export const IncomesManagement = () => {
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: "add" | "edit";
-    expense: Income | null;
-  }>({ isOpen: false, type: "add", expense: null });
+    otherIncome: Income | null;
+  }>({ isOpen: false, type: "add", otherIncome: null });
 
   const [searchTerm, setSearchTerm] = useState(filters.search || "");
 
@@ -76,16 +76,16 @@ export const IncomesManagement = () => {
   };
 
   const handleOpenAdd = () =>
-    setModalState({ isOpen: true, type: "add", expense: null });
-  const handleOpenEdit = (expense: Income) =>
-    setModalState({ isOpen: true, type: "edit", expense });
+    setModalState({ isOpen: true, type: "add", otherIncome: null });
+  const handleOpenEdit = (otherIncome: Income) =>
+    setModalState({ isOpen: true, type: "edit", otherIncome });
   const handleClose = () => setModalState({ ...modalState, isOpen: false });
 
-  const handleSaveExpense = async (data: Income) => {
+  const handleSaveOtherIncome = async (data: Income) => {
     const result =
-      modalState.type === "edit" && modalState.expense
-        ? await updateExpense(modalState.expense.id!, data)
-        : await createExpense(data);
+      modalState.type === "edit" && modalState.otherIncome
+        ? await updateOtherIncome(modalState.otherIncome.id!, data)
+        : await createOtherIncome(data);
     if (result) {
       handleClose();
     }
@@ -102,7 +102,7 @@ export const IncomesManagement = () => {
         type: "danger",
       })
     ) {
-      await deleteExpense(id);
+      await deleteOtherIncome(id);
     }
   };
 
@@ -120,7 +120,7 @@ export const IncomesManagement = () => {
         <CustomButton
           type="button"
           onClick={handleOpenAdd}
-          label={t("incomesManagement.addExpense")}
+          label={t("incomesManagement.addOtherIncome")}
           Icon={<AddIcon className="size-5" />}
         />
       </div>
@@ -175,8 +175,8 @@ export const IncomesManagement = () => {
 
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-semibold text-black">
-            {t("incomesManagement.table.expenses")} (
-            {expensesData.pagination.total})
+            {t("incomesManagement.table.otherIncomes")} (
+            {otherIncomesData.pagination.total})
           </h3>
           {loading && (
             <span className="text-sm text-gray-500 animate-pulse">
@@ -187,7 +187,7 @@ export const IncomesManagement = () => {
 
         <div className="grow">
           <IncomeTable
-            incomes={expensesData.data}
+            incomes={otherIncomesData.data}
             onEdit={handleOpenEdit}
             onDelete={handleDelete}
           />
@@ -195,19 +195,19 @@ export const IncomesManagement = () => {
 
         <div className="p-4 border-t border-gray-200">
           <Pagination
-            currentPage={expensesData.pagination.page - 1}
-            totalPages={expensesData.pagination.totalPages}
+            currentPage={otherIncomesData.pagination.page - 1}
+            totalPages={otherIncomesData.pagination.totalPages}
             onPageChange={handlePageChange}
           />
         </div>
       </div>
 
       {/* Modal */}
-      <ExpenseModal
+      <OtherIncomeModal
         isOpen={modalState.isOpen}
         onClose={handleClose}
-        onSubmit={handleSaveExpense}
-        initialData={modalState.type === "edit" ? modalState.expense : null}
+        onSubmit={handleSaveOtherIncome}
+        initialData={modalState.type === "edit" ? modalState.otherIncome : null}
       />
     </div>
   );

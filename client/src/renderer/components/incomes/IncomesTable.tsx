@@ -66,44 +66,44 @@ export const IncomeTable = ({ incomes, onEdit, onDelete }: Props) => {
           {incomes.length === 0 ? (
             <tr>
               <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
-                {t("incomesManagement.table.noincomes")}
+                {t("incomesManagement.table.noOtherIncomes")}
               </td>
             </tr>
           ) : (
-            incomes.map((expense) => (
+            incomes.map((income) => (
               <tr
-                key={expense.id}
+                key={income.id}
                 className="hover:bg-gray-50 transition-colors"
               >
                 <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                  {formatDate(expense.date)}
+                  {formatDate(income.date)}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                  {expense.name}
+                  {income.name}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
-                  {expense.description || "-"}
+                  {income.description || "-"}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
-                  {expense.ticketId || "-"}
+                  {income.ticketId || "-"}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
-                  {formatCurrency(expense.total)}
+                  {formatCurrency(income.total)}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
-                  {expense.paymentType && expense.paymentType.includes(":")
-                    ? expense.paymentType
-                    : expense.paymentType.charAt(0).toUpperCase() +
-                      expense.paymentType.slice(1)}
+                  {income.paymentType && income.paymentType.includes(":")
+                    ? income.paymentType
+                    : income.paymentType.charAt(0).toUpperCase() +
+                      income.paymentType.slice(1)}
                 </td>
                 <td className="px-6 py-4 text-sm">
                   {(() => {
                     const total =
-                      typeof expense.total === "number"
-                        ? expense.total
-                        : parseFloat(String(expense.total || 0)) || 0;
+                      typeof income.total === "number"
+                        ? income.total
+                        : parseFloat(String(income.total || 0)) || 0;
                     const paymentStatus = calculatePaymentStatus(
-                      expense.paymentType || "",
+                      income.paymentType || "",
                       total
                     );
                     return (
@@ -119,14 +119,14 @@ export const IncomeTable = ({ incomes, onEdit, onDelete }: Props) => {
                 </td>
                 <td className="px-6 py-4 text-right flex justify-end gap-2">
                   <button
-                    onClick={() => onEdit(expense)}
+                    onClick={() => onEdit(income)}
                     className="p-2 hover:bg-gray-200 rounded-full text-gray-600"
                     title={t("common.edit")}
                   >
                     <EditIcon className="size-5" />
                   </button>
                   <button
-                    onClick={() => onDelete(expense.id!)}
+                    onClick={() => onDelete(income.id!)}
                     className="p-2 hover:bg-red-100 rounded-full text-red-600"
                     title={t("common.delete")}
                   >

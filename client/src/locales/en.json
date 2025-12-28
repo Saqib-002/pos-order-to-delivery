@@ -1813,7 +1813,7 @@
   "incomesManagement": {
     "title": "Other Source of Income",
     "subtitle": "Manage external income sources and payments",
-    "addExpense": "Add Income Source",
+    "addOtherIncome": "Add Income Source",
     "searchPlaceholder": "Search Name, Description or Ticket ID...",
     "filters": {
       "startDate": "Start Date",
@@ -1821,7 +1821,7 @@
       "clearFilters": "Clear Filters"
     },
     "table": {
-      "expenses": "Income Sources",
+      "otherIncomeSources": "Income Sources",
       "date": "Date",
       "name": "Name",
       "description": "Description",
@@ -1830,7 +1830,7 @@
       "paymentType": "Payment Type",
       "paymentStatus": "Payment Status",
       "actions": "Actions",
-      "noExpenses": "No income sources found",
+      "noOtherIncomes": "No income sources found",
       "updating": "Updating..."
     },
     "modal": {

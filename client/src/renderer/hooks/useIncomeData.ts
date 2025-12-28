@@ -3,12 +3,12 @@ import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 import { Income, IncomeFilters, PaginatedResult } from "@/types/incomes";
 
-export const useExpenseData = () => {
+export const useOtherIncomesData = () => {
   const {
     auth: { token },
   } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [expensesData, setExpensesData] = useState<PaginatedResult<Income>>({
+  const [otherIncomesData, setOtherIncomesData] = useState<PaginatedResult<Income>>({
     data: [],
     pagination: { total: 0, page: 1, pageSize: 10, totalPages: 1 },
   });
@@ -18,90 +18,90 @@ export const useExpenseData = () => {
     search: "",
   });
 
-  const fetchExpenses = useCallback(async () => {
+  const fetchOtherIncomes = useCallback(async () => {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await (window as any).electronAPI.getAllExpenses(
+      const res = await (window as any).electronAPI.getAllOtherIncomes(
         token,
         filters
       );
       if (res.status) {
-        setExpensesData(res.data);
+        setOtherIncomesData(res.data);
       } else {
-        toast.error(res.error || "Failed to fetch expenses");
+        toast.error(res.error || "Failed to fetch other incomes");
       }
     } catch (err) {
       console.error(err);
-      toast.error("Error loading expenses");
+      toast.error("Error loading other incomes");
     } finally {
       setLoading(false);
     }
   }, [token, filters]);
 
   useEffect(() => {
-    fetchExpenses();
-  }, [fetchExpenses]);
+    fetchOtherIncomes();
+  }, [fetchOtherIncomes]);
 
-  const createExpense = async (data: Income) => {
+  const createOtherIncome = async (data: Income) => {
     try {
-      const res = await (window as any).electronAPI.createExpense(token, data);
+      const res = await (window as any).electronAPI.createOtherIncome(token, data);
       if (res.status) {
-        toast.success("Expense created successfully");
-        fetchExpenses();
+        toast.success("Other income created successfully");
+        fetchOtherIncomes();
         return true;
       } else {
-        toast.error(res.error || "Failed to create expense");
+        toast.error(res.error || "Failed to create other income");
         return false;
       }
     } catch (err) {
-      toast.error("Error creating expense");
+      toast.error("Error creating other income");
       return false;
     }
   };
 
-  const updateExpense = async (id: string, data: Partial<Income>) => {
+  const updateOtherIncome = async (id: string, data: Partial<Income>) => {
     try {
-      const res = await (window as any).electronAPI.updateExpense(
+      const res = await (window as any).electronAPI.updateOtherIncome(
         token,
         id,
         data
       );
       if (res.status) {
-        toast.success("Expense updated successfully");
-        fetchExpenses();
+        toast.success("Other income updated successfully");
+        fetchOtherIncomes();
         return true;
       } else {
-        toast.error(res.error || "Failed to update expense");
+        toast.error(res.error || "Failed to update other income");
         return false;
       }
     } catch (err) {
-      toast.error("Error updating expense");
+      toast.error("Error updating other income");
       return false;
     }
   };
 
-  const deleteExpense = async (id: string) => {
+  const deleteOtherIncome = async (id: string) => {
     try {
-      const res = await (window as any).electronAPI.deleteExpense(token, id);
+      const res = await (window as any).electronAPI.deleteOtherIncome(token, id);
       if (res.status) {
-        toast.success("Expense deleted successfully");
-        fetchExpenses();
+        toast.success("Other income deleted successfully");
+        fetchOtherIncomes();
       } else {
-        toast.error(res.error || "Failed to delete expense");
+        toast.error(res.error || "Failed to delete other income");
       }
     } catch (err) {
-      toast.error("Error deleting expense");
+      toast.error("Error deleting other income");
     }
   };
 
   return {
-    expensesData,
+    otherIncomesData,
     loading,
     filters,
     setFilters,
-    createExpense,
-    updateExpense,
-    deleteExpense,
+    createOtherIncome,
+    updateOtherIncome,
+    deleteOtherIncome,
   };
 };

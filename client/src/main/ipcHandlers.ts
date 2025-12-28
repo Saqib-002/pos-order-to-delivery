@@ -170,13 +170,7 @@ import {
   getAllMarketPurchases,
   getMarketPurchaseById,
 } from "./handlers/marketPurchases.js";
-import {
-  createExpense,
-  updateExpense,
-  deleteExpense,
-  getAllExpenses,
-  getExpenseById,
-} from "./handlers/expenses.js";
+import { createOtherIncome, deleteOtherIncome, getAllOtherIncomes, getOtherIncomeById, updateOtherIncome } from "./handlers/OtherIncome.js";
 import { getFinancialAnalytics } from "./handlers/financialOperations.js";
 interface DbCredentials {
   host: string;
@@ -411,13 +405,12 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-all-inventory-products", getAllInventoryProducts);
   ipcMain.handle("get-inventory-product-by-id", getInventoryProductById);
 
-  // expenses
-  ipcMain.handle("create-expense", createExpense);
-  ipcMain.handle("update-expense", updateExpense);
-  ipcMain.handle("delete-expense", deleteExpense);
-  ipcMain.handle("get-all-expenses", getAllExpenses);
-  ipcMain.handle("get-expense-by-id", getExpenseById);
-
+  // other incomes
+  ipcMain.handle("create-other-income", createOtherIncome);
+  ipcMain.handle("update-other-income", updateOtherIncome);
+  ipcMain.handle("delete-other-income", deleteOtherIncome);
+  ipcMain.handle("get-all-other-incomes", getAllOtherIncomes);
+  ipcMain.handle("get-other-income-by-id", getOtherIncomeById);
   // market purchases
   ipcMain.handle("create-market-purchase", createMarketPurchase);
   ipcMain.handle("update-market-purchase", updateMarketPurchase);
