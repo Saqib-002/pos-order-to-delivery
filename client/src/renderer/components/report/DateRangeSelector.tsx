@@ -1,6 +1,7 @@
 import { DATE_RANGES } from "@/constants/report";
 import { useTranslation } from "react-i18next";
 import { DateRangePicker } from "../ui/DateRangePicker";
+import dayjs from "dayjs";
 
 const ORDER_TYPES = [
   { value: null, key: "all" },
@@ -77,7 +78,7 @@ export const DateRangeSelector: React.FC<{
                       setEndDateRange(endDate);
                     }
                     if (startDate) {
-                      setSelectedDate(startDate.toISOString().split("T")[0]);
+                      setSelectedDate(dayjs(startDate).format("YYYY-MM-DD"));
                     } else {
                       setSelectedDate("");
                     }
@@ -89,7 +90,7 @@ export const DateRangeSelector: React.FC<{
           </div>
         </div>
         {setOrderType && (
-          <div className="flex-1 lg:flex-initial lg:min-w-[300px]">
+          <div className="flex-1 lg:flex-initial lg:min-w-75">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t("reports.components.orderTypeSelector.filterByOrderType")}
             </label>
