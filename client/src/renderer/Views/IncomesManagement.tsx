@@ -11,6 +11,7 @@ import Pagination from "../components/shared/Pagination";
 import { AddIcon, SearchIcon } from "../public/Svg";
 import { IncomeTable } from "../components/incomes/IncomesTable";
 import { OtherIncomeModal } from "../components/incomes/modals/OtherIncomeModal";
+import dayjs from "dayjs";
 
 export const IncomesManagement = () => {
   const { t } = useTranslation();
@@ -41,8 +42,8 @@ export const IncomesManagement = () => {
   ) => {
     setFilters((prev) => ({
       ...prev,
-      startDate: startDate ? startDate.toISOString().split("T")[0] : undefined,
-      endDate: endDate ? endDate.toISOString().split("T")[0] : undefined,
+      startDate: startDate ? dayjs(startDate).format("YYYY-MM-DD") : undefined,
+      endDate: endDate ? dayjs(endDate).format("YYYY-MM-DD") : undefined,
       page: 1,
     }));
   };

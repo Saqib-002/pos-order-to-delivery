@@ -71,7 +71,7 @@ export const SalaryModal = ({
     bonus: 0,
     extraServices: 0,
     total: 0,
-    date: new Date().toISOString().split("T")[0],
+    date: dayjs().format("YYYY-MM-DD"),
     paymentType: "cash",
   };
   const [formData, setFormData] = useState<Partial<WorkerSalary>>(initialForm);
@@ -172,7 +172,7 @@ export const SalaryModal = ({
       bonus: record.bonus,
       extraServices: record.extraServices,
       total: record.total,
-      date: new Date(record.date).toISOString().split("T")[0],
+      date: dayjs(record.date).format("YYYY-MM-DD"),
       paymentType: record.paymentType || "cash",
     });
 
@@ -318,7 +318,7 @@ export const SalaryModal = ({
         configurations,
         t
       );
-      const defaultFileName = `salary-report-${worker.name}-${new Date().toISOString().split("T")[0]}.pdf`;
+      const defaultFileName = `salary-report-${worker.name}-${dayjs().format("YYYY-MM-DD")}.pdf`;
 
       const result = await (window as any).electronAPI.saveMaintenanceReportPDF(
         token,
@@ -434,10 +434,10 @@ export const SalaryModal = ({
                     onChange={(startDate, endDate) => {
                       setFilters({
                         startDate: startDate
-                          ? startDate.toISOString().split("T")[0]
+                          ? dayjs(startDate).format("YYYY-MM-DD")
                           : undefined,
                         endDate: endDate
-                          ? endDate.toISOString().split("T")[0]
+                          ? dayjs(endDate).format("YYYY-MM-DD")
                           : undefined,
                       });
                       setPage(1);

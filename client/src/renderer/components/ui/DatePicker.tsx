@@ -108,8 +108,7 @@ export function DatePicker({
   const handleChange = (newValue: Dayjs | null) => {
     setDateValue(newValue);
     if (newValue && newValue.isValid()) {
-      const formattedDate = newValue.format("YYYY-MM-DD");
-      onChange(formattedDate);
+      onChange(dayjs(newValue).format("YYYY-MM-DD"));
     } else {
       onChange("");
     }

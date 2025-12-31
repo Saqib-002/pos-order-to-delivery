@@ -12,6 +12,7 @@ import { MarketPurchaseTable } from "../components/marketPurchases/MarketPurchas
 import { MarketPurchaseModal } from "../components/marketPurchases/modals/MarketPurchaseModal";
 import { AddIcon, SearchIcon } from "../public/Svg";
 import { DateRangePicker } from "../components/ui/DateRangePicker";
+import dayjs from "dayjs";
 
 export const MarketPurchaseManagement = () => {
   const { t } = useTranslation();
@@ -48,8 +49,8 @@ export const MarketPurchaseManagement = () => {
   ) => {
     setFilters((prev) => ({
       ...prev,
-      startDate: startDate ? startDate.toISOString().split("T")[0] : undefined,
-      endDate: endDate ? endDate.toISOString().split("T")[0] : undefined,
+      startDate: startDate ? dayjs(startDate).format("YYYY-MM-DD") : undefined,
+      endDate: endDate ? dayjs(endDate).format("YYYY-MM-DD") : undefined,
       page: 1,
     }));
   };

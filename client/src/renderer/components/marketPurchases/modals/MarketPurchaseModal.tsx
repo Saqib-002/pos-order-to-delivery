@@ -872,7 +872,7 @@ export const MarketPurchaseModal = ({
               : "max-w-xl"
         }`}
       >
-        <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex justify-between items-center flex-shrink-0">
+        <div className="bg-linear-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex justify-between items-center shrink-0">
           <div>
             <h2 className="text-2xl font-bold">
               {initialData
@@ -909,7 +909,7 @@ export const MarketPurchaseModal = ({
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between gap-4 pt-4 px-8 pb-8 border-t border-gray-200 flex-shrink-0">
+        <div className="flex justify-between gap-4 pt-4 px-8 pb-8 border-t border-gray-200 shrink-0">
           <div>
             {currentStep > 1 && (
               <CustomButton

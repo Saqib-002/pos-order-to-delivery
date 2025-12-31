@@ -12,6 +12,7 @@ import {
   ChevronRightIcon,
 } from "../../../public/Svg";
 import { PaymentStep, PaymentMethod } from "../../shared/PaymentStep";
+import dayjs from "dayjs";
 
 interface Props {
   isOpen: boolean;
@@ -32,7 +33,7 @@ export const OtherIncomeModal = ({
     name: "",
     description: "",
     total: 0,
-    date: new Date().toISOString().split("T")[0],
+    date: dayjs().format("DD/MM/YYYY"),
     paymentType: "cash",
     ticketId: "",
   });
@@ -93,7 +94,7 @@ export const OtherIncomeModal = ({
           name: "",
           description: "",
           total: 0,
-          date: new Date().toISOString().split("T")[0],
+          date: dayjs().format("DD/MM/YYYY"),
           paymentType: "cash",
           ticketId: "",
         });
@@ -172,7 +173,7 @@ export const OtherIncomeModal = ({
         name: "",
         description: "",
         total: 0,
-        date: new Date().toISOString().split("T")[0],
+        date: dayjs().format("DD/MM/YYYY"),
         paymentType: "cash",
         ticketId: "",
       });

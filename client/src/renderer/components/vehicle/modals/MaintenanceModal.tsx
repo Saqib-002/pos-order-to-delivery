@@ -32,6 +32,7 @@ import {
   getPaymentStatusStyle,
 } from "../../../utils/paymentStatus";
 import { generateMaintenanceReportHTML } from "../../../utils/pdfService";
+import dayjs from "dayjs";
 
 interface MaintenanceModalProps {
   isOpen: boolean;
@@ -72,7 +73,7 @@ const INITIAL_FILTERS: MaintenanceFilters = {
 
 const formatDate = (dateString: string | Date | undefined) => {
   if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("en-GB"); // dd/mm/yyyy
+  return dayjs(dateString).format("YYYY-MM-DD")
 };
 
 export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
@@ -99,7 +100,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
     unit: "1",
     sparePart: "",
     price: "",
-    date: new Date().toISOString().split("T")[0],
+    date: dayjs().format("YYYY-MM-DD"),
     currentMileage: "",
   });
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -119,7 +120,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
       unit: "1",
       sparePart: "",
       price: "",
-      date: new Date().toISOString().split("T")[0],
+      date: dayjs().format("YYYY-MM-DD"),
       currentMileage: "",
     });
     setEditingId(null);
@@ -227,7 +228,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
       sparePart: record.sparePart,
       unit: record.unit.toString(),
       price: record.price.toString(),
-      date: new Date(record.date).toISOString().split("T")[0],
+      date: dayjs(record.date).format("YYYY-MM-DD"),
       currentMileage: record.currentMileage?.toString() || "",
     });
     setEditingId(record.id);
@@ -290,7 +291,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
         configurations,
         t
       );
-      const defaultFileName = `maintenance-report-${vehicle.licensePlate}-${new Date().toISOString().split("T")[0]}.pdf`;
+      const defaultFileName = `maintenance-report-${vehicle.licensePlate}-${dayjs().format("YYYY-MM-DD")}.pdf`;
 
       const result = await (window as any).electronAPI.saveMaintenanceReportPDF(
         token,
@@ -333,7 +334,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
         className={`bg-white rounded-2xl shadow-2xl w-full h-[90vh] flex flex-col ${currentStep === 2 ? "max-w-xl" : "max-w-5xl"}`}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex-shrink-0">
+        <div className="bg-linear-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl shrink-0">
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-xl font-bold">
@@ -364,7 +365,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
               variant="transparent"
               onClick={onClose}
               Icon={<CrossIcon className="size-6" />}
-              className="text-white hover:text-gray-500 !p-2 !rounded-full hover:bg-white hover:bg-opacity-20"
+              className="text-white hover:text-gray-500 p-2! rounded-full! hover:bg-white hover:bg-opacity-20"
             />
           </div>
         </div>
@@ -374,7 +375,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
             <>
               {/* Add/Edit Record Form - Step 1 */}
               {currentStep === 1 && (
-                <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100 flex-shrink-0">
+                <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100 shrink-0">
                   <h4 className="font-semibold mb-3 text-sm text-black uppercase tracking-wider">
                     {t("vehicleManagement.maintenanceModal.editRecord")}
                   </h4>
@@ -496,7 +497,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
             <>
               {/* Add New Record - Step 1 */}
               {currentStep === 1 && (
-                <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100 flex-shrink-0">
+                <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100 shrink-0">
                   <h4 className="font-semibold mb-3 text-sm text-black uppercase tracking-wider">
                     {t("vehicleManagement.maintenanceModal.addNewRecord")}
                   </h4>
@@ -606,7 +607,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
 
           {/* Navigation Buttons for Step 2 */}
           {editingId && currentStep === 2 && (
-            <div className="flex justify-between gap-4 mb-6 pt-4 border-t border-gray-200 flex-shrink-0">
+            <div className="flex justify-between gap-4 mb-6 pt-4 border-t border-gray-200 shrink-0">
               <CustomButton
                 type="button"
                 variant="secondary"
@@ -632,7 +633,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
 
           {/* Navigation Buttons for Step 2 (Add New) */}
           {!editingId && currentStep === 2 && (
-            <div className="flex justify-between gap-4 mb-6 pt-4 border-t border-gray-200 flex-shrink-0">
+            <div className="flex justify-between gap-4 mb-6 pt-4 border-t border-gray-200 shrink-0">
               <CustomButton
                 type="button"
                 variant="secondary"
@@ -658,7 +659,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
 
           {/* Filters - Only show when not editing and on step 1 */}
           {!editingId && currentStep === 1 && (
-            <div className="flex flex-col gap-3 mb-4 flex-shrink-0">
+            <div className="flex flex-col gap-3 mb-4 shrink-0">
               <div className="flex gap-3 items-end">
                 <div className="flex-1">
                   <CustomInput
@@ -680,7 +681,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                 <div className="w-48">
                   <DateRangePicker
                     startDate={
-                      filters.startDate ? new Date(filters.startDate) : null
+                      filters.startDate ? dayjs(filters.startDate).toDate() : null
                     }
                     endDate={filters.endDate ? new Date(filters.endDate) : null}
                     selectedDate={
@@ -690,10 +691,10 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                       const newFilters = {
                         ...filters,
                         startDate: startDate
-                          ? startDate.toISOString().split("T")[0]
+                          ? dayjs(startDate).format("YYYY-MM-DD")
                           : undefined,
                         endDate: endDate
-                          ? endDate.toISOString().split("T")[0]
+                          ? dayjs(endDate).format("YYYY-MM-DD")
                           : undefined,
                         page: 1,
                       };
@@ -861,7 +862,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                               variant="transparent"
                               onClick={() => handleEdit(r)}
                               Icon={<EditIcon className="size-4" />}
-                              className="text-black hover:text-blue-600 !p-1.5"
+                              className="text-black hover:text-blue-600 p-1.5!"
                               title="Edit"
                             />
                             <CustomButton
@@ -869,7 +870,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                               variant="transparent"
                               onClick={() => handleDelete(r.id)}
                               Icon={<DeleteIcon className="size-4" />}
-                              className="text-red-500 hover:text-red-700 !p-1.5"
+                              className="text-red-500 hover:text-red-700 p-1.5!"
                               title="Delete"
                             />
                           </td>
@@ -884,7 +885,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
 
           {/* Pagination - Only show when not editing and on step 1 */}
           {!editingId && currentStep === 1 && (
-            <div className="mt-4 flex-shrink-0">
+            <div className="mt-4 shrink-0">
               <Pagination
                 currentPage={data.pagination.page - 1}
                 totalPages={data.pagination.totalPages}
