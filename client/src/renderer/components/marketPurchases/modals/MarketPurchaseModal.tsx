@@ -55,6 +55,8 @@ export const MarketPurchaseModal = ({
     unitPrice: 0,
     tax: 0,
     total: 0,
+    expenseTypeId: "",
+    isTaxIncluded: false,
   });
   const [taxPercentage, setTaxPercentage] = useState<number>(0);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -127,6 +129,8 @@ export const MarketPurchaseModal = ({
         unitPrice: 0,
         tax: 0,
         total: 0,
+        expenseTypeId: "",
+        isTaxIncluded: false,
       });
       setTaxPercentage(0);
     }
@@ -160,11 +164,23 @@ export const MarketPurchaseModal = ({
     taxPercent?: number
   ) => {
     const totalUnit = product.box * product.unit;
-    const subtotal = product.unitPrice * totalUnit;
-    const taxPercentValue =
+    const currentTaxPercent =
       taxPercent !== undefined ? taxPercent : taxPercentage;
-    const taxAmount = (subtotal * taxPercentValue) / 100;
-    const total = subtotal + taxAmount;
+    const taxRate = currentTaxPercent / 100;
+    let subtotal = 0;
+    let taxAmount = 0;
+    let total = 0;
+    if (product.isTaxIncluded) {
+      total = product.unitPrice * totalUnit;
+
+      const baseTotal = total / (1 + taxRate);
+      taxAmount = total - baseTotal;
+      subtotal = baseTotal;
+    } else {
+      subtotal = product.unitPrice * totalUnit;
+      taxAmount = subtotal * taxRate;
+      total = subtotal + taxAmount;
+    }
     return {
       ...product,
       totalUnit,
@@ -192,7 +208,25 @@ export const MarketPurchaseModal = ({
       toast.error(t("marketPurchaseManagement.modal.errors.unitPriceRequired"));
       return;
     }
+    if (!newProduct.expenseTypeId) {
+      toast.error(
+        t("marketPurchaseManagement.modal.errors.expenseTypeRequired")
+      );
+      return;
+    }
+    let itemToSave = { ...newProduct };
+    if (newProduct.isTaxIncluded) {
+      const taxRate = taxPercentage / 100;
+      const grossTotal = newProduct.unitPrice * newProduct.totalUnit;
+      const netTotal = grossTotal / (1 + taxRate);
+      const netUnitPrice = netTotal / newProduct.totalUnit;
 
+      itemToSave.unitPrice = netUnitPrice;
+    }
+    const expenseType = expenseTypes.find(
+      (e) => e.id === newProduct.expenseTypeId
+    );
+    itemToSave.expenseTypeName = expenseType?.name;
     if (editingIndex !== null) {
       // Update existing item
       const updatedItems = [...items];
@@ -215,12 +249,41 @@ export const MarketPurchaseModal = ({
       unitPrice: 0,
       tax: 0,
       total: 0,
+      expenseTypeId: "",
+      isTaxIncluded: false,
     });
     setTaxPercentage(0);
   };
 
   const handleEditItem = (index: number) => {
     const item = items[index];
+    let displayUnitPrice =
+      typeof item.unitPrice === "string"
+        ? parseFloat(item.unitPrice)
+        : item.unitPrice || 0;
+    const totalUnit =
+      typeof item.totalUnit === "string"
+        ? parseInt(item.totalUnit)
+        : item.totalUnit || 0;
+    const taxAmount =
+      typeof item.tax === "string" ? parseFloat(item.tax) : item.tax || 0;
+    const totalAmount =
+      typeof item.total === "string" ? parseFloat(item.total) : item.total || 0;
+
+    const netSubtotal = displayUnitPrice * totalUnit;
+    let taxPercent = 0;
+    if (netSubtotal > 0) {
+      taxPercent = (taxAmount / netSubtotal) * 100;
+    } else if (item.isTaxIncluded && totalAmount > 0) {
+      const inferredNet = totalAmount - taxAmount;
+      if (inferredNet > 0) taxPercent = (taxAmount / inferredNet) * 100;
+    }
+    if (item.isTaxIncluded) {
+      if (totalUnit > 0) {
+        displayUnitPrice = totalAmount / totalUnit;
+      }
+    }
+    // Calculate tax percent based on stored values
     // Ensure all numeric values are numbers, not strings
     const editedProduct: MarketPurchaseItem = {
       ...item,
@@ -240,10 +303,10 @@ export const MarketPurchaseModal = ({
         typeof item.total === "string"
           ? parseFloat(item.total)
           : item.total || 0,
+      expenseTypeId: item.expenseTypeId,
+      isTaxIncluded: item.isTaxIncluded || false,
     };
     setNewProduct(editedProduct);
-    const subtotal = editedProduct.unitPrice * editedProduct.totalUnit;
-    const taxPercent = subtotal > 0 ? (editedProduct.tax / subtotal) * 100 : 0;
     setTaxPercentage(taxPercent);
     setEditingIndex(index);
     setTimeout(() => {
@@ -262,6 +325,8 @@ export const MarketPurchaseModal = ({
       unitPrice: 0,
       tax: 0,
       total: 0,
+      expenseTypeId: "",
+      isTaxIncluded: false
     });
     setTaxPercentage(0);
     setEditingIndex(null);
@@ -288,12 +353,6 @@ export const MarketPurchaseModal = ({
   const validateStep1 = (): boolean => {
     if (!formData.supplierId) {
       toast.error(t("marketPurchaseManagement.modal.errors.supplierRequired"));
-      return false;
-    }
-    if (!formData.expenseTypeId) {
-      toast.error(
-        t("marketPurchaseManagement.modal.errors.expenseTypeRequired")
-      );
       return false;
     }
     if (!formData.ticketDate) {
@@ -357,7 +416,6 @@ export const MarketPurchaseModal = ({
     const purchaseData: MarketPurchase = {
       ...formData,
       supplierId: formData.supplierId!,
-      expenseTypeId: formData.expenseTypeId!,
       ticketDate: formData.ticketDate!,
       ticketNumber: formData.ticketNumber!,
       paymentType: paymentTypeString,
@@ -405,17 +463,6 @@ export const MarketPurchaseModal = ({
   }));
 
   const totalAmount = calculateTotalAmount();
-  const totalPaid = paymentMethods.reduce((sum, method) => {
-    const amount =
-      typeof method.amount === "string"
-        ? parseFloat(method.amount)
-        : method.amount || 0;
-    return sum + amount;
-  }, 0);
-  const remainingAmount =
-    (typeof totalAmount === "string"
-      ? parseFloat(totalAmount)
-      : totalAmount || 0) - totalPaid;
 
   const renderStep1 = () => (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -436,12 +483,6 @@ export const MarketPurchaseModal = ({
             setFormData({ ...formData, ticketDate: date || "" })
           }
           placeholder={t("marketPurchaseManagement.modal.ticketDate")}
-        />
-        <CustomSelect
-          label={t("marketPurchaseManagement.modal.expenseType")}
-          options={expenseTypeOptions}
-          value={formData.expenseTypeId || ""}
-          onChange={(val) => setFormData({ ...formData, expenseTypeId: val })}
         />
         <CustomInput
           label={t("marketPurchaseManagement.modal.ticketNumber")}
@@ -528,6 +569,13 @@ export const MarketPurchaseModal = ({
               }}
               placeholder={t("marketPurchaseManagement.modal.selectProduct")}
             />
+            <CustomSelect
+                label={t("marketPurchaseManagement.modal.expenseType")}
+                options={expenseTypeOptions}
+                value={newProduct.expenseTypeId || ""}
+                onChange={(val) => setNewProduct({ ...newProduct, expenseTypeId: val })}
+                placeholder={t("marketPurchaseManagement.modal.selectExpenseType")}
+            />
             <CustomInput
               label={t("marketPurchaseManagement.modal.box")}
               name="box"
@@ -565,6 +613,22 @@ export const MarketPurchaseModal = ({
               <div className="px-3 py-2.5 bg-white border border-gray-300 rounded-md text-sm font-semibold text-gray-900">
                 {newProduct.totalUnit}
               </div>
+            </div>
+            <div className="flex flex-col justify-center">
+                <label className="flex items-center space-x-2 cursor-pointer mt-6">
+                    <input 
+                        type="checkbox" 
+                        checked={newProduct.isTaxIncluded} 
+                        onChange={(e) => setNewProduct(
+                            updateNewProductCalculations({
+                                ...newProduct,
+                                isTaxIncluded: e.target.checked
+                            })
+                        )}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300" 
+                    />
+                    <span className="text-sm font-medium text-gray-700">Tax Included</span>
+                </label>
             </div>
             <CustomInput
               label={t("marketPurchaseManagement.modal.unitPrice")}
@@ -652,6 +716,9 @@ export const MarketPurchaseModal = ({
                     {t("marketPurchaseManagement.modal.product")}
                   </th>
                   <th className="px-4 py-3 text-sm font-semibold text-gray-700">
+                    {t("marketPurchaseManagement.modal.expenseType")}
+                  </th>
+                  <th className="px-4 py-3 text-sm font-semibold text-gray-700">
                     {t("marketPurchaseManagement.modal.box")}
                   </th>
                   <th className="px-4 py-3 text-sm font-semibold text-gray-700">
@@ -689,6 +756,15 @@ export const MarketPurchaseModal = ({
                     <tr key={index} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm text-gray-900 font-medium">
                         {item.productName}
+                        {item.isTaxIncluded && (
+                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                Tax Inc.
+                            </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {item.expenseTypeName || 
+                         expenseTypes.find(e => e.id === item.expenseTypeId)?.name || '-'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
                         {item.box}
@@ -717,8 +793,11 @@ export const MarketPurchaseModal = ({
                               ? parseFloat(item.tax)
                               : item.tax || 0;
                           const subtotal = unitPriceNum * item.totalUnit;
-                          const taxPercent =
-                            subtotal > 0 ? (taxNum / subtotal) * 100 : 0;
+                          const taxPercent = item.isTaxIncluded
+                            ? subtotal > 0
+                              ? (taxNum / (subtotal - taxNum)) * 100
+                              : 0
+                            : subtotal > 0 ? (taxNum / subtotal) * 100 : 0;
                           return taxNum > 0
                             ? `€${taxNum.toFixed(2)} (${taxPercent.toFixed(1)}%)`
                             : "-";

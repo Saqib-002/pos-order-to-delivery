@@ -1936,6 +1936,7 @@
       "previous": "Previous",
       "enterProductName": "Enter product name",
       "selectProduct": "Select product",
+      "selectExpenseType": "Select expense type",
       "productAdded": "Product added successfully",
       "productUpdated": "Product updated successfully",
       "deleteProductTitle": "Delete Product",

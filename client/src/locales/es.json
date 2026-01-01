@@ -1936,6 +1936,7 @@
       "previous": "Anterior",
       "enterProductName": "Ingrese el nombre del producto",
       "selectProduct": "Seleccionar producto",
+      "selectExpenseType": "Seleccionar tipo de gasto",
       "productAdded": "Producto agregado exitosamente",
       "productUpdated": "Producto actualizado exitosamente",
       "deleteProductTitle": "Eliminar Producto",
