@@ -97,10 +97,10 @@ export const useWorkerData = () => {
     const res = await (window as any).electronAPI.addSalaryRecord(token, data);
     if (res.status) {
       toast.success("Salary recorded");
-      return true;
+      return { success: true, data: res.data };
     } else {
       toast.error(res.error);
-      return false;
+      return { success: false, data: null };
     }
   };
 
@@ -139,6 +139,63 @@ export const useWorkerData = () => {
     }
   };
 
+  // Payment Transaction Operations
+  const addPaymentTransaction = async (data: any) => {
+    const res = await (window as any).electronAPI.addPaymentTransaction(token, data);
+    if (res.status) {
+      toast.success("Payment recorded");
+      return true;
+    } else {
+      toast.error(res.error);
+      return false;
+    }
+  };
+
+  const addMultiplePaymentTransactions = async (salaryId: string, payments: any[]) => {
+    const res = await (window as any).electronAPI.addMultiplePaymentTransactions(token, salaryId, payments);
+    if (res.status) {
+      toast.success("Payments recorded");
+      return true;
+    } else {
+      toast.error(res.error);
+      return false;
+    }
+  };
+
+  const getPaymentTransactions = async (salaryId: string) => {
+    const res = await (window as any).electronAPI.getPaymentTransactions(token, salaryId);
+    if (res.status) return res.data;
+    return [];
+  };
+
+  const updatePaymentTransaction = async (id: string, data: any) => {
+    const res = await (window as any).electronAPI.updatePaymentTransaction(token, id, data);
+    if (res.status) {
+      toast.success("Payment updated");
+      return true;
+    } else {
+      toast.error(res.error);
+      return false;
+    }
+  };
+
+  const deletePaymentTransaction = async (id: string) => {
+    const res = await (window as any).electronAPI.deletePaymentTransaction(token, id);
+    if (res.status) {
+      toast.success("Payment deleted");
+      return true;
+    } else {
+      toast.error(res.error);
+      return false;
+    }
+  };
+
+  const getTotalPaidForSalary = async (salaryId: string) => {
+    const res = await (window as any).electronAPI.getTotalPaidForSalary(token, salaryId);
+    if (res.status) return res.data;
+    return 0;
+  };
+
   return {
     workersData,
     loading,
@@ -151,5 +208,12 @@ export const useWorkerData = () => {
     updateSalary,
     fetchSalaryRecords,
     deleteSalary,
+    // Payment transactions
+    addPaymentTransaction,
+    addMultiplePaymentTransactions,
+    getPaymentTransactions,
+    updatePaymentTransaction,
+    deletePaymentTransaction,
+    getTotalPaidForSalary,
   };
 };

@@ -450,7 +450,7 @@
       "add": "Agregar Cliente",
       "update": "Actualizar Cliente"
     },
-    "historyModal":{
+    "historyModal": {
       "title": "Historial de pedidos",
       "noOrders": "No se encontraron pedidos para este/esta cliente.",
       "table": {
@@ -1808,6 +1808,8 @@
       "totalPending": "Total Pendiente",
       "pdfSaved": "PDF guardado correctamente",
       "pdfError": "Error al guardar el PDF",
+      "transaction": "Transacción",
+      "noTransactions": "No se encontraron transacciones",
       "table": {
         "date": "Fecha",
         "base": "Base",

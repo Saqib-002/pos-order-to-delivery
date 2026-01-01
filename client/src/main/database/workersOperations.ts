@@ -3,6 +3,7 @@ import {
   Worker,
   WorkerFilters,
   WorkerSalary,
+  WorkerSalaryPayment,
   SalaryFilters,
   PaginatedResult,
 } from "@/types/workers";
@@ -143,10 +144,35 @@ export class WorkerDatabaseOperations {
       const total = Number(totalResult?.count || 0);
 
       const offset = (page - 1) * pageSize;
-      const records = await query
+      const salaryRecords = await query
         .orderBy("date", "desc")
         .limit(pageSize)
         .offset(offset);
+
+      const records = await Promise.all(
+        salaryRecords.map(async (salary) => {
+          const totalPaidResult = await db("worker_salary_payments")
+            .where("salaryId", salary.id)
+            .sum("amount as total")
+            .first();
+
+          const totalPaid = Number(totalPaidResult?.total || 0);
+
+          return {
+            ...salary,
+            totalPaid,
+          };
+        })
+      );
+
+      console.log(
+        "Salary records with payments:",
+        records.map((r) => ({
+          id: r.id,
+          total: r.total,
+          totalPaid: r.totalPaid,
+        }))
+      );
 
       return {
         data: records,
@@ -165,6 +191,108 @@ export class WorkerDatabaseOperations {
   static async deleteSalaryRecord(id: string): Promise<void> {
     try {
       await db("worker_salaries").where("id", id).delete();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async addPaymentTransaction(
+    data: Omit<WorkerSalaryPayment, "id" | "createdAt">
+  ): Promise<WorkerSalaryPayment> {
+    try {
+      const id = randomUUID();
+      const now = new Date().toISOString();
+      const record = { id, ...data, createdAt: now };
+      await db("worker_salary_payments").insert(record);
+      return record;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async addMultiplePaymentTransactions(
+    salaryId: string,
+    payments: Array<{
+      paymentMethod: "cash" | "card" | "bizum" | "bank-transfer";
+      amount: number;
+      notes?: string;
+      paymentDate?: string;
+    }>
+  ): Promise<WorkerSalaryPayment[]> {
+    try {
+      const now = new Date().toISOString();
+      const records = payments.map((payment) => ({
+        id: randomUUID(),
+        salaryId,
+        paymentMethod: payment.paymentMethod,
+        amount: payment.amount,
+        notes: payment.notes,
+        paymentDate: payment.paymentDate || now,
+        createdAt: now,
+      }));
+
+      await db("worker_salary_payments").insert(records);
+
+      const insertedRecords = await db("worker_salary_payments")
+        .where("salaryId", salaryId)
+        .select("*");
+
+      return records;
+    } catch (error) {
+      console.error("Error inserting payment transactions:", error);
+      throw error;
+    }
+  }
+
+  static async updatePaymentTransaction(
+    id: string,
+    updates: Partial<WorkerSalaryPayment>
+  ): Promise<WorkerSalaryPayment> {
+    try {
+      const { id: _id, createdAt, salaryId, ...validUpdates } = updates as any;
+      await db("worker_salary_payments").where("id", id).update(validUpdates);
+      return await db("worker_salary_payments").where("id", id).first();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getPaymentTransactions(
+    salaryId: string
+  ): Promise<WorkerSalaryPayment[]> {
+    try {
+      const payments = await db("worker_salary_payments")
+        .where("salaryId", salaryId)
+        .orderBy("paymentDate", "desc");
+      return payments;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async deletePaymentTransaction(id: string): Promise<void> {
+    try {
+      await db("worker_salary_payments").where("id", id).delete();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async deleteAllPaymentTransactions(salaryId: string): Promise<void> {
+    try {
+      await db("worker_salary_payments").where("salaryId", salaryId).delete();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getTotalPaidForSalary(salaryId: string): Promise<number> {
+    try {
+      const result = await db("worker_salary_payments")
+        .where("salaryId", salaryId)
+        .sum<{ total: number }>("amount as total")
+        .first();
+      return Number(result?.total || 0);
     } catch (error) {
       throw error;
     }

@@ -182,7 +182,7 @@
       "add": "Add Customer",
       "update": "Update Customer"
     },
-    "historyModal":{
+    "historyModal": {
       "title": "Order History",
       "noOrders": "No orders found for this customer",
       "table": {
@@ -1808,6 +1808,8 @@
       "totalPending": "Total Pending",
       "pdfSaved": "PDF saved successfully",
       "pdfError": "Error saving PDF",
+      "transaction": "Transaction",
+      "noTransactions": "No transactions found",
       "table": {
         "date": "Date",
         "base": "Base",

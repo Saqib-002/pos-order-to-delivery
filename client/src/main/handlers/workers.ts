@@ -59,6 +59,7 @@ export const addSalaryRecord = async (event: IpcMainInvokeEvent, token: string, 
     return { status: false, error: (error as Error).message };
   }
 };
+
 export const updateSalaryRecord = async (event: IpcMainInvokeEvent, token: string, id: string, updates: any) => {
   try {
     await verifyToken(event, token);
@@ -69,6 +70,7 @@ export const updateSalaryRecord = async (event: IpcMainInvokeEvent, token: strin
     return { status: false, error: (error as Error).message };
   }
 };
+
 export const getSalaryRecords = async (event: IpcMainInvokeEvent, token: string, workerId: string, filters: any) => {
   try {
     await verifyToken(event, token);
@@ -87,6 +89,110 @@ export const deleteSalaryRecord = async (event: IpcMainInvokeEvent, token: strin
     return { status: true, data: { message: "Salary record deleted" } };
   } catch (error) {
     Logger.error("Error deleting salary record:", error);
+    return { status: false, error: (error as Error).message };
+  }
+};
+
+// Payment Transaction Handlers
+export const addPaymentTransaction = async (event: IpcMainInvokeEvent, token: string, data: any) => {
+  try {
+    await verifyToken(event, token);
+    const result = await WorkerDatabaseOperations.addPaymentTransaction(data);
+    return { status: true, data: result };
+  } catch (error) {
+    Logger.error("Error adding payment transaction:", error);
+    return { status: false, error: (error as Error).message };
+  }
+};
+
+export const addMultiplePaymentTransactions = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  salaryId: string,
+  payments: any[]
+) => {
+  try {
+    await verifyToken(event, token);
+    const result = await WorkerDatabaseOperations.addMultiplePaymentTransactions(salaryId, payments);
+    return { status: true, data: result };
+  } catch (error) {
+    Logger.error("Error adding multiple payment transactions:", error);
+    return { status: false, error: (error as Error).message };
+  }
+};
+
+export const updatePaymentTransaction = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  id: string,
+  updates: any
+) => {
+  try {
+    await verifyToken(event, token);
+    const result = await WorkerDatabaseOperations.updatePaymentTransaction(id, updates);
+    return { status: true, data: result };
+  } catch (error) {
+    Logger.error("Error updating payment transaction:", error);
+    return { status: false, error: (error as Error).message };
+  }
+};
+
+export const getPaymentTransactions = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  salaryId: string
+) => {
+  try {
+    await verifyToken(event, token);
+    const result = await WorkerDatabaseOperations.getPaymentTransactions(salaryId);
+    return { status: true, data: result };
+  } catch (error) {
+    Logger.error("Error getting payment transactions:", error);
+    return { status: false, error: (error as Error).message };
+  }
+};
+
+export const deletePaymentTransaction = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  id: string
+) => {
+  try {
+    await verifyToken(event, token);
+    await WorkerDatabaseOperations.deletePaymentTransaction(id);
+    return { status: true, data: { message: "Payment transaction deleted" } };
+  } catch (error) {
+    Logger.error("Error deleting payment transaction:", error);
+    return { status: false, error: (error as Error).message };
+  }
+};
+
+export const getTotalPaidForSalary = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  salaryId: string
+) => {
+  try {
+    await verifyToken(event, token);
+    const result = await WorkerDatabaseOperations.getTotalPaidForSalary(salaryId);
+    return { status: true, data: result };
+  } catch (error) {
+    Logger.error("Error getting total paid for salary:", error);
+    return { status: false, error: (error as Error).message };
+  }
+};
+
+export const deleteAllPaymentTransactions = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  salaryId: string
+) => {
+  try {
+    await verifyToken(event, token);
+    await WorkerDatabaseOperations.deleteAllPaymentTransactions(salaryId);
+    return { status: true, data: { message: "All payment transactions deleted" } };
+  } catch (error) {
+    Logger.error("Error deleting all payment transactions:", error);
     return { status: false, error: (error as Error).message };
   }
 };

@@ -22,8 +22,18 @@ export interface WorkerSalary {
   bonus: number;
   extraServices: number;
   total: number;
+  totalPaid?: number;
   date: string;
-  paymentType?: string;
+  createdAt?: string;
+}
+
+export interface WorkerSalaryPayment {
+  id: string;
+  salaryId: string;
+  paymentMethod: "cash" | "card" | "bizum" | "bank-transfer";
+  amount: number;
+  notes?: string;
+  paymentDate: string;
   createdAt?: string;
 }
 

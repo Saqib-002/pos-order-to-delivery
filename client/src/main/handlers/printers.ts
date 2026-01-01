@@ -268,3 +268,89 @@ export const saveMaintenanceReportPDF = async (
     };
   }
 };
+
+export const savePDFReport = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  reportType: "maintenance" | "salary",
+  html: string,
+  defaultFileName: string
+) => {
+  try {
+    await verifyToken(event, token);
+
+    // Create a hidden BrowserWindow for PDF generation
+    const pdfWindow = new BrowserWindow({
+      width: 800,
+      height: 600,
+      show: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+      },
+    });
+
+    // Load the HTML content
+    await pdfWindow.webContents.loadURL(
+      `data:text/html;charset=utf-8,${encodeURIComponent(html)}`
+    );
+
+    // Wait for content to load
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Generate PDF
+    const pdfBuffer = await pdfWindow.webContents.printToPDF({
+      margins: {
+        top: 0.5,
+        bottom: 0.5,
+        left: 0.5,
+        right: 0.5,
+      },
+      printBackground: true,
+      pageSize: "A4",
+    });
+
+    pdfWindow.close();
+
+    // Show save dialog
+    const title = reportType === "maintenance" ? "Save Maintenance Report" : "Save Salary Report";
+    const result = await dialog.showSaveDialog({
+      title,
+      defaultPath: defaultFileName,
+      filters: [{ name: "PDF Files", extensions: ["pdf"] }],
+    });
+
+    if (result.canceled || !result.filePath) {
+      return { status: false, error: "Save cancelled" };
+    }
+
+    // Write PDF to file
+    fs.writeFileSync(result.filePath, pdfBuffer);
+
+    Logger.info(`${reportType} report PDF saved to: ${result.filePath}`);
+
+    return {
+      status: true,
+      data: {
+        filePath: result.filePath,
+        message: "PDF saved successfully",
+      },
+    };
+  } catch (error) {
+    Logger.error(`Error saving ${reportType} report PDF:`, error);
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};
+
+// Backward compatibility - keep the old functions for now
+export const saveSalaryReportPDF = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  html: string,
+  defaultFileName: string
+) => {
+  return savePDFReport(event, token, "salary", html, defaultFileName);
+};

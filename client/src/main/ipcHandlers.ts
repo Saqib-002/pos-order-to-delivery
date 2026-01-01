@@ -107,6 +107,8 @@ import {
   printToPrinter,
   updatePrinter,
   saveMaintenanceReportPDF,
+  saveSalaryReportPDF,
+  savePDFReport,
 } from "./handlers/printers.js";
 import {
   createPlatform,
@@ -141,6 +143,12 @@ import {
   getSalaryRecords,
   deleteSalaryRecord,
   updateSalaryRecord,
+  addPaymentTransaction,
+  addMultiplePaymentTransactions,
+  updatePaymentTransaction,
+  getPaymentTransactions,
+  deletePaymentTransaction,
+  getTotalPaidForSalary,
 } from "./handlers/workers.js";
 import {
   createSupplier,
@@ -253,6 +261,14 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-salary-records", getSalaryRecords);
   ipcMain.handle("delete-salary-record", deleteSalaryRecord);
   ipcMain.handle("update-salary-record", updateSalaryRecord);
+
+  // Payment Transaction handlers
+  ipcMain.handle("add-payment-transaction", addPaymentTransaction);
+  ipcMain.handle("add-multiple-payment-transactions", addMultiplePaymentTransactions);
+  ipcMain.handle("update-payment-transaction", updatePaymentTransaction);
+  ipcMain.handle("get-payment-transactions", getPaymentTransactions);
+  ipcMain.handle("delete-payment-transaction", deletePaymentTransaction);
+  ipcMain.handle("get-total-paid-for-salary", getTotalPaidForSalary);
   // categories handlers
   ipcMain.handle("create-category", createCategory);
   ipcMain.handle("get-categories", getCategories);
@@ -371,6 +387,8 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-product-printers", getProductPrinters);
   ipcMain.handle("print-to-printer", printToPrinter);
   ipcMain.handle("save-maintenance-report-pdf", saveMaintenanceReportPDF);
+  ipcMain.handle("save-salary-report-pdf", saveSalaryReportPDF);
+  ipcMain.handle("save-pdf-report", savePDFReport);
 
   // platforms
   ipcMain.handle("create-platform", createPlatform);

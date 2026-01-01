@@ -21,17 +21,24 @@ import {
   calculatePaymentStatus,
   getPaymentStatusStyle,
 } from "@/renderer/utils/paymentStatus";
-import { PaymentStep, PaymentMethod } from "../../shared/PaymentStep";
 import dayjs from "dayjs";
+import { TransactionModal, PaymentMethod } from "./TransactionModal";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   worker: Worker | null;
-  onAddRecord: (data: any) => Promise<boolean>;
+  onAddRecord: (data: any) => Promise<any>;
   onUpdateRecord: (id: string, data: any) => Promise<boolean>;
   onDeleteRecord: (id: string) => Promise<boolean>;
   fetchRecords: (workerId: string, filters: any) => Promise<any>;
+  addPaymentTransactions: (
+    salaryId: string,
+    payments: any[]
+  ) => Promise<boolean>;
+  getPaymentTransactions: (salaryId: string) => Promise<any[]>;
+  deletePaymentTransaction: (id: string) => Promise<boolean>;
+  getTotalPaidForSalary: (salaryId: string) => Promise<number>;
 }
 
 export const SalaryModal = ({
@@ -42,6 +49,10 @@ export const SalaryModal = ({
   onUpdateRecord,
   onDeleteRecord,
   fetchRecords,
+  addPaymentTransactions,
+  getPaymentTransactions,
+  deletePaymentTransaction,
+  getTotalPaidForSalary,
 }: Props) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"list" | "form" | "payment">(
@@ -51,6 +62,9 @@ export const SalaryModal = ({
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [originalTotalPaid, setOriginalTotalPaid] = useState<number>(0);
+  const [originalPaymentTransactions, setOriginalPaymentTransactions] =
+    useState<any[]>([]);
   const [filters, setFilters] = useState<{
     startDate?: string;
     endDate?: string;
@@ -72,12 +86,10 @@ export const SalaryModal = ({
     extraServices: 0,
     total: 0,
     date: dayjs().format("YYYY-MM-DD"),
-    paymentType: "cash",
   };
   const [formData, setFormData] = useState<Partial<WorkerSalary>>(initialForm);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
-  // Auto-calculate total whenever relevant fields change
   useEffect(() => {
     const base =
       typeof formData.base === "number"
@@ -108,7 +120,6 @@ export const SalaryModal = ({
         ? formData.extraServices
         : parseFloat(String(formData.extraServices || 0)) || 0;
 
-    // Total = base + bonus + extraPayment + extraServices - socialSecurityCompany - socialSecurityWorker - irpf
     const calculatedTotal =
       base +
       bonus +
@@ -120,7 +131,7 @@ export const SalaryModal = ({
 
     setFormData((prev) => ({
       ...prev,
-      total: Math.max(0, calculatedTotal), // Ensure total is not negative
+      total: Math.max(0, calculatedTotal),
     }));
   }, [
     formData.base,
@@ -150,12 +161,13 @@ export const SalaryModal = ({
       setFormData(initialForm);
       setActiveTab("list");
       setPaymentMethods([]);
+      setOriginalTotalPaid(0);
+      setOriginalPaymentTransactions([]);
       setFilters({});
     }
   }, [isOpen, worker, page]);
 
-  // Handle Edit Click
-  const handleEditClick = (record: WorkerSalary) => {
+  const handleEditClick = async (record: WorkerSalary) => {
     setEditingId(record.id);
     setFormData({
       base: record.base,
@@ -173,56 +185,37 @@ export const SalaryModal = ({
       extraServices: record.extraServices,
       total: record.total,
       date: dayjs(record.date).format("YYYY-MM-DD"),
-      paymentType: record.paymentType || "cash",
     });
 
-    // Parse existing payment type
-    if (record.paymentType) {
-      if (record.paymentType.includes(":")) {
-        try {
-          const payments: PaymentMethod[] = record.paymentType
-            .split(", ")
-            .map((payment) => {
-              const [type, amount] = payment.split(":");
-              return {
-                type: type.trim() as
-                  | "cash"
-                  | "card"
-                  | "bizum"
-                  | "bank-transfer",
-                amount: parseFloat(amount) || 0,
-              };
-            })
-            .filter((payment) => payment.amount > 0);
-          setPaymentMethods(payments);
-        } catch (error) {
-          setPaymentMethods([]);
-        }
+    try {
+      const payments = await getPaymentTransactions(record.id);
+      setOriginalPaymentTransactions(payments || []);
+
+      if (payments && payments.length > 0) {
+        const paymentMethods: PaymentMethod[] = payments.map((p: any) => ({
+          type: p.paymentMethod as "cash" | "card" | "bizum" | "bank-transfer",
+          amount: Number(p.amount) || 0,
+          date: p.paymentDate || p.createdAt,
+          isExisting: true,
+          transactionId: p.id,
+        }));
+
+        setPaymentMethods(paymentMethods);
+
+        const totalPaid = payments.reduce(
+          (sum, p) => sum + Number(p.amount || 0),
+          0
+        );
+        setOriginalTotalPaid(totalPaid);
       } else {
-        if (
-          record.paymentType === "cash" ||
-          record.paymentType === "card" ||
-          record.paymentType === "bizum" ||
-          record.paymentType === "bank-transfer"
-        ) {
-          const amount =
-            typeof record.total === "string"
-              ? parseFloat(record.total)
-              : record.total || 0;
-          setPaymentMethods([
-            {
-              type: record.paymentType as
-                | "cash"
-                | "card"
-                | "bizum"
-                | "bank-transfer",
-              amount: isNaN(amount) ? 0 : amount,
-            },
-          ]);
-        }
+        setPaymentMethods([]);
+        setOriginalTotalPaid(0);
       }
-    } else {
+    } catch (error) {
+      console.error("Error loading payment transactions:", error);
       setPaymentMethods([]);
+      setOriginalTotalPaid(0);
+      setOriginalPaymentTransactions([]);
     }
 
     setActiveTab("form");
@@ -232,6 +225,8 @@ export const SalaryModal = ({
     setFormData(initialForm);
     setEditingId(null);
     setPaymentMethods([]);
+    setOriginalTotalPaid(0);
+    setOriginalPaymentTransactions([]);
   };
 
   const handleTabChange = (tab: "list" | "form" | "payment") => {
@@ -248,7 +243,6 @@ export const SalaryModal = ({
     e.preventDefault();
     if (!worker) return;
 
-    // Validate payment
     const totalAmount =
       typeof formData.total === "number"
         ? formData.total
@@ -258,16 +252,8 @@ export const SalaryModal = ({
       0
     );
 
-    const paymentTypeString =
-      paymentMethods.length > 0
-        ? paymentMethods
-            .map((method) => `${method.type}:${method.amount}`)
-            .join(", ")
-        : "";
-
     const salaryData = {
       ...formData,
-      paymentType: paymentTypeString,
       socialSecurityCompany:
         typeof formData.socialSecurityCompany === "number"
           ? formData.socialSecurityCompany
@@ -278,14 +264,95 @@ export const SalaryModal = ({
           : parseFloat(String(formData.socialSecurityWorker || 0)) || 0,
     };
 
-    let success = false;
+    let success: any = false;
+    let salaryId = editingId;
+
     if (editingId) {
       success = await onUpdateRecord(editingId, salaryData);
     } else {
       success = await onAddRecord({ ...salaryData, workerId: worker.id });
+      if (success && success.data) {
+        salaryId = success.data.id;
+      }
     }
 
-    if (success) {
+    const isSuccess = typeof success === "boolean" ? success : success.success;
+    if (isSuccess && salaryId) {
+      if (editingId) {
+        const currentExistingPayments = paymentMethods.filter(
+          (method) => method.isExisting
+        );
+        const newPayments = paymentMethods.filter(
+          (method) => !method.isExisting
+        );
+
+        const originalTransactionIds = originalPaymentTransactions.map(
+          (p) => p.id
+        );
+        const currentTransactionIds = currentExistingPayments.map(
+          (p) => p.transactionId
+        );
+        const deletedTransactionIds = originalTransactionIds.filter(
+          (id) => !currentTransactionIds.includes(id)
+        );
+
+        console.log(`Editing salary ${salaryId}:`);
+        console.log(`New payments: ${newPayments.length}`, newPayments);
+        console.log(
+          `Deleted transactions: ${deletedTransactionIds.length}`,
+          deletedTransactionIds
+        );
+
+        // Delete removed transactions
+        if (deletedTransactionIds.length > 0) {
+          try {
+            for (const transactionId of deletedTransactionIds) {
+              await deletePaymentTransaction(transactionId);
+              console.log(`Deleted transaction ${transactionId}`);
+            }
+          } catch (error) {
+            console.error("Error deleting transactions:", error);
+          }
+        }
+
+        // Add new payments
+        if (newPayments.length > 0) {
+          const paymentsToAdd = newPayments.map((method) => ({
+            paymentMethod: method.type,
+            amount: method.amount,
+            paymentDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+            notes: `Payment added during edit on ${dayjs().format("DD/MM/YYYY HH:mm")}`,
+          }));
+
+          try {
+            const result = await addPaymentTransactions(
+              salaryId,
+              paymentsToAdd
+            );
+            console.log("Added new payments:", result);
+          } catch (error) {
+            console.error("Error adding new payments:", error);
+          }
+        }
+      } else {
+        if (paymentMethods.length > 0) {
+          const payments = paymentMethods.map((method) => ({
+            paymentMethod: method.type,
+            amount: method.amount,
+            paymentDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+          }));
+
+          console.log(
+            `Creating new salary ${salaryId} with payments:`,
+            payments
+          );
+          const result = await addPaymentTransactions(salaryId, payments);
+          console.log("New salary payment result:", result);
+        }
+      }
+    }
+
+    if (isSuccess) {
       resetForm();
       setActiveTab("list");
       loadRecords();
@@ -311,16 +378,33 @@ export const SalaryModal = ({
     if (!token || !worker) return;
 
     try {
-      const html = generateSalaryReportHTML(
+      const salaryPayments: { [salaryId: string]: any[] } = {};
+      await Promise.all(
+        records.map(async (record) => {
+          try {
+            const payments = await getPaymentTransactions(record.id);
+            salaryPayments[record.id] = payments || [];
+          } catch (error) {
+            console.error(
+              `Error fetching payments for salary ${record.id}:`,
+              error
+            );
+            salaryPayments[record.id] = [];
+          }
+        })
+      );
+
+      const html = await generateSalaryReportHTML(
         worker,
         records,
+        salaryPayments,
         filters,
         configurations,
         t
       );
       const defaultFileName = `salary-report-${worker.name}-${dayjs().format("YYYY-MM-DD")}.pdf`;
 
-      const result = await (window as any).electronAPI.saveMaintenanceReportPDF(
+      const result = await (window as any).electronAPI.saveSalaryReportPDF(
         token,
         html,
         defaultFileName
@@ -552,16 +636,30 @@ export const SalaryModal = ({
                                 typeof r.total === "number"
                                   ? r.total
                                   : parseFloat(String(r.total || 0)) || 0;
-                              const paymentStatus = calculatePaymentStatus(
-                                r.paymentType || "",
-                                total
+                              const totalPaid =
+                                typeof r.totalPaid === "number"
+                                  ? r.totalPaid
+                                  : parseFloat(String(r.totalPaid || 0)) || 0;
+
+                              console.log(
+                                `Salary ${r.id}: total=${total}, totalPaid=${totalPaid}, raw totalPaid=${r.totalPaid}`
                               );
+
+                              let status: "PAID" | "UNPAID" | "PARTIAL";
+                              if (totalPaid <= 0) {
+                                status = "UNPAID";
+                              } else if (totalPaid >= total) {
+                                status = "PAID";
+                              } else {
+                                status = "PARTIAL";
+                              }
+
                               return (
                                 <span
-                                  className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPaymentStatusStyle(paymentStatus.status)}`}
+                                  className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPaymentStatusStyle(status)}`}
                                 >
                                   {t(
-                                    `common.paymentStatus.${paymentStatus.status.toLowerCase()}`
+                                    `common.paymentStatus.${status.toLowerCase()}`
                                   )}
                                 </span>
                               );
@@ -598,15 +696,11 @@ export const SalaryModal = ({
               </div>
             </div>
           ) : activeTab === "payment" ? (
-            <PaymentStep
+            <TransactionModal
               totalAmount={totalAmount}
               paymentMethods={paymentMethods}
               onPaymentMethodsChange={setPaymentMethods}
-              initialPaymentType={
-                editingId
-                  ? records.find((r) => r.id === editingId)?.paymentType
-                  : undefined
-              }
+              initialPaymentType={undefined}
             />
           ) : (
             <form

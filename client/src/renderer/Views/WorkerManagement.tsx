@@ -28,6 +28,10 @@ export const WorkerManagement = () => {
     addSalary,
     deleteSalary,
     fetchSalaryRecords,
+    addMultiplePaymentTransactions,
+    getPaymentTransactions,
+    deletePaymentTransaction,
+    getTotalPaidForSalary,
   } = useWorkerData();
 
   const [activeStatusFilter, setActiveStatusFilter] = useState<
@@ -228,6 +232,10 @@ export const WorkerManagement = () => {
         onUpdateRecord={updateSalary}
         onDeleteRecord={deleteSalary}
         fetchRecords={fetchSalaryRecords}
+        addPaymentTransactions={addMultiplePaymentTransactions}
+        getPaymentTransactions={getPaymentTransactions}
+        deletePaymentTransaction={deletePaymentTransaction}
+        getTotalPaidForSalary={getTotalPaidForSalary}
       />
     </div>
   );

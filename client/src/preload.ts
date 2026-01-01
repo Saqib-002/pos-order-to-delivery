@@ -75,6 +75,28 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("update-salary-record", token, id, data),
   deleteSalaryRecord: (token: string, id: string) =>
     ipcRenderer.invoke("delete-salary-record", token, id),
+  // Payment Transaction operations
+  addPaymentTransaction: (token: string, data: any) =>
+    ipcRenderer.invoke("add-payment-transaction", token, data),
+  addMultiplePaymentTransactions: (
+    token: string,
+    salaryId: string,
+    payments: any[]
+  ) =>
+    ipcRenderer.invoke(
+      "add-multiple-payment-transactions",
+      token,
+      salaryId,
+      payments
+    ),
+  updatePaymentTransaction: (token: string, id: string, data: any) =>
+    ipcRenderer.invoke("update-payment-transaction", token, id, data),
+  getPaymentTransactions: (token: string, salaryId: string) =>
+    ipcRenderer.invoke("get-payment-transactions", token, salaryId),
+  deletePaymentTransaction: (token: string, id: string) =>
+    ipcRenderer.invoke("delete-payment-transaction", token, id),
+  getTotalPaidForSalary: (token: string, salaryId: string) =>
+    ipcRenderer.invoke("get-total-paid-for-salary", token, salaryId),
   // categories
   createCategory: (token: string, category: any) =>
     ipcRenderer.invoke("create-category", token, category),
@@ -87,8 +109,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // sub categories
   createSubcategory: (token: string, subCategory: any) =>
     ipcRenderer.invoke("create-sub-category", token, subCategory),
-  getSubcategories: (token: string, categoryId: string, isForOrder: boolean = false) =>
-    ipcRenderer.invoke("get-sub-categories", token, categoryId, isForOrder),
+  getSubcategories: (
+    token: string,
+    categoryId: string,
+    isForOrder: boolean = false
+  ) => ipcRenderer.invoke("get-sub-categories", token, categoryId, isForOrder),
   getAllSubcategories: (token: string) =>
     ipcRenderer.invoke("get-all-sub-categories", token),
   deleteSubcategory: (token: string, id: string) =>
@@ -142,8 +167,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("update-product-priorities", token, productIds),
   getAllProducts: (token: string) =>
     ipcRenderer.invoke("get-all-products", token),
-  getProductsByCatId: (token: string, catId: string, isForOrder: boolean = false) =>
-    ipcRenderer.invoke("get-products-by-cat-id", token, catId, isForOrder),
+  getProductsByCatId: (
+    token: string,
+    catId: string,
+    isForOrder: boolean = false
+  ) => ipcRenderer.invoke("get-products-by-cat-id", token, catId, isForOrder),
   deleteProduct: (token: string, id: string) =>
     ipcRenderer.invoke("delete-product", token, id),
   updateProduct: (
@@ -398,6 +426,21 @@ contextBridge.exposeInMainWorld("electronAPI", {
       html,
       defaultFileName
     ),
+  saveSalaryReportPDF: (token: string, html: string, defaultFileName: string) =>
+    ipcRenderer.invoke("save-salary-report-pdf", token, html, defaultFileName),
+  savePDFReport: (
+    token: string,
+    reportType: "maintenance" | "salary",
+    html: string,
+    defaultFileName: string
+  ) =>
+    ipcRenderer.invoke(
+      "save-pdf-report",
+      token,
+      reportType,
+      html,
+      defaultFileName
+    ),
 
   // platforms
   createPlatform: (token: string, platformData: any) =>
@@ -497,8 +540,17 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // other Income operations
   createOtherIncome: (token: string, otherIncomeData: any) =>
     ipcRenderer.invoke("create-other-income", token, otherIncomeData),
-  updateOtherIncome: (token: string, otherIncomeId: string, otherIncomeData: any) =>
-    ipcRenderer.invoke("update-other-income", token, otherIncomeId, otherIncomeData),
+  updateOtherIncome: (
+    token: string,
+    otherIncomeId: string,
+    otherIncomeData: any
+  ) =>
+    ipcRenderer.invoke(
+      "update-other-income",
+      token,
+      otherIncomeId,
+      otherIncomeData
+    ),
   deleteOtherIncome: (token: string, otherIncomeId: string) =>
     ipcRenderer.invoke("delete-other-income", token, otherIncomeId),
   getAllOtherIncomes: (token: string, filters?: any) =>
