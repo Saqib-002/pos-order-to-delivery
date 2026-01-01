@@ -8,6 +8,9 @@ export interface MarketPurchaseItem {
   unitPrice: number;
   tax: number;
   total: number;
+  expenseTypeId?: string;
+  expenseTypeName?: string;
+  isTaxIncluded?: boolean;
 }
 
 export interface MarketPurchase {
@@ -15,8 +18,6 @@ export interface MarketPurchase {
   supplierId: string;
   supplierName?: string;
   ticketDate: string;
-  expenseTypeId: string;
-  expenseTypeName?: string;
   ticketNumber: string;
   paymentType: string;
   totalAmount: number;
