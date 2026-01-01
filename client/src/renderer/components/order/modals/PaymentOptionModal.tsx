@@ -32,7 +32,7 @@ const PaymentOptionModal: React.FC<PaymentOptionModalProps> = ({
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 max-h-[90vh] flex flex-col">
         {/* Header - Fixed */}
-        <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6 rounded-t-2xl flex-shrink-0 flex items-center justify-between">
+        <div className="bg-linear-to-r from-gray-800 to-gray-900 text-white p-6 rounded-t-2xl shrink-0 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-lg">
               <OutlineCreditCardIcon className="size-6" />
@@ -142,7 +142,7 @@ const PaymentOptionModal: React.FC<PaymentOptionModalProps> = ({
         </div>
 
         {/* Footer - Fixed */}
-        <div className="p-6 border-t border-gray-200 flex-shrink-0">
+        <div className="p-6 border-t border-gray-200 shrink-0">
           <CustomButton
             type="button"
             onClick={onClose}

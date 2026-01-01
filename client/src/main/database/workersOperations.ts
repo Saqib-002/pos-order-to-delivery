@@ -42,8 +42,6 @@ export class WorkerDatabaseOperations {
 
       if (isActive !== undefined) {
         query.where("isActive", isActive);
-      } else {
-        query.where("isActive", true);
       }
 
       const countQuery = query
