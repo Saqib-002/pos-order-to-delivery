@@ -273,7 +273,7 @@ export const MarketPurchaseModal = ({
     const netSubtotal = displayUnitPrice * totalUnit;
     let taxPercent = 0;
     if (netSubtotal > 0) {
-      taxPercent = (taxAmount / netSubtotal) * 100;
+      taxPercent = item.isTaxIncluded ? Number(((item.tax/(netSubtotal-item.tax))*100).toFixed(0)) : (taxAmount / netSubtotal) * 100;
     } else if (item.isTaxIncluded && totalAmount > 0) {
       const inferredNet = totalAmount - taxAmount;
       if (inferredNet > 0) taxPercent = (taxAmount / inferredNet) * 100;
