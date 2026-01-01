@@ -152,7 +152,7 @@ export const MarketPurchaseModal = ({
 
     const totalUnits = box * unit;
     const subtotal = unitPrice * totalUnits;
-    return subtotal + tax;
+    return item.isTaxIncluded ? subtotal : subtotal + tax;
   };
 
   const calculateTotalAmount = (): number => {
