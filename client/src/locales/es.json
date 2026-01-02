@@ -44,6 +44,11 @@
     "lowKitchenPriorityTime": "Bajo",
     "mediumKitchenPriorityTime": "Medio",
     "highKitchenPriorityTime": "Alto",
+    "kitchenTimeEstimationLabel": "Estimación de Tiempo de Cocina por Cantidad de Pedidos",
+    "addTimeRange": "Agregar Rango de Tiempo",
+    "ordersLabel": "Pedidos:",
+    "estimatedTimeLabel": "Tiempo Est.:",
+    "minutesLabel": "min",
     "companyLogo": "Logo de la empresa",
     "uploadLogoPrompt": "Sube el logo de tu empresa",
     "uploadLogoSub": "PNG, JPG hasta 2MB",
@@ -2243,6 +2248,8 @@
   "orderProcessingModal": {
     "title": "Procesar Pedido",
     "subtitle": "Completar detalles del pedido",
+    "sentToKitchenCount": "{{count}} pedidos enviados a cocina",
+    "sentToKitchenWithTime": "{{count}} pedidos en cocina - tiempo estimado {{time}} min",
     "customerSearch": {
       "title": "Búsqueda de Cliente",
       "titleOptional": "Búsqueda de Cliente (Opcional)",

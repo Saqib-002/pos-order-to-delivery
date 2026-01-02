@@ -325,6 +325,26 @@ export const getOrdersByFilter = async (
   }
 };
 
+export const getOrdersCountByStatus = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  status: string
+) => {
+  try {
+    const count = await OrderDatabaseOperations.getOrdersCountByStatus(status);
+    return {
+      status: true,
+      data: count,
+    };
+  } catch (error) {
+    Logger.error("Error getting orders count by status:", error);
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};
+
 export const createPlatformOrder = async (
   event: IpcMainInvokeEvent,
   token: string,

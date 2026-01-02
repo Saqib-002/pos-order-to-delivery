@@ -1,5 +1,11 @@
 import { createContext, useContext, useState } from "react";
 
+interface KitchenTimeEstimationRange {
+  minOrders: number;
+  maxOrders: number;
+  estimatedTime: number;
+}
+
 interface ConfigurationType {
   name?: string;
   logo: string;
@@ -8,6 +14,7 @@ interface ConfigurationType {
   lowKitchenPriorityTime?: number;
   mediumKitchenPriorityTime?: number;
   highKitchenPriorityTime?: number;
+  kitchenTimeEstimationRanges?: KitchenTimeEstimationRange[];
   googleMapsApiKey?: string;
   address: string;
   apartment?: string;

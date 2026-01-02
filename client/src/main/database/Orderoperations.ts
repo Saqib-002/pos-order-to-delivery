@@ -416,13 +416,11 @@ export class OrderDatabaseOperations {
           });
       }
       if (price !== undefined && price !== null) {
-        await trx("order_items")
-          .where("orderId", orderId)
-          .update({
-            productPrice: price,
-            totalPrice: price,
-            updatedAt: now,
-          });
+        await trx("order_items").where("orderId", orderId).update({
+          productPrice: price,
+          totalPrice: price,
+          updatedAt: now,
+        });
       }
       await trx.commit();
       return { orderId };
@@ -713,7 +711,11 @@ export class OrderDatabaseOperations {
       );
     }
 
-    const ordersForTotals = await ordersQuery.select("id", "orderType","status");
+    const ordersForTotals = await ordersQuery.select(
+      "id",
+      "orderType",
+      "status"
+    );
 
     const orderIds = ordersForTotals.map((o: any) => o.id);
     const allOrderItems =
@@ -773,7 +775,7 @@ export class OrderDatabaseOperations {
       });
 
       const { orderTotal } = calculateOrderTotal(formattedItems);
-      if(order.status !== 'cancelled'){
+      if (order.status !== "cancelled") {
         const orderTypeKey = order.orderType;
         if (!orderTotalsMap.has(orderTypeKey)) {
           orderTotalsMap.set(orderTypeKey, { type: orderTypeKey, total: 0 });
@@ -852,6 +854,20 @@ export class OrderDatabaseOperations {
     } catch (error) {
       await trx.rollback();
       throw error;
+    }
+  }
+
+  static async getOrdersCountByStatus(status: string): Promise<number> {
+    try {
+      const result = await db("orders")
+        .whereRaw(`LOWER("status") = LOWER(?)`, [status])
+        .count("* as count")
+        .first();
+
+      return parseInt(result?.count?.toString() || "0");
+    } catch (error) {
+      console.error("Error getting orders count by status:", error);
+      return 0;
     }
   }
 
@@ -1007,22 +1023,23 @@ export class OrderDatabaseOperations {
       }
 
       const countQuery = baseQuery.clone().count("* as count").first();
-      
+
       const dataQuery = baseQuery
         .clone()
         .limit(limit)
         .offset(offset)
         .orderBy("createdAt", "desc");
       const [countResult, orders] = await Promise.all([countQuery, dataQuery]);
-      const platformIds = orders
-        .map((o) => o.platformId)
-        .filter((id) => id);
-      
-      const platforms = platformIds.length > 0 
-        ? await db("platforms").whereIn("id", platformIds).select("id", "name")
-        : [];
-      
-      const platformMap = new Map(platforms.map(p => [p.id, p.name]));
+      const platformIds = orders.map((o) => o.platformId).filter((id) => id);
+
+      const platforms =
+        platformIds.length > 0
+          ? await db("platforms")
+              .whereIn("id", platformIds)
+              .select("id", "name")
+          : [];
+
+      const platformMap = new Map(platforms.map((p) => [p.id, p.name]));
       const totalCount = parseInt((countResult as any).count, 10) || 0;
       const newOrders = [];
       for (const order of orders) {
@@ -1048,7 +1065,9 @@ export class OrderDatabaseOperations {
           pickupTime: order.pickupTime,
           receivingTime: order.receivingTime,
           platformId: order.platformId,
-          platformName: order.platformId ? platformMap.get(order.platformId) : undefined,
+          platformName: order.platformId
+            ? platformMap.get(order.platformId)
+            : undefined,
           ticketNumber: order.ticketNumber,
           orderId: order.orderId,
           status: order.status,

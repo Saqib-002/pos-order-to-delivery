@@ -5,6 +5,7 @@ import {
   getOrderAnalytics,
   getOrderItems,
   getOrdersByFilter,
+  getOrdersCountByStatus,
   createPlatformOrder,
   removeItemFromOrder,
   removeMenuFromOrder,
@@ -374,6 +375,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-order-items", getOrderItems);
   ipcMain.handle("update-order", updateOrder);
   ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
+  ipcMain.handle("get-orders-count-by-status", getOrdersCountByStatus);
   ipcMain.handle("duplicate-menu-in-order", duplicateMenuInOrder);
   ipcMain.handle("create-platform-order", createPlatformOrder);
   // reports

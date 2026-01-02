@@ -297,6 +297,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("update-order", token, orderId, orderData),
   getOrdersByFilter: (token: string, filter: any) =>
     ipcRenderer.invoke("get-orders-by-filter", token, filter),
+  getOrdersCountByStatus: (token: string, status: string) =>
+    ipcRenderer.invoke("get-orders-count-by-status", token, status),
   createPlatformOrder: (token: string, orderData: any) =>
     ipcRenderer.invoke("create-platform-order", token, orderData),
   duplicateMenuInOrder: (

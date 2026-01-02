@@ -9,6 +9,7 @@ import PaymentOptionModal from "./modals/PaymentOptionModal";
 import { toast } from "react-toastify";
 import { Order, OrderItem, Customer } from "@/types/order";
 import { useAuth } from "@/renderer/contexts/AuthContext";
+import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { calculateOrderTotal } from "@/renderer/utils/orderCalculations";
 import { formatAddress } from "@/renderer/utils/utils";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
@@ -25,7 +26,6 @@ import {
 } from "@/renderer/public/Svg";
 import CustomInput from "../shared/CustomInput";
 import CustomButton from "../ui/CustomButton";
-import { AddressAutocomplete } from "../shared/AddressAutocomplete";
 
 interface OrderProcessingModalProps {
   onClose: () => void;
@@ -41,10 +41,57 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   onProcessOrder,
 }) => {
   const { t } = useTranslation();
+  const { auth } = useAuth();
+  const { configurations } = useConfigurations();
+  const [sentToKitchenCount, setSentToKitchenCount] = useState(0);
   const [customerSearch, setCustomerSearch] = useState("");
   const [orderType, setOrderType] = useState<"delivery" | "pickup" | "dine-in">(
     "delivery"
   );
+
+  useEffect(() => {
+    const fetchSentToKitchenCount = async () => {
+      try {
+        const response = await (
+          window as any
+        ).electronAPI.getOrdersCountByStatus(auth?.token, "sent to kitchen");
+        if (response.status) {
+          setSentToKitchenCount(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching sent to kitchen count:", error);
+      }
+    };
+
+    if (auth?.token) {
+      fetchSentToKitchenCount();
+    }
+  }, [auth?.token]);
+
+  const calculateEstimatedTime = (orderCount: number): number => {
+    const ranges = configurations?.kitchenTimeEstimationRanges;
+    if (!ranges || ranges.length === 0) {
+      return 0; 
+    }
+
+    const applicableRange = ranges.find(
+      (range) => orderCount >= range.minOrders && orderCount <= range.maxOrders
+    );
+
+    if (applicableRange) {
+      return applicableRange.estimatedTime;
+    }
+
+    const sortedRanges = ranges.sort((a, b) => b.maxOrders - a.maxOrders);
+    const highestRange = sortedRanges.find(
+      (range) => orderCount >= range.minOrders
+    );
+
+    return highestRange?.estimatedTime || 0;
+  };
+
+  const estimatedTime = calculateEstimatedTime(sentToKitchenCount);
+
   const [pickupTime, setPickupTime] = useState<Dayjs | null>(null);
   const [notes, setNotes] = useState("");
   const [customCustomerName, setCustomCustomerName] = useState("");
@@ -223,8 +270,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     if (
       orderType === "delivery" &&
       !selectedCustomer &&
-      (!customCustomerPhone.trim() ||
-        !customCustomerAddress.trim())
+      (!customCustomerPhone.trim() || !customCustomerAddress.trim())
     ) {
       toast.error(t("orderProcessingModal.errors.customerDetailsRequired"));
       return;
@@ -284,29 +330,47 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between relative bg-gradient-to-r from-black to-gray-800 text-white p-6">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-              <div className="bg-white size-5 p-1 rounded-full">
-                <CheckIcon className="size-3 text-white" />
+        <div className="relative bg-gradient-to-r from-black to-gray-800 text-white p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <div className="bg-white size-5 p-1 rounded-full">
+                  <CheckIcon className="size-3 text-white" />
+                </div>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">
+                  {t("orderProcessingModal.title")}
+                </h2>
+                <p className="text-white text-sm">
+                  {t("orderProcessingModal.subtitle")}
+                </p>
               </div>
             </div>
-            <div>
-              <h2 className="text-2xl font-bold">
-                {t("orderProcessingModal.title")}
-              </h2>
-              <p className="text-white text-sm">
-                {t("orderProcessingModal.subtitle")}
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 touch-manipulation cursor-pointer"
+            >
+              <CrossIcon className="size-6" />
+            </button>
+          </div>
+
+          {/* Centered status line */}
+          {(sentToKitchenCount > 0) && (
+            <div className="absolute inset-x-0 top-8 flex justify-center">
+              <p className="text-white text-xs bg-black/30 px-4 py-2 rounded-full backdrop-blur-sm border border-white/20 shadow-lg">
+                {sentToKitchenCount > 0 && estimatedTime > 0
+                  ? t("orderProcessingModal.sentToKitchenWithTime", {
+                      count: sentToKitchenCount,
+                      time: estimatedTime,
+                    })
+                  : t("orderProcessingModal.sentToKitchenCount", {
+                      count: sentToKitchenCount,
+                    })}
               </p>
             </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 touch-manipulation cursor-pointer"
-          >
-            <CrossIcon className="size-6" />
-          </button>
+          )}
         </div>
 
         {/* Scrollable Content */}
