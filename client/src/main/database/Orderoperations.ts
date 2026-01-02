@@ -235,11 +235,7 @@ export class OrderDatabaseOperations {
         .count("* as count");
       if (Number(totalOrderItems[0]?.count) === 0) {
         const now = new Date().toISOString();
-        await db("orders").where("id", orderId).update({
-          status: "cancelled",
-          cancelAt: now,
-          updatedAt: now,
-        });
+        await db("orders").where("id", orderId).delete();
       }
       return { itemId };
     } catch (error) {
@@ -262,11 +258,7 @@ export class OrderDatabaseOperations {
         .count("* as count");
       if (Number(totalOrderItems[0]?.count) === 0) {
         const now = new Date().toISOString();
-        await db("orders").where("id", orderId).update({
-          status: "cancelled",
-          cancelAt: now,
-          updatedAt: now,
-        });
+        await db("orders").where("id", orderId).delete();
       }
       return { menuId };
     } catch (error) {

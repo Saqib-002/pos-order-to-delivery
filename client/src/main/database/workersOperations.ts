@@ -165,15 +165,6 @@ export class WorkerDatabaseOperations {
         })
       );
 
-      console.log(
-        "Salary records with payments:",
-        records.map((r) => ({
-          id: r.id,
-          total: r.total,
-          totalPaid: r.totalPaid,
-        }))
-      );
-
       return {
         data: records,
         pagination: {

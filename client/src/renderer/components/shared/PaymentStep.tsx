@@ -6,7 +6,7 @@ import CustomButton from "../ui/CustomButton";
 import { AddIcon, DeleteIcon } from "../../public/Svg";
 
 export interface PaymentMethod {
-  type: "cash" | "card" | "bizum" | "bank-transfer";
+  type: "cash" | "card" | "bizum" | "bank-transfer" | "account-direct-debit";
   amount: number;
   amountTendered?: number;
 }
@@ -27,7 +27,7 @@ export const PaymentStep = ({
   const { t } = useTranslation();
   const [currentPaymentAmount, setCurrentPaymentAmount] = useState<number>(0);
   const [selectedPaymentType, setSelectedPaymentType] = useState<
-    "cash" | "card" | "bizum" | "bank-transfer"
+    "cash" | "card" | "bizum" | "bank-transfer" | "account-direct-debit"
   >("cash");
 
   useEffect(() => {
@@ -43,7 +43,8 @@ export const PaymentStep = ({
                   | "cash"
                   | "card"
                   | "bizum"
-                  | "bank-transfer",
+                  | "bank-transfer"
+                  | "account-direct-debit",
                 amount: parseFloat(amount) || 0,
               };
             })
@@ -57,7 +58,8 @@ export const PaymentStep = ({
           initialPaymentType === "cash" ||
           initialPaymentType === "card" ||
           initialPaymentType === "bizum" ||
-          initialPaymentType === "bank-transfer"
+          initialPaymentType === "bank-transfer" ||
+          initialPaymentType === "account-direct-debit"
         ) {
           onPaymentMethodsChange([
             {
@@ -65,7 +67,8 @@ export const PaymentStep = ({
                 | "cash"
                 | "card"
                 | "bizum"
-                | "bank-transfer",
+                | "bank-transfer"
+                | "account-direct-debit",
               amount: totalAmount,
             },
           ]);
@@ -149,6 +152,8 @@ export const PaymentStep = ({
         return "./images/bizum.png";
       case "bank-transfer":
         return "./images/bank-transfer.png";
+      case "account-direct-debit":
+        return "./images/bank-transfer.png";
       default:
         return "./images/cash.png";
     }
@@ -164,6 +169,8 @@ export const PaymentStep = ({
         return t("marketPurchaseManagement.modal.bizum");
       case "bank-transfer":
         return t("marketPurchaseManagement.modal.bankTransfer");
+      case "account-direct-debit":
+        return t("marketPurchaseManagement.modal.account-direct-debit");
       default:
         return type;
     }
@@ -293,9 +300,33 @@ export const PaymentStep = ({
             }`}
           >
             <div className="flex flex-col items-center justify-center gap-3">
-              <img src="./images/bank-transfer.png" alt="bank-transfer" className="size-10" />
+              <img
+                src="./images/bank-transfer.png"
+                alt="bank-transfer"
+                className="size-10"
+              />
               <span className="font-medium text-lg">
                 {t("marketPurchaseManagement.modal.bankTransfer")}
+              </span>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedPaymentType("account-direct-debit")}
+            className={`p-4 rounded-lg border-2 transition-colors ${
+              selectedPaymentType === "account-direct-debit"
+                ? "border-indigo-400 bg-indigo-50 text-indigo-800"
+                : "border-gray-200 hover:border-indigo-300"
+            }`}
+          >
+            <div className="flex flex-col items-center justify-center gap-3">
+              <img
+                src="./images/bank-transfer.png"
+                alt="account"
+                className="size-10"
+              />
+              <span className="font-medium text-lg">
+                {t("marketPurchaseManagement.modal.account-direct-debit")}
               </span>
             </div>
           </button>
@@ -338,7 +369,11 @@ export const PaymentStep = ({
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
               >
                 <div className="flex items-center gap-3">
-                  <img src={getPaymentIcon(method.type)} alt={method.type} className="size-10" />
+                  <img
+                    src={getPaymentIcon(method.type)}
+                    alt={method.type}
+                    className="size-10"
+                  />
                   <div>
                     <div className="font-medium text-gray-900">
                       {getPaymentLabel(method.type)}

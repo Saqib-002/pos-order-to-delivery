@@ -359,7 +359,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
               refreshOrdersCallback();
             }}
             Icon={<ChevronLeftIcon className="size-6" />}
-            className="!p-0 !m-0"
+            className="p-0! m-0!"
             variant="transparent"
           />
           <h2 className="text-lg font-semibold text-gray-800">
@@ -373,7 +373,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
             onClick={handlePrint}
             title={t("orderCart.printOptions")}
             Icon={<PrinterIcon className="size-5" />}
-            className="!px-2"
+            className="px-2!"
             variant="transparent"
           />
           <CustomButton
@@ -381,7 +381,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
             onClick={handleClearOrder}
             title={t("orderCart.clearOrder")}
             Icon={<DeleteIcon className="size-5" />}
-            className="!px-2 text-red-600 hover:text-red-700"
+            className="px-2! text-red-600 hover:text-red-700"
             variant="transparent"
           />
         </div>
@@ -440,14 +440,14 @@ const OrderCart: React.FC<OrderCartProps> = ({
                   onClick={() => handleEditItem(item)}
                   variant="transparent"
                   Icon={<EditIcon className="size-4" />}
-                  className="!p-0"
+                  className="p-0!"
                 />
                 <CustomButton
                   type="button"
                   onClick={() =>
                     handleRemoveItem(item.id || "", item.productName)
                   }
-                  className="!p-0 text-sm text-red-500 hover:text-red-700"
+                  className="p-0! text-sm text-red-500 hover:text-red-700"
                   variant="transparent"
                   label="✕"
                 />
@@ -539,7 +539,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                       onClick={() => handleEditGroup(group)}
                       variant="transparent"
                       Icon={<EditIcon className="size-4" />}
-                      className="!p-0"
+                      className="p-0!"
                       title={t("common.edit")}
                     />
                     <CustomButton
@@ -547,13 +547,13 @@ const OrderCart: React.FC<OrderCartProps> = ({
                       onClick={() => handleDuplicateGroup(group)}
                       variant="transparent"
                       Icon={<CopyIcon className="size-4" />}
-                      className="!p-0 text-blue-600 hover:text-blue-800"
+                      className="p-0! text-blue-600 hover:text-blue-800"
                       title={t("common.duplicate")}
                     />
                     <CustomButton
                       type="button"
                       onClick={() => handleRemoveGroup(group)}
-                      className="!p-1 !rounded-full !text-sm bg-red-500 text-white hover:!text-gray-100 hover:bg-red-700"
+                      className="p-1! rounded-full! text-sm! bg-red-500 text-white hover:text-gray-100! hover:bg-red-700"
                       variant="transparent"
                       Icon={<CrossIcon className="size-4" />}
                       title={t("common.remove")}

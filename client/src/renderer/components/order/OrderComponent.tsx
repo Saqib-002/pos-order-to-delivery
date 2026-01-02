@@ -27,6 +27,8 @@ import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
 import Pagination from "../shared/Pagination";
 import { formatAddress } from "@/renderer/utils/utils";
+import { formatShortTimeAgo } from "@/renderer/utils/formatTimeAgo";
+
 
 const OrderComponent = () => {
   const { t } = useTranslation();
@@ -318,22 +320,33 @@ const OrderComponent = () => {
                     <button
                       key={order.id}
                       className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${
-                        isAssignedToDelivery || order.orderType === "platform" || order.status === "cancelled"
+                        isAssignedToDelivery ||
+                        order.orderType === "platform" ||
+                        order.status === "cancelled"
                           ? "bg-gray-100 cursor-not-allowed opacity-75"
                           : "hover:bg-gray-50 cursor-pointer"
                       }`}
                       onClick={() => handleOrderClick(order)}
                       disabled={
-                        isAssignedToDelivery || order.orderType === "platform" || order.status === "cancelled"
+                        isAssignedToDelivery ||
+                        order.orderType === "platform" ||
+                        order.status === "cancelled"
                       }
                     >
                       <div className="flex flex-col items-start gap-2 flex-1">
                         {/* Order Number and Total */}
                         <div className="flex items-center justify-between gap-3 w-full">
-                          <h3 className="font-semibold text-black text-3xl">
-                            {configurations.orderPrefix || "K"}
-                            {order.orderId} {order.ticketNumber && (<span className="text-xl">({order.ticketNumber})</span>)}
-                          </h3>
+                          <div className="flex gap-2">
+                            <h3 className="font-semibold text-black text-3xl">
+                              {configurations.orderPrefix || "K"}
+                              {order.orderId}{" "}
+                              {order.createdAt && (
+                                <span className="text-sm text-gray-500 font-medium h-max self-end">
+                                  {formatShortTimeAgo(order.createdAt)}
+                                </span>
+                              )}
+                            </h3>
+                          </div>
                           <div className="text-xl font-bold text-black">
                             €{orderTotal.toFixed(2)}
                           </div>
@@ -345,7 +358,8 @@ const OrderComponent = () => {
                           <span
                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getOrderTypeStyle(order.orderType || "")}`}
                           >
-                            {order.orderType === "platform" && order.platformName
+                            {order.orderType === "platform" &&
+                            order.platformName
                               ? order.platformName
                               : translateOrderType(order.orderType || "") ||
                                 t("manageOrders.statuses.notSelected")}

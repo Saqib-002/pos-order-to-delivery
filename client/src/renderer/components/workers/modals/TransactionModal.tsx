@@ -6,7 +6,7 @@ import CustomButton from "../../ui/CustomButton";
 import { AddIcon, DeleteIcon } from "../../../public/Svg";
 
 export interface PaymentMethod {
-  type: "cash" | "card" | "bizum" | "bank-transfer";
+  type: "cash" | "card" | "bizum" | "bank-transfer" | "account-direct-debit";
   amount: number;
   amountTendered?: number;
   date?: string;
@@ -30,7 +30,7 @@ export const TransactionModal = ({
   const { t } = useTranslation();
   const [currentPaymentAmount, setCurrentPaymentAmount] = useState<number>(0);
   const [selectedPaymentType, setSelectedPaymentType] = useState<
-    "cash" | "card" | "bizum" | "bank-transfer"
+    "cash" | "card" | "bizum" | "bank-transfer" | "account-direct-debit"
   >("cash");
 
   useEffect(() => {
@@ -46,7 +46,8 @@ export const TransactionModal = ({
                   | "cash"
                   | "card"
                   | "bizum"
-                  | "bank-transfer",
+                  | "bank-transfer"
+                  | "account-direct-debit",
                 amount: parseFloat(amount) || 0,
               };
             })
@@ -58,7 +59,8 @@ export const TransactionModal = ({
           initialPaymentType === "cash" ||
           initialPaymentType === "card" ||
           initialPaymentType === "bizum" ||
-          initialPaymentType === "bank-transfer"
+          initialPaymentType === "bank-transfer" ||
+          initialPaymentType === "account-direct-debit"
         ) {
           onPaymentMethodsChange([
             {
@@ -66,7 +68,8 @@ export const TransactionModal = ({
                 | "cash"
                 | "card"
                 | "bizum"
-                | "bank-transfer",
+                | "bank-transfer"
+                | "account-direct-debit",
               amount: totalAmount,
             },
           ]);
@@ -156,6 +159,8 @@ export const TransactionModal = ({
         return "./images/bizum.png";
       case "bank-transfer":
         return "./images/bank-transfer.png";
+      case "account-direct-debit":
+        return "./images/bank-transfer.png";
       default:
         return "./images/cash.png";
     }
@@ -171,6 +176,8 @@ export const TransactionModal = ({
         return t("marketPurchaseManagement.modal.bizum");
       case "bank-transfer":
         return t("marketPurchaseManagement.modal.bankTransfer");
+      case "account-direct-debit":
+        return t("marketPurchaseManagement.modal.account-direct-debit");
       default:
         return type;
     }
@@ -307,6 +314,22 @@ export const TransactionModal = ({
               />
               <span className="font-medium text-lg">
                 {t("marketPurchaseManagement.modal.bankTransfer")}
+              </span>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedPaymentType("account-direct-debit")}
+            className={`p-4 rounded-lg border-2 transition-colors ${
+              selectedPaymentType === "account-direct-debit"
+                ? "border-indigo-400 bg-indigo-50 text-indigo-800"
+                : "border-gray-200 hover:border-indigo-300"
+            }`}
+          >
+            <div className="flex flex-col items-center justify-center gap-3">
+              <img src="./images/bank-transfer.png" alt="account-direct-debit" className="size-10" />
+              <span className="font-medium text-lg">
+                {t("marketPurchaseManagement.modal.account-direct-debit")}
               </span>
             </div>
           </button>

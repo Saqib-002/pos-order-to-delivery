@@ -91,7 +91,8 @@ export const MarketPurchaseModal = ({
                       | "cash"
                       | "card"
                       | "bizum"
-                      | "bank-transfer",
+                      | "bank-transfer"
+                      | "account-direct-debit",
                     amount: parseFloat(amount) || 0,
                   };
                 })
@@ -105,7 +106,8 @@ export const MarketPurchaseModal = ({
               initialData.paymentType === "cash" ||
               initialData.paymentType === "card" ||
               initialData.paymentType === "bizum" ||
-              initialData.paymentType === "bank-transfer"
+              initialData.paymentType === "bank-transfer" ||
+              initialData.paymentType === "account-direct-debit"
             ) {
               const amount =
                 typeof initialData.totalAmount === "string"
@@ -117,7 +119,8 @@ export const MarketPurchaseModal = ({
                     | "cash"
                     | "card"
                     | "bizum"
-                    | "bank-transfer",
+                    | "bank-transfer"
+                    | "account-direct-debit",
                   amount: isNaN(amount) ? 0 : amount,
                 },
               ]);
