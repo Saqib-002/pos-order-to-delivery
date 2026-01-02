@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import OrderCart from "./OrderCart";
 import OrderProcessingModal from "./OrderProcessingModal";
+import RefundProcessingModal from "./modals/RefundProcessingModal";
 import { useOrder } from "../../contexts/OrderContext";
 import { toast } from "react-toastify";
 import { Order, OrderItem } from "@/types/order";
@@ -28,7 +29,7 @@ import { DEFAULT_PAGE_LIMIT } from "@/constants";
 import Pagination from "../shared/Pagination";
 import { formatAddress } from "@/renderer/utils/utils";
 import { formatShortTimeAgo } from "@/renderer/utils/formatTimeAgo";
-
+import CustomButton from "../ui/CustomButton";
 
 const OrderComponent = () => {
   const { t } = useTranslation();
@@ -45,6 +46,12 @@ const OrderComponent = () => {
     useOrderManagementContext();
   const { configurations } = useConfigurations();
   const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
+  const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
+  const [refundOrderData, setRefundOrderData] = useState<{
+    order: Order;
+    totalAmount: number;
+    paymentType: string;
+  } | null>(null);
   const {
     auth: { token, user },
   } = useAuth();
@@ -267,6 +274,12 @@ const OrderComponent = () => {
       return;
     }
 
+    // Handle cancelled orders for refund
+    if (order.status === "cancelled") {
+      handleRefundClick(order);
+      return;
+    }
+
     setOrder(order);
     if (order.items) {
       order.items.forEach((item: any) => {
@@ -276,6 +289,46 @@ const OrderComponent = () => {
         });
       });
     }
+  };
+
+  const handleRefundClick = (order: Order) => {
+    if (order.paymentType?.toLowerCase() === "refunded") {
+      toast.info(t("refundProcessingModal.messages.alreadyRefunded"));
+      return;
+    }
+
+    const { orderTotal } = order.items
+      ? calculateOrderTotal(order.items)
+      : { orderTotal: 0 };
+
+    setRefundOrderData({
+      order,
+      totalAmount: orderTotal,
+      paymentType: order.paymentType || "",
+    });
+    setIsRefundModalOpen(true);
+  };
+
+  const handleRefundSubmit = async (refundData: {
+    refundAmount: number;
+    remainingAmount: number;
+    paymentType: string;
+  }) => {
+    if (!refundOrderData) return;
+
+    const result = await updateOrder(token!, refundOrderData.order.id, {
+      paymentType: refundData.paymentType,
+    });
+
+    if (!result) {
+      toast.error(t("refundProcessingModal.errors.refundFailed"));
+      return;
+    }
+
+    toast.success(t("refundProcessingModal.messages.refundSuccessful"));
+    setIsRefundModalOpen(false);
+    setRefundOrderData(null);
+    refreshOrdersCallback();
   };
   const totalPages =
     totalOrders > 0
@@ -320,17 +373,15 @@ const OrderComponent = () => {
                     <button
                       key={order.id}
                       className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${
-                        isAssignedToDelivery ||
-                        order.orderType === "platform" ||
-                        order.status === "cancelled"
+                        isAssignedToDelivery || order.orderType === "platform"
                           ? "bg-gray-100 cursor-not-allowed opacity-75"
-                          : "hover:bg-gray-50 cursor-pointer"
+                          : order.status === "cancelled"
+                            ? "hover:bg-red-50 cursor-pointer border-red-200"
+                            : "hover:bg-gray-50 cursor-pointer"
                       }`}
                       onClick={() => handleOrderClick(order)}
                       disabled={
-                        isAssignedToDelivery ||
-                        order.orderType === "platform" ||
-                        order.status === "cancelled"
+                        isAssignedToDelivery || order.orderType === "platform"
                       }
                     >
                       <div className="flex flex-col items-start gap-2 flex-1">
@@ -460,6 +511,18 @@ const OrderComponent = () => {
           orderItems={orderItems}
           order={order}
           onProcessOrder={handleProcessOrderSubmit}
+        />
+      )}
+      {isRefundModalOpen && refundOrderData && (
+        <RefundProcessingModal
+          isOpen={isRefundModalOpen}
+          onClose={() => {
+            setIsRefundModalOpen(false);
+            setRefundOrderData(null);
+          }}
+          onConfirm={handleRefundSubmit}
+          existingPaymentType={refundOrderData.paymentType}
+          totalAmount={refundOrderData.totalAmount}
         />
       )}
     </>

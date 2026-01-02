@@ -760,6 +760,28 @@
       "paymentProcessed": "Pago procesado: {{paymentString}}"
     }
   },
+  "refundProcessingModal": {
+    "title": "Procesar Reembolso",
+    "subtitle": "Seleccionar pagos para reembolsar del pedido cancelado",
+    "originalAmount": "Monto Original",
+    "totalPaid": "Total Pagado",
+    "refundableAmount": "Monto Reembolsable",
+    "selectPaymentsToRefund": "Seleccionar Pagos para Reembolsar",
+    "cash": "Efectivo",
+    "card": "Tarjeta",
+    "noPayments": "No se Encontraron Pagos",
+    "noPaymentsDescription": "Este pedido no tiene pagos registrados para reembolsar",
+    "processRefund": "Procesar Reembolso",
+    "errors": {
+      "pleaseSelectPaymentToRefund": "Por favor seleccione al menos un pago para reembolsar",
+      "refundFailed": "Error al procesar el reembolso. Por favor inténtelo de nuevo."
+    },
+    "messages": {
+      "refundProcessed": "Reembolso procesado: €{{refundAmount}}",
+      "refundSuccessful": "Reembolso procesado exitosamente",
+      "alreadyRefunded": "Este pedido ya ha sido completamente reembolsado"
+    }
+  },
   "customerModal": {
     "title": "Agregar Cliente",
     "phone": "Teléfono",
@@ -2214,7 +2236,8 @@
       "paid": "Pagado",
       "unpaid": "Sin Pagar",
       "partial": "Pago Parcial",
-      "pending": "Pendiente"
+      "pending": "Pendiente",
+      "refunded": "Reembolsado"
     }
   },
   "orderProcessingModal": {

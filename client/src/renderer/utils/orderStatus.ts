@@ -60,6 +60,8 @@ export const translatePaymentStatus = (status: string): string => {
       return i18n.t("paymentStatusUtils.statuses.partial");
     case "pending":
       return i18n.t("paymentStatusUtils.statuses.pending");
+    case "refunded":
+      return i18n.t("paymentStatusUtils.statuses.refunded");
     default:
       // Return the original status if no translation found
       return status;
@@ -74,6 +76,8 @@ export const getPaymentStatusStyle = (status: string) => {
       return "bg-yellow-100 text-yellow-800 border-yellow-200";
     case "pending":
       return "bg-blue-100 text-blue-800 border-blue-200";
+    case "refunded":
+      return "bg-orange-100 text-orange-800 border-orange-200";
     case "unpaid":
     default:
       return "bg-red-100 text-red-800 border-red-200";

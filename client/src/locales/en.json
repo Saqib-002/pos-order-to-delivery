@@ -758,6 +758,28 @@
       "paymentProcessed": "Payment processed: {{paymentString}}"
     }
   },
+  "refundProcessingModal": {
+    "title": "Process Refund",
+    "subtitle": "Select payments to refund for cancelled order",
+    "originalAmount": "Original Amount",
+    "totalPaid": "Total Paid",
+    "refundableAmount": "Refundable Amount",
+    "selectPaymentsToRefund": "Select Payments to Refund",
+    "cash": "Cash",
+    "card": "Card",
+    "noPayments": "No Payments Found",
+    "noPaymentsDescription": "This order has no recorded payments to refund",
+    "processRefund": "Process Refund",
+    "errors": {
+      "pleaseSelectPaymentToRefund": "Please select at least one payment to refund",
+      "refundFailed": "Failed to process refund. Please try again."
+    },
+    "messages": {
+      "refundProcessed": "Refund processed: €{{refundAmount}}",
+      "refundSuccessful": "Refund processed successfully",
+      "alreadyRefunded": "This order has already been fully refunded"
+    }
+  },
   "customerModal": {
     "title": "Add Customer",
     "phone": "Phone",
@@ -2214,7 +2236,8 @@
       "paid": "Paid",
       "unpaid": "Unpaid",
       "partial": "Partial Payment",
-      "pending": "Pending"
+      "pending": "Pending",
+      "refunded": "Refunded"
     }
   },
   "orderProcessingModal": {

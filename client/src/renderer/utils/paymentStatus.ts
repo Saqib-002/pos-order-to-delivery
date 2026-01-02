@@ -1,5 +1,5 @@
 export interface PaymentStatus {
-  status: "PAID" | "UNPAID" | "PARTIAL";
+  status: "PAID" | "UNPAID" | "PARTIAL" | "REFUNDED";
   totalPaid: number;
   remainingAmount: number;
   paymentBreakdown: Array<{ type: string; amount: number }>;
@@ -16,6 +16,15 @@ export const calculatePaymentStatus = (
   ) {
     return {
       status: "UNPAID",
+      totalPaid: 0,
+      remainingAmount: totalAmount,
+      paymentBreakdown: [],
+    };
+  }
+
+  if (paymentType.toLowerCase() === "refunded") {
+    return {
+      status: "REFUNDED",
       totalPaid: 0,
       remainingAmount: totalAmount,
       paymentBreakdown: [],
