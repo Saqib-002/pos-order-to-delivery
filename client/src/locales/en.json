@@ -1835,7 +1835,7 @@
       "clearFilters": "Clear Filters"
     },
     "table": {
-      "otherIncomeSources": "Income Sources",
+      "otherIncomes": "Income Sources",
       "date": "Date",
       "name": "Name",
       "description": "Description",
@@ -1912,6 +1912,7 @@
       "expenseType": "Expense Type",
       "ticketNumber": "Ticket Number",
       "paymentType": "Payment Type",
+      "account-direct-debit": "DIRECT DEBIT",
       "cash": "Cash",
       "card": "Card",
       "bizum": "Bizum",

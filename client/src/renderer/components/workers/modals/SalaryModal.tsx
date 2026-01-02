@@ -193,7 +193,7 @@ export const SalaryModal = ({
 
       if (payments && payments.length > 0) {
         const paymentMethods: PaymentMethod[] = payments.map((p: any) => ({
-          type: p.paymentMethod as "cash" | "card" | "bizum" | "bank-transfer",
+          type: p.paymentMethod as "cash" | "card" | "bizum" | "bank-transfer" | "account-direct-debit",
           amount: Number(p.amount) || 0,
           date: p.paymentDate || p.createdAt,
           isExisting: true,
@@ -296,19 +296,11 @@ export const SalaryModal = ({
           (id) => !currentTransactionIds.includes(id)
         );
 
-        console.log(`Editing salary ${salaryId}:`);
-        console.log(`New payments: ${newPayments.length}`, newPayments);
-        console.log(
-          `Deleted transactions: ${deletedTransactionIds.length}`,
-          deletedTransactionIds
-        );
-
         // Delete removed transactions
         if (deletedTransactionIds.length > 0) {
           try {
             for (const transactionId of deletedTransactionIds) {
               await deletePaymentTransaction(transactionId);
-              console.log(`Deleted transaction ${transactionId}`);
             }
           } catch (error) {
             console.error("Error deleting transactions:", error);
@@ -329,7 +321,6 @@ export const SalaryModal = ({
               salaryId,
               paymentsToAdd
             );
-            console.log("Added new payments:", result);
           } catch (error) {
             console.error("Error adding new payments:", error);
           }
@@ -342,12 +333,7 @@ export const SalaryModal = ({
             paymentDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
           }));
 
-          console.log(
-            `Creating new salary ${salaryId} with payments:`,
-            payments
-          );
           const result = await addPaymentTransactions(salaryId, payments);
-          console.log("New salary payment result:", result);
         }
       }
     }
@@ -429,14 +415,6 @@ export const SalaryModal = ({
     typeof formData.total === "number"
       ? formData.total
       : parseFloat(String(formData.total || 0)) || 0;
-  const totalPaid = paymentMethods.reduce((sum, method) => {
-    const amount =
-      typeof method.amount === "string"
-        ? parseFloat(method.amount)
-        : method.amount || 0;
-    return sum + amount;
-  }, 0);
-  const remainingAmount = totalAmount - totalPaid;
 
   const formatCurrency = (amount: number | string | null | undefined) => {
     if (amount === null || amount === undefined) return "€0.00";
@@ -640,10 +618,6 @@ export const SalaryModal = ({
                                 typeof r.totalPaid === "number"
                                   ? r.totalPaid
                                   : parseFloat(String(r.totalPaid || 0)) || 0;
-
-                              console.log(
-                                `Salary ${r.id}: total=${total}, totalPaid=${totalPaid}, raw totalPaid=${r.totalPaid}`
-                              );
 
                               let status: "PAID" | "UNPAID" | "PARTIAL";
                               if (totalPaid <= 0) {

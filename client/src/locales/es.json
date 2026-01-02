@@ -1835,7 +1835,7 @@
       "clearFilters": "Limpiar Filtros"
     },
     "table": {
-      "otherIncomeSources": "Fuentes de Ingresos",
+      "otherIncomes": "Fuentes de Ingresos",
       "date": "Fecha",
       "name": "Nombre",
       "description": "Descripción",
@@ -1912,6 +1912,7 @@
       "expenseType": "Tipo de Gasto",
       "ticketNumber": "Número de Ticket",
       "paymentType": "Tipo de Pago",
+      "account-direct-debit": "RECIBO DOMICILIADO",
       "cash": "Efectivo",
       "card": "Tarjeta",
       "bizum": "Bizum",
