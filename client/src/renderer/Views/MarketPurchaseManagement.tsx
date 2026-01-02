@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useConfirm } from "../hooks/useConfirm";
 import { useMarketPurchaseData } from "../hooks/useMarketPurchaseData";
+import { useAuth } from "../contexts/AuthContext";
 import { MarketPurchase } from "@/types/marketPurchases";
 
 import CustomButton from "../components/ui/CustomButton";
@@ -17,6 +18,7 @@ import dayjs from "dayjs";
 export const MarketPurchaseManagement = () => {
   const { t } = useTranslation();
   const confirm = useConfirm();
+  const { auth } = useAuth();
   const {
     purchasesData,
     suppliers,
@@ -244,6 +246,7 @@ export const MarketPurchaseManagement = () => {
         suppliers={suppliers}
         expenseTypes={expenseTypes}
         inventoryProducts={inventoryProducts}
+        token={auth?.token}
       />
     </div>
   );

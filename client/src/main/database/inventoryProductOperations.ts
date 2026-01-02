@@ -60,8 +60,64 @@ export class InventoryProductDatabaseOperations {
 
   static async getAllInventoryProducts() {
     try {
-      const products = await db("inventory_products").orderBy("name", "asc");
-      return products;
+      const products = await db("inventory_products")
+        .leftJoin(
+          "expense_types",
+          "inventory_products.expenseTypeId",
+          "expense_types.id"
+        )
+        .select(
+          "inventory_products.*",
+          "expense_types.name as expenseTypeName",
+          "expense_types.id as expenseTypeId_ref"
+        )
+        .orderBy("inventory_products.name", "asc");
+
+      return products.map((product) => ({
+        ...product,
+        expenseType: product.expenseTypeName
+          ? {
+              id: product.expenseTypeId_ref,
+              name: product.expenseTypeName,
+            }
+          : undefined,
+        expenseTypeId: product.expenseTypeId || undefined,
+        expenseTypeName: undefined,
+        expenseTypeId_ref: undefined,
+      }));
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getInventoryProductsByExpenseType(expenseTypeId: string) {
+    try {
+      const products = await db("inventory_products")
+        .leftJoin(
+          "expense_types",
+          "inventory_products.expenseTypeId",
+          "expense_types.id"
+        )
+        .select(
+          "inventory_products.*",
+          "expense_types.name as expenseTypeName",
+          "expense_types.id as expenseTypeId_ref"
+        )
+        .where("inventory_products.expenseTypeId", expenseTypeId)
+        .orderBy("inventory_products.name", "asc");
+
+      return products.map((product) => ({
+        ...product,
+        expenseType: product.expenseTypeName
+          ? {
+              id: product.expenseTypeId_ref,
+              name: product.expenseTypeName,
+            }
+          : undefined,
+        expenseTypeId: product.expenseTypeId || undefined,
+        expenseTypeName: undefined,
+        expenseTypeId_ref: undefined,
+      }));
     } catch (error) {
       throw error;
     }

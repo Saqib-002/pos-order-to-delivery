@@ -411,6 +411,7 @@
     "noProducts": "No products added yet. Add one above.",
     "table": {
       "productName": "Product Name",
+      "expenseType": "Expense Type",
       "createdAt": "Created At",
       "actions": "Actions"
     },
@@ -429,6 +430,8 @@
     "addNewProduct": "Add New Product",
     "productName": "Product Name *",
     "enterProductName": "Enter product name",
+    "expenseType": "Expense Type",
+    "selectExpenseType": "Select expense type",
     "updateProduct": "Update Product",
     "addProduct": "Add Product",
     "errors": {
@@ -1936,6 +1939,7 @@
       "previous": "Previous",
       "enterProductName": "Enter product name",
       "selectProduct": "Select product",
+      "selectExpenseTypeFirst": "Please select expense type first",
       "selectExpenseType": "Select expense type",
       "productAdded": "Product added successfully",
       "productUpdated": "Product updated successfully",

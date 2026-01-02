@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import CustomButton from "../../ui/CustomButton";
 import CustomInput from "../../shared/CustomInput";
+import { CustomSelect } from "../../ui/CustomSelect";
 import { CrossIcon } from "@/renderer/public/Svg";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
@@ -22,12 +23,32 @@ export const InventoryProductModal: React.FC<InventoryProductModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [productName, setProductName] = useState("");
+  const [selectedExpenseType, setSelectedExpenseType] = useState("");
+  const [expenseTypes, setExpenseTypes] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchExpenseTypes = async () => {
+      if (!token) return;
+      try {
+        const res = await (window as any).electronAPI.getAllExpenseTypes(token);
+        if (res.status) {
+          setExpenseTypes(res.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching expense types:", error);
+      }
+    };
+
+    fetchExpenseTypes();
+  }, [token]);
 
   useEffect(() => {
     if (product && (mode === "edit" || mode === "view")) {
       setProductName(product.name);
+      setSelectedExpenseType(product.expenseTypeId || "");
     } else {
       setProductName("");
+      setSelectedExpenseType("");
     }
   }, [product, mode]);
 
@@ -45,6 +66,7 @@ export const InventoryProductModal: React.FC<InventoryProductModalProps> = ({
 
     const payload = {
       name: productName.trim(),
+      expenseTypeId: selectedExpenseType || null,
     };
 
     let res;
@@ -118,6 +140,21 @@ export const InventoryProductModal: React.FC<InventoryProductModalProps> = ({
                 inputClasses="py-3 px-4"
                 readOnly={isViewMode}
                 required={isAddOrEditMode}
+              />
+
+              <CustomSelect
+                label={t("inventoryModal.expenseType")}
+                value={selectedExpenseType}
+                onChange={(value) => setSelectedExpenseType(value)}
+                options={[
+                  { value: "", label: t("inventoryModal.selectExpenseType") },
+                  ...expenseTypes.map((type) => ({
+                    value: type.id,
+                    label: type.name,
+                  })),
+                ]}
+                placeholder={t("inventoryModal.selectExpenseType")}
+                disabled={isViewMode}
               />
             </div>
           </div>

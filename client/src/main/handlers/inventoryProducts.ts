@@ -115,3 +115,26 @@ export const getInventoryProductById = async (
     };
   }
 };
+
+export const getInventoryProductsByExpenseType = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  expenseTypeId: string
+) => {
+  try {
+    await verifyToken(event, token);
+    const result =
+      await InventoryProductDatabaseOperations.getInventoryProductsByExpenseType(
+        expenseTypeId
+      );
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};

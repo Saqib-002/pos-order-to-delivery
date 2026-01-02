@@ -215,6 +215,7 @@
     "noProducts": "Aún no se han agregado productos. Agregue uno arriba.",
     "table": {
       "productName": "Nombre del Producto",
+      "expenseType": "Tipo de Gasto",
       "createdAt": "Fecha de Creación",
       "actions": "Acciones"
     },
@@ -233,6 +234,8 @@
     "addNewProduct": "Agregar Nuevo Producto",
     "productName": "Nombre del Producto *",
     "enterProductName": "Ingrese el nombre del producto",
+    "expenseType": "Tipo de Gasto",
+    "selectExpenseType": "Seleccionar tipo de gasto",
     "updateProduct": "Actualizar Producto",
     "addProduct": "Agregar Producto",
     "errors": {
@@ -1936,6 +1939,7 @@
       "previous": "Anterior",
       "enterProductName": "Ingrese el nombre del producto",
       "selectProduct": "Seleccionar producto",
+      "selectExpenseTypeFirst": "Por favor seleccione tipo de gasto primero",
       "selectExpenseType": "Seleccionar tipo de gasto",
       "productAdded": "Producto agregado exitosamente",
       "productUpdated": "Producto actualizado exitosamente",

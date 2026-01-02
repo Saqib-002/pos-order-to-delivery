@@ -25,6 +25,7 @@ interface Props {
   suppliers: any[];
   expenseTypes: any[];
   inventoryProducts: any[];
+  token?: string | null;
 }
 
 export const MarketPurchaseModal = ({
@@ -35,6 +36,7 @@ export const MarketPurchaseModal = ({
   suppliers,
   expenseTypes,
   inventoryProducts,
+  token,
 }: Props) => {
   const { t } = useTranslation();
   const confirm = useConfirm();
@@ -45,6 +47,9 @@ export const MarketPurchaseModal = ({
   });
   const [items, setItems] = useState<MarketPurchaseItem[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [filteredInventoryProducts, setFilteredInventoryProducts] = useState<
+    any[]
+  >([]);
 
   // Form state for adding new product
   const [newProduct, setNewProduct] = useState<MarketPurchaseItem>({
@@ -60,6 +65,14 @@ export const MarketPurchaseModal = ({
   });
   const [taxPercentage, setTaxPercentage] = useState<number>(0);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (newProduct.expenseTypeId) {
+      fetchFilteredProducts(newProduct.expenseTypeId);
+    } else {
+      setFilteredInventoryProducts([]);
+    }
+  }, [newProduct.expenseTypeId]);
 
   useEffect(() => {
     if (isOpen) {
@@ -273,7 +286,9 @@ export const MarketPurchaseModal = ({
     const netSubtotal = displayUnitPrice * totalUnit;
     let taxPercent = 0;
     if (netSubtotal > 0) {
-      taxPercent = item.isTaxIncluded ? Number(((item.tax/(netSubtotal-item.tax))*100).toFixed(0)) : (taxAmount / netSubtotal) * 100;
+      taxPercent = item.isTaxIncluded
+        ? Number(((item.tax / (netSubtotal - item.tax)) * 100).toFixed(0))
+        : (taxAmount / netSubtotal) * 100;
     } else if (item.isTaxIncluded && totalAmount > 0) {
       const inferredNet = totalAmount - taxAmount;
       if (inferredNet > 0) taxPercent = (taxAmount / inferredNet) * 100;
@@ -326,7 +341,7 @@ export const MarketPurchaseModal = ({
       tax: 0,
       total: 0,
       expenseTypeId: "",
-      isTaxIncluded: false
+      isTaxIncluded: false,
     });
     setTaxPercentage(0);
     setEditingIndex(null);
@@ -457,7 +472,29 @@ export const MarketPurchaseModal = ({
     label: e.name,
   }));
 
-  const inventoryProductOptions = inventoryProducts.map((p) => ({
+  // Function to fetch filtered products by expense type
+  const fetchFilteredProducts = async (expenseTypeId: string) => {
+    if (!expenseTypeId || !token) {
+      setFilteredInventoryProducts([]);
+      return;
+    }
+
+    try {
+      const res = await (
+        window as any
+      ).electronAPI.getInventoryProductsByExpenseType(token, expenseTypeId);
+      if (res.status) {
+        setFilteredInventoryProducts(res.data || []);
+      } else {
+        setFilteredInventoryProducts([]);
+      }
+    } catch (error) {
+      console.error("Error fetching filtered products:", error);
+      setFilteredInventoryProducts([]);
+    }
+  };
+
+  const inventoryProductOptions = filteredInventoryProducts.map((p) => ({
     value: p.id,
     label: p.name,
   }));
@@ -550,14 +587,30 @@ export const MarketPurchaseModal = ({
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <CustomSelect
+              label={t("marketPurchaseManagement.modal.expenseType")}
+              options={expenseTypeOptions}
+              value={newProduct.expenseTypeId || ""}
+              onChange={(val) =>
+                setNewProduct({
+                  ...newProduct,
+                  expenseTypeId: val,
+                  productName: "",
+                })
+              }
+              placeholder={t(
+                "marketPurchaseManagement.modal.selectExpenseType"
+              )}
+            />
+            <CustomSelect
               label={t("marketPurchaseManagement.modal.product")}
               options={inventoryProductOptions}
               value={
-                inventoryProducts.find((p) => p.name === newProduct.productName)
-                  ?.id || ""
+                filteredInventoryProducts.find(
+                  (p) => p.name === newProduct.productName
+                )?.id || ""
               }
               onChange={(val) => {
-                const selectedProduct = inventoryProducts.find(
+                const selectedProduct = filteredInventoryProducts.find(
                   (p) => p.id === val
                 );
                 setNewProduct(
@@ -567,14 +620,12 @@ export const MarketPurchaseModal = ({
                   })
                 );
               }}
-              placeholder={t("marketPurchaseManagement.modal.selectProduct")}
-            />
-            <CustomSelect
-                label={t("marketPurchaseManagement.modal.expenseType")}
-                options={expenseTypeOptions}
-                value={newProduct.expenseTypeId || ""}
-                onChange={(val) => setNewProduct({ ...newProduct, expenseTypeId: val })}
-                placeholder={t("marketPurchaseManagement.modal.selectExpenseType")}
+              disabled={!newProduct.expenseTypeId}
+              placeholder={
+                !newProduct.expenseTypeId
+                  ? t("marketPurchaseManagement.modal.selectExpenseTypeFirst")
+                  : t("marketPurchaseManagement.modal.selectProduct")
+              }
             />
             <CustomInput
               label={t("marketPurchaseManagement.modal.box")}
@@ -615,20 +666,24 @@ export const MarketPurchaseModal = ({
               </div>
             </div>
             <div className="flex flex-col justify-center">
-                <label className="flex items-center space-x-2 cursor-pointer mt-6">
-                    <input 
-                        type="checkbox" 
-                        checked={newProduct.isTaxIncluded} 
-                        onChange={(e) => setNewProduct(
-                            updateNewProductCalculations({
-                                ...newProduct,
-                                isTaxIncluded: e.target.checked
-                            })
-                        )}
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300" 
-                    />
-                    <span className="text-sm font-medium text-gray-700">Tax Included</span>
-                </label>
+              <label className="flex items-center space-x-2 cursor-pointer mt-6">
+                <input
+                  type="checkbox"
+                  checked={newProduct.isTaxIncluded}
+                  onChange={(e) =>
+                    setNewProduct(
+                      updateNewProductCalculations({
+                        ...newProduct,
+                        isTaxIncluded: e.target.checked,
+                      })
+                    )
+                  }
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  Tax Included
+                </span>
+              </label>
             </div>
             <CustomInput
               label={t("marketPurchaseManagement.modal.unitPrice")}
@@ -757,14 +812,16 @@ export const MarketPurchaseModal = ({
                       <td className="px-4 py-3 text-sm text-gray-900 font-medium">
                         {item.productName}
                         {item.isTaxIncluded && (
-                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                Tax Inc.
-                            </span>
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                            Tax Inc.
+                          </span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
-                        {item.expenseTypeName || 
-                         expenseTypes.find(e => e.id === item.expenseTypeId)?.name || '-'}
+                        {item.expenseTypeName ||
+                          expenseTypes.find((e) => e.id === item.expenseTypeId)
+                            ?.name ||
+                          "-"}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
                         {item.box}
@@ -797,7 +854,9 @@ export const MarketPurchaseModal = ({
                             ? subtotal > 0
                               ? (taxNum / (subtotal - taxNum)) * 100
                               : 0
-                            : subtotal > 0 ? (taxNum / subtotal) * 100 : 0;
+                            : subtotal > 0
+                              ? (taxNum / subtotal) * 100
+                              : 0;
                           return taxNum > 0
                             ? `€${taxNum.toFixed(2)} (${taxPercent.toFixed(1)}%)`
                             : "-";

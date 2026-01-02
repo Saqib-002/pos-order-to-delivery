@@ -15,7 +15,9 @@ const fetchInventoryProducts = async (
 ) => {
   if (!token) return;
   try {
-    const res = await (window as any).electronAPI.getAllInventoryProducts(token);
+    const res = await (window as any).electronAPI.getAllInventoryProducts(
+      token
+    );
     if (res.status) {
       setInventoryProducts(res.data || []);
     } else {
@@ -28,7 +30,8 @@ const fetchInventoryProducts = async (
 
 const Inventory = () => {
   const [inventoryProducts, setInventoryProducts] = useState([]);
-  const [showInventoryProductModal, setShowInventoryProductModal] = useState(false);
+  const [showInventoryProductModal, setShowInventoryProductModal] =
+    useState(false);
   const [mode, setMode] = useState<"add" | "edit" | "view">("add");
   const [currentProduct, setCurrentProduct] = useState<any>(null);
   const {
@@ -69,7 +72,10 @@ const Inventory = () => {
     });
     if (!ok) return;
     try {
-      const res = await (window as any).electronAPI.deleteInventoryProduct(token, id);
+      const res = await (window as any).electronAPI.deleteInventoryProduct(
+        token,
+        id
+      );
       if (res.status) {
         toast.success(t("inventory.deletedSuccess"));
         fetchInventoryProducts(token, setInventoryProducts, t);
@@ -95,7 +101,9 @@ const Inventory = () => {
           mode={mode}
           product={currentProduct}
           token={token}
-          onSuccess={() => fetchInventoryProducts(token, setInventoryProducts, t)}
+          onSuccess={() =>
+            fetchInventoryProducts(token, setInventoryProducts, t)
+          }
         />
       )}
       <div className="pb-6 flex-1">
@@ -139,6 +147,9 @@ const Inventory = () => {
                       {t("inventory.table.productName")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t("inventory.table.expenseType")}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t("inventory.table.createdAt")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -153,7 +164,12 @@ const Inventory = () => {
                         {product.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {dayjs(new Date(product.createdAt).toLocaleDateString()).format("DD/MM/YYYY")}
+                        {product.expenseType ? product.expenseType.name : "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                        {dayjs(
+                          new Date(product.createdAt).toLocaleDateString()
+                        ).format("DD/MM/YYYY")}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
                         <CustomButton
@@ -172,9 +188,7 @@ const Inventory = () => {
                         />
                         <CustomButton
                           type="button"
-                          onClick={() =>
-                            handleDelete(product.id, product.name)
-                          }
+                          onClick={() => handleDelete(product.id, product.name)}
                           Icon={<DeleteIcon className="size-5" />}
                           variant="transparent"
                           className="p-0! text-red-500! hover:text-red-700!"
@@ -193,4 +207,3 @@ const Inventory = () => {
 };
 
 export default Inventory;
-

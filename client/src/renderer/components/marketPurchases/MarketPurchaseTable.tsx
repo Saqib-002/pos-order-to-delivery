@@ -18,7 +18,9 @@ export const MarketPurchaseTable = ({ purchases, onEdit, onDelete }: Props) => {
 
   const formatDate = (dateString: string) => {
     try {
-      return dayjs(new Date(dateString).toLocaleDateString()).format("DD/MM/YYYY");
+      return dayjs(new Date(dateString).toLocaleDateString()).format(
+        "DD/MM/YYYY"
+      );
     } catch {
       return dateString;
     }
@@ -43,9 +45,6 @@ export const MarketPurchaseTable = ({ purchases, onEdit, onDelete }: Props) => {
               {t("marketPurchaseManagement.table.supplier")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
-              {t("marketPurchaseManagement.table.expenseType")}
-            </th>
-            <th className="px-6 py-3 text-sm font-semibold text-gray-700">
               {t("marketPurchaseManagement.table.ticketDate")}
             </th>
             <th className="px-6 py-3 text-sm font-semibold text-gray-700">
@@ -65,11 +64,11 @@ export const MarketPurchaseTable = ({ purchases, onEdit, onDelete }: Props) => {
         <tbody className="divide-y divide-gray-200">
           {purchases.length === 0 ? (
             <tr>
-              <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+              <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                 {t("marketPurchaseManagement.table.noPurchases")}
               </td>
             </tr>
-          ) : (
+          ) : ( 
             purchases.map((purchase) => (
               <tr
                 key={purchase.id}
@@ -80,9 +79,6 @@ export const MarketPurchaseTable = ({ purchases, onEdit, onDelete }: Props) => {
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
                   {purchase.supplierName || "-"}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
-                  {purchase.expenseTypeName || "-"}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
                   {formatDate(purchase.ticketDate)}

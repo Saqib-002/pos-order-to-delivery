@@ -515,6 +515,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("get-all-inventory-products", token),
   getInventoryProductById: (token: string, productId: string) =>
     ipcRenderer.invoke("get-inventory-product-by-id", token, productId),
+  getInventoryProductsByExpenseType: (token: string, expenseTypeId: string) =>
+    ipcRenderer.invoke(
+      "get-inventory-products-by-expense-type",
+      token,
+      expenseTypeId
+    ),
 
   // market purchases
   createMarketPurchase: (token: string, purchaseData: any) =>

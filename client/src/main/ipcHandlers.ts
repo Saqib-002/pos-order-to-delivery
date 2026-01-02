@@ -170,6 +170,7 @@ import {
   deleteInventoryProduct,
   getAllInventoryProducts,
   getInventoryProductById,
+  getInventoryProductsByExpenseType,
 } from "./handlers/inventoryProducts.js";
 import {
   createMarketPurchase,
@@ -178,7 +179,13 @@ import {
   getAllMarketPurchases,
   getMarketPurchaseById,
 } from "./handlers/marketPurchases.js";
-import { createOtherIncome, deleteOtherIncome, getAllOtherIncomes, getOtherIncomeById, updateOtherIncome } from "./handlers/OtherIncome.js";
+import {
+  createOtherIncome,
+  deleteOtherIncome,
+  getAllOtherIncomes,
+  getOtherIncomeById,
+  updateOtherIncome,
+} from "./handlers/OtherIncome.js";
 import { getFinancialAnalytics } from "./handlers/financialOperations.js";
 interface DbCredentials {
   host: string;
@@ -264,7 +271,10 @@ export function registerIpcHandlers() {
 
   // Payment Transaction handlers
   ipcMain.handle("add-payment-transaction", addPaymentTransaction);
-  ipcMain.handle("add-multiple-payment-transactions", addMultiplePaymentTransactions);
+  ipcMain.handle(
+    "add-multiple-payment-transactions",
+    addMultiplePaymentTransactions
+  );
   ipcMain.handle("update-payment-transaction", updatePaymentTransaction);
   ipcMain.handle("get-payment-transactions", getPaymentTransactions);
   ipcMain.handle("delete-payment-transaction", deletePaymentTransaction);
@@ -422,6 +432,10 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-inventory-product", deleteInventoryProduct);
   ipcMain.handle("get-all-inventory-products", getAllInventoryProducts);
   ipcMain.handle("get-inventory-product-by-id", getInventoryProductById);
+  ipcMain.handle(
+    "get-inventory-products-by-expense-type",
+    getInventoryProductsByExpenseType
+  );
 
   // other incomes
   ipcMain.handle("create-other-income", createOtherIncome);
