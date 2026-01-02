@@ -166,6 +166,13 @@ import {
   getExpenseTypeById,
 } from "./handlers/expenseTypes.js";
 import {
+  createIncomeSource,
+  updateIncomeSource,
+  deleteIncomeSource,
+  getAllIncomeSources,
+  getIncomeSourceById,
+} from "./handlers/incomeSources.js";
+import {
   createInventoryProduct,
   updateInventoryProduct,
   deleteInventoryProduct,
@@ -427,6 +434,13 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-expense-type", deleteExpenseType);
   ipcMain.handle("get-all-expense-types", getAllExpenseTypes);
   ipcMain.handle("get-expense-type-by-id", getExpenseTypeById);
+
+  // income sources
+  ipcMain.handle("create-income-source", createIncomeSource);
+  ipcMain.handle("update-income-source", updateIncomeSource);
+  ipcMain.handle("delete-income-source", deleteIncomeSource);
+  ipcMain.handle("get-all-income-sources", getAllIncomeSources);
+  ipcMain.handle("get-income-source-by-id", getIncomeSourceById);
 
   // inventory products
   ipcMain.handle("create-inventory-product", createInventoryProduct);

@@ -4,6 +4,7 @@ import ConfigurationsTab from "../components/configurations/ConfiguraionsTab";
 import Platforms from "../components/configurations/Platforms";
 import Suppliers from "../components/configurations/Suppliers";
 import ExpenseTypes from "../components/configurations/ExpenseTypes";
+import IncomeSources from "../components/configurations/IncomeSources";
 import Inventory from "../components/configurations/Inventory";
 import { useTranslation } from "react-i18next";
 
@@ -21,6 +22,8 @@ const Configurations = () => {
         return <Suppliers />;
       case "expenseTypes":
         return <ExpenseTypes />;
+      case "incomeSources":
+        return <IncomeSources />;
       case "inventory":
         return <Inventory />;
       case "config":
@@ -56,6 +59,12 @@ const Configurations = () => {
           className={`px-5 py-3 ${currentSubview === "expenseTypes" ? "border-b-2 border-black " : " text-gray-700 hover:bg-gray-200 cursor-pointer"} touch-manipulation transition-colors duration-300`}
         >
           {t("expenseTypes.title")}
+        </button>
+        <button
+          onClick={() => setCurrentSubview("incomeSources")}
+          className={`px-5 py-3 ${currentSubview === "incomeSources" ? "border-b-2 border-black " : " text-gray-700 hover:bg-gray-200 cursor-pointer"} touch-manipulation transition-colors duration-300`}
+        >
+          {t("incomeSources.title")}
         </button>
         <button
           onClick={() => setCurrentSubview("inventory")}

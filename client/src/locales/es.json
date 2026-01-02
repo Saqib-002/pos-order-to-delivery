@@ -212,6 +212,52 @@
       "expenseTypeUpdatedSuccessfully": "Tipo de gasto actualizado exitosamente"
     }
   },
+  "incomeSources": {
+    "title": "Fuentes de Ingreso",
+    "subtitle": "Gestionar categorías de ingresos",
+    "addIncomeSource": "Agregar Fuente de Ingreso",
+    "manageDescription": "Agregar y gestionar fuentes de ingreso para otros ingresos",
+    "incomeSourcesList": "Lista de Fuentes de Ingreso",
+    "noIncomeSources": "No se han agregado fuentes de ingreso todavía. Agregue una arriba.",
+    "table": {
+      "incomeSourceName": "Nombre de la Fuente de Ingreso",
+      "description": "Descripción",
+      "createdAt": "Fecha de Creación",
+      "actions": "Acciones"
+    },
+    "deleteTitle": "Eliminar Fuente de Ingreso",
+    "deleteMessage": "¿Estás seguro de que quieres eliminar esta fuente de ingreso?",
+    "deleteConfirm": "Eliminar",
+    "deleteCancel": "Cancelar",
+    "deletedSuccess": "Fuente de ingreso eliminada exitosamente",
+    "deletedFailed": "Error al eliminar la fuente de ingreso",
+    "deletedError": "Ocurrió un error al eliminar la fuente de ingreso",
+    "fetchError": "Error al obtener las fuentes de ingreso"
+  },
+  "incomeSourceModal": {
+    "viewIncomeSource": "Ver Fuente de Ingreso",
+    "editIncomeSource": "Editar Fuente de Ingreso",
+    "addNewIncomeSource": "Agregar Nueva Fuente de Ingreso",
+    "incomeSourceName": "Nombre de la Fuente de Ingreso *",
+    "enterIncomeSourceName": "Ingrese el nombre de la fuente de ingreso",
+    "incomeSourceDescription": "Descripción",
+    "enterIncomeSourceDescription": "Ingrese la descripción de la fuente de ingreso",
+    "updateIncomeSource": "Actualizar Fuente de Ingreso",
+    "addIncomeSource": "Agregar Fuente de Ingreso",
+    "errors": {
+      "pleaseEnterIncomeSourceName": "Por favor ingrese el nombre de la fuente de ingreso",
+      "unableToAddIncomeSource": "No se pudo agregar la fuente de ingreso",
+      "unableToUpdateIncomeSource": "No se pudo actualizar la fuente de ingreso",
+      "anErrorOccurred": "Ocurrió un error"
+    },
+    "warnings": {
+      "incomeSourceAlreadyAdded": "¡Esta fuente de ingreso ya existe!"
+    },
+    "messages": {
+      "incomeSourceAddedSuccessfully": "Fuente de ingreso agregada exitosamente",
+      "incomeSourceUpdatedSuccessfully": "Fuente de ingreso actualizada exitosamente"
+    }
+  },
   "inventory": {
     "title": "Inventario",
     "subtitle": "Gestionar productos de inventario",
@@ -1880,11 +1926,13 @@
     "modal": {
       "addTitle": "Agregar Fuente de Ingresos",
       "editTitle": "Editar Fuente de Ingresos",
+      "incomeSource": "Fuente de Ingresos",
       "name": "Nombre de la Fuente de Ingresos",
       "description": "Descripción",
       "date": "Fecha",
       "total": "Monto Total",
       "ticketId": "ID de Ticket (si está disponible)",
+      "selectIncomeSource": "Selecciona una fuente de ingresos",
       "enterName": "Ingrese el nombre de la fuente de ingresos",
       "enterDescription": "Ingrese la descripción",
       "enterTicketId": "Ingrese el ID de ticket (opcional)",
@@ -1898,6 +1946,7 @@
       },
       "errors": {
         "nameRequired": "El nombre de la fuente de ingresos es requerido",
+        "incomeSourceRequired": "Por favor selecciona una fuente de ingresos",
         "totalRequired": "El monto total debe ser mayor que 0",
         "dateRequired": "La fecha es requerida"
       },

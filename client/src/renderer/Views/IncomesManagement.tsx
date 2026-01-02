@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useConfirm } from "../hooks/useConfirm";
 import { useOtherIncomesData } from "../hooks/useIncomeData";
+import { useAuth } from "../contexts/AuthContext";
 import { Income } from "@/types/incomes";
 
 import CustomButton from "../components/ui/CustomButton";
@@ -16,6 +17,9 @@ import dayjs from "dayjs";
 export const IncomesManagement = () => {
   const { t } = useTranslation();
   const confirm = useConfirm();
+  const {
+    auth: { token },
+  } = useAuth();
   const {
     otherIncomesData,
     loading,
@@ -209,6 +213,7 @@ export const IncomesManagement = () => {
         onClose={handleClose}
         onSubmit={handleSaveOtherIncome}
         initialData={modalState.type === "edit" ? modalState.otherIncome : null}
+        token={token}
       />
     </div>
   );

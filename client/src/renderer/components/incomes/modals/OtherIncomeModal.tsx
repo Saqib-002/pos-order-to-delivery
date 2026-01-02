@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { Income } from "@/types/incomes";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
+import { CustomSelect } from "../../ui/CustomSelect";
 import { DatePicker } from "../../ui/DatePicker";
 import { useConfirm } from "../../../hooks/useConfirm";
 import {
@@ -19,6 +20,7 @@ interface Props {
   onClose: () => void;
   onSubmit: (data: Income) => Promise<boolean>;
   initialData?: Income | null;
+  token: string | null;
 }
 
 export const OtherIncomeModal = ({
@@ -26,6 +28,7 @@ export const OtherIncomeModal = ({
   onClose,
   onSubmit,
   initialData,
+  token,
 }: Props) => {
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);
@@ -36,13 +39,34 @@ export const OtherIncomeModal = ({
     date: dayjs().format("DD/MM/YYYY"),
     paymentType: "cash",
     ticketId: "",
+    incomeSourceId: "",
   });
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [incomeSources, setIncomeSources] = useState<any[]>([]);
 
   useEffect(() => {
     if (isOpen) {
+      // Fetch income sources
+      const fetchIncomeSources = async () => {
+        try {
+          const res = await (window as any).electronAPI.getAllIncomeSources(
+            token
+          );
+          if (res.status) {
+            setIncomeSources(res.data || []);
+          }
+        } catch (error) {
+          console.error("Error fetching income sources:", error);
+        }
+      };
+      fetchIncomeSources();
+
       if (initialData) {
-        setFormData(initialData);
+        setFormData({
+          ...initialData,
+          incomeSourceId: initialData.incomeSourceId ||
+            "",
+        });
         if (initialData.paymentType) {
           if (initialData.paymentType.includes(":")) {
             try {
@@ -97,6 +121,7 @@ export const OtherIncomeModal = ({
           date: dayjs().format("DD/MM/YYYY"),
           paymentType: "cash",
           ticketId: "",
+          incomeSourceId: "",
         });
         setPaymentMethods([]);
         setCurrentStep(1);
@@ -107,8 +132,8 @@ export const OtherIncomeModal = ({
   if (!isOpen) return null;
 
   const validateStep1 = (): boolean => {
-    if (!formData.name || !formData.name.trim()) {
-      toast.error(t("incomesManagement.modal.errors.nameRequired"));
+    if (!formData.incomeSourceId || !formData.incomeSourceId.trim()) {
+      toast.error(t("incomesManagement.modal.errors.incomeSourceRequired"));
       return false;
     }
     if (!formData.total || formData.total <= 0) {
@@ -157,13 +182,19 @@ export const OtherIncomeModal = ({
             .join(", ")
         : "";
 
+    // Get the selected income source name
+    const selectedIncomeSource = incomeSources.find(
+      (source) => source.id === formData.incomeSourceId
+    );
+
     const otherIncomesData: Income = {
       ...formData,
-      name: formData.name!,
+      name: selectedIncomeSource?.name || "",
       total: Number(totalAmount),
       date: formData.date!,
       paymentType: paymentTypeString,
       ticketId: formData.ticketId || undefined,
+      incomeSourceId: formData.incomeSourceId!,
     } as Income;
 
     const success = await onSubmit(otherIncomesData);
@@ -194,13 +225,17 @@ export const OtherIncomeModal = ({
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="md:col-span-2">
-          <CustomInput
-            label={t("incomesManagement.modal.name")}
-            name="name"
-            type="text"
-            value={formData.name || ""}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder={t("incomesManagement.modal.enterName")}
+          <CustomSelect
+            label={t("incomesManagement.modal.incomeSource")}
+            value={formData.incomeSourceId || ""}
+            onChange={(value) =>
+              setFormData({ ...formData, incomeSourceId: value })
+            }
+            placeholder={t("incomesManagement.modal.selectIncomeSource")}
+            options={incomeSources.map((source) => ({
+              value: source.id,
+              label: source.name,
+            }))}
           />
         </div>
         <div className="md:col-span-2">

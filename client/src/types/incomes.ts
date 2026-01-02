@@ -6,6 +6,7 @@ export interface Income {
   paymentType: string;
   date: string;
   ticketId?: string;
+  incomeSourceId?: string;
   createdAt?: string;
   updatedAt?: string;
 }

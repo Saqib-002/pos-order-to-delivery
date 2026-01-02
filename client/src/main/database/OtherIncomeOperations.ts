@@ -14,12 +14,16 @@ export class OtherIncomeDatabaseOperations {
         paymentType: otherIncomesData.paymentType,
         date: otherIncomesData.date,
         ticketId: otherIncomesData.ticketId || undefined,
+        income_source_id: otherIncomesData.incomeSourceId || null,
         createdAt: now,
         updatedAt: now,
       };
 
       await db("other_incomes").insert(newIncome);
-      return newIncome;
+      return {
+        ...newIncome,
+        incomeSourceId: newIncome.income_source_id || undefined,
+      };
     } catch (error) {
       throw error;
     }
@@ -31,11 +35,29 @@ export class OtherIncomeDatabaseOperations {
   ): Promise<Income> {
     try {
       const now = new Date().toISOString();
-      const { id: _id, createdAt, ...updates } = IncomeData as any;
-      await db("other_incomes")
-        .where("id", id)
-        .update({ ...updates, updatedAt: now });
-      return await db("other_incomes").where("id", id).first();
+      const {
+        id: _id,
+        createdAt,
+        incomeSourceId,
+        ...updates
+      } = IncomeData as any;
+
+      const dbUpdates = {
+        ...updates,
+        income_source_id: incomeSourceId || null,
+        updatedAt: now,
+      };
+
+      await db("other_incomes").where("id", id).update(dbUpdates);
+
+      const updatedIncome = await db("other_incomes").where("id", id).first();
+      if (updatedIncome) {
+        return {
+          ...updatedIncome,
+          incomeSourceId: updatedIncome.income_source_id || undefined,
+        };
+      }
+      throw new Error("Income not found after update");
     } catch (error) {
       throw error;
     }
@@ -73,10 +95,15 @@ export class OtherIncomeDatabaseOperations {
       const total = Number(totalResult?.count || 0);
 
       const offset = (page - 1) * pageSize;
-      const Incomes = await query
+      const rawIncomes = await query
         .orderBy("date", "desc")
         .limit(pageSize)
         .offset(offset);
+
+      const Incomes = rawIncomes.map((income: any) => ({
+        ...income,
+        incomeSourceId: income.income_source_id || undefined,
+      }));
 
       return {
         data: Incomes,
@@ -94,7 +121,14 @@ export class OtherIncomeDatabaseOperations {
 
   static async getOtherIncomeById(id: string): Promise<Income | null> {
     try {
-      return await db("other_incomes").where("id", id).first();
+      const income = await db("other_incomes").where("id", id).first();
+      if (income) {
+        return {
+          ...income,
+          incomeSourceId: income.income_source_id || undefined,
+        };
+      }
+      return null;
     } catch (error) {
       throw error;
     }
