@@ -153,7 +153,7 @@ export const PaymentStep = ({
       case "bank-transfer":
         return "./images/bank-transfer.png";
       case "account-direct-debit":
-        return "./images/bank-transfer.png";
+        return "./images/direct-debit.png";
       default:
         return "./images/cash.png";
     }
@@ -241,7 +241,7 @@ export const PaymentStep = ({
         <label className="block text-sm font-medium text-gray-700">
           {t("marketPurchaseManagement.modal.step3.selectPaymentMethod")}
         </label>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-5 gap-3">
           <button
             type="button"
             onClick={() => setSelectedPaymentType("cash")}
@@ -321,7 +321,7 @@ export const PaymentStep = ({
           >
             <div className="flex flex-col items-center justify-center gap-3">
               <img
-                src="./images/bank-transfer.png"
+                src="./images/direct-debit.png"
                 alt="account"
                 className="size-10"
               />

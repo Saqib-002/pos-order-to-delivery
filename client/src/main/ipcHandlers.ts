@@ -194,7 +194,10 @@ import {
   getOtherIncomeById,
   updateOtherIncome,
 } from "./handlers/OtherIncome.js";
-import { getFinancialAnalytics } from "./handlers/financialOperations.js";
+import {
+  getFinancialAnalytics,
+  getPaymentMethodsReport,
+} from "./handlers/financialOperations.js";
 interface DbCredentials {
   host: string;
   port: number;
@@ -388,6 +391,7 @@ export function registerIpcHandlers() {
   // reports
   ipcMain.handle("get-order-analytics", getOrderAnalytics);
   ipcMain.handle("get-financial-analytics", getFinancialAnalytics);
+  ipcMain.handle("get-payment-methods-report", getPaymentMethodsReport);
 
   // delivery person handlers
   ipcMain.handle("create-delivery-person", createDeliveryPerson);

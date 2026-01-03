@@ -518,6 +518,20 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getIncomeSourceById: (token: string, incomeSourceId: string) =>
     ipcRenderer.invoke("get-income-source-by-id", token, incomeSourceId),
 
+  // Detailed Financial Reports
+  getDetailedWorkerSalariesReport: (token: string, filters: any) =>
+    ipcRenderer.invoke("get-detailed-worker-salaries-report", token, filters),
+  getDetailedMarketPurchasesReport: (token: string, filters: any) =>
+    ipcRenderer.invoke("get-detailed-market-purchases-report", token, filters),
+  getDetailedVehiclesMaintenanceReport: (token: string, filters: any) =>
+    ipcRenderer.invoke(
+      "get-detailed-vehicles-maintenance-report",
+      token,
+      filters
+    ),
+  getPaymentMethodsReport: (token: string, filters: any) =>
+    ipcRenderer.invoke("get-payment-methods-report", token, filters),
+
   // inventory products
   createInventoryProduct: (token: string, productData: any) =>
     ipcRenderer.invoke("create-inventory-product", token, productData),
