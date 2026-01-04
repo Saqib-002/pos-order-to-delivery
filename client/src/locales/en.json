@@ -105,7 +105,8 @@
         "vehicles": "Vehicle Management",
         "workers": "Worker Management",
         "market-purchases": "Market Purchase Management",
-        "expenses": "Other Source of Income"
+        "expenses": "Other Source of Income",
+        "cash-out": "Cash Out"
       },
       "username": "Username",
       "password": "Password",
@@ -255,6 +256,37 @@
       "errors": "Errors",
       "moreErrors": "...and {{count}} more errors",
       "importAnother": "Import Another File"
+    }
+  },
+  "cashOutManagement": {
+    "title": "Cash Out Management",
+    "subtitle": "Track and manage cash withdrawals",
+    "addTransaction": "New Cash Out",
+    "currentBalance": "Current Cash Balance",
+    "searchPlaceholder": "Search transactions...",
+    "noTransactionsTitle": "No transactions found",
+    "noTransactionsSubtitle": "Record your first cash out transaction.",
+    "table": {
+      "reason": "Description",
+      "amount": "Amount",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "modal": {
+      "addTitle": "New Cash Out Transaction",
+      "editTitle": "Edit Transaction",
+      "reason": "Description",
+      "reasonPlaceholder": "e.g. Bank deposit, Owner withdrawal",
+      "amount": "Amount",
+      "date": "Date",
+      "cancel": "Cancel",
+      "save": "Save",
+      "update": "Update",
+      "errors": {
+        "reasonRequired": "Please enter a reason",
+        "amountRequired": "Please enter a valid amount",
+        "dateRequired": "Please select a date"
+      }
     }
   },
   "printers": {
@@ -600,7 +632,9 @@
       "paymentOverview": "Payment Overview",
       "cashIncome": "Cash Income",
       "distributions": "Distributions",
-      "total": "Total"
+      "total": "Total",
+      "netBalance": "Net Balance",
+      "cashOut": "Cash Out"
     },
     "title": "Analytics & Reports",
     "subtitle": "Comprehensive insights into order performance and trends",
@@ -1816,7 +1850,8 @@
     "workers": "Workers",
     "vehicles": "Vehicles",
     "marketPurchases": "Market Purchases",
-    "expenses": "Other Source of Income"
+    "expenses": "Other Source of Income",
+    "cashout": "Cash Out"
   },
   "workerManagement": {
     "title": "Worker Management",

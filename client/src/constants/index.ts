@@ -17,6 +17,7 @@ export const VIEWS = {
   WORKERS: "workers",
   MARKET_PURCHASES: "market-purchases",
   EXPENSES: "expenses",
+  CASH_OUT: "cash-out",
 } as const;
 
 export const navItems = [
@@ -40,6 +41,7 @@ export const navItems = [
   { view: VIEWS.WORKERS, label: "Workers", roles: ["admin"] },
   { view: VIEWS.MARKET_PURCHASES, label: "Market Purchases", roles: ["admin"] },
   { view: VIEWS.EXPENSES, label: "Other Source of Income", roles: ["admin"] },
+  { view: VIEWS.CASH_OUT, label: "Cash Out", roles: ["admin"] },
   { view: VIEWS.MENU_STRUCTURE, label: "Menu Structure", roles: ["admin"] },
   { view: VIEWS.REPORTS, label: "Reports", roles: ["admin"] },
   { view: VIEWS.USERS, label: "Users", roles: ["admin"] },
@@ -85,6 +87,7 @@ export const MODULES = {
   WORKERS: "workers",
   MARKET_PURCHASES: "market-purchases",
   EXPENSES: "expenses",
+  CASH_OUT: "cash-out",
 } as const;
 
 export const MODULE_LABELS = {
@@ -103,6 +106,7 @@ export const MODULE_LABELS = {
   [MODULES.WORKERS]: "Worker Management",
   [MODULES.MARKET_PURCHASES]: "Market Purchase Management",
   [MODULES.EXPENSES]: "Other Source of Income",
+  [MODULES.CASH_OUT]: "Cash Out",
 } as const;
 
 export const AVAILABLE_MODULES = Object.values(MODULES) as string[];

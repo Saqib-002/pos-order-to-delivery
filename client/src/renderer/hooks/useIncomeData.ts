@@ -105,3 +105,100 @@ export const useOtherIncomesData = () => {
     deleteOtherIncome,
   };
 };
+
+export const useCashOutData = () => {
+  const {
+    auth: { token },
+  } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [cashOutData, setCashOutData] = useState<PaginatedResult<Income>>({
+    data: [],
+    pagination: { total: 0, page: 1, pageSize: 10, totalPages: 1 },
+  });
+  const [filters, setFilters] = useState<IncomeFilters>({
+    page: 1,
+    pageSize: 10,
+    search: "",
+  });
+
+  const fetchCashOuts = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const res = await (window as any).electronAPI.getCashOuts(token, filters);
+      if (res.status) {
+        setCashOutData(res.data);
+      } else {
+        toast.error(res.error || "Failed to fetch cash outs");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error loading cash outs");
+    } finally {
+      setLoading(false);
+    }
+  }, [token, filters]);
+
+  useEffect(() => {
+    fetchCashOuts();
+  }, [fetchCashOuts]);
+
+  const createCashOut = async (data: Income) => {
+    try {
+      const res = await (window as any).electronAPI.createCashOut(token, data);
+      if (res.status) {
+        toast.success("Cash out recorded successfully");
+        fetchCashOuts();
+        return true;
+      } else {
+        toast.error(res.error || "Failed to record cash out");
+        return false;
+      }
+    } catch (err) {
+      toast.error("Error recording cash out");
+      return false;
+    }
+  };
+
+  const updateCashOut = async (id: string, data: Partial<Income>) => {
+    try {
+      const res = await (window as any).electronAPI.updateCashOut(token, id, data);
+      if (res.status) {
+        toast.success("Cash out updated successfully");
+        fetchCashOuts();
+        return true;
+      } else {
+        toast.error(res.error || "Failed to update cash out");
+        return false;
+      }
+    } catch (err) {
+      toast.error("Error updating cash out");
+      return false;
+    }
+  };
+
+  const deleteCashOut = async (id: string) => {
+    try {
+      const res = await (window as any).electronAPI.deleteCashOut(token, id);
+      if (res.status) {
+        toast.success("Cash out deleted successfully");
+        fetchCashOuts();
+      } else {
+        toast.error(res.error || "Failed to delete cash out");
+      }
+    } catch (err) {
+      toast.error("Error deleting cash out");
+    }
+  };
+
+  return {
+    cashOutData,
+    loading,
+    filters,
+    setFilters,
+    createCashOut,
+    updateCashOut,
+    deleteCashOut,
+    refresh: fetchCashOuts,
+  };
+};

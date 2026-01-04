@@ -422,7 +422,8 @@
         "vehicles": "Gestión de Vehículos",
         "workers": "Gestión de Trabajadores",
         "market-purchases": "Gestión de Compras de Mercado",
-        "expenses": "Otra Fuente de Ingresos"
+        "expenses": "Otra Fuente de Ingresos",
+        "cash-out": "Salida de Efectivo"
       },
       "username": "Nombre de usuario",
       "password": "Contraseña",
@@ -574,6 +575,37 @@
       "importAnother": "Importar Otro Archivo"
     }
   },
+  "cashOutManagement": {
+    "title": "Gestión de Salida de Efectivo",
+    "subtitle": "Seguimiento y gestión de retiradas de efectivo",
+    "addTransaction": "Nueva Salida de Caja",
+    "currentBalance": "Saldo de Caja Actual",
+    "searchPlaceholder": "Buscar transacciones...",
+    "noTransactionsTitle": "No se encontraron transacciones",
+    "noTransactionsSubtitle": "Registre su primera transacción de salida de efectivo.",
+    "table": {
+      "reason": "Descripción",
+      "amount": "Cantidad",
+      "date": "Fecha",
+      "actions": "Acciones"
+    },
+    "modal": {
+      "addTitle": "Nueva Transacción de Salida de Caja",
+      "editTitle": "Editar Transacción",
+      "reason": "Descripción",
+      "reasonPlaceholder": "ej. Depósito bancario, Retiro del propietario",
+      "amount": "Cantidad",
+      "date": "Fecha",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "update": "Actualizar",
+      "errors": {
+        "reasonRequired": "Por favor, introduzca una razón",
+        "amountRequired": "Por favor, introduzca una cantidad válida",
+        "dateRequired": "Por favor, seleccione una fecha"
+      }
+    }
+  },
   "reports": {
     "tabs": {
       "orders": "Pedidos",
@@ -602,7 +634,9 @@
       "paymentOverview": "Resumen de Pagos",
       "cashIncome": "Ingresos en Efectivo",
       "distributions": "Distribuciones",
-      "total": "Ingresos"
+      "total": "Ingresos",
+      "netBalance": "Saldo Neto",
+      "cashOut": "Salida de Efectivo"
     },
     "title": "Análisis e Informes",
     "subtitle": "Información completa sobre el rendimiento de pedidos y tendencias",
@@ -1816,7 +1850,10 @@
     "configurations": "Configuraciones",
     "platformOrders": "Pedidos de Plataforma",
     "workers": "Trabajadores",
-    "vehicles": "Vehículos"
+    "vehicles": "Vehículos",
+    "marketPurchases": "Compras de Mercado",
+    "expenses": "Otra Fuente de Ingresos",
+    "cashout": "Salida de Efectivo"
   },
   "workerManagement": {
     "title": "Gestión de Trabajadores",

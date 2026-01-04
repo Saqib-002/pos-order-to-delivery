@@ -20,6 +20,7 @@ import {
   Wallet as WalletIcon,
   LayoutDashboard as LayoutDashboardIcon,
   Eye as EyeIcon,
+  Scale as ScaleIcon,
 } from "lucide-react";
 import { SeeAllFinancialModal } from "./SeeAllFinancialModal";
 
@@ -159,6 +160,28 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
     };
   }, [data, t]);
 
+  const netBalances = useMemo(() => {
+    if (!data?.breakdowns?.paymentMethods) return [];
+    
+    const income = data.breakdowns.paymentMethods.income || {};
+    const expenses = data.breakdowns.paymentMethods.expenses || {};
+    const cashOuts = (data.breakdowns.paymentMethods as any).cashOuts || {};
+    
+    const allMethods = Array.from(new Set([
+      ...Object.keys(income),
+      ...Object.keys(expenses),
+      ...Object.keys(cashOuts)
+    ]));
+    
+    return allMethods
+      .map(method => ({
+        method,
+        amount: (income[method] || 0) - (expenses[method] || 0) - (cashOuts[method] || 0)
+      }))
+      .filter(item => item.amount !== 0)
+      .sort((a, b) => b.amount - a.amount);
+  }, [data]);
+
   if (!data) return null;
 
   const getSectionTotals = (items: any[] = []) => {
@@ -274,7 +297,50 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
 
       {/* Grid for categorized distributions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        
+        {/* Cash Out Transactions */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                <WalletIcon className="w-4 h-4 text-emerald-500" />
+                {t("reports.financial.cashOut")}
+              </h3>
+              {((data.breakdowns as any)?.cashOuts || []).length > 5 && (
+                <button
+                  onClick={() => setModalData({
+                    title: t("reports.financial.cashOut"),
+                    items: (data.breakdowns as any)?.cashOuts || [],
+                    type: 'income', 
+                    totalReference: (data.summary as any).breakdown.cashOutTotal || 1
+                  })}
+                  className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
+                >
+                  {t("common.seeAll")}
+                </button>
+              )}
+            </div>
+            <div className="space-y-4">
+              {((data.breakdowns as any)?.cashOuts || []).length > 0 ? (
+                ((data.breakdowns as any).cashOuts || []).slice(0, 5).map((item: any, idx: number) => (
+                  <DistributionItem
+                    key={idx}
+                    label={item.name}
+                    value={item.total}
+                    percentage={calculatePercentage(item.total, (data.summary as any).breakdown.cashOutTotal || 1)}
+                    color="#10b981"
+                  />
+                ))
+              ) : (
+                <p className="text-sm text-gray-400 text-center py-4">{t("common.noData")}</p>
+              )}
+            </div>
+          </div>
+          <SectionSummary 
+            total={(data.summary as any).breakdown.cashOutTotal || 0}
+            t={t} 
+          />
+        </div>
+
         {/* Income Sources */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
           <div>
@@ -331,7 +397,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
                             className="h-full transition-all duration-500 ease-out"
                             style={{ 
                               width: `${calculatePercentage(item.pending, data.summary.income)}%`, 
-                              backgroundColor: "#f59e0b"
+                              backgroundColor: "#fbbf24"
                             }}
                           />
                         )}
@@ -743,9 +809,71 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
                   )
                 ))}
               </div>
+              {/* Cash Out Transactions */}
+              {Object.keys((data.breakdowns?.paymentMethods as any)?.cashOuts || {}).length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t("reports.financial.cashOut")}</span>
+                  {Object.entries((data.breakdowns?.paymentMethods as any)?.cashOuts || {}).map(([method, amount], idx) => (
+                    (amount as number) > 0 && (
+                      <DistributionItem
+                        key={idx}
+                        label={method.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                        value={amount as number}
+                        percentage={calculatePercentage(amount as number, (data.summary as any).cashOutTotal || 1)}
+                        color="#f59e0b"
+                      />
+                    )
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           {/* NET Balance */}
+          <div className="mt-6 pt-4 border-t border-gray-50 flex justify-between items-end">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">
+                {t("reports.financial.netProfit")}
+              </span>
+              <span className={`text-sm font-bold ${data.summary.netProfit >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                {data.summary.netProfit.toFixed(2)}€
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Net Balance by Payment Method */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <ScaleIcon className="w-4 h-4 text-amber-500" />
+              {t("reports.financial.netBalance")}
+            </h3>
+            <div className="space-y-4">
+              {netBalances.map((item, idx) => (
+                <div key={idx} className="flex flex-col gap-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600 font-medium capitalize">
+                      {item.method.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                    </span>
+                    <span className={`font-bold ${item.amount >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                      {item.amount >= 0 ? "+" : ""}{item.amount.toFixed(2)}€
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-500 ease-out rounded-full ${item.amount >= 0 ? "bg-emerald-500" : "bg-rose-500"}`}
+                      style={{ 
+                        width: `${Math.min(100, (Math.abs(item.amount) / Math.max(...netBalances.map(b => Math.abs(b.amount)))) * 100)}%` 
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+              {netBalances.length === 0 && (
+                <p className="text-sm text-gray-400 text-center py-4">{t("common.noData")}</p>
+              )}
+            </div>
+          </div>
           <div className="mt-6 pt-4 border-t border-gray-50 flex justify-between items-end">
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">

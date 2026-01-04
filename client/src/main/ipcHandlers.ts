@@ -195,6 +195,12 @@ import {
   updateOtherIncome,
 } from "./handlers/OtherIncome.js";
 import {
+  createCashOut,
+  getCashOuts,
+  updateCashOut,
+  deleteCashOut,
+} from "./handlers/cashOut.js";
+import {
   getFinancialAnalytics,
   getPaymentMethodsReport,
 } from "./handlers/financialOperations.js";
@@ -469,4 +475,10 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-market-purchase", deleteMarketPurchase);
   ipcMain.handle("get-all-market-purchases", getAllMarketPurchases);
   ipcMain.handle("get-market-purchase-by-id", getMarketPurchaseById);
+
+  // cash outs
+  ipcMain.handle("create-cash-out", createCashOut);
+  ipcMain.handle("get-cash-outs", getCashOuts);
+  ipcMain.handle("update-cash-out", updateCashOut);
+  ipcMain.handle("delete-cash-out", deleteCashOut);
 }

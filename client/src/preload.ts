@@ -615,4 +615,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.removeListener("order-change", orderChangeCallback);
     };
   },
+
+  // cash out operations
+  createCashOut: (token: string, data: any) =>
+    ipcRenderer.invoke("create-cash-out", token, data),
+  getCashOuts: (token: string, filters: any) =>
+    ipcRenderer.invoke("get-cash-outs", token, filters),
+  updateCashOut: (token: string, id: string, data: any) =>
+    ipcRenderer.invoke("update-cash-out", token, id, data),
+  deleteCashOut: (token: string, id: string) =>
+    ipcRenderer.invoke("delete-cash-out", token, id),
 });

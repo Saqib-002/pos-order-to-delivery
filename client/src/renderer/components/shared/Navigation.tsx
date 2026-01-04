@@ -114,6 +114,7 @@ export const Navigation = ({
       workers: "./images/workers.png",
       "market-purchases": "./images/market-purchase.png",
       expenses: "./images/expense.png",
+      "cash-out": "./images/cashout.png",
     };
     return iconMap[view] || "./images/order.png";
   };
@@ -135,6 +136,7 @@ export const Navigation = ({
       workers: t("navigation.workers"),
       "market-purchases": t("navigation.marketPurchases"),
       expenses: t("navigation.expenses"),
+      "cash-out": t("navigation.cashout"),
     };
     return labelMap[view] || view;
   };

@@ -26,6 +26,7 @@ import { VehicleManagement } from "./Views/VehicleManagement";
 import { WorkerManagement } from "./Views/WorkerManagement";
 import { MarketPurchaseManagement } from "./Views/MarketPurchaseManagement";
 import { IncomesManagement } from "./Views/IncomesManagement";
+import { CashOutManagement } from "./Views/CashOutManagement";
 
 interface ViewConfig {
   component: JSX.Element;
@@ -171,6 +172,10 @@ const App: React.FC = () => {
     },
     [VIEWS.EXPENSES]: {
       component: <IncomesManagement />,
+      roles: ["admin"],
+    },
+    [VIEWS.CASH_OUT]: {
+      component: <CashOutManagement />,
       roles: ["admin"],
     },
   };

@@ -28,6 +28,7 @@ export interface FinancialAnalyticsType {
       workerExpenses: number;
       marketExpenses: number;
       otherIncome?: number;
+      cashOutExpenses?: number;
     };
   };
   graphData: Array<{
@@ -46,6 +47,7 @@ export interface FinancialAnalyticsType {
       income: Record<string, number>;
       expenses: Record<string, number>;
     };
+    cashOuts?: Array<{ name: string; total: number; date: string; paymentType: string }>;
   };
 }
 
@@ -150,10 +152,13 @@ export interface PaymentMethodsReport {
   paymentMethods: {
     income: Record<string, number>;
     expenses: Record<string, number>;
+    cashOuts: Record<string, number>;
   };
   summary: {
     totalIncome: number;
     totalExpenses: number;
+    totalCashOut: number;
     netCashFlow: number;
+    cashBalance: number;
   };
 }

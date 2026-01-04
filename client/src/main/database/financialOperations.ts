@@ -103,8 +103,16 @@ export class FinancialDatabaseOperations {
       .first();
     const marketExpenses = Number(marketResult?.total || 0);
 
+    // D. Cash Out
+    const cashOutResult = await db("cash_out_transactions")
+      .whereBetween("date", [startISO, endISO])
+      .sum("total as total")
+      .first();
+    const cashOutTotal = Number(cashOutResult?.total || 0);
+
     const totalExpenses = vehicleExpenses + workerExpenses + marketExpenses;
     const netProfit = totalIncome - totalExpenses;
+    const netBalance = netProfit - cashOutTotal;
 
     // 4. Graph Data (Daily distribution for the selected range)
     // group by day (YYYY-MM-DD)
@@ -161,6 +169,11 @@ export class FinancialDatabaseOperations {
       "ticketDate",
       "totalAmount"
     );
+    const dailyCashOutRaw = await getDailySums(
+      "cash_out_transactions",
+      "date",
+      "total"
+    );
 
     // Merge Data
     const graphDataMap = new Map<string, { income: number; expense: number }>();
@@ -198,11 +211,13 @@ export class FinancialDatabaseOperations {
         income: totalIncome,
         totalExpenses,
         netProfit,
+        netBalance,
         breakdown: {
           vehicleExpenses,
           workerExpenses,
           marketExpenses,
           otherIncome,
+          cashOutTotal,
         },
       },
       graphData,
@@ -589,6 +604,14 @@ export class FinancialDatabaseOperations {
           units: Number(item.units || 0),
         })),
         paymentMethods,
+        cashOuts: (await db("cash_out_transactions")
+          .whereBetween("date", [startISO, endISO])
+          .select("name", "total", "date", "paymentType")
+          .orderBy("date", "desc")
+          .limit(10)).map((item: any) => ({
+            ...item,
+            total: Number(item.total || 0),
+          })),
       },
     };
   }
@@ -657,9 +680,11 @@ export class FinancialDatabaseOperations {
     const paymentData: {
       income: Record<string, number>;
       expenses: Record<string, number>;
+      cashOuts: Record<string, number>;
     } = {
       income: {},
       expenses: {},
+      cashOuts: {},
     };
 
     const addToPayment = (target: Record<string, number>, method: string, amount: number) => {
@@ -768,6 +793,20 @@ export class FinancialDatabaseOperations {
       }
     });
 
+    // Cash Out Transactions
+    const cashOutTransactions = await db("cash_out_transactions")
+      .select("paymentType", "total")
+      .whereBetween("date", [startISO, endISO]);
+
+    cashOutTransactions.forEach((cashOut: any) => {
+      const amount = Number(cashOut.total || 0);
+      const method = (cashOut.paymentType || "cash").trim().toLowerCase();
+      if (!paymentData.cashOuts[method]) {
+        paymentData.cashOuts[method] = 0;
+      }
+      paymentData.cashOuts[method] += amount;
+    });
+
     // Calculate totals
     const incomeTotal = Object.values(paymentData.income).reduce(
       (sum: number, val: number) => sum + val,
@@ -777,13 +816,24 @@ export class FinancialDatabaseOperations {
       (sum: number, val: number) => sum + val,
       0
     );
+    const cashOutTotal = Object.values(paymentData.cashOuts).reduce(
+      (sum: number, val: number) => sum + val,
+      0
+    );
+
+    // Liquid Cash = Cash In - Cash Out (Expenses + CashOuts)
+    const cashIncome = paymentData.income["cash"] || 0;
+    const cashExpenses = paymentData.expenses["cash"] || 0;
+    const cashBalance = cashIncome - cashExpenses - cashOutTotal;
 
     return {
       paymentMethods: paymentData,
       summary: {
         totalIncome: incomeTotal,
         totalExpenses: expenseTotal,
-        netCashFlow: incomeTotal - expenseTotal,
+        totalCashOut: cashOutTotal,
+        netCashFlow: incomeTotal - expenseTotal - cashOutTotal,
+        cashBalance: cashBalance,
       },
     };
   }
