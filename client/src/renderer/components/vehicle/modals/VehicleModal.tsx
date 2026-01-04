@@ -7,6 +7,7 @@ import CustomInput from "../../shared/CustomInput";
 import { CustomSelect } from "../../ui/CustomSelect";
 import { DatePicker } from "../../ui/DatePicker";
 import { CrossIcon } from "../../../public/Svg";
+import { toast } from "react-toastify";
 
 interface VehicleModalProps {
   isOpen: boolean;
@@ -28,21 +29,27 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
     type: "bike",
     hasGps: false,
   });
+  const [insurancePriceRaw, setInsurancePriceRaw] = useState<string>("");
 
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
+      setInsurancePriceRaw(initialData.insurancePrice?.toString() || "");
     } else {
       setFormData({ type: "bike", hasGps: false });
+      setInsurancePriceRaw("");
     }
   }, [initialData, isOpen]);
 
   const handleSubmit = async () => {
     if (!formData.model || !formData.licensePlate) {
-      // You might want to trigger a toast here if validation fails
+      toast.error(t("vehicleManagement.modal.validationError"));
       return;
     }
-    const success = await onSubmit(formData);
+    const success = await onSubmit({
+      ...formData,
+      insurancePrice: insurancePriceRaw ? parseFloat(insurancePriceRaw) : undefined,
+    });
     if (success) onClose();
   };
 
@@ -196,15 +203,8 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({
             type="number"
             label={t("vehicleManagement.modal.insurancePrice")}
             placeholder={t("vehicleManagement.modal.insurancePricePlaceholder")}
-            value={formData.insurancePrice?.toString() || ""}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                insurancePrice: e.target.value
-                  ? parseFloat(e.target.value)
-                  : undefined,
-              })
-            }
+            value={insurancePriceRaw}
+            onChange={(e) => setInsurancePriceRaw(e.target.value)}
             inputClasses="py-2"
           />
           <div>

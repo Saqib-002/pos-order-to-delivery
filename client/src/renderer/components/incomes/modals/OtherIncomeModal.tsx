@@ -41,6 +41,7 @@ export const OtherIncomeModal = ({
     ticketId: "",
     incomeSourceId: "",
   });
+  const [totalRaw, setTotalRaw] = useState<string>("0");
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [incomeSources, setIncomeSources] = useState<any[]>([]);
 
@@ -67,6 +68,7 @@ export const OtherIncomeModal = ({
           incomeSourceId: initialData.incomeSourceId ||
             "",
         });
+        setTotalRaw(initialData.total?.toString() || "0");
         if (initialData.paymentType) {
           if (initialData.paymentType.includes(":")) {
             try {
@@ -123,6 +125,7 @@ export const OtherIncomeModal = ({
           ticketId: "",
           incomeSourceId: "",
         });
+        setTotalRaw("0");
         setPaymentMethods([]);
         setCurrentStep(1);
       }
@@ -136,7 +139,7 @@ export const OtherIncomeModal = ({
       toast.error(t("incomesManagement.modal.errors.incomeSourceRequired"));
       return false;
     }
-    if (!formData.total || formData.total <= 0) {
+    if (!totalRaw || parseFloat(totalRaw) <= 0) {
       toast.error(t("incomesManagement.modal.errors.totalRequired"));
       return false;
     }
@@ -171,10 +174,7 @@ export const OtherIncomeModal = ({
       return;
     }
 
-    const totalAmount =
-      typeof formData.total === "number"
-        ? formData.total
-        : parseFloat(String(formData.total || 0)) || 0;
+    const totalAmount = parseFloat(totalRaw) || 0;
     const paymentTypeString =
       paymentMethods.length > 0
         ? paymentMethods
@@ -208,6 +208,7 @@ export const OtherIncomeModal = ({
         paymentType: "cash",
         ticketId: "",
       });
+      setTotalRaw("0");
       setPaymentMethods([]);
       setCurrentStep(1);
     }
@@ -261,13 +262,8 @@ export const OtherIncomeModal = ({
           name="total"
           type="number"
           step="0.01"
-          value={formData.total?.toString() || "0"}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              total: parseFloat(e.target.value) || 0,
-            })
-          }
+          value={totalRaw}
+          onChange={(e) => setTotalRaw(e.target.value)}
           min="0"
         />
         <div className="md:col-span-2">

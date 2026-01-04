@@ -89,36 +89,24 @@ export const SalaryModal = ({
   };
   const [formData, setFormData] = useState<Partial<WorkerSalary>>(initialForm);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [formRaw, setFormRaw] = useState({
+    base: "0",
+    socialSecurityCompany: "0",
+    socialSecurityWorker: "0",
+    irpf: "0",
+    extraPayment: "0",
+    bonus: "0",
+    extraServices: "0",
+  });
 
   useEffect(() => {
-    const base =
-      typeof formData.base === "number"
-        ? formData.base
-        : parseFloat(String(formData.base || 0)) || 0;
-    const socialSecurityCompany =
-      typeof formData.socialSecurityCompany === "number"
-        ? formData.socialSecurityCompany
-        : parseFloat(String(formData.socialSecurityCompany || 0)) || 0;
-    const socialSecurityWorker =
-      typeof formData.socialSecurityWorker === "number"
-        ? formData.socialSecurityWorker
-        : parseFloat(String(formData.socialSecurityWorker || 0)) || 0;
-    const irpf =
-      typeof formData.irpf === "number"
-        ? formData.irpf
-        : parseFloat(String(formData.irpf || 0)) || 0;
-    const extraPayment =
-      typeof formData.extraPayment === "number"
-        ? formData.extraPayment
-        : parseFloat(String(formData.extraPayment || 0)) || 0;
-    const bonus =
-      typeof formData.bonus === "number"
-        ? formData.bonus
-        : parseFloat(String(formData.bonus || 0)) || 0;
-    const extraServices =
-      typeof formData.extraServices === "number"
-        ? formData.extraServices
-        : parseFloat(String(formData.extraServices || 0)) || 0;
+    const base = parseFloat(formRaw.base) || 0;
+    const socialSecurityCompany = parseFloat(formRaw.socialSecurityCompany) || 0;
+    const socialSecurityWorker = parseFloat(formRaw.socialSecurityWorker) || 0;
+    const irpf = parseFloat(formRaw.irpf) || 0;
+    const extraPayment = parseFloat(formRaw.extraPayment) || 0;
+    const bonus = parseFloat(formRaw.bonus) || 0;
+    const extraServices = parseFloat(formRaw.extraServices) || 0;
 
     const calculatedTotal =
       base +
@@ -131,16 +119,23 @@ export const SalaryModal = ({
 
     setFormData((prev) => ({
       ...prev,
+      base,
+      socialSecurityCompany,
+      socialSecurityWorker,
+      irpf,
+      extraPayment,
+      bonus,
+      extraServices,
       total: Math.max(0, calculatedTotal),
     }));
   }, [
-    formData.base,
-    formData.socialSecurityCompany,
-    formData.socialSecurityWorker,
-    formData.irpf,
-    formData.extraPayment,
-    formData.bonus,
-    formData.extraServices,
+    formRaw.base,
+    formRaw.socialSecurityCompany,
+    formRaw.socialSecurityWorker,
+    formRaw.irpf,
+    formRaw.extraPayment,
+    formRaw.bonus,
+    formRaw.extraServices,
   ]);
 
   const loadRecords = async () => {
@@ -187,6 +182,16 @@ export const SalaryModal = ({
       date: dayjs(record.date).format("YYYY-MM-DD"),
     });
 
+    setFormRaw({
+      base: record.base.toString(),
+      socialSecurityCompany: (record.socialSecurityCompany || 0).toString(),
+      socialSecurityWorker: (record.socialSecurityWorker || 0).toString(),
+      irpf: record.irpf.toString(),
+      extraPayment: record.extraPayment.toString(),
+      bonus: record.bonus.toString(),
+      extraServices: record.extraServices.toString(),
+    });
+
     try {
       const payments = await getPaymentTransactions(record.id);
       setOriginalPaymentTransactions(payments || []);
@@ -223,6 +228,15 @@ export const SalaryModal = ({
 
   const resetForm = () => {
     setFormData(initialForm);
+    setFormRaw({
+      base: "0",
+      socialSecurityCompany: "0",
+      socialSecurityWorker: "0",
+      irpf: "0",
+      extraPayment: "0",
+      bonus: "0",
+      extraServices: "0",
+    });
     setEditingId(null);
     setPaymentMethods([]);
     setOriginalTotalPaid(0);
@@ -695,11 +709,11 @@ export const SalaryModal = ({
                 type="number"
                 step="0.01"
                 label={t("workerManagement.salaryModal.baseSalary")}
-                value={formData.base?.toString() || "0"}
+                value={formRaw.base}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    base: parseFloat(e.target.value) || 0,
+                  setFormRaw({
+                    ...formRaw,
+                    base: e.target.value,
                   })
                 }
               />
@@ -708,11 +722,11 @@ export const SalaryModal = ({
                 type="number"
                 step="0.01"
                 label={t("workerManagement.salaryModal.socialSecurityCompany")}
-                value={formData.socialSecurityCompany?.toString() || "0"}
+                value={formRaw.socialSecurityCompany}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    socialSecurityCompany: parseFloat(e.target.value) || 0,
+                  setFormRaw({
+                    ...formRaw,
+                    socialSecurityCompany: e.target.value,
                   })
                 }
               />
@@ -721,11 +735,11 @@ export const SalaryModal = ({
                 type="number"
                 step="0.01"
                 label={t("workerManagement.salaryModal.socialSecurityWorker")}
-                value={formData.socialSecurityWorker?.toString() || "0"}
+                value={formRaw.socialSecurityWorker}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    socialSecurityWorker: parseFloat(e.target.value) || 0,
+                  setFormRaw({
+                    ...formRaw,
+                    socialSecurityWorker: e.target.value,
                   })
                 }
               />
@@ -734,11 +748,11 @@ export const SalaryModal = ({
                 type="number"
                 step="0.01"
                 label={t("workerManagement.salaryModal.irpf")}
-                value={formData.irpf?.toString() || "0"}
+                value={formRaw.irpf}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    irpf: parseFloat(e.target.value) || 0,
+                  setFormRaw({
+                    ...formRaw,
+                    irpf: e.target.value,
                   })
                 }
               />
@@ -747,11 +761,11 @@ export const SalaryModal = ({
                 type="number"
                 step="0.01"
                 label={t("workerManagement.salaryModal.extraPayment")}
-                value={formData.extraPayment?.toString() || "0"}
+                value={formRaw.extraPayment}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    extraPayment: parseFloat(e.target.value) || 0,
+                  setFormRaw({
+                    ...formRaw,
+                    extraPayment: e.target.value,
                   })
                 }
               />
@@ -760,11 +774,11 @@ export const SalaryModal = ({
                 type="number"
                 step="0.01"
                 label={t("workerManagement.salaryModal.bonus")}
-                value={formData.bonus?.toString() || "0"}
+                value={formRaw.bonus}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    bonus: parseFloat(e.target.value) || 0,
+                  setFormRaw({
+                    ...formRaw,
+                    bonus: e.target.value,
                   })
                 }
               />
@@ -773,11 +787,11 @@ export const SalaryModal = ({
                 type="number"
                 step="0.01"
                 label={t("workerManagement.salaryModal.extraServices")}
-                value={formData.extraServices?.toString() || "0"}
+                value={formRaw.extraServices}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    extraServices: parseFloat(e.target.value) || 0,
+                  setFormRaw({
+                    ...formRaw,
+                    extraServices: e.target.value,
                   })
                 }
               />

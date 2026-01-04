@@ -2185,7 +2185,8 @@
       "yearly": "Yearly",
       "selectPaymentTerm": "Select Payment Term",
       "cancel": "Cancel",
-      "saveVehicle": "Save Vehicle"
+      "saveVehicle": "Save Vehicle",
+      "validationError": "Please fill in all required fields"
     },
     "maintenanceModal": {
       "title": "Maintenance Records",

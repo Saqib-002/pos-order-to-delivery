@@ -95,6 +95,15 @@ const ProductModal: React.FC<ProductModalProps> = ({
     isPlus18: false,
     isForMenu: false,
   });
+  const [formDataRaw, setFormDataRaw] = useState({
+    price: "0",
+    priority: "0",
+    tax: "0",
+    discount: "0",
+  });
+  const [variantPricesRaw, setVariantPricesRaw] = useState<
+    Record<string, string>
+  >({});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -129,6 +138,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
         isPlus18: product.isPlus18 || false,
         isForMenu: product.isForMenu || false,
       });
+      setFormDataRaw({
+        price: product.price?.toString() || "0",
+        priority: product.priority?.toString() || "0",
+        tax: product.tax?.toString() || "0",
+        discount: product.discount?.toString() || "0",
+      });
       if (product.categoryId && onFetchSubcategories) {
         onFetchSubcategories(product.categoryId);
       }
@@ -147,6 +162,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
           obj[item.id] = item.price;
           return obj;
         }, {});
+        const newPricesRaw = res.data.reduce((obj: any, item: any) => {
+          obj[item.id] = item.price?.toString() || "0";
+          return obj;
+        }, {});
+        setVariantPricesRaw(newPricesRaw);
         handleVariantChange(res.data[0]?.variantId, newPrices);
         const groupRes = await (
           window as any
@@ -223,6 +243,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
         isPlus18: false,
         isForMenu: false,
       });
+      setFormDataRaw({
+        price: "0",
+        priority: "0",
+        tax: "0",
+        discount: "0",
+      });
+      setVariantPricesRaw({});
       setAddonPages([
         {
           id: 1,
@@ -298,6 +325,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
         const itemKey = item.id;
         if (!(itemKey in newPrices)) {
           newPrices[itemKey] = 0;
+          setVariantPricesRaw((prev) => ({
+            ...prev,
+            [itemKey]: "0",
+          }));
         }
       });
     }
@@ -305,11 +336,14 @@ const ProductModal: React.FC<ProductModalProps> = ({
   };
 
   // Handle variant item price change
-  const handleVariantItemPriceChange = (itemId: string, price: number) => {
-    const itemKey = itemId;
+  const handleVariantItemPriceChange = (itemId: string, value: string) => {
+    setVariantPricesRaw((prev) => ({
+      ...prev,
+      [itemId]: value,
+    }));
     setVariantPrices((prev) => ({
       ...prev,
-      [itemKey]: price,
+      [itemId]: parseFloat(value) || 0,
     }));
   };
 
@@ -600,6 +634,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const newFormData: { [key: string]: any } = {
         ...formData,
+        price: parseFloat(formDataRaw.price) || 0,
+        priority: parseInt(formDataRaw.priority) || 0,
+        tax: parseInt(formDataRaw.tax) || 0,
+        discount: parseFloat(formDataRaw.discount) || 0,
       };
       delete newFormData.categoryId;
 
@@ -940,11 +978,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     label={t("menuComponents.modals.productModal.price")}
                     name="price"
                     type="number"
-                    value={formData.price}
+                    value={formDataRaw.price}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        price: parseFloat(e.target.value) || 0,
+                      setFormDataRaw({
+                        ...formDataRaw,
+                        price: e.target.value,
                       })
                     }
                     inputClasses="focus:ring-black focus:border-black pl-8"
@@ -959,11 +997,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     label={t("menuComponents.modals.productModal.priority")}
                     name="priority"
                     type="number"
-                    value={formData.priority}
+                    value={formDataRaw.priority}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        priority: parseInt(e.target.value) || 0,
+                      setFormDataRaw({
+                        ...formDataRaw,
+                        priority: e.target.value,
                       })
                     }
                     inputClasses="focus:ring-black focus:border-black"
@@ -975,11 +1013,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     label={t("menuComponents.modals.productModal.tax")}
                     name="tax"
                     type="number"
-                    value={formData.tax}
+                    value={formDataRaw.tax}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        tax: parseInt(e.target.value) || 0,
+                      setFormDataRaw({
+                        ...formDataRaw,
+                        tax: e.target.value,
                       })
                     }
                     inputClasses="focus:ring-black focus:border-black pr-8"
@@ -995,11 +1033,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     label={t("menuComponents.modals.productModal.discount")}
                     name="discount"
                     type="number"
-                    value={formData.discount}
+                    value={formDataRaw.discount}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        discount: parseFloat(e.target.value) || 0,
+                      setFormDataRaw({
+                        ...formDataRaw,
+                        discount: e.target.value,
                       })
                     }
                     inputClasses="focus:ring-black focus:border-black pr-8"
@@ -1028,7 +1066,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700">
                         {t("menuComponents.modals.productModal.taxAmount")} (
-                        {formData.tax || 0}%):
+                        {parseFloat(formDataRaw.tax) || 0}%):
                       </span>
                       <span className="text-sm font-semibold text-black">
                         €{calculatePriceBreakdown().taxAmount.toFixed(2)}
@@ -1040,7 +1078,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           {t(
                             "menuComponents.modals.productModal.discountAmount"
                           )}{" "}
-                          ({formData.discount}%):
+                          ({parseFloat(formDataRaw.discount) || 0}%):
                         </span>
                         <span className="text-sm font-semibold text-red-600">
                           -€
@@ -1178,11 +1216,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
                               >
                                 <CustomInput
                                   type="number"
-                                  value={variantPrices[item.id] || 0}
+                                  value={variantPricesRaw[item.id] || "0"}
                                   onChange={(e) =>
                                     handleVariantItemPriceChange(
                                       item.id,
-                                      parseFloat(e.target.value) || 0
+                                      e.target.value
                                     )
                                   }
                                   inputClasses="pl-8"

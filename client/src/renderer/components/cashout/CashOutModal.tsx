@@ -31,6 +31,7 @@ export const CashOutModal = ({
     date: dayjs().format("YYYY-MM-DD"),
     paymentType: "cash",
   });
+  const [totalRaw, setTotalRaw] = useState<string>("0");
 
   useEffect(() => {
     if (isOpen) {
@@ -38,6 +39,7 @@ export const CashOutModal = ({
         setFormData({
           ...initialData,
         });
+        setTotalRaw(initialData.total.toString());
       } else {
         setFormData({
           name: "",
@@ -46,6 +48,7 @@ export const CashOutModal = ({
           date: dayjs().format("YYYY-MM-DD"),
           paymentType: "cash",
         });
+        setTotalRaw("0");
       }
     }
   }, [isOpen, initialData]);
@@ -57,7 +60,7 @@ export const CashOutModal = ({
       toast.error(t("cashOutManagement.modal.errors.reasonRequired"));
       return false;
     }
-    if (!formData.total || formData.total <= 0) {
+    if (!totalRaw || parseFloat(totalRaw) <= 0) {
       toast.error(t("cashOutManagement.modal.errors.amountRequired"));
       return false;
     }
@@ -75,7 +78,7 @@ export const CashOutModal = ({
 
     const otherIncomesData: Income = {
       ...formData,
-      total: Number(formData.total),
+      total: parseFloat(totalRaw) || 0,
       date: formData.date!,
       paymentType: "cash",
     } as Income;
@@ -122,13 +125,8 @@ export const CashOutModal = ({
               name="total"
               type="number"
               step="0.01"
-              value={formData.total?.toString() || "0"}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  total: parseFloat(e.target.value) || 0,
-                })
-              }
+              value={totalRaw}
+              onChange={(e) => setTotalRaw(e.target.value)}
               min="0"
             />
             <DatePicker

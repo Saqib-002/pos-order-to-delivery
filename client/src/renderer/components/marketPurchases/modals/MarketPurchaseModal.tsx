@@ -64,6 +64,10 @@ export const MarketPurchaseModal = ({
     isTaxIncluded: false,
   });
   const [taxPercentage, setTaxPercentage] = useState<number>(0);
+  const [boxRaw, setBoxRaw] = useState<string>("0");
+  const [unitRaw, setTotalUnitRaw] = useState<string>("0");
+  const [unitPriceRaw, setUnitPriceRaw] = useState<string>("0");
+  const [taxPercentageRaw, setTaxPercentageRaw] = useState<string>("0");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -149,6 +153,10 @@ export const MarketPurchaseModal = ({
         isTaxIncluded: false,
       });
       setTaxPercentage(0);
+      setBoxRaw("0");
+      setTotalUnitRaw("0");
+      setUnitPriceRaw("0");
+      setTaxPercentageRaw("0");
     }
   }, [isOpen, initialData]);
 
@@ -326,6 +334,10 @@ export const MarketPurchaseModal = ({
     };
     setNewProduct(editedProduct);
     setTaxPercentage(taxPercent);
+    setBoxRaw(editedProduct.box.toString());
+    setTotalUnitRaw(editedProduct.unit.toString());
+    setUnitPriceRaw(editedProduct.unitPrice.toString());
+    setTaxPercentageRaw(taxPercent.toString());
     setEditingIndex(index);
     setTimeout(() => {
       document
@@ -347,6 +359,10 @@ export const MarketPurchaseModal = ({
       isTaxIncluded: false,
     });
     setTaxPercentage(0);
+    setBoxRaw("0");
+    setTotalUnitRaw("0");
+    setUnitPriceRaw("0");
+    setTaxPercentageRaw("0");
     setEditingIndex(null);
   };
 
@@ -462,6 +478,10 @@ export const MarketPurchaseModal = ({
         total: 0,
       });
       setTaxPercentage(0);
+      setBoxRaw("0");
+      setTotalUnitRaw("0");
+      setUnitPriceRaw("0");
+      setTaxPercentageRaw("0");
     }
   };
 
@@ -634,30 +654,34 @@ export const MarketPurchaseModal = ({
               label={t("marketPurchaseManagement.modal.box")}
               name="box"
               type="number"
-              value={newProduct.box.toString()}
-              onChange={(e) =>
+              value={boxRaw}
+              onChange={(e) => {
+                const val = e.target.value;
+                setBoxRaw(val);
                 setNewProduct(
                   updateNewProductCalculations({
                     ...newProduct,
-                    box: parseInt(e.target.value) || 0,
+                    box: parseInt(val) || 0,
                   })
-                )
-              }
+                );
+              }}
               min="0"
             />
             <CustomInput
               label={t("marketPurchaseManagement.modal.unit")}
               name="unit"
               type="number"
-              value={newProduct.unit.toString()}
-              onChange={(e) =>
+              value={unitRaw}
+              onChange={(e) => {
+                const val = e.target.value;
+                setTotalUnitRaw(val);
                 setNewProduct(
                   updateNewProductCalculations({
                     ...newProduct,
-                    unit: parseInt(e.target.value) || 0,
+                    unit: parseInt(val) || 0,
                   })
-                )
-              }
+                );
+              }}
               min="0"
             />
             <div>
@@ -693,15 +717,17 @@ export const MarketPurchaseModal = ({
               name="unitPrice"
               type="number"
               step="0.01"
-              value={newProduct.unitPrice.toString()}
-              onChange={(e) =>
+              value={unitPriceRaw}
+              onChange={(e) => {
+                const val = e.target.value;
+                setUnitPriceRaw(val);
                 setNewProduct(
                   updateNewProductCalculations({
                     ...newProduct,
-                    unitPrice: parseFloat(e.target.value) || 0,
+                    unitPrice: parseFloat(val) || 0,
                   })
-                )
-              }
+                );
+              }}
               min="0"
             />
             <div>
@@ -711,9 +737,11 @@ export const MarketPurchaseModal = ({
               <input
                 type="number"
                 step="0.01"
-                value={taxPercentage.toString()}
+                value={taxPercentageRaw}
                 onChange={(e) => {
-                  const percent = parseFloat(e.target.value) || 0;
+                  const val = e.target.value;
+                  setTaxPercentageRaw(val);
+                  const percent = parseFloat(val) || 0;
                   setTaxPercentage(percent);
                   setNewProduct(
                     updateNewProductCalculations(newProduct, percent)

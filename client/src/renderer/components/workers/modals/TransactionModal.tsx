@@ -28,7 +28,7 @@ export const TransactionModal = ({
   initialPaymentType,
 }: TransactionModalProps) => {
   const { t } = useTranslation();
-  const [currentPaymentAmount, setCurrentPaymentAmount] = useState<number>(0);
+  const [currentPaymentAmount, setCurrentPaymentAmount] = useState<string>("");
   const [selectedPaymentType, setSelectedPaymentType] = useState<
     "cash" | "card" | "bizum" | "bank-transfer" | "account-direct-debit"
   >("cash");
@@ -95,7 +95,8 @@ export const TransactionModal = ({
   const changeAmount = Math.max(0, totalCustomerGiven - totalAmount);
 
   const handleAddPayment = () => {
-    if (currentPaymentAmount <= 0) {
+    const amountNum = parseFloat(currentPaymentAmount) || 0;
+    if (amountNum <= 0) {
       toast.error(
         t("marketPurchaseManagement.modal.errors.pleaseEnterValidAmount")
       );
@@ -103,9 +104,9 @@ export const TransactionModal = ({
     }
 
     let actualAmount =
-      currentPaymentAmount === totalAmount
-        ? currentPaymentAmount
-        : Math.min(currentPaymentAmount, remainingAmount);
+      amountNum === totalAmount
+        ? amountNum
+        : Math.min(amountNum, remainingAmount);
 
     if (actualAmount <= 0) {
       toast.error(
@@ -128,7 +129,7 @@ export const TransactionModal = ({
       updatedMethods[existingNonExistingMethodIndex].amountTendered =
         (Number(
           updatedMethods[existingNonExistingMethodIndex].amountTendered
-        ) || 0) + currentPaymentAmount;
+        ) || 0) + amountNum;
       onPaymentMethodsChange(updatedMethods);
     } else {
       onPaymentMethodsChange([
@@ -136,13 +137,13 @@ export const TransactionModal = ({
         {
           type: selectedPaymentType,
           amount: actualAmount,
-          amountTendered: currentPaymentAmount,
+          amountTendered: amountNum,
           isExisting: false,
         },
       ]);
     }
 
-    setCurrentPaymentAmount(0);
+    setCurrentPaymentAmount("");
   };
 
   const handleRemovePayment = (index: number) => {
@@ -343,10 +344,8 @@ export const TransactionModal = ({
           name="paymentAmount"
           type="number"
           step="0.01"
-          value={currentPaymentAmount.toString()}
-          onChange={(e) =>
-            setCurrentPaymentAmount(parseFloat(e.target.value) || 0)
-          }
+          value={currentPaymentAmount}
+          onChange={(e) => setCurrentPaymentAmount(e.target.value)}
           placeholder="0.00"
           min="0"
         />

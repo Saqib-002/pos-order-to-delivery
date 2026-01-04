@@ -2187,7 +2187,8 @@
       "yearly": "Anual",
       "selectPaymentTerm": "Seleccionar Término de Pago",
       "cancel": "Cancelar",
-      "saveVehicle": "Guardar Vehículo"
+      "saveVehicle": "Guardar Vehículo",
+      "validationError": "Por favor, completa todos los campos obligatorios"
     },
     "maintenanceModal": {
       "title": "Registros de Mantenimiento",

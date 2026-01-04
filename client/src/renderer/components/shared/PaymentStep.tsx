@@ -25,7 +25,7 @@ export const PaymentStep = ({
   initialPaymentType,
 }: PaymentStepProps) => {
   const { t } = useTranslation();
-  const [currentPaymentAmount, setCurrentPaymentAmount] = useState<number>(0);
+  const [currentPaymentAmount, setCurrentPaymentAmount] = useState<string>("");
   const [selectedPaymentType, setSelectedPaymentType] = useState<
     "cash" | "card" | "bizum" | "bank-transfer" | "account-direct-debit"
   >("cash");
@@ -93,7 +93,8 @@ export const PaymentStep = ({
   const changeAmount = Math.max(0, totalCustomerGiven - totalAmount);
 
   const handleAddPayment = () => {
-    if (currentPaymentAmount <= 0) {
+    const amountNum = parseFloat(currentPaymentAmount) || 0;
+    if (amountNum <= 0) {
       toast.error(
         t("marketPurchaseManagement.modal.errors.pleaseEnterValidAmount")
       );
@@ -101,9 +102,9 @@ export const PaymentStep = ({
     }
 
     let actualAmount =
-      currentPaymentAmount === totalAmount
-        ? currentPaymentAmount
-        : Math.min(currentPaymentAmount, remainingAmount);
+      amountNum === totalAmount
+        ? amountNum
+        : Math.min(amountNum, remainingAmount);
 
     if (actualAmount <= 0) {
       toast.error(
@@ -121,8 +122,7 @@ export const PaymentStep = ({
       const updatedMethods = [...paymentMethods];
       updatedMethods[existingMethodIndex].amount += actualAmount;
       updatedMethods[existingMethodIndex].amountTendered =
-        (updatedMethods[existingMethodIndex].amountTendered || 0) +
-        currentPaymentAmount;
+        (updatedMethods[existingMethodIndex].amountTendered || 0) + amountNum;
       onPaymentMethodsChange(updatedMethods);
     } else {
       onPaymentMethodsChange([
@@ -130,12 +130,12 @@ export const PaymentStep = ({
         {
           type: selectedPaymentType,
           amount: actualAmount,
-          amountTendered: currentPaymentAmount,
+          amountTendered: amountNum,
         },
       ]);
     }
 
-    setCurrentPaymentAmount(0);
+    setCurrentPaymentAmount("");
   };
 
   const handleRemovePayment = (index: number) => {
@@ -340,10 +340,8 @@ export const PaymentStep = ({
           name="paymentAmount"
           type="number"
           step="0.01"
-          value={currentPaymentAmount.toString()}
-          onChange={(e) =>
-            setCurrentPaymentAmount(parseFloat(e.target.value) || 0)
-          }
+          value={currentPaymentAmount}
+          onChange={(e) => setCurrentPaymentAmount(e.target.value)}
           placeholder="0.00"
           min="0"
         />
