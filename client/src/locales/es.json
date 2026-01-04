@@ -796,7 +796,8 @@
     "pointOfSale": "Punto de Venta",
     "defaultAddress": "calle 123",
     "warnings": {
-      "noPrintersAttached": "No hay impresoras conectadas"
+      "noPrintersAttached": "No hay impresoras conectadas",
+      "cannotModifyPaidOrder": "Este pedido está pagado parcial o totalmente. Por favor, cancele el pedido para realizar cambios."
     },
     "errors": {
       "errorGettingConfigurations": "Error al obtener configuraciones",

@@ -164,6 +164,24 @@ const OrderCart: React.FC<OrderCartProps> = ({
     toast.success(t("orderCart.messages.receiptPrintedSuccessfully"));
   };
   const handleRemoveItem = async (itemId: string, itemName: string) => {
+    const paymentStatusDerive = calculatePaymentStatus(
+      order?.paymentType || "",
+      orderTotal
+    );
+
+    const isPaidOrPartial = 
+      paymentStatusDerive.status === "PAID" || 
+      paymentStatusDerive.status === "PARTIAL" || 
+      paymentStatusDerive.totalPaid > 0 ||
+      order?.isPaid ||
+      order?.paymentStatus?.toUpperCase() === "PAID" ||
+      order?.paymentStatus?.toUpperCase() === "PARTIAL";
+
+    if (orderItems.length === 1 && isPaidOrPartial) {
+      toast.warn(t("orderCart.warnings.cannotModifyPaidOrder"));
+      return;
+    }
+
     const ok = await confirm({
       title: t("orderCart.confirmations.removeItem.title"),
       message: t("orderCart.confirmations.removeItem.message"),

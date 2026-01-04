@@ -794,7 +794,8 @@
     "pointOfSale": "Point of Sale",
     "defaultAddress": "street 123",
     "warnings": {
-      "noPrintersAttached": "No printers attached"
+      "noPrintersAttached": "No printers attached",
+      "cannotModifyPaidOrder": "This order is partially or fully paid. Please cancel the order to make changes."
     },
     "errors": {
       "errorGettingConfigurations": "Error getting configurations",
