@@ -15,6 +15,7 @@
     "actions": "Acciones",
     "confirmDelete": "¿Está seguro de que desea eliminar este elemento?",
     "noData": "No hay datos disponibles",
+    "seeAll": "Ver Todo",
     "paymentStatus": {
       "paid": "PAGADO",
       "unpaid": "NO PAGADO",
@@ -593,13 +594,15 @@
       "incomeVsExpense": "Ingresos vs Gastos",
       "incomeBySource": "Ingresos por Fuente",
       "expensesByCategory": "Gastos por Categoría",
-      "topSuppliers": "Principales Proveedores",
-      "topWorkers": "Principales Trabajadores",
+      "topSuppliers": "Gastos por Proveedores",
+      "topWorkers": "Gastos por Trabajadores",
       "maintenanceByVehicle": "Mantenimiento por Vehículo",
       "purchasesByProduct": "Gasto por Producto",
       "units": "unidades",
       "paymentOverview": "Resumen de Pagos",
-      "distributions": "Distribuciones"
+      "cashIncome": "Ingresos en Efectivo",
+      "distributions": "Distribuciones",
+      "total": "Ingresos"
     },
     "title": "Análisis e Informes",
     "subtitle": "Información completa sobre el rendimiento de pedidos y tendencias",

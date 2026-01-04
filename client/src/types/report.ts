@@ -36,11 +36,11 @@ export interface FinancialAnalyticsType {
     expense: number;
   }>;
   breakdowns?: {
-    otherIncomeBySource: Array<{ name: string; total: number }>;
-    marketPurchasesByType: Array<{ name: string; total: number }>;
-    marketPurchasesBySupplier: Array<{ name: string; total: number }>;
-    salariesByWorker: Array<{ name: string; total: number }>;
-    maintenanceByVehicle: Array<{ name: string; total: number }>;
+    otherIncomeBySource: Array<{ name: string; total: number; pending: number }>;
+    marketPurchasesByType: Array<{ name: string; total: number; pending: number }>;
+    marketPurchasesBySupplier: Array<{ name: string; total: number; pending: number }>;
+    salariesByWorker: Array<{ name: string; total: number; pending: number }>;
+    maintenanceByVehicle: Array<{ name: string; total: number; pending: number }>;
     purchasesByProduct: Array<{ name: string; total: number; units: number }>;
     paymentMethods: {
       income: Record<string, number>;

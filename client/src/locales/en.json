@@ -15,6 +15,7 @@
     "actions": "Actions",
     "confirmDelete": "Are you sure you want to delete this item?",
     "noData": "No data available",
+    "seeAll": "See All",
     "paymentStatus": {
       "paid": "PAID",
       "unpaid": "UNPAID",
@@ -591,13 +592,15 @@
       "incomeVsExpense": "Income vs Expenses",
       "incomeBySource": "Income by Source",
       "expensesByCategory": "Expenses by Category",
-      "topSuppliers": "Top Suppliers",
-      "topWorkers": "Top Workers",
+      "topSuppliers": "Expenses by Suppliers",
+      "topWorkers": "Expenses by Workers",
       "maintenanceByVehicle": "Maintenance by Vehicle",
-      "purchasesByProduct": "Spending by Product",
+      "purchasesByProduct": "Expenses by Product",
       "units": "units",
       "paymentOverview": "Payment Overview",
-      "distributions": "Distributions"
+      "cashIncome": "Cash Income",
+      "distributions": "Distributions",
+      "total": "Total"
     },
     "title": "Analytics & Reports",
     "subtitle": "Comprehensive insights into order performance and trends",

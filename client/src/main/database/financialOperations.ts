@@ -51,8 +51,15 @@ export class FinancialDatabaseOperations {
       }
     }
 
-    const startISO = startDate.toISOString();
-    const endISO = endDate.toISOString();
+    const formatDate = (date: Date): string => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const startISO = formatDate(startDate);
+    const endISO = formatDate(endDate) + ' 23:59:59';
 
     // 1. Calculate Income (Orders)
     const ordersIncomeResult = await db("order_items")
@@ -252,13 +259,43 @@ export class FinancialDatabaseOperations {
       }
     }
 
-    const startISO = startDate.toISOString();
-    const endISO = endDate.toISOString();
+    const formatDate = (date: Date): string => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
 
-    // 1. Other Income by Source (including POS Orders)
+    const startISO = formatDate(startDate);
+    const endISO = formatDate(endDate) + ' 23:59:59';
+
+    const calculatePendingAmount = (totalAmount: number, paymentType: string): number => {
+      if (!paymentType || paymentType.trim() === "" || paymentType.toLowerCase() === "pending") {
+        return totalAmount;
+      }
+
+      try {
+        const payments = paymentType.split(", ");
+        let totalPaid = 0;
+        
+        payments.forEach((payment: string) => {
+          const [, amount] = payment.split(":");
+          const numericAmount = parseFloat(amount);
+          if (!isNaN(numericAmount)) {
+            totalPaid += numericAmount;
+          }
+        });
+
+        const remaining = totalAmount - totalPaid;
+        return remaining > 0.01 ? remaining : 0;
+      } catch (e) {
+        return totalAmount;
+      }
+    };
+
+    // 1. Other Income by Source (including POS Orders) with pending amounts
     let otherIncomeBySource: any[] = [];
     try {
-      // First get other income sources
       const otherIncomeSources = await db("other_incomes")
         .leftJoin("income_sources", "other_incomes.income_source_id", "income_sources.id")
         .whereBetween("other_incomes.date", [startISO, endISO])
@@ -266,27 +303,64 @@ export class FinancialDatabaseOperations {
           db.raw("COALESCE(income_sources.name, 'Other') as name"),
           "other_incomes.income_source_id"
         )
-        .sum("other_incomes.total as total")
-        .groupBy("other_incomes.income_source_id", "income_sources.name")
-        .orderBy("total", "desc");
+        .groupBy("other_incomes.income_source_id", "income_sources.name");
 
-      // Calculate POS orders income
-      const posOrdersResult = await db("order_items")
+      const otherIncomeSourcesWithPending = await Promise.all(
+        otherIncomeSources.map(async (source: any) => {
+          const incomes = await db("other_incomes")
+            .whereBetween("date", [startISO, endISO])
+            .where(function() {
+              if (source.income_source_id) {
+                this.where("income_source_id", source.income_source_id);
+              } else {
+                this.whereNull("income_source_id");
+              }
+            })
+            .select("total", "paymentType");
+
+          let totalAmount = 0;
+          let pendingAmount = 0;
+
+          incomes.forEach((income: any) => {
+            const total = Number(income.total || 0);
+            totalAmount += total;
+            pendingAmount += calculatePendingAmount(total, income.paymentType || "");
+          });
+
+          return {
+            name: source.name || "Other",
+            total: totalAmount,
+            pending: pendingAmount
+          };
+        })
+      );
+
+      const posOrders = await db("order_items")
         .join("orders", "order_items.orderId", "orders.id")
         .whereBetween("orders.createdAt", [startISO, endISO])
         .whereNotIn("orders.status", ["pending", "sent to kitchen", "cancelled"])
-        .sum("order_items.totalPrice as total")
-        .first();
+        .select(
+          db.raw("SUM(order_items.\"totalPrice\") as order_total"),
+          "orders.paymentType"
+        )
+        .groupBy("orders.id", "orders.paymentType");
 
-      const posOrdersTotal = Number(posOrdersResult?.total || 0);
+      let posOrdersTotal = 0;
+      let posOrdersPending = 0;
 
-      // Combine and deduplicate by name
+      posOrders.forEach((order: any) => {
+        const total = Number(order.order_total || 0);
+        posOrdersTotal += total;
+        posOrdersPending += calculatePendingAmount(total, order.paymentType || "");
+      });
+
       const combinedSources = [
-        { name: "POS Orders", total: posOrdersTotal },
-        ...otherIncomeSources.map((item: any) => ({
-          name: item.name || "Other",
-          total: Number(item.total || 0)
-        }))
+        { 
+          name: "POS Orders", 
+          total: posOrdersTotal,
+          pending: posOrdersPending
+        },
+        ...otherIncomeSourcesWithPending
       ];
 
       otherIncomeBySource = combinedSources.filter(item => item.total > 0);
@@ -295,54 +369,175 @@ export class FinancialDatabaseOperations {
       console.error("Error in otherIncomeBySource:", e); 
     }
 
-    // 2. Market Purchases by Expense Type
+    // 2. Market Purchases by Expense Type with pending
     let marketPurchasesByType: any[] = [];
     try {
-      marketPurchasesByType = await db("market_purchase_items")
+      const purchaseTypes = await db("market_purchase_items")
         .join("market_purchases", "market_purchase_items.purchaseId", "market_purchases.id")
         .leftJoin("expense_types", "market_purchase_items.expenseTypeId", "expense_types.id")
         .whereBetween("market_purchases.ticketDate", [startISO, endISO])
-        .select(db.raw("COALESCE(expense_types.name, 'Uncategorized') as name"))
-        .sum("market_purchase_items.total as total")
-        .groupBy(db.raw("COALESCE(expense_types.name, 'Uncategorized')"))
-        .orderBy("total", "desc");
+        .select(
+          db.raw("COALESCE(expense_types.name, 'Uncategorized') as name"),
+          "market_purchase_items.expenseTypeId"
+        )
+        .groupBy("market_purchase_items.expenseTypeId", "expense_types.name");
+
+      marketPurchasesByType = await Promise.all(
+        purchaseTypes.map(async (type: any) => {
+          const purchases = await db("market_purchases")
+            .join("market_purchase_items", "market_purchases.id", "market_purchase_items.purchaseId")
+            .whereBetween("market_purchases.ticketDate", [startISO, endISO])
+            .where(function() {
+              if (type.expenseTypeId) {
+                this.where("market_purchase_items.expenseTypeId", type.expenseTypeId);
+              } else {
+                this.whereNull("market_purchase_items.expenseTypeId");
+              }
+            })
+            .select(
+              "market_purchases.id as purchaseId",
+              "market_purchases.paymentType"
+            )
+            .sum("market_purchase_items.total as purchaseTotal")
+            .groupBy("market_purchases.id", "market_purchases.paymentType");
+
+          let totalAmount = 0;
+          let pendingAmount = 0;
+
+          purchases.forEach((purchase: any) => {
+            const total = Number(purchase.purchaseTotal || 0);
+            totalAmount += total;
+            pendingAmount += calculatePendingAmount(total, purchase.paymentType || "");
+          });
+
+          return {
+            name: type.name || "Uncategorized",
+            total: totalAmount,
+            pending: pendingAmount
+          };
+        })
+      );
+      
+      marketPurchasesByType.sort((a, b) => b.total - a.total);
     } catch (e) { console.error("Error in marketPurchasesByType:", e); }
 
-    // 3. Market Purchases by Supplier
+    // 3. Market Purchases by Supplier with pending
     let marketPurchasesBySupplier: any[] = [];
     try {
-      marketPurchasesBySupplier = await db("market_purchases")
+      const suppliers = await db("market_purchases")
         .join("suppliers", "market_purchases.supplierId", "suppliers.id")
         .whereBetween("market_purchases.ticketDate", [startISO, endISO])
-        .select("suppliers.name as name")
-        .sum("market_purchases.totalAmount as total")
-        .groupBy("suppliers.name")
-        .orderBy("total", "desc")
-        .limit(10);
+        .select("suppliers.name as name", "market_purchases.supplierId")
+        .groupBy("market_purchases.supplierId", "suppliers.name");
+
+      marketPurchasesBySupplier = await Promise.all(
+        suppliers.map(async (supplier: any) => {
+          const purchases = await db("market_purchases")
+            .whereBetween("ticketDate", [startISO, endISO])
+            .where("supplierId", supplier.supplierId)
+            .select("totalAmount", "paymentType");
+
+          let totalAmount = 0;
+          let pendingAmount = 0;
+
+          purchases.forEach((purchase: any) => {
+            const total = Number(purchase.totalAmount || 0);
+            totalAmount += total;
+            pendingAmount += calculatePendingAmount(total, purchase.paymentType || "");
+          });
+
+          return {
+            name: supplier.name,
+            total: totalAmount,
+            pending: pendingAmount
+          };
+        })
+      );
+      
+      marketPurchasesBySupplier.sort((a, b) => b.total - a.total);
     } catch (e) { console.error("Error in marketPurchasesBySupplier:", e); }
 
-    // 4. Worker Salaries by Worker
+    // 4. Worker Salaries by Worker with pending
     let salariesByWorker: any[] = [];
     try {
-      salariesByWorker = await db("worker_salaries")
+      const workersWithSalaries = await db("worker_salaries")
         .join("workers", "worker_salaries.workerId", "workers.id")
         .whereBetween("worker_salaries.date", [startISO, endISO])
-        .select("workers.name as name")
-        .sum("worker_salaries.total as total")
-        .groupBy("workers.name")
-        .orderBy("total", "desc");
+        .select("workers.id as workerId", "workers.name")
+        .groupBy("workers.id", "workers.name");
+
+      salariesByWorker = await Promise.all(
+        workersWithSalaries.map(async (worker: any) => {
+          const salaries = await db("worker_salaries")
+            .whereBetween("date", [startISO, endISO])
+            .where("workerId", worker.workerId)
+            .select("id", "total");
+
+          let totalAmount = 0;
+          let totalPaid = 0;
+
+          await Promise.all(
+            salaries.map(async (salary: any) => {
+              const total = Number(salary.total || 0);
+              totalAmount += total;
+
+              const paidResult = await db("worker_salary_payments")
+                .where("salaryId", salary.id)
+                .sum("amount as totalPaid")
+                .first();
+              
+              totalPaid += Number(paidResult?.totalPaid || 0);
+            })
+          );
+
+          return {
+            name: worker.name,
+            total: totalAmount,
+            pending: Math.max(0, totalAmount - totalPaid)
+          };
+        })
+      );
+
+      salariesByWorker.sort((a, b) => b.total - a.total);
     } catch (e) { console.error("Error in salariesByWorker:", e); }
 
-    // 5. Vehicle Maintenance by Vehicle
+    // 5. Vehicle Maintenance by Vehicle with pending
     let maintenanceByVehicle: any[] = [];
     try {
-      maintenanceByVehicle = await db("vehicle_maintenance")
+      const vehicles = await db("vehicle_maintenance")
         .join("vehicles", "vehicle_maintenance.vehicleId", "vehicles.id")
         .whereBetween("vehicle_maintenance.date", [startISO, endISO])
-        .select(db.raw('CONCAT(vehicles.model, \' (\', vehicles."licensePlate", \')\') as name'))
-        .sum("vehicle_maintenance.total as total")
-        .groupBy(db.raw('CONCAT(vehicles.model, \' (\', vehicles."licensePlate", \')\')'))
-        .orderBy("total", "desc");
+        .select(
+          db.raw('CONCAT(vehicles.model, \' (\', vehicles."licensePlate", \')\') as name'),
+          "vehicle_maintenance.vehicleId"
+        )
+        .groupBy("vehicle_maintenance.vehicleId", db.raw('CONCAT(vehicles.model, \' (\', vehicles."licensePlate", \')\')'));
+
+      maintenanceByVehicle = await Promise.all(
+        vehicles.map(async (vehicle: any) => {
+          const maintenanceRecords = await db("vehicle_maintenance")
+            .whereBetween("date", [startISO, endISO])
+            .where("vehicleId", vehicle.vehicleId)
+            .select("total", "paymentType");
+
+          let totalAmount = 0;
+          let pendingAmount = 0;
+
+          maintenanceRecords.forEach((record: any) => {
+            const total = Number(record.total || 0);
+            totalAmount += total;
+            pendingAmount += calculatePendingAmount(total, record.paymentType || "");
+          });
+
+          return {
+            name: vehicle.name,
+            total: totalAmount,
+            pending: pendingAmount
+          };
+        })
+      );
+      
+      maintenanceByVehicle.sort((a, b) => b.total - a.total);
     } catch (e) { console.error("Error in maintenanceByVehicle:", e); }
 
     // 6. Market Purchases by Inventory Product
@@ -449,8 +644,15 @@ export class FinancialDatabaseOperations {
       }
     }
 
-    const startISO = startDate.toISOString();
-    const endISO = endDate.toISOString();
+    const formatDate = (date: Date): string => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const startISO = formatDate(startDate);
+    const endISO = formatDate(endDate) + ' 23:59:59';
 
     const paymentData: {
       income: Record<string, number>;
@@ -460,7 +662,6 @@ export class FinancialDatabaseOperations {
       expenses: {},
     };
 
-    // Helper to add payment amount
     const addToPayment = (target: Record<string, number>, method: string, amount: number) => {
       const cleanMethod = method.trim().toLowerCase();
       if (!target[cleanMethod]) {
@@ -481,7 +682,6 @@ export class FinancialDatabaseOperations {
     orderPayments.forEach((order: any) => {
       const totalAmount = Number(order.total) || 0;
       if (order.paymentType && order.paymentType.includes(":")) {
-        // Split payment (e.g., "cash:50, card:30")
         const payments = order.paymentType.split(", ");
         payments.forEach((payment: string) => {
           const [method, amount] = payment.split(":");
