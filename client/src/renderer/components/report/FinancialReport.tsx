@@ -720,7 +720,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
                   amount > 0 && (
                     <DistributionItem
                       key={idx}
-                      label={method.charAt(0).toUpperCase() + method.slice(1)}
+                      label={method.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                       value={amount}
                       percentage={calculatePercentage(amount, data.summary.income)}
                       color="#6366f1"
@@ -745,7 +745,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
               </div>
             </div>
           </div>
-          {/* Payment overview doesn't have pending in the same way, but we show the balance */}
+          {/* NET Balance */}
           <div className="mt-6 pt-4 border-t border-gray-50 flex justify-between items-end">
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">
