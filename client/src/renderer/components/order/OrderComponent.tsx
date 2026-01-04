@@ -196,7 +196,8 @@ const OrderComponent = () => {
             formattedPickupTime,
             customerPhone,
             customerName,
-            user!.name
+            user!.name,
+            orderData.notes
           );
         } else {
           const unprintedItems = items.filter(

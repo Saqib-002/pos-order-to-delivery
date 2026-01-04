@@ -140,7 +140,8 @@ const OrderCart: React.FC<OrderCartProps> = ({
           formattedPickupTime,
           customerPhone,
           customerName,
-          user!.name
+          user!.name,
+          order?.notes
         );
       }
       if (!receiptHTML) {

@@ -2265,6 +2265,7 @@
     "address": "Dirección del Cliente",
     "pickupTime": "Hora de Recogida",
     "phone": "Teléfono",
+    "notes": "Notas del Pedido",
     "paymentStatus": {
       "unpaid": "NO PAGADO",
       "paid": "PAGADO",

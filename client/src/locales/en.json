@@ -2263,6 +2263,7 @@
     "address": "Customer Address",
     "pickupTime": "Pickup Time",
     "phone": "Phone",
+    "notes": "Order Notes",
     "paymentStatus": {
       "unpaid": "UNPAID",
       "paid": "PAID",
