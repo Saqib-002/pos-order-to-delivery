@@ -91,7 +91,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       const printerName = printer.split("|")[0];
       const printerIsMain = printer.split("|")[1];
       let receiptHTML = "";
-      const { status } = calculatePaymentStatus(
+      const paymentStatus = calculatePaymentStatus(
         order?.paymentType || "",
         orderTotal
       );
@@ -129,19 +129,20 @@ const OrderCart: React.FC<OrderCartProps> = ({
         const customerName = order?.customer?.name;
 
         receiptHTML = generateReceiptHTML(
-          items,
+          orderItems, 
           configurations,
           order!.orderId,
           order?.orderType,
           user!.role,
-          status,
+          paymentStatus.status,
           t,
           customerAddress,
           formattedPickupTime,
           customerPhone,
           customerName,
           user!.name,
-          order?.notes
+          order?.notes,
+          paymentStatus.totalPaid
         );
       }
       if (!receiptHTML) {

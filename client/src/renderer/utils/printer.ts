@@ -62,7 +62,8 @@ export const generateReceiptHTML = (
   customerPhone: string | undefined,
   customerName: string | undefined,
   userName?: string,
-  notes?: string
+  notes?: string,
+  amountPaid?: number
 ): string => {
   const { nonMenuItems, groups, orderTotal } = calculateOrderTotal(items);
 
@@ -93,6 +94,7 @@ export const generateReceiptHTML = (
   > = {};
 
   const originalOrderType = orderType?.toUpperCase();
+  const rawStatus = status.toUpperCase();
 
   switch (status.toUpperCase()) {
     case "PAID":
@@ -105,6 +107,8 @@ export const generateReceiptHTML = (
       status = t("receipt.paymentStatus.PARTIAL");
       break;
   }
+
+  const orderTypeLabel = orderType?.toUpperCase() || "";
   switch (orderType?.toUpperCase()) {
     case "DELIVERY":
       orderType = t("receipt.orderType.delivery");
@@ -144,63 +148,85 @@ export const generateReceiptHTML = (
     taxBreakdown[rateKey].tax += tax * item.quantity;
   });
 
+  let displayPaid = 0;
+  let footerLabel = "";
+
+  if (rawStatus === "PAID") {
+    displayPaid = orderTotal;
+    footerLabel = t("receipt.paymentStatus.paidLabel");
+  } else if (rawStatus === "PARTIAL") {
+    displayPaid = amountPaid || 0;
+    footerLabel = t("receipt.paymentStatus.partialLabel");
+  } else {
+    displayPaid = 0;
+    footerLabel = t("receipt.paymentStatus.unpaidLabel");
+  }
+
   let html = `
     <html>
         <head>
         <style>
-            body { font-family: sans-serif, 'Courier New', monospace; font-size: 12px; width: 70mm; margin: 0; padding: 1mm;  }
-            .line { width: 100%; height: 1px; background: black; margin: 5px 0; }
+            body { font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace; font-size: 13px; width: 72mm; margin: 0; padding: 0; color: #000; }
+            .container { padding: 1mm 2mm; }
+            .dashed-line { border-top: 1px dashed black; margin: 10px 0; width: 100%; height:0; }
             .bold { font-weight: bold; }
             .center { text-align: center; }
             .left { text-align: left; }
-            .order-info { margin: 0 0 24px 0; } 
-            .order-info h1 { margin: 0 0 4px 0; } 
-            .order-info p { margin: 0 0 2px 0; line-height: 1.2; }
-            table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size:12px; }
-            thead { border-bottom:1px solid black; font-weight: semibold; }
-            th, td { padding: 2px; text-align: left; vertical-align: top; }
-            .qty-col { width: 10%; text-align: center; }
-            .sub-col { width: 20%; text-align: right; }
-            .total-col { width: 20%; text-align: right; }
-            .name-col { width: 50%; }
-            .sub-item { padding-left: 10px; font-size: 13px; }
+            .right { text-align: right; }
+            .large { font-size: 18px; }
+            .extra-large { font-size: 24px; }
+            
+            .header { margin-bottom: 5px; line-height: 1.2; }
+            .order-type-header { margin: 10px 0; }
+            
+            table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+            th { text-align: left; }
+            td { vertical-align: top; padding: 1px 0; }
+            
+            .item-qty { width: 10%; }
+            .item-name { width: 65%; }
+            .item-total { width: 20%; text-align: right; }
+            
+            .sub-item { padding-left: 5px; font-size: 12px; }
             .indent { padding-left: 20px; }
-            .total-row { font-weight: bold; border-top: 2px solid black; }
-            .vat-table th, .vat-table td { text-align: right; }
-            .vat-table .name-col { text-align: left; }
+            
+            .total-section { margin-top: 5px; }
+            .total-row { display: flex; justify-content: space-between; margin: 2px 0; }
+            .main-total { font-size: 16px; margin: 10px 0; }
+            
+            .footer-header { font-size: 18px; margin: 15px 0; border-top: 1px dashed black; border-bottom: 1px dashed black; padding: 5px 0; }
+            .client-details { font-size: 12px; line-height: 1.4; margin-bottom: 10px; }
+            .client-details-header { padding-top: 5px; margin-top: 10px; font-weight: bold; margin-bottom: 5px; }
+            .vat-table { font-size: 11px; margin-top: 20px; }
         </style>
         </head>
         <body>
-        <div class="center">
-            <h2 class="bold">${configurations.name}</h2>
-            <p class="bold">${configurations.address}</p>
-            ${configurations.vatNumber ? `<p class="bold">${configurations.vatNumber}</p>` : ""}
-        </div>
-        <div class="line"></div>
-        <div class="order-info center">
-            <h1 class="bold" style="font-size: 24px;">${configurations.orderPrefix}${orderId}</h1>
-        </div>
-        <div class="order-info left bold">
-            <p><span class="bold">${t("receipt.date")}:</span> ${dateTimeStr}</p>
-            <p style="font-size: 16px;"><span class="bold">${t("receipt.order")}:</span> ${configurations.orderPrefix}${orderId}(${orderType?.toUpperCase() || "N/A"})</p>
-            <p style="font-size: 16px;"><span class="bold">${t("receipt.payment")}:</span> ${status}</p>
-            <p><span class="bold">${t("receipt.servedBy")}:</span> ${userName || userRole}</p>
-            ${customerName && customerName.trim() ? `<p><span class="bold">${t("receipt.customerName")}:</span> ${customerName}</p>` : ""}
-            ${customerAddress && customerAddress.trim() && originalOrderType === "DELIVERY" ? `<p style="font-size: 14px;"><span class="bold">${t("receipt.address")}:</span> ${customerAddress}</p>` : ""}
-            ${pickupTime && originalOrderType === "PICKUP" ? `<p><span class="bold">${t("receipt.pickupTime")}:</span> ${pickupTime}</p>` : ""}
-            ${customerPhone && customerPhone.trim() ? `<p><span class="bold">${t("receipt.phone")}:</span> ${customerPhone}</p>` : ""}
-            ${notes && notes.trim() ? `<p><span class="bold">${t("receipt.notes")}:</span> ${notes}</p>` : ""}
-            <div class="line"></div>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th class="qty-col">${t("receipt.quantity")}</th>
-                    <th class="name-col">${t("receipt.name")}</th>
-                    <th class="total-col">${t("receipt.total")}</th>
-                </tr>
-            </thead>
-            <tbody>
+        <div class="container">
+            <div class="center header">
+                <div class="bold" style="font-size: 16px;">${configurations.name}</div>
+                <div>${configurations.address}</div>
+                ${configurations.vatNumber ? `<div>${configurations.vatNumber}</div>` : ""}
+            </div>
+
+            <div class="dashed-line"></div>
+
+            <div class="center">
+                <div class="bold large order-type-header">${orderTypeLabel}</div>
+                <div class="bold">${t("receipt.date")}: ${dateTimeStr}</div>
+                <div class="bold extra-large" style="margin: 15px 0;">${configurations.orderPrefix}${orderId}</div>
+            </div>
+
+            <div class="dashed-line"></div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="2" class="bold">${t("receipt.name")}</th>
+                        <th class="right bold">EUR</th>
+                    </tr>
+                    <tr style="height: 8px;"><td colspan="3"></td></tr>
+                </thead>
+                <tbody>
     `;
 
   sortedGroups.forEach((group) => {
@@ -230,34 +256,24 @@ export const generateReceiptHTML = (
 
     html += `
                 <tr class="bold">
-                    <td class="qty-col">${sectionQty}</td>
-                    <td class="name-col" style="font-size: 14px;">${group.menuName}</td>
-                    <td class="total-col">€${totalGroupPrice.toFixed(2)}</td>
+                    <td class="item-qty">${sectionQty} X</td>
+                    <td class="item-name">${group.menuName}</td>
+                    <td class="item-total">${totalGroupPrice.toFixed(2)}</td>
                 </tr>
         `;
     group.items.forEach((item) => {
       html += `
-                <tr class="bold">
-                    <td class="qty-col"></td>
-                    <td class="name-col sub-item" style="font-size: 14px;"><span style="width: 6px; height: 6px; background: black; display: inline-block; margin-right: 5px; border-radius: 50%;"></span>${item.productName} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}</td>
-                    <td class="total-col"></td>
+                <tr>
+                    <td class="item-qty"></td>
+                    <td class="item-name sub-item">• ${item.productName}</td>
+                    <td class="item-total">${item.supplement && item.supplement > 0 ? item.supplement.toFixed(2) : ""}</td>
                 </tr>
                 ${
-                  item.supplement
+                  item.variantName && item.variantId
                     ? `<tr>
-                    <td class="qty-col"></td>
-                    <td class="name-col sub-item indent" style="font-weight: bold;">${t("receipt.extra")}:${item.supplement}</td>
-                    <td class="total-col">€${item.supplement.toFixed(2)}</td>
-                </tr>
-                `
-                    : ""
-                }
-                ${
-                  item.variantPrice && item.variantPrice > 0
-                    ? `<tr class="bold">
-                    <td class="qty-col"></td>
-                    <td class="name-col sub-item indent">${item.variantName}</td>
-                    <td class="total-col">€${item.variantPrice.toFixed(2)}</td>
+                    <td class="item-qty"></td>
+                    <td class="item-name sub-item indent">${item.variantName}</td>
+                    <td class="item-total">${item.variantPrice && item.variantPrice > 0 ? item.variantPrice.toFixed(2) : ""}</td>
                 </tr>`
                     : ""
                 }
@@ -265,13 +281,14 @@ export const generateReceiptHTML = (
       item.complements.forEach((comp) => {
         html += `
                      <tr>
-                         <td class="qty-col"></td>
-                         <td class="name-col sub-item indent bold">${comp.itemName}</td>
-                         <td class="total-col">€${comp.price.toFixed(2)}</td>
+                         <td class="item-qty"></td>
+                         <td class="item-name sub-item indent">+ ${comp.itemName}</td>
+                         <td class="item-total">${comp.price.toFixed(2)}</td>
                      </tr>
                  `;
       });
     });
+    html += `<tr style="height: 8px;"><td colspan="3"></td></tr>`;
   });
 
   sortedNonMenuItems.forEach((item) => {
@@ -293,72 +310,98 @@ export const generateReceiptHTML = (
     const unitPrice = item.productPrice + item.productTax;
     html += `
             <tr class="bold">
-                <td class="qty-col">${item.quantity}</td>
-                <td class="name-col" style="font-size: 14px;">${item.productName} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}</td>
-                <td class="sub-col">€${unitPrice.toFixed(2)}</td>
+                <td class="item-qty">${item.quantity} X</td>
+                <td class="item-name">${item.productName}</td>
+                <td class="item-total">${itemTotal.toFixed(2)}</td>
             </tr>
         `;
-    if (item.variantPrice && item.variantPrice > 0) {
+    if (item.variantName && item.variantId) {
       html += `
-            <tr class="bold">
-                <td class="qty-col"></td>
-                <td class="name-col sub-item">${item.variantName}</td>
-                <td class="total-col">€${item.variantPrice.toFixed(2)}</td>
+            <tr>
+                <td class="item-qty"></td>
+                <td class="item-name sub-item">${item.variantName}</td>
+                <td class="item-total">${item.variantPrice > 0 ? item.variantPrice.toFixed(2) : ""}</td>
             </tr>
         `;
     }
     item.complements.forEach((comp) => {
       html += `
                  <tr>
-                     <td class="qty-col"></td>
-                     <td class="name-col sub-item bold">${comp.itemName}</td>
-                     <td class="total-col">€${comp.price.toFixed(2)}</td>
+                     <td class="item-qty"></td>
+                     <td class="item-name sub-item indent">+ ${comp.itemName}</td>
+                     <td class="item-total">${comp.price.toFixed(2)}</td>
                  </tr>
              `;
     });
+    html += `<tr style="height: 8px;"><td colspan="3"></td></tr>`;
   });
 
   html += `
-            </tbody>
-        </table>
-        <div class="total-row center">
-            <table style="width: 100%; margin: 10px 0;">
-                <tr>
-                  <td class="qty-col"></td>
-                  <td class="name-col"></td>
-                  <td style="font-size: 14px;" class="sub-col bold">${t("receipt.total")}</td>
-                  <td style="font-size: 14px;" class="total-col bold">€${orderTotal.toFixed(2)}</td>
-                </tr>
+                </tbody>
             </table>
-        </div>
-        <div class="line"></div>
-        <table class="vat-table">
-            <thead>
-                <tr>
-                    <th class="name-col">${t("receipt.vat")}</th>
-                    <th class="sub-col">${t("receipt.base")}</th>
-                    <th class="total-col">${t("receipt.tax")}</th>
-                </tr>
-            </thead>
-            <tbody>
+
+            <div class="dashed-line"></div>
+
+            <div class="total-section">
+                <div class="total-row">
+                    <span>${t("receipt.subtotal")}</span>
+                    <span>${orderTotal.toFixed(2)}</span>
+                </div>
+                <div class="total-row bold main-total">
+                    <span>${t("receipt.total")}</span>
+                    <span>${orderTotal.toFixed(2)}</span>
+                </div>
+                <div class="total-row">
+                    <span>${t("receipt.payment")}:</span>
+                    <span>${displayPaid.toFixed(2)}</span>
+                </div>
+            </div>
+            
+            <div class="center bold footer-header">
+                ${footerLabel}
+            </div>
+
+            <div class="client-details">
+                <div class="client-details-header">${t("receipt.clientDetails")}</div>
+                ${customerName ? `<div class="bold">${customerName}</div>` : ""}
+                ${customerAddress ? `<div>${customerAddress}</div>` : ""}
+                ${customerPhone ? `<div>${customerPhone}</div>` : ""}
+                ${pickupTime ? `<div><span class="bold">${t("receipt.pickupTime")}:</span> ${pickupTime}</div>` : ""}
+                ${notes ? `<div style="margin-top:5px;"><span class="bold">${t("receipt.notes")}:</span> ${notes}</div>` : ""}
+                <div style="margin-top:5px;"><span class="bold">${t("receipt.servedBy")}:</span> ${userName || userRole}</div>
+            </div>
+
+            <div class="dashed-line"></div>
+            
+            <table class="vat-table">
+                <thead>
+                    <tr>
+                        <th class="bold">${t("receipt.vat")}</th>
+                        <th class="right bold">${t("receipt.base")}</th>
+                        <th class="right bold">${t("receipt.tax")}</th>
+                    </tr>
+                </thead>
+                <tbody>
     `;
 
-  // VAT rows
   Object.entries(taxBreakdown).forEach(([rateKey, { base, tax }]) => {
     html += `
                 <tr>
-                    <td class="name-col">${rateKey}</td>
-                    <td class="sub-col">€${base.toFixed(2)}</td>
-                    <td class="total-col">€${tax.toFixed(2)}</td>
+                    <td>${rateKey}</td>
+                    <td class="right">${base.toFixed(2)}</td>
+                    <td class="right">${tax.toFixed(2)}</td>
                 </tr>
         `;
   });
 
   html += `
-            </tbody>
-        </table>
-        <div class="line"></div>
-        <div class="center"><small>${t("receipt.thankYou")}</small></div>
+                </tbody>
+            </table>
+
+            <div class="center" style="margin-top: 20px;">
+                <small>${t("receipt.thankYou")}</small>
+            </div>
+        </div>
         </body>
     </html>
     `;
@@ -457,18 +500,20 @@ export const generateItemsReceiptHTML = (
   // Menu groups - MODIFIED to use sortedGroups
   sortedGroups.forEach((group) => {
     const sectionQty = group.items[0]?.quantity || 1;
-    // Sub-items and their complements - This loop now uses sorted items
     html += `
             <div class="name-col bold">${sectionQty}x ${group.menuName}</div>
         `;
     group.items.forEach((item) => {
+      const supplementText = item.supplement && item.supplement > 0 ? ` (+${item.supplement.toFixed(2)})` : "";
       html += `
             <div class="sub-item bold">
-            ${item.quantity}x ${item.productName} ${item.variantId ? "-" : ""} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}
+            ${item.quantity}x ${item.productName}${supplementText}
             </div>
-            <div class="indent">
-            ${item.supplement ? `${t("receipt.extra")}: ${item.supplement}` : ""}
-            </div>
+            ${
+              item.variantName && item.variantId
+                ? `<div class="indent bold">${item.variantName}</div>`
+                : ""
+            }
             `;
       item.complements.forEach((comp) => {
         html += `
@@ -478,14 +523,20 @@ export const generateItemsReceiptHTML = (
                 `;
       });
     });
+    html += `<div style="margin-bottom: 8px;"></div>`;
   });
 
   // Non-menu items - MODIFIED to use sortedNonMenuItems
   sortedNonMenuItems.forEach((item) => {
     html += `
             <div class="bold">
-                ${item.quantity}x ${item.productName} ${item.variantId ? "-" : ""} ${item.variantName && item.variantId ? `(${item.variantName})` : ""}
+                ${item.quantity}x ${item.productName}
             </div>
+            ${
+              item.variantName && item.variantId
+                ? `<div class="sub-item bold">${item.variantName}</div>`
+                : ""
+            }
         `;
     item.complements.forEach((comp) => {
       html += `
@@ -494,6 +545,7 @@ export const generateItemsReceiptHTML = (
                 </div>
                 `;
     });
+    html += `<div style="margin-bottom: 8px;"></div>`;
   });
 
   html += `

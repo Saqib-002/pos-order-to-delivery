@@ -127,7 +127,7 @@ const HistoryModal = ({ customer, onClose }: HistoryModalProps) => {
       }
 
       const { orderTotal } = calculateOrderTotal(convertedItems);
-      const { status } = calculatePaymentStatus(
+      const paymentStatus = calculatePaymentStatus(
         order.paymentType || "",
         orderTotal
       );
@@ -169,18 +169,20 @@ const HistoryModal = ({ customer, onClose }: HistoryModalProps) => {
           const customerName = order?.customer?.name;
 
           const receiptHTML = generateReceiptHTML(
-            items,
+            convertedItems, 
             configs,
             order.orderId,
             order.orderType,
             user?.role || "",
-            status,
+            paymentStatus.status,
             t,
             customerAddress,
             formattedPickupTime,
             customerPhone,
             customerName,
-            user?.name
+            user?.name,
+            order.notes,
+            paymentStatus.totalPaid
           );
 
           if (!receiptHTML) {

@@ -2248,6 +2248,7 @@
   },
   "receipt": {
     "date": "Date",
+    "clientDetails": "CLIENT DETAILS",
     "order": "Order",
     "payment": "Payment",
     "servedBy": "Served By",
@@ -2269,7 +2270,10 @@
     "paymentStatus": {
       "unpaid": "UNPAID",
       "paid": "PAID",
-      "PARTIAL": "PARTIAL"
+      "PARTIAL": "PARTIAL",
+      "paidLabel": "PAYMENT PAID",
+      "unpaidLabel": "PAYMENT PENDING",
+      "partialLabel": "PARTIAL PAYMENT"
     },
     "orderType": {
       "dineIn": "DINE IN",

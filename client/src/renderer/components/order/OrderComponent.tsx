@@ -106,7 +106,7 @@ const OrderComponent = () => {
 
       // Calculate payment status
       const { orderTotal } = calculateOrderTotal(orderItems);
-      const { status } = calculatePaymentStatus(
+      const paymentStatus = calculatePaymentStatus(
         orderData.paymentType || "",
         orderTotal
       );
@@ -185,19 +185,20 @@ const OrderComponent = () => {
           const customerName = orderData.customerName || order?.customer?.name;
 
           receiptHTML = generateReceiptHTML(
-            items,
+            orderItems,
             configs,
             order!.orderId,
             orderData.orderType,
             user!.role,
-            status,
+            paymentStatus.status,
             t,
             customerAddress,
             formattedPickupTime,
             customerPhone,
             customerName,
             user!.name,
-            orderData.notes
+            orderData.notes,
+            paymentStatus.totalPaid
           );
         } else {
           const unprintedItems = items.filter(

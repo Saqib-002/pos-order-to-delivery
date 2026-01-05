@@ -2250,6 +2250,7 @@
   },
   "receipt": {
     "date": "Fecha",
+    "clientDetails": "DATOS CLIENTE",
     "order": "Pedido",
     "payment": "Pago",
     "servedBy": "Atendido Por",
@@ -2271,7 +2272,10 @@
     "paymentStatus": {
       "unpaid": "NO PAGADO",
       "paid": "PAGADO",
-      "PARTIAL": "PARCIAL"
+      "PARTIAL": "PARCIAL",
+      "paidLabel": "PAGO REALIZADO",
+      "unpaidLabel": "PAGO PENDIENTE",
+      "partialLabel": "PAGO PARCIAL"
     },
     "orderType": {
       "dineIn": "EN RESTAURANTE",

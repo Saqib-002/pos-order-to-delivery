@@ -236,7 +236,7 @@ export const ManageOrdersView = () => {
       }
 
       const { orderTotal } = calculateOrderTotal(order.items || []);
-      const { status } = calculatePaymentStatus(
+      const paymentStatus = calculatePaymentStatus(
         order.paymentType || "",
         orderTotal
       );
@@ -280,18 +280,20 @@ export const ManageOrdersView = () => {
           const customerName = order?.customer?.name;
 
           const receiptHTML = generateReceiptHTML(
-            items,
+            order.items || [], 
             configs,
             order.orderId,
             order.orderType,
             user?.role || "",
-            status,
+            paymentStatus.status,
             t,
             customerAddress,
             formattedPickupTime,
             customerPhone,
             customerName,
-            user?.name
+            user?.name,
+            order.notes,
+            paymentStatus.totalPaid
           );
 
           if (!receiptHTML) {
