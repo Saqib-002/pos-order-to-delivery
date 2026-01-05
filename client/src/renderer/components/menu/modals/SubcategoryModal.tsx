@@ -46,14 +46,14 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
     name: "",
     color: "red",
     categoryId: "",
-    imgUrl: "", // Add this
+    imgUrl: "",
+    priority: 0,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null); // Add ref for file input
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Get color classes for selection ring
   const getColorClasses = (color: string, isSelected: boolean) => {
-    // ... (no change in this function)
     if (!isSelected) {
       return "border-gray-200 hover:border-gray-300";
     }
@@ -77,7 +77,6 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
 
   // Get category options for CustomSelect
   const getCategoryOptions = () => {
-    // ... (no change in this function)
     return [
       {
         value: "",
@@ -96,14 +95,16 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
         name: editingSubcategory.name,
         color: editingSubcategory.color,
         categoryId: editingSubcategory.categoryId,
-        imgUrl: editingSubcategory.imgUrl || "", // Set imgUrl
+        imgUrl: editingSubcategory.imgUrl || "",
+        priority: (editingSubcategory as any).priority || 0,
       });
     } else {
       setFormData({
         name: "",
         color: "red",
         categoryId: "",
-        imgUrl: "", // Reset imgUrl
+        imgUrl: "",
+        priority: 0,
       });
     }
   }, [editingSubcategory, categories, isOpen]);
@@ -276,6 +277,18 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                 "menuComponents.modals.subcategoryModal.selectCategory"
               )}
               portalClassName="subcategory-category-dropdown-portal"
+            />
+          </div>
+
+          <div className="mb-4">
+            <CustomInput
+              label={t("menuComponents.common.priority")}
+              name="priority"
+              type="number"
+              value={formData.priority}
+              onChange={(e) =>
+                setFormData({ ...formData, priority: parseInt(e.target.value) || 0 })
+              }
             />
           </div>
 

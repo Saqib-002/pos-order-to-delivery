@@ -43,6 +43,7 @@ export interface Product extends BaseMenuEntity {
   isForMenu?: boolean;
   image?: string;
   printerIds?: string[];
+  subCategoryName?: string;
   type: "product";
   isOutOfStock?: boolean;
 }

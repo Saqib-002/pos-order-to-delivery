@@ -83,7 +83,7 @@ export class ProductsDatabaseOperations {
                     "sub_categories.id"
                 )
                 .where("products.name", "!=", "250f812e66c1afab64c57bcea36bb3b7")
-                .select("products.*", "sub_categories.categoryId")
+                .select("products.*", "sub_categories.categoryId", "sub_categories.name as subcategoryName", "sub_categories.priority as subcategoryPriority")
                 .orderBy("products.priority", "asc");
             const products = await query;
             return products.map((p: any) => ({
@@ -105,7 +105,7 @@ export class ProductsDatabaseOperations {
                 )
                 .where("products.subcategoryId", subcatId)
                 .andWhere("products.name", "!=", "250f812e66c1afab64c57bcea36bb3b7")
-                .select("products.*", "sub_categories.categoryId")
+                .select("products.*", "sub_categories.categoryId", "sub_categories.name as subcategoryName", "sub_categories.priority as subcategoryPriority")
                 .orderBy("products.priority", "asc");
             if (isForOrder) {
                 query = query.andWhere("products.isAvailable", true);

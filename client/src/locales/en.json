@@ -2256,6 +2256,7 @@
     "name": "Name",
     "subtotal": "Subtotal",
     "total": "TOTAL",
+    "remaining": "Remaining",
     "vat": "VAT",
     "base": "Base",
     "tax": "Tax",
@@ -2279,6 +2280,10 @@
       "dineIn": "DINE IN",
       "pickup": "PICKUP",
       "delivery": "DELIVERY"
+    },
+    "category": {
+      "menus": "MENUS",
+      "others": "Others"
     }
   },
   "menuOrderTakingForm": {

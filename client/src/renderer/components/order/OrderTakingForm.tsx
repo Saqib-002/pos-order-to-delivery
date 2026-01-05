@@ -47,6 +47,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
     mode,
     editingProduct,
     setEditingProduct,
+    selectedMenu,
     editOrderItem,
   } = useOrder();
   const [variantItems, setVariantItems] = useState<any[] | null>(null);
@@ -312,6 +313,8 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         }),
         supplement: currentOrderItem.supplement,
         menuSecondaryId: currentOrderItem.menuSecondaryId,
+        subCategoryName: (selectedMenu as any).subcategoryName || (selectedProduct as any).subcategoryName,
+        subCategoryPriority: (selectedMenu as any).subcategoryPriority ?? (selectedProduct as any).subcategoryPriority,
       };
 
       const stagedItem: OrderItem = {
@@ -373,6 +376,8 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       complements,
       quantity,
       totalPrice: calculateTotalPrice(),
+      subCategoryName: (selectedProduct as any).subcategoryName,
+      subCategoryPriority: (selectedProduct as any).subcategoryPriority,
     };
     const newComplement = ComplementsToString(orderItem.complements);
     if (editingProduct) {

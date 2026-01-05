@@ -224,117 +224,192 @@ export const generateReceiptHTML = (
                         <th colspan="2" class="bold">${t("receipt.name")}</th>
                         <th class="right bold">EUR</th>
                     </tr>
-                    <tr style="height: 8px;"><td colspan="3"></td></tr>
                 </thead>
                 <tbody>
     `;
 
-  sortedGroups.forEach((group) => {
-    const sectionQty = group.items[0]?.quantity || 1;
-    const menuPrice = group.basePrice;
-    const menuTax = group.taxPerUnit;
-    const supplementTotal = group.supplementTotal;
+  // --- Start of Grouping and Sorting Logic ---
+  const categorizedGroups: Array<{
+    name: string;
+    priority: number;
+    isMenu: boolean;
+    data: any;
+  }> = [];
 
-    const menuGroupPrice = (menuPrice + menuTax + supplementTotal) * sectionQty;
-    const variantsAndComplementsTotal = group.items.reduce(
-      (itemTotal, item) => {
-        const complementsTotal = Array.isArray(item.complements)
-          ? item.complements.reduce(
-              (sum, complement) => sum + complement.price,
-              0
-            )
-          : 0;
-        return (
-          itemTotal +
-          ((item.variantPrice || 0) + complementsTotal) * item.quantity
-        );
-      },
-      0
-    );
+  const menuSubcategoryMap: Record<string, { priority: number; groups: any[] }> = {};
+  groups.forEach((group) => {
+    const firstItem = group.items[0];
+    const catName = firstItem?.subCategoryName || "";
+    const catPriority = firstItem?.subCategoryPriority ?? -1;
+    const menuHeader = `${t("receipt.category.menus")}${catName ? ` / ${catName}` : ""}`;
+    
+    if (!menuSubcategoryMap[menuHeader]) {
+      menuSubcategoryMap[menuHeader] = {
+        priority: catPriority,
+        groups: [],
+      };
+    }
+    menuSubcategoryMap[menuHeader].groups.push({
+      ...group,
+      items: group.items.sort(prioritySort),
+    });
+  });
 
-    const totalGroupPrice = menuGroupPrice + variantsAndComplementsTotal;
+  Object.entries(menuSubcategoryMap).forEach(([name, info]) => {
+    categorizedGroups.push({
+      name,
+      priority: info.priority,
+      isMenu: true,
+      data: info.groups,
+    });
+  });
 
-    html += `
+  const subcategoryMap: Record<
+    string,
+    { priority: number; items: OrderItem[] }
+  > = {};
+  nonMenuItems.forEach((item) => {
+    const catName = item.subCategoryName || "";
+    const catPriority = item.subCategoryPriority ?? 999;
+
+    if (!subcategoryMap[catName]) {
+      subcategoryMap[catName] = {
+        priority: catPriority,
+        items: [],
+      };
+    }
+    subcategoryMap[catName].items.push(item);
+  });
+
+  Object.entries(subcategoryMap).forEach(([name, info]) => {
+    categorizedGroups.push({
+      name,
+      priority: info.priority,
+      isMenu: false,
+      data: info.items.sort(prioritySort),
+    });
+  });
+
+  categorizedGroups.sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    return a.name.localeCompare(b.name);
+  });
+
+  categorizedGroups.forEach((category) => {
+    if (category.name) {
+      html += `
+                <tr class="bold">
+                    <td colspan="3" style="padding: 10px 0 5px 0; text-transform: uppercase; font-size: 14px;">${category.name}</td>
+                </tr>
+      `;
+    }
+
+    if (category.isMenu) {
+      (category.data as any[]).forEach((group) => {
+        const sectionQty = group.items[0]?.quantity || 1;
+        const menuPrice = group.basePrice;
+        const menuTax = group.taxPerUnit;
+        const supplementTotal = group.supplementTotal;
+        const menuGroupPrice = (menuPrice + menuTax + supplementTotal) * sectionQty;
+        
+        const variantsAndComplementsTotal = group.items.reduce(
+          (itemTotal: number, item: any) => {
+            const complementsTotal = Array.isArray(item.complements)
+              ? item.complements.reduce(
+                  (sum: number, complement: any) => sum + complement.price,
+                  0
+                )
+              : 0;
+          return itemTotal + ((item.variantPrice || 0) + complementsTotal) * item.quantity;
+        }, 0);
+
+        const totalGroupPrice = menuGroupPrice + variantsAndComplementsTotal;
+
+        html += `
                 <tr class="bold">
                     <td class="item-qty">${sectionQty} X</td>
                     <td class="item-name">${group.menuName}</td>
                     <td class="item-total">${totalGroupPrice.toFixed(2)}</td>
                 </tr>
         `;
-    group.items.forEach((item) => {
-      html += `
+
+        group.items.forEach((item: OrderItem) => {
+          html += `
                 <tr>
                     <td class="item-qty"></td>
                     <td class="item-name sub-item">• ${item.productName}</td>
                     <td class="item-total">${item.supplement && item.supplement > 0 ? item.supplement.toFixed(2) : ""}</td>
                 </tr>
-                ${
-                  item.variantName && item.variantId
-                    ? `<tr>
+          `;
+
+          if (item.variantId && item.variantName) {
+            html += `
+                <tr>
                     <td class="item-qty"></td>
                     <td class="item-name sub-item indent">${item.variantName}</td>
                     <td class="item-total">${item.variantPrice && item.variantPrice > 0 ? item.variantPrice.toFixed(2) : ""}</td>
-                </tr>`
-                    : ""
-                }
+                </tr>
             `;
-      item.complements.forEach((comp) => {
-        html += `
-                     <tr>
-                         <td class="item-qty"></td>
-                         <td class="item-name sub-item indent">+ ${comp.itemName}</td>
-                         <td class="item-total">${comp.price.toFixed(2)}</td>
-                     </tr>
-                 `;
+          }
+
+          if (Array.isArray(item.complements) && item.complements.length > 0) {
+            item.complements.forEach((comp) => {
+              html += `
+                <tr>
+                    <td class="item-qty"></td>
+                    <td class="item-name sub-item indent">+ ${comp.itemName}</td>
+                    <td class="item-total">${comp.price.toFixed(2)}</td>
+                </tr>
+              `;
+            });
+          }
+        });
+        html += `<tr style="height: 8px;"><td colspan="3"></td></tr>`;
       });
-    });
-    html += `<tr style="height: 8px;"><td colspan="3"></td></tr>`;
-  });
+    } else {
+      (category.data as OrderItem[]).forEach((item) => {
+        const complementsTotal = Array.isArray(item.complements)
+          ? item.complements.reduce((sum, complement) => sum + complement.price, 0)
+          : 0;
 
-  sortedNonMenuItems.forEach((item) => {
-    const complementsTotal = Array.isArray(item.complements)
-      ? item.complements.reduce(
-          (complementSum, complement) => complementSum + complement.price,
-          0
-        )
-      : 0;
+        const subtotal = item.productPrice + item.productTax + item.variantPrice + complementsTotal;
+        const discountAmount = (subtotal * item.productDiscount) / 100;
+        const itemTotal = (subtotal - discountAmount) * item.quantity;
 
-    const subtotal =
-      item.productPrice +
-      item.productTax +
-      item.variantPrice +
-      complementsTotal;
-    const discountAmount = (subtotal * item.productDiscount) / 100;
-    const itemTotal = (subtotal - discountAmount) * item.quantity;
-
-    const unitPrice = item.productPrice + item.productTax;
-    html += `
-            <tr class="bold">
-                <td class="item-qty">${item.quantity} X</td>
-                <td class="item-name">${item.productName}</td>
-                <td class="item-total">${itemTotal.toFixed(2)}</td>
-            </tr>
+        html += `
+                <tr class="bold">
+                    <td class="item-qty">${item.quantity} X</td>
+                    <td class="item-name">${item.productName}</td>
+                    <td class="item-total">${itemTotal.toFixed(2)}</td>
+                </tr>
         `;
-    if (item.variantName && item.variantId) {
-      html += `
-            <tr>
-                <td class="item-qty"></td>
-                <td class="item-name sub-item">${item.variantName}</td>
-                <td class="item-total">${item.variantPrice > 0 ? item.variantPrice.toFixed(2) : ""}</td>
-            </tr>
-        `;
+
+        if (item.variantId && item.variantName) {
+          html += `
+                <tr>
+                    <td class="item-qty"></td>
+                    <td class="item-name sub-item">${item.variantName}</td>
+                    <td class="item-total">${item.variantPrice > 0 ? item.variantPrice.toFixed(2) : ""}</td>
+                </tr>
+          `;
+        }
+
+        if (Array.isArray(item.complements) && item.complements.length > 0) {
+          item.complements.forEach((comp) => {
+            html += `
+                <tr>
+                    <td class="item-qty"></td>
+                    <td class="item-name sub-item indent">+ ${comp.itemName}</td>
+                    <td class="item-total">${comp.price.toFixed(2)}</td>
+                </tr>
+            `;
+          });
+        }
+        html += `<tr style="height: 8px;"><td colspan="3"></td></tr>`;
+      });
     }
-    item.complements.forEach((comp) => {
-      html += `
-                 <tr>
-                     <td class="item-qty"></td>
-                     <td class="item-name sub-item indent">+ ${comp.itemName}</td>
-                     <td class="item-total">${comp.price.toFixed(2)}</td>
-                 </tr>
-             `;
-    });
-    html += `<tr style="height: 8px;"><td colspan="3"></td></tr>`;
   });
+  // --- End of Grouping and Sorting Logic ---
 
   html += `
                 </tbody>
@@ -343,10 +418,6 @@ export const generateReceiptHTML = (
             <div class="dashed-line"></div>
 
             <div class="total-section">
-                <div class="total-row">
-                    <span>${t("receipt.subtotal")}</span>
-                    <span>${orderTotal.toFixed(2)}</span>
-                </div>
                 <div class="total-row bold main-total">
                     <span>${t("receipt.total")}</span>
                     <span>${orderTotal.toFixed(2)}</span>
@@ -355,6 +426,12 @@ export const generateReceiptHTML = (
                     <span>${t("receipt.payment")}:</span>
                     <span>${displayPaid.toFixed(2)}</span>
                 </div>
+                ${rawStatus === "PARTIAL" ? `
+                <div class="total-row">
+                    <span>${t("receipt.remaining")}:</span>
+                    <span>${(orderTotal - displayPaid).toFixed(2)}</span>
+                </div>
+                ` : ""}
             </div>
             
             <div class="center bold footer-header">
@@ -420,11 +497,6 @@ export const generateItemsReceiptHTML = (
   const prioritySort = (a: OrderItem, b: OrderItem) =>
     (a.productPriority || 0) - (b.productPriority || 0);
 
-  const sortedNonMenuItems = nonMenuItems.sort(prioritySort);
-  const sortedGroups = groups.map((group) => ({
-    ...group,
-    items: group.items.sort(prioritySort),
-  }));
   switch (status.toUpperCase()) {
     case "PAID":
       status = t("receipt.paymentStatus.paid");
@@ -497,56 +569,131 @@ export const generateItemsReceiptHTML = (
         <div>
     `;
 
-  // Menu groups - MODIFIED to use sortedGroups
-  sortedGroups.forEach((group) => {
-    const sectionQty = group.items[0]?.quantity || 1;
-    html += `
-            <div class="name-col bold">${sectionQty}x ${group.menuName}</div>
-        `;
-    group.items.forEach((item) => {
-      const supplementText = item.supplement && item.supplement > 0 ? ` (+${item.supplement.toFixed(2)})` : "";
-      html += `
-            <div class="sub-item bold">
-            ${item.quantity}x ${item.productName}${supplementText}
-            </div>
-            ${
-              item.variantName && item.variantId
-                ? `<div class="indent bold">${item.variantName}</div>`
-                : ""
-            }
-            `;
-      item.complements.forEach((comp) => {
-        html += `
-                <div class="indent">
-                ${comp.itemName}
-                </div>
-                `;
-      });
+  // --- Start of Grouping and Sorting Logic ---
+  const categorizedGroups: Array<{
+    name: string;
+    priority: number;
+    isMenu: boolean;
+    data: any;
+  }> = [];
+
+  const menuSubcategoryMap: Record<string, { priority: number; groups: any[] }> = {};
+  groups.forEach((group) => {
+    const firstItem = group.items[0];
+    const catName = firstItem?.subCategoryName || "";
+    const catPriority = firstItem?.subCategoryPriority ?? -1;
+    const menuHeader = `${t("receipt.category.menus")}${catName ? ` / ${catName}` : ""}`;
+    
+    if (!menuSubcategoryMap[menuHeader]) {
+      menuSubcategoryMap[menuHeader] = {
+        priority: catPriority,
+        groups: [],
+      };
+    }
+    menuSubcategoryMap[menuHeader].groups.push({
+      ...group,
+      items: group.items.sort(prioritySort),
     });
-    html += `<div style="margin-bottom: 8px;"></div>`;
   });
 
-  // Non-menu items - MODIFIED to use sortedNonMenuItems
-  sortedNonMenuItems.forEach((item) => {
-    html += `
-            <div class="bold">
-                ${item.quantity}x ${item.productName}
-            </div>
-            ${
-              item.variantName && item.variantId
-                ? `<div class="sub-item bold">${item.variantName}</div>`
-                : ""
-            }
-        `;
-    item.complements.forEach((comp) => {
-      html += `
-                <div class="sub-item bold">
-                 ${comp.itemName}
-                </div>
-                `;
+  Object.entries(menuSubcategoryMap).forEach(([name, info]) => {
+    categorizedGroups.push({
+      name,
+      priority: info.priority,
+      isMenu: true,
+      data: info.groups,
     });
-    html += `<div style="margin-bottom: 8px;"></div>`;
   });
+
+  const subcategoryMap: Record<
+    string,
+    { priority: number; items: OrderItem[] }
+  > = {};
+  nonMenuItems.forEach((item) => {
+    const catName = item.subCategoryName || "";
+    const catPriority = item.subCategoryPriority ?? 999;
+
+    if (!subcategoryMap[catName]) {
+      subcategoryMap[catName] = {
+        priority: catPriority,
+        items: [],
+      };
+    }
+    subcategoryMap[catName].items.push(item);
+  });
+
+  Object.entries(subcategoryMap).forEach(([name, info]) => {
+    categorizedGroups.push({
+      name,
+      priority: info.priority,
+      isMenu: false,
+      data: info.items.sort(prioritySort),
+    });
+  });
+
+  categorizedGroups.sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    return a.name.localeCompare(b.name);
+  });
+
+  categorizedGroups.forEach((category) => {
+    if (category.name) {
+      html += `
+            <div style="border-bottom: 1px solid #000; padding: 5px 0; margin-top: 10px; font-weight: bold; font-size: 14px; text-transform: uppercase;">
+                ${category.name}
+            </div>
+      `;
+    }
+
+    if (category.isMenu) {
+      (category.data as any[]).forEach((group) => {
+        const sectionQty = group.items[0]?.quantity || 1;
+        html += `
+                <div class="name-col bold" style="margin-top: 5px;">${sectionQty}x ${group.menuName}</div>
+        `;
+        group.items.forEach((item: OrderItem) => {
+          const supplementText =
+            item.supplement && item.supplement > 0
+              ? ` (+${item.supplement.toFixed(2)})`
+              : "";
+          html += `
+                <div class="sub-item bold">
+                • ${item.quantity}x ${item.productName}${supplementText}
+                </div>
+                ${
+                  item.variantName && item.variantId
+                    ? `<div class="indent bold">- ${item.variantName}</div>`
+                    : ""
+                }
+          `;
+          item.complements.forEach((comp) => {
+            html += `
+                <div class="indent">+ ${comp.itemName}</div>
+            `;
+          });
+        });
+      });
+    } else {
+      (category.data as OrderItem[]).forEach((item) => {
+        html += `
+                <div class="bold" style="margin-top: 5px;">
+                    ${item.quantity}x ${item.productName}
+                </div>
+                ${
+                  item.variantName && item.variantId
+                    ? `<div class="sub-item bold">- ${item.variantName}</div>`
+                    : ""
+                }
+        `;
+        item.complements.forEach((comp) => {
+          html += `
+                <div class="sub-item bold">+ ${comp.itemName}</div>
+          `;
+        });
+      });
+    }
+  });
+  // --- End of Grouping and Sorting Logic ---
 
   html += `
         </div>

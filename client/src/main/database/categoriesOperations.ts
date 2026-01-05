@@ -135,7 +135,7 @@ export class SubCategoriesOperations {
                         '(SELECT COUNT(*) FROM menus WHERE "subcategoryId" = sub_categories.id) as "menuCount"'
                     )
                 )
-                .orderBy("name", "asc");
+                .orderBy("priority", "asc");
             const subCategories = await query;
             const uploadUrl = (store as any).get("cdnUrl");
             return subCategories.map((s) => {

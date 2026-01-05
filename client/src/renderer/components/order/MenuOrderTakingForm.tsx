@@ -259,6 +259,8 @@ const MenuOrderTakingForm = ({
       menuPageName: currentMenuPage.name,
       supplement: product.supplement,
       menuSecondaryId: editingGroup?.secondaryId || maxSecondaryId + 1,
+      subCategoryName: (selectedMenu as any).subcategoryName,
+      subCategoryPriority: (selectedMenu as any).subcategoryPriority,
     });
     setMode("menu");
   };

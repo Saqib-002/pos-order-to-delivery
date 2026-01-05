@@ -2258,6 +2258,7 @@
     "name": "Nombre",
     "subtotal": "Subtotal",
     "total": "TOTAL",
+    "remaining": "Pendiente",
     "vat": "IVA",
     "base": "Base",
     "tax": "Impuesto",
@@ -2281,6 +2282,10 @@
       "dineIn": "EN RESTAURANTE",
       "pickup": "RECOGER",
       "delivery": "A DOMICILIO"
+    },
+    "category": {
+      "menus": "MENUS",
+      "others": "Others"
     }
   },
   "menuOrderTakingForm": {

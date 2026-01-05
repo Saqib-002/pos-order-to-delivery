@@ -31,6 +31,8 @@ export interface OrderItem {
   menuPageId?: string;
   menuPageName?: string;
   supplement?: number;
+  subCategoryName?: string;
+  subCategoryPriority?: number;
   isKitchenPrinted?: boolean;
 }
 export interface Customer {
