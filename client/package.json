@@ -5,7 +5,7 @@
   "productName": "ThunderJaw Restaurant POS",
   "appId": "com.thunderjaw.restaurant-pos",
   "author": "ThunderJaw <usmanimran158@gmail.com>",
-  "copyright": "Copyright 2025 ThunderJaw",
+  "copyright": "Copyright 2026 ThunderJaw",
   "description": "ThunderJaw Restaurant POS contains order management, kitchen management, delivery management, delivery staff, worker staff & salaries, inventory management, billing management, market purchasing, detailed reporting, expense management, payment management and more.",
   "main": "dist-electron/main/index.js",
   "build": {

@@ -108,16 +108,16 @@ export const generateReceiptHTML = (
       break;
   }
 
-  const orderTypeLabel = orderType?.toUpperCase() || "";
+  let orderTypeLabel = orderType?.toUpperCase() || "";
   switch (orderType?.toUpperCase()) {
     case "DELIVERY":
-      orderType = t("receipt.orderType.delivery");
+      orderTypeLabel = t("receipt.orderType.delivery");
       break;
     case "PICKUP":
-      orderType = t("receipt.orderType.pickup");
+      orderTypeLabel = t("receipt.orderType.pickup");
       break;
     case "DINE-IN":
-      orderType = t("receipt.orderType.dineIn");
+      orderTypeLabel = t("receipt.orderType.dineIn");
       break;
   }
 
