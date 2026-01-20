@@ -1,15 +1,32 @@
 {
-  "name": "pos-order-to-delivery",
+  "name": "thunderjaw-restaurant-pos",
   "version": "1.0.0",
   "type": "module",
-  "description": "Hello World!",
+  "productName": "ThunderJaw Restaurant POS",
+  "appId": "com.thunderjaw.restaurant-pos",
+  "author": "ThunderJaw <usmanimran158@gmail.com>",
+  "copyright": "Copyright 2025 ThunderJaw",
+  "description": "ThunderJaw Restaurant POS contains order management, kitchen management, delivery management, delivery staff, worker staff & salaries, inventory management, billing management, market purchasing, detailed reporting, expense management, payment management and more.",
   "main": "dist-electron/main/index.js",
   "build": {
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "include": "build/installer.nsh"
-    }
+      "include": "build/installer.nsh",
+      "installerIcon": "build/icons/icon.ico",
+      "uninstallerIcon": "build/icons/icon.ico",
+      "installerHeaderIcon": "build/icons/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ThunderJaw POS"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icons/icon.ico",
+      "publisherName": "ThunderJaw"
+    },
+    "appId": "com.thunderjaw.restaurant-pos",
+    "productName": "ThunderJaw Restaurant POS"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -31,7 +48,6 @@
     "db:reset": "knex migrate:rollback --all && knex migrate:latest && knex seed:run"
   },
   "keywords": [],
-  "author": "Saqib",
   "license": "ISC",
   "devDependencies": {
     "@electron-forge/cli": "^7.8.3",

@@ -7,6 +7,8 @@ module.exports = {
     packagerConfig: {
         asar: true,
         extraResource: [".env", "migrations"],
+        icon: "build/icons/icon",
+        name: "ThunderJaw Restaurant POS",
     },
     rebuildConfig: {
         force: true,
@@ -19,6 +21,10 @@ module.exports = {
                 nsis:{
                     oneClick: false,
                     allowToChangeInstallationDirectory: true,
+                    installerIcon: "build/icons/icon.ico",
+                    uninstallerIcon: "build/icons/icon.ico",
+                    installerHeaderIcon: "build/icons/icon.ico",
+                    shortcutName: "ThunderJaw POS",
                 }
             },
             platforms: ["win32"],
