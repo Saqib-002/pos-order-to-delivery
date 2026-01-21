@@ -1244,6 +1244,7 @@
       "contact": "Contact",
       "address": "Address",
       "items": "Items",
+      "amount": "Amount",
       "readySince": "Ready Since",
       "driver": "Driver",
       "actions": "Actions",
@@ -1274,12 +1275,18 @@
       "ordersInKitchen": "Orders in Kitchen",
       "highPriority": "High Priority",
       "avgPrepTime": "Avg Prep Time",
-      "avgPrepTimeValue": "~25 min"
+      "avgPrepTimeValue": "~25 min",
+      "activeOrdersByType": "Active Orders by Type",
+      "delivery": "Delivery",
+      "pickup": "Pickup",
+      "dineIn": "Dine In",
+      "platform": "Platform"
     },
     "table": {
       "priority": "Priority",
       "orderId": "Order ID",
       "customer": "Customer",
+      "orderType": "Order Type",
       "items": "Items",
       "timeInKitchen": "Time in Kitchen",
       "actions": "Actions",

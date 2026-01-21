@@ -1246,6 +1246,7 @@
       "contact": "Contacto",
       "address": "Dirección",
       "items": "Artículos",
+      "amount": "Monto",
       "readySince": "Listo Desde",
       "driver": "Conductor",
       "actions": "Acciones",
@@ -1276,12 +1277,18 @@
       "ordersInKitchen": "Pedidos en Cocina",
       "highPriority": "Alta Prioridad",
       "avgPrepTime": "Tiempo Promedio de Prep",
-      "avgPrepTimeValue": "~25 min"
+      "avgPrepTimeValue": "~25 min",
+      "activeOrdersByType": "Pedidos Activos por Tipo",
+      "delivery": "A Domicilio",
+      "pickup": "Recoger",
+      "dineIn": "Comer aquí",
+      "platform": "Plataforma"
     },
     "table": {
       "priority": "Prioridad",
       "orderId": "ID del Pedido",
       "customer": "Cliente",
+      "orderType": "Tipo de Pedido",
       "items": "Artículos",
       "timeInKitchen": "Tiempo en Cocina",
       "actions": "Acciones",

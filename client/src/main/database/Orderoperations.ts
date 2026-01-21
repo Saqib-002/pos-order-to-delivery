@@ -871,6 +871,27 @@ export class OrderDatabaseOperations {
     }
   }
 
+  static async getOrdersCountByType(status: string): Promise<Record<string, number>> {
+    try {
+      const results = await db("orders")
+        .whereRaw(`LOWER("status") = LOWER(?)`, [status])
+        .select("orderType")
+        .count("* as count")
+        .groupBy("orderType");
+
+      const counts: Record<string, number> = {};
+      results.forEach((row: any) => {
+        counts[row.orderType || "unknown"] = parseInt(
+          row.count?.toString() || "0"
+        );
+      });
+      return counts;
+    } catch (error) {
+      console.error("Error getting orders count by type:", error);
+      return {};
+    }
+  }
+
   static async getOrdersByFilter(
     filter: FilterType
   ): Promise<{ orders: Order[]; totalCount: number }> {

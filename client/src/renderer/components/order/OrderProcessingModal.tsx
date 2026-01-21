@@ -17,12 +17,16 @@ import { calculateDistance } from "@/renderer/utils/googleMaps";
 import { useTranslation } from "react-i18next";
 import {
   AddIcon,
+  AnalyticsIcon,
+  CarIcon,
   CashIcon,
   CheckIcon,
   CrossIcon,
+  DeliveredIcon,
   DocumentIcon,
   LocationFilledIcon,
   LocationIcon,
+  PersonIcon,
   SearchIcon,
 } from "@/renderer/public/Svg";
 import CustomInput from "../shared/CustomInput";
@@ -46,27 +50,39 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const { auth } = useAuth();
   const { configurations } = useConfigurations();
   const [sentToKitchenCount, setSentToKitchenCount] = useState(0);
+  const [typeCounts, setTypeCounts] = useState<Record<string, number>>({});
   const [customerSearch, setCustomerSearch] = useState("");
   const [orderType, setOrderType] = useState<"delivery" | "pickup" | "dine-in">(
     "delivery"
   );
 
   useEffect(() => {
-    const fetchSentToKitchenCount = async () => {
+    const fetchData = async () => {
       try {
-        const response = await (
-          window as any
-        ).electronAPI.getOrdersCountByStatus(auth?.token, "sent to kitchen");
-        if (response.status) {
-          setSentToKitchenCount(response.data);
+        const [statusRes, typeRes] = await Promise.all([
+          (window as any).electronAPI.getOrdersCountByStatus(
+            auth?.token,
+            "sent to kitchen"
+          ),
+          (window as any).electronAPI.getOrdersCountByType(
+            auth?.token,
+            "sent to kitchen"
+          ),
+        ]);
+
+        if (statusRes.status) {
+          setSentToKitchenCount(statusRes.data);
+        }
+        if (typeRes.status) {
+          setTypeCounts(typeRes.data);
         }
       } catch (error) {
-        console.error("Error fetching sent to kitchen count:", error);
+        console.error("Error fetching kitchen counts:", error);
       }
     };
 
     if (auth?.token) {
-      fetchSentToKitchenCount();
+      fetchData();
     }
   }, [auth?.token]);
 
@@ -117,9 +133,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [customerDistance, setCustomerDistance] = useState<number | null>(null);
-  const {
-    auth: { token },
-  } = useAuth();
 
   useEffect(() => {
     setCustomerSearch(order?.customer?.name || "");
@@ -160,11 +173,11 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const { orderTotal, nonMenuItems, groups } = calculateOrderTotal(orderItems);
 
   const searchCustomers = async (searchTerm: string) => {
-    if (!searchTerm.trim() || !token) return;
+    if (!searchTerm.trim() || !auth?.token) return;
     setIsSearching(true);
     try {
       const result = await (window as any).electronAPI.getCustomersByPhone(
-        token,
+        auth.token,
         searchTerm
       );
       if (result.status) {
@@ -212,7 +225,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [customerSearch, token]);
+  }, [customerSearch, auth?.token]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -454,7 +467,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col">
-        <div className="relative bg-gradient-to-r from-black to-gray-800 text-white p-6">
+        <div className="relative bg-gradient-to-r from-black to-gray-800 text-white p-7">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -480,10 +493,9 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             </button>
           </div>
 
-          {/* Centered status line */}
-          {(sentToKitchenCount > 0) && (
-            <div className="absolute inset-x-0 top-8 w-fit left-1/2 -translate-x-1/2 flex justify-center">
-              <p className="text-white text-xs bg-black/30 px-4 py-2 rounded-full backdrop-blur-sm border border-white/20 shadow-lg">
+          {sentToKitchenCount > 0 && (
+            <div className="absolute inset-x-0 top-8 w-fit left-1/2 -translate-x-1/2 flex flex-col items-center">
+              <p className="text-white text-xs bg-black/30 px-4 py-2 rounded-full backdrop-blur-sm border border-white/20 shadow-lg mb-2">
                 {sentToKitchenCount > 0 && estimatedTime > 0
                   ? t("orderProcessingModal.sentToKitchenWithTime", {
                     count: sentToKitchenCount,
@@ -493,6 +505,44 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     count: sentToKitchenCount,
                   })}
               </p>
+              {Object.keys(typeCounts).length > 0 && (
+                <div className="flex gap-2">
+                  {Object.entries(typeCounts).map(([type, count]) => {
+                    const translationKey =
+                      type === "dine-in" ? "dineIn" : type;
+
+                    let Icon = DeliveredIcon;
+                    let color = "text-orange-400";
+                    let bgColor = "bg-orange-500/20";
+
+                    if (type === "pickup") {
+                      Icon = CarIcon;
+                      color = "text-blue-400";
+                      bgColor = "bg-blue-500/20";
+                    } else if (type === "dine-in") {
+                      Icon = PersonIcon;
+                      color = "text-purple-400";
+                      bgColor = "bg-purple-500/20";
+                    } else if (type === "platform") {
+                      Icon = AnalyticsIcon;
+                      color = "text-pink-400";
+                      bgColor = "bg-pink-500/20";
+                    }
+
+                    return (
+                      <span
+                        key={type}
+                        className={`text-[12px] text-white/90 ${bgColor} px-2 py-1 rounded-full border border-white/10 uppercase font-bold flex items-center gap-1.5 backdrop-blur-md shadow-sm`}
+                      >
+                        <Icon className={`size-3 ${color}`} />
+                        <span>
+                          {t(`kitchenView.stats.${translationKey}`)}: {count}
+                        </span>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>

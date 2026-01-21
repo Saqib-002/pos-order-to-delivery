@@ -12,6 +12,7 @@ import { updateOrder } from "../utils/order";
 import { formatAddress } from "../utils/utils";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
+import { calculateOrderTotal } from "../utils/orderCalculations";
 import {
   CheckIcon,
   CircleCheckIcon,
@@ -166,14 +167,14 @@ export const DeliveryView = () => {
       if (!res.status) {
         toast.error(
           res.error ||
-            t("deliveryView.messages.failedToCancelOrder") ||
-            "Failed to cancel order"
+          t("deliveryView.messages.failedToCancelOrder") ||
+          "Failed to cancel order"
         );
         return;
       }
       toast.success(
         t("deliveryView.messages.orderCancelled") ||
-          "Order cancelled successfully"
+        "Order cancelled successfully"
       );
       setIsCancelOrderModalOpen(false);
       setSelectedOrderForCancel(null);
@@ -182,7 +183,7 @@ export const DeliveryView = () => {
       console.error("Error cancelling order:", error);
       toast.error(
         t("deliveryView.messages.failedToCancelOrder") ||
-          "Failed to cancel order"
+        "Failed to cancel order"
       );
     }
   };
@@ -227,13 +228,13 @@ export const DeliveryView = () => {
         if (!res) {
           toast.error(
             t("deliveryView.messages.failedToChangeDeliveryPerson") ||
-              "Failed to change delivery person"
+            "Failed to change delivery person"
           );
           return;
         }
         toast.success(
           t("deliveryView.messages.deliveryPersonChanged") ||
-            "Delivery person changed successfully"
+          "Delivery person changed successfully"
         );
         refreshOrdersCallback();
         setSelectedOrderForChange(null);
@@ -242,7 +243,7 @@ export const DeliveryView = () => {
         console.error("Failed to change delivery person:", error);
         toast.error(
           t("deliveryView.messages.failedToChangeDeliveryPerson") ||
-            "Failed to change delivery person"
+          "Failed to change delivery person"
         );
       }
     },
@@ -345,6 +346,9 @@ export const DeliveryView = () => {
             </div>
           </div>
         </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
+          €{calculateOrderTotal(order.items || []).orderTotal.toFixed(2)}
+        </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-sm text-black font-medium">{readySince}</div>
           <div className="text-xs text-gray-500">
@@ -433,6 +437,9 @@ export const DeliveryView = () => {
             )}
           </div>
         </div>
+      </td>
+      <td className="px-6 py-4 text-sm font-medium text-black">
+        €{calculateOrderTotal(order.items || []).orderTotal.toFixed(2)}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2 min-w-[280px]">
         {/* Hide Delivered and Cancel buttons when in edit mode */}
@@ -576,8 +583,8 @@ export const DeliveryView = () => {
                     {readyOrders.length > 0
                       ? t("deliveryView.descriptions.ordersReadyToAssign")
                       : t(
-                          "deliveryView.descriptions.allOrdersInKitchenOrAssigned"
-                        )}
+                        "deliveryView.descriptions.allOrdersInKitchenOrAssigned"
+                      )}
                   </p>
                 </div>
                 <FilterControls filter={filter} setFilter={setFilter} />
@@ -591,6 +598,7 @@ export const DeliveryView = () => {
                 t("deliveryView.table.contact"),
                 t("deliveryView.table.address"),
                 t("deliveryView.table.items"),
+                t("deliveryView.table.amount"),
                 t("deliveryView.table.readySince"),
                 t("deliveryView.table.actions"),
               ]}
@@ -621,6 +629,7 @@ export const DeliveryView = () => {
                   t("deliveryView.table.address"),
                   t("deliveryView.table.driver"),
                   t("deliveryView.table.items"),
+                  t("deliveryView.table.amount"),
                   t("deliveryView.table.actions"),
                 ]}
                 renderRow={renderOutForDeliveryRow}

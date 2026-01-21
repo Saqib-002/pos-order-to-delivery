@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo, useState } from "react";
+import React, { useEffect, useCallback, useMemo, useState, cloneElement } from "react";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { FilterControls } from "../components/shared/FilterControl.order";
@@ -12,12 +12,20 @@ import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 import {
+  translateOrderType,
+  getOrderTypeStyle,
+} from "../utils/orderStatus";
+import {
   CheckIcon,
   ClipboardIcon,
   ClockIcon,
   EyeIcon,
   LightningBoltIcon,
   SentToKitchenIcon,
+  DeliveredIcon,
+  CarIcon,
+  PersonIcon,
+  AnalyticsIcon,
 } from "../public/Svg";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
 
@@ -110,7 +118,7 @@ export const KitchenView = () => {
       return diffHours > 1;
     }).length;
 
-    return [
+    const primaryStats = [
       {
         title: t("kitchenView.stats.ordersInKitchen"),
         value: orders.length,
@@ -133,6 +141,39 @@ export const KitchenView = () => {
         textColor: "text-green-600",
       },
     ];
+
+    const typeStats = [
+      {
+        title: t("kitchenView.stats.delivery"),
+        value: orders.filter((o) => o.orderType === "delivery").length,
+        icon: <DeliveredIcon className="size-6 text-orange-600" />,
+        bgColor: "bg-orange-100",
+        textColor: "text-orange-600",
+      },
+      {
+        title: t("kitchenView.stats.pickup"),
+        value: orders.filter((o) => o.orderType === "pickup").length,
+        icon: <CarIcon className="size-6 text-blue-600" />,
+        bgColor: "bg-blue-100",
+        textColor: "text-blue-600",
+      },
+      {
+        title: t("kitchenView.stats.dineIn"),
+        value: orders.filter((o) => o.orderType === "dine-in").length,
+        icon: <PersonIcon className="size-6 text-purple-600" />,
+        bgColor: "bg-purple-100",
+        textColor: "text-purple-600",
+      },
+      {
+        title: t("kitchenView.stats.platform"),
+        value: orders.filter((o) => o.orderType === "platform").length,
+        icon: <AnalyticsIcon className="size-6 text-pink-600" />,
+        bgColor: "bg-pink-100",
+        textColor: "text-pink-600",
+      },
+    ];
+
+    return { primaryStats, typeStats };
   }, [orders, t]);
   const getPriorityLabel = (diffMinutes: number) => {
     const mediumPriority = configurations.mediumKitchenPriorityTime || 60;
@@ -185,12 +226,12 @@ export const KitchenView = () => {
           {
             order.ticketNumber ? (
               <>
-              {order.ticketNumber}
+                {order.ticketNumber}
               </>
             ) : (
               <>
-              {configurations.orderPrefix || "K"}
-              {order.orderId}
+                {configurations.orderPrefix || "K"}
+                {order.orderId}
               </>
             )
           }
@@ -198,7 +239,14 @@ export const KitchenView = () => {
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
           {order.customer.name}
         </td>
-        <td className="px-6 py-4 min-w-[300px] text-sm text-black">
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+          <span
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getOrderTypeStyle(order.orderType || "")}`}
+          >
+            {translateOrderType(order.orderType || "")}
+          </span>
+        </td>
+        <td className="px-6 py-4 min-w-[350px] text-sm text-black">
           <div className="space-y-2">
             {order.items &&
               order.items.map((item, index) => {
@@ -273,10 +321,48 @@ export const KitchenView = () => {
       />
       <div className="flex-1">
         <div className="pb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {stats.map((stat, index) => (
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
+            {/* Primary Stats */}
+            {stats.primaryStats.map((stat, index) => (
               <StatsCard key={index} {...stat} />
             ))}
+
+            {/* Breakdown Card */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col justify-between col-span-2">
+              <div className="flex items-center gap-2 mb-2">
+                <AnalyticsIcon className="size-4 text-gray-400" />
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  {t("kitchenView.stats.activeOrdersByType")}
+                </span>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {stats.typeStats.map((stat, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col group transition-all duration-200 p-2 rounded-lg hover:bg-gray-50/50"
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <div
+                        className={`p-1 ${stat.bgColor} rounded-md flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}
+                      >
+                        {cloneElement(
+                          stat.icon as React.ReactElement<{ className?: string }>,
+                          {
+                            className: "size-7 " + stat.textColor,
+                          }
+                        )}
+                      </div>
+                      <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest truncate">
+                        {stat.title}
+                      </span>
+                    </div>
+                    <span className="text-2xl text-center font-bold text-black leading-tight ml-0.5">
+                      {stat.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -297,6 +383,7 @@ export const KitchenView = () => {
                 t("kitchenView.table.priority"),
                 t("kitchenView.table.orderId"),
                 t("kitchenView.table.customer"),
+                t("kitchenView.table.orderType"),
                 t("kitchenView.table.items"),
                 t("kitchenView.table.timeInKitchen"),
                 t("kitchenView.table.actions"),
