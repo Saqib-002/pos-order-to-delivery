@@ -580,33 +580,38 @@
     }
   },
   "cashOutManagement": {
-    "title": "Gestión de Salida de Efectivo",
-    "subtitle": "Seguimiento y gestión de retiradas de efectivo",
-    "addTransaction": "Nueva Salida de Caja",
+    "title": "Gestión de Caja",
+    "subtitle": "Seguimiento y gestión de transacciones de entrada y salida de efectivo",
+    "addTransaction": "Nueva Transacción",
     "currentBalance": "Saldo de Caja Actual",
     "searchPlaceholder": "Buscar transacciones...",
     "noTransactionsTitle": "No se encontraron transacciones",
-    "noTransactionsSubtitle": "Registre su primera transacción de salida de efectivo.",
+    "noTransactionsSubtitle": "Registre su primera transacción de caja.",
     "table": {
       "reason": "Descripción",
       "amount": "Cantidad",
       "date": "Fecha",
+      "type": "Tipo",
       "actions": "Acciones"
     },
     "modal": {
-      "addTitle": "Nueva Transacción de Salida de Caja",
+      "addTitle": "Nueva Transacción de Caja",
       "editTitle": "Editar Transacción",
       "reason": "Descripción",
-      "reasonPlaceholder": "ej. Depósito bancario, Retiro del propietario",
+      "reasonPlaceholder": "ej. Depósito bancario, Pago en efectivo",
       "amount": "Cantidad",
       "date": "Fecha",
+      "type": "Tipo de Transacción",
+      "in": "Entrada de Efectivo",
+      "out": "Salida de Efectivo",
       "cancel": "Cancelar",
       "save": "Guardar",
       "update": "Actualizar",
       "errors": {
-        "reasonRequired": "Por favor, introduzca una razón",
+        "reasonRequired": "Por favor, introduzca una descripción",
         "amountRequired": "Por favor, introduzca una cantidad válida",
-        "dateRequired": "Por favor, seleccione una fecha"
+        "dateRequired": "Por favor, seleccione una fecha",
+        "typeRequired": "Por favor, seleccione un tipo de transacción"
       }
     }
   },

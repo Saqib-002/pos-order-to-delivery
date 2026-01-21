@@ -147,15 +147,15 @@ export const useCashOutData = () => {
     try {
       const res = await (window as any).electronAPI.createCashOut(token, data);
       if (res.status) {
-        toast.success("Cash out recorded successfully");
+        toast.success("Transaction recorded successfully");
         fetchCashOuts();
         return true;
       } else {
-        toast.error(res.error || "Failed to record cash out");
+        toast.error(res.error || "Failed to record transaction");
         return false;
       }
     } catch (err) {
-      toast.error("Error recording cash out");
+      toast.error("Error recording transaction");
       return false;
     }
   };
@@ -164,15 +164,15 @@ export const useCashOutData = () => {
     try {
       const res = await (window as any).electronAPI.updateCashOut(token, id, data);
       if (res.status) {
-        toast.success("Cash out updated successfully");
+        toast.success("Transaction updated successfully");
         fetchCashOuts();
         return true;
       } else {
-        toast.error(res.error || "Failed to update cash out");
+        toast.error(res.error || "Failed to update transaction");
         return false;
       }
     } catch (err) {
-      toast.error("Error updating cash out");
+      toast.error("Error updating transaction");
       return false;
     }
   };
@@ -181,13 +181,13 @@ export const useCashOutData = () => {
     try {
       const res = await (window as any).electronAPI.deleteCashOut(token, id);
       if (res.status) {
-        toast.success("Cash out deleted successfully");
+        toast.success("Transaction deleted successfully");
         fetchCashOuts();
       } else {
-        toast.error(res.error || "Failed to delete cash out");
+        toast.error(res.error || "Failed to delete transaction");
       }
     } catch (err) {
-      toast.error("Error deleting cash out");
+      toast.error("Error deleting transaction");
     }
   };
 

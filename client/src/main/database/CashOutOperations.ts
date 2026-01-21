@@ -13,6 +13,7 @@ export class CashOutDatabaseOperations {
         total: cashOutData.total,
         paymentType: cashOutData.paymentType || 'cash',
         date: cashOutData.date,
+        transactionType: cashOutData.transactionType || 'out',
         ticketId: cashOutData.ticketId || undefined,
         created_at: now,
         updated_at: now,
@@ -86,6 +87,24 @@ export class CashOutDatabaseOperations {
   static async deleteCashOut(id: string): Promise<void> {
     try {
       await db("cash_out_transactions").where("id", id).delete();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getCashBalance(): Promise<number> {
+    try {
+      const result = await db("cash_out_transactions")
+        .select(
+          db.raw("SUM(CASE WHEN \"transactionType\" = 'in' THEN total ELSE 0 END) as total_in"),
+          db.raw("SUM(CASE WHEN \"transactionType\" = 'out' THEN total ELSE 0 END) as total_out")
+        )
+        .first();
+
+      const totalIn = Number(result?.total_in || 0);
+      const totalOut = Number(result?.total_out || 0);
+
+      return totalIn - totalOut;
     } catch (error) {
       throw error;
     }

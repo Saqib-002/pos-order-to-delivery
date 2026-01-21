@@ -625,4 +625,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("update-cash-out", token, id, data),
   deleteCashOut: (token: string, id: string) =>
     ipcRenderer.invoke("delete-cash-out", token, id),
+  getCashBalance: (token: string) =>
+    ipcRenderer.invoke("get-cash-balance", token),
 });

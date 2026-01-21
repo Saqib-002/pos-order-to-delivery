@@ -5,6 +5,7 @@ import { Income } from "@/types/incomes";
 import CustomInput from "../shared/CustomInput";
 import CustomButton from "../ui/CustomButton";
 import { DatePicker } from "../ui/DatePicker";
+import { CustomSelect } from "../ui/CustomSelect";
 import {
   CrossIcon,
 } from "../../public/Svg";
@@ -30,8 +31,9 @@ export const CashOutModal = ({
     total: 0,
     date: dayjs().format("YYYY-MM-DD"),
     paymentType: "cash",
+    transactionType: "out",
   });
-  const [totalRaw, setTotalRaw] = useState<string>("0");
+  const [totalRaw, setTotalRaw] = useState<string>("");
 
   useEffect(() => {
     if (isOpen) {
@@ -47,8 +49,9 @@ export const CashOutModal = ({
           total: 0,
           date: dayjs().format("YYYY-MM-DD"),
           paymentType: "cash",
+          transactionType: "out",
         });
-        setTotalRaw("0");
+        setTotalRaw("");
       }
     }
   }, [isOpen, initialData]);
@@ -66,6 +69,10 @@ export const CashOutModal = ({
     }
     if (!formData.date) {
       toast.error(t("cashOutManagement.modal.errors.dateRequired"));
+      return false;
+    }
+    if (!formData.transactionType) {
+      toast.error(t("cashOutManagement.modal.errors.typeRequired"));
       return false;
     }
     return true;
@@ -133,6 +140,15 @@ export const CashOutModal = ({
               label={t("cashOutManagement.modal.date")}
               value={formData.date || ""}
               onChange={(date) => setFormData({ ...formData, date: date || "" })}
+            />
+            <CustomSelect
+              label={t("cashOutManagement.modal.type")}
+              options={[
+                { value: "in", label: t("cashOutManagement.modal.in") },
+                { value: "out", label: t("cashOutManagement.modal.out") },
+              ]}
+              value={formData.transactionType || "out"}
+              onChange={(val) => setFormData({ ...formData, transactionType: val as 'in' | 'out' })}
             />
           </div>
         </div>

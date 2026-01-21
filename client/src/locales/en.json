@@ -263,33 +263,38 @@
     }
   },
   "cashOutManagement": {
-    "title": "Cash Out Management",
-    "subtitle": "Track and manage cash withdrawals",
-    "addTransaction": "New Cash Out",
+    "title": "Cash Management",
+    "subtitle": "Track and manage cash in and out transactions",
+    "addTransaction": "New Transaction",
     "currentBalance": "Current Cash Balance",
     "searchPlaceholder": "Search transactions...",
     "noTransactionsTitle": "No transactions found",
-    "noTransactionsSubtitle": "Record your first cash out transaction.",
+    "noTransactionsSubtitle": "Record your first cash transaction.",
     "table": {
       "reason": "Description",
       "amount": "Amount",
       "date": "Date",
+      "type": "Type",
       "actions": "Actions"
     },
     "modal": {
-      "addTitle": "New Cash Out Transaction",
+      "addTitle": "New Cash Transaction",
       "editTitle": "Edit Transaction",
       "reason": "Description",
-      "reasonPlaceholder": "e.g. Bank deposit, Owner withdrawal",
+      "reasonPlaceholder": "e.g. Bank deposit, Cash sale",
       "amount": "Amount",
       "date": "Date",
+      "type": "Transaction Type",
+      "in": "Cash In",
+      "out": "Cash Out",
       "cancel": "Cancel",
       "save": "Save",
       "update": "Update",
       "errors": {
         "reasonRequired": "Please enter a reason",
         "amountRequired": "Please enter a valid amount",
-        "dateRequired": "Please select a date"
+        "dateRequired": "Please select a date",
+        "typeRequired": "Please select a transaction type"
       }
     }
   },

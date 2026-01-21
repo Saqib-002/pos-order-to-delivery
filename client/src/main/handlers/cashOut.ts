@@ -58,3 +58,16 @@ export const deleteCashOut = async (
     return { status: false, error: (error as Error).message };
   }
 };
+
+export const getCashBalance = async (
+  event: IpcMainInvokeEvent,
+  token: string
+) => {
+  try {
+    await verifyToken(event, token);
+    const result = await CashOutDatabaseOperations.getCashBalance();
+    return { status: true, data: result };
+  } catch (error) {
+    return { status: false, error: (error as Error).message };
+  }
+};

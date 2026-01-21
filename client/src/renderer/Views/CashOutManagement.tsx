@@ -25,7 +25,7 @@ export const CashOutManagement = () => {
     deleteCashOut,
     refresh
   } = useCashOutData();
-  
+
   const confirm = useConfirm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Income | null>(null);
@@ -33,10 +33,9 @@ export const CashOutManagement = () => {
 
   const fetchBalance = async () => {
     try {
-      const res = await (window as any).electronAPI.getPaymentMethodsReport(token, { dateRange: "today" });
+      const res = await (window as any).electronAPI.getCashBalance(token);
       if (res.status) {
-        // Liquid Cash Balance for today
-        setCurrentCashBalance(res.data.summary.cashBalance || 0);
+        setCurrentCashBalance(res.data || 0);
       }
     } catch (error) {
       console.error("Error fetching balance:", error);
@@ -87,23 +86,23 @@ export const CashOutManagement = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 mt-4">
         {/* Balance Card */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 flex justify-between items-center">
-            <span className="text-sm font-medium text-emerald-600 uppercase tracking-wider">{t("cashOutManagement.currentBalance")}</span>
-            <div className="text-3xl font-bold text-slate-900 mt-1">
-              {currentCashBalance.toFixed(2)}€
-            </div>
+          <span className="text-sm font-medium text-emerald-600 uppercase tracking-wider">{t("cashOutManagement.currentBalance")}</span>
+          <div className="text-3xl font-bold text-slate-900 mt-1">
+            {currentCashBalance.toFixed(2)}€
+          </div>
         </div>
 
         {/* Actions Card */}
         <div className="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div className="flex-1 max-w-md">
-             <CustomInput
+            <CustomInput
               label=""
               name="search"
               type="text"
               placeholder={t("cashOutManagement.searchPlaceholder")}
               value={filters.search || ""}
               onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
-              // icon={<SearchIcon className="size-5 text-slate-400" />}
+            // icon={<SearchIcon className="size-5 text-slate-400" />}
             />
           </div>
           <CustomButton
@@ -122,6 +121,7 @@ export const CashOutManagement = () => {
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">{t("cashOutManagement.table.reason")}</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">{t("cashOutManagement.table.type")}</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">{t("cashOutManagement.table.amount")}</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">{t("cashOutManagement.table.date")}</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">{t("common.actions")}</th>
@@ -130,11 +130,11 @@ export const CashOutManagement = () => {
             <tbody className="divide-y divide-slate-100">
               {cashOutData.data.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-slate-400">
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center gap-2">
-                       <WalletIcon className="size-12 opacity-20" />
-                       <span className="font-medium">{t("cashOutManagement.noTransactionsTitle")}</span>
-                       <span className="text-sm">{t("cashOutManagement.noTransactionsSubtitle")}</span>
+                      <WalletIcon className="size-12 opacity-20" />
+                      <span className="font-medium">{t("cashOutManagement.noTransactionsTitle")}</span>
+                      <span className="text-sm">{t("cashOutManagement.noTransactionsSubtitle")}</span>
                     </div>
                   </td>
                 </tr>
@@ -142,24 +142,37 @@ export const CashOutManagement = () => {
                 cashOutData.data.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4">
-                       <div className="font-semibold text-slate-900">{item.name}</div>
-                       {item.description && <div className="text-xs text-slate-500 mt-0.5">{item.description}</div>}
+                      <div className="font-semibold text-slate-900">{item.name}</div>
+                      {item.description && <div className="text-xs text-slate-500 mt-0.5">{item.description}</div>}
                     </td>
                     <td className="px-6 py-4">
-                       <span className="font-bold text-amber-600">-{item.total.toFixed(2)}€</span>
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${item.transactionType === "in"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-rose-100 text-rose-700"
+                        }`}>
+                        {item.transactionType === "in" ? t("cashOutManagement.modal.in") : t("cashOutManagement.modal.out")}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`font-bold ${item.transactionType === "in"
+                        ? "text-emerald-600"
+                        : "text-rose-600"
+                        }`}>
+                        {item.transactionType === "in" ? "+" : "-"}{item.total.toFixed(2)}€
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-slate-600">
-                       {dayjs(item.date).format("YYYY-MM-DD")}
+                      {dayjs(item.date).format("YYYY-MM-DD")}
                     </td>
                     <td className="px-6 py-4 text-right">
-                       <div className="flex justify-end gap-2">
-                         <button onClick={() => handleEdit(item)} className="p-2 hover:bg-amber-50 text-amber-600 rounded-lg transition-colors">
-                           <EditIcon className="size-5" />
-                         </button>
-                         <button onClick={() => handleDelete(item.id!)} className="p-2 hover:bg-rose-50 text-rose-600 rounded-lg transition-colors">
-                           <Trash2Icon className="size-5" />
-                         </button>
-                       </div>
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => handleEdit(item)} className="p-2 hover:bg-amber-50 text-amber-600 rounded-lg transition-colors">
+                          <EditIcon className="size-5" />
+                        </button>
+                        <button onClick={() => handleDelete(item.id!)} className="p-2 hover:bg-rose-50 text-rose-600 rounded-lg transition-colors">
+                          <Trash2Icon className="size-5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -170,7 +183,7 @@ export const CashOutManagement = () => {
 
         {cashOutData.pagination.totalPages > 1 && (
           <div className="p-4 border-t border-slate-100">
-             <Pagination
+            <Pagination
               currentPage={filters.page || 1}
               totalPages={cashOutData.pagination.totalPages}
               onPageChange={(page) => setFilters({ ...filters, page })}

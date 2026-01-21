@@ -199,6 +199,7 @@ import {
   getCashOuts,
   updateCashOut,
   deleteCashOut,
+  getCashBalance,
 } from "./handlers/cashOut.js";
 import {
   getFinancialAnalytics,
@@ -481,4 +482,5 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-cash-outs", getCashOuts);
   ipcMain.handle("update-cash-out", updateCashOut);
   ipcMain.handle("delete-cash-out", deleteCashOut);
+  ipcMain.handle("get-cash-balance", getCashBalance);
 }
