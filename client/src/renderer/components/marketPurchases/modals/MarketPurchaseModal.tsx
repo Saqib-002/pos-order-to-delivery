@@ -64,10 +64,10 @@ export const MarketPurchaseModal = ({
     isTaxIncluded: false,
   });
   const [taxPercentage, setTaxPercentage] = useState<number>(0);
-  const [boxRaw, setBoxRaw] = useState<string>("0");
-  const [unitRaw, setTotalUnitRaw] = useState<string>("0");
-  const [unitPriceRaw, setUnitPriceRaw] = useState<string>("0");
-  const [taxPercentageRaw, setTaxPercentageRaw] = useState<string>("0");
+  const [boxRaw, setBoxRaw] = useState<string>("");
+  const [unitRaw, setUnitRaw] = useState<string>("");
+  const [unitPriceRaw, setUnitPriceRaw] = useState<string>("");
+  const [taxPercentageRaw, setTaxPercentageRaw] = useState<string>("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -153,10 +153,10 @@ export const MarketPurchaseModal = ({
         isTaxIncluded: false,
       });
       setTaxPercentage(0);
-      setBoxRaw("0");
-      setTotalUnitRaw("0");
-      setUnitPriceRaw("0");
-      setTaxPercentageRaw("0");
+      setBoxRaw("");
+      setUnitRaw("");
+      setUnitPriceRaw("");
+      setTaxPercentageRaw("");
     }
   }, [isOpen, initialData]);
 
@@ -164,9 +164,9 @@ export const MarketPurchaseModal = ({
 
   const calculateItemTotal = (item: MarketPurchaseItem): number => {
     const box =
-      typeof item.box === "string" ? parseInt(item.box) : item.box || 0;
+      typeof item.box === "string" ? parseFloat(item.box) : item.box || 0;
     const unit =
-      typeof item.unit === "string" ? parseInt(item.unit) : item.unit || 0;
+      typeof item.unit === "string" ? parseFloat(item.unit) : item.unit || 0;
     const unitPrice =
       typeof item.unitPrice === "string"
         ? parseFloat(item.unitPrice)
@@ -277,6 +277,10 @@ export const MarketPurchaseModal = ({
       isTaxIncluded: false,
     });
     setTaxPercentage(0);
+    setBoxRaw("");
+    setUnitRaw("");
+    setUnitPriceRaw("");
+    setTaxPercentageRaw("");
   };
 
   const handleEditItem = (index: number) => {
@@ -313,12 +317,12 @@ export const MarketPurchaseModal = ({
     // Ensure all numeric values are numbers, not strings
     const editedProduct: MarketPurchaseItem = {
       ...item,
-      box: typeof item.box === "string" ? parseInt(item.box) : item.box || 0,
+      box: typeof item.box === "string" ? parseFloat(item.box) : item.box || 0,
       unit:
-        typeof item.unit === "string" ? parseInt(item.unit) : item.unit || 0,
+        typeof item.unit === "string" ? parseFloat(item.unit) : item.unit || 0,
       totalUnit:
         typeof item.totalUnit === "string"
-          ? parseInt(item.totalUnit)
+          ? parseFloat(item.totalUnit)
           : item.totalUnit || 0,
       unitPrice:
         typeof item.unitPrice === "string"
@@ -335,7 +339,7 @@ export const MarketPurchaseModal = ({
     setNewProduct(editedProduct);
     setTaxPercentage(taxPercent);
     setBoxRaw(editedProduct.box.toString());
-    setTotalUnitRaw(editedProduct.unit.toString());
+    setUnitRaw(editedProduct.unit.toString());
     setUnitPriceRaw(editedProduct.unitPrice.toString());
     setTaxPercentageRaw(taxPercent.toString());
     setEditingIndex(index);
@@ -359,10 +363,10 @@ export const MarketPurchaseModal = ({
       isTaxIncluded: false,
     });
     setTaxPercentage(0);
-    setBoxRaw("0");
-    setTotalUnitRaw("0");
-    setUnitPriceRaw("0");
-    setTaxPercentageRaw("0");
+    setBoxRaw("");
+    setUnitRaw("");
+    setUnitPriceRaw("");
+    setTaxPercentageRaw("");
     setEditingIndex(null);
   };
 
@@ -443,8 +447,8 @@ export const MarketPurchaseModal = ({
     const paymentTypeString =
       paymentMethods.length > 0
         ? paymentMethods
-            .map((method) => `${method.type}:${method.amount}`)
-            .join(", ")
+          .map((method) => `${method.type}:${method.amount}`)
+          .join(", ")
         : "";
 
     const purchaseData: MarketPurchase = {
@@ -478,10 +482,10 @@ export const MarketPurchaseModal = ({
         total: 0,
       });
       setTaxPercentage(0);
-      setBoxRaw("0");
-      setTotalUnitRaw("0");
-      setUnitPriceRaw("0");
-      setTaxPercentageRaw("0");
+      setBoxRaw("");
+      setUnitRaw("");
+      setUnitPriceRaw("");
+      setTaxPercentageRaw("");
     }
   };
 
@@ -535,6 +539,7 @@ export const MarketPurchaseModal = ({
           options={supplierOptions}
           value={formData.supplierId || ""}
           onChange={(val) => setFormData({ ...formData, supplierId: val })}
+          showSearch={true}
         />
         <DatePicker
           label={t("marketPurchaseManagement.modal.ticketDate")}
@@ -569,7 +574,7 @@ export const MarketPurchaseModal = ({
           : item.unitPrice || 0;
       const totalUnit =
         typeof item.totalUnit === "string"
-          ? parseInt(item.totalUnit)
+          ? parseFloat(item.totalUnit)
           : item.totalUnit || 0;
       const tax =
         typeof item.tax === "string" ? parseFloat(item.tax) : item.tax || 0;
@@ -620,6 +625,7 @@ export const MarketPurchaseModal = ({
                   productName: "",
                 })
               }
+              showSearch={true}
               placeholder={t(
                 "marketPurchaseManagement.modal.selectExpenseType"
               )}
@@ -643,6 +649,7 @@ export const MarketPurchaseModal = ({
                   })
                 );
               }}
+              showSearch={true}
               disabled={!newProduct.expenseTypeId}
               placeholder={
                 !newProduct.expenseTypeId
@@ -661,7 +668,7 @@ export const MarketPurchaseModal = ({
                 setNewProduct(
                   updateNewProductCalculations({
                     ...newProduct,
-                    box: parseInt(val) || 0,
+                    box: parseFloat(val) || 0,
                   })
                 );
               }}
@@ -674,11 +681,11 @@ export const MarketPurchaseModal = ({
               value={unitRaw}
               onChange={(e) => {
                 const val = e.target.value;
-                setTotalUnitRaw(val);
+                setUnitRaw(val);
                 setNewProduct(
                   updateNewProductCalculations({
                     ...newProduct,
-                    unit: parseInt(val) || 0,
+                    unit: parseFloat(val) || 0,
                   })
                 );
               }}
@@ -908,16 +915,15 @@ export const MarketPurchaseModal = ({
                             disabled={
                               editingIndex !== null && editingIndex !== index
                             }
-                            className={`p-2 rounded-full ${
-                              editingIndex !== null && editingIndex !== index
-                                ? "opacity-50 cursor-not-allowed bg-gray-100 text-gray-400"
-                                : "hover:bg-blue-100 text-blue-600"
-                            }`}
+                            className={`p-2 rounded-full ${editingIndex !== null && editingIndex !== index
+                              ? "opacity-50 cursor-not-allowed bg-gray-100 text-gray-400"
+                              : "hover:bg-blue-100 text-blue-600"
+                              }`}
                             title={
                               editingIndex !== null && editingIndex !== index
                                 ? t(
-                                    "marketPurchaseManagement.modal.finishEditingFirst"
-                                  )
+                                  "marketPurchaseManagement.modal.finishEditingFirst"
+                                )
                                 : t("common.edit")
                             }
                           >
@@ -927,16 +933,15 @@ export const MarketPurchaseModal = ({
                             type="button"
                             onClick={() => handleRemoveItem(index)}
                             disabled={editingIndex !== null}
-                            className={`p-2 rounded-full ${
-                              editingIndex !== null
-                                ? "opacity-50 cursor-not-allowed bg-gray-100 text-gray-400"
-                                : "hover:bg-red-100 text-red-600"
-                            }`}
+                            className={`p-2 rounded-full ${editingIndex !== null
+                              ? "opacity-50 cursor-not-allowed bg-gray-100 text-gray-400"
+                              : "hover:bg-red-100 text-red-600"
+                              }`}
                             title={
                               editingIndex !== null
                                 ? t(
-                                    "marketPurchaseManagement.modal.finishEditingFirst"
-                                  )
+                                  "marketPurchaseManagement.modal.finishEditingFirst"
+                                )
                                 : t("common.delete")
                             }
                           >
@@ -1033,13 +1038,12 @@ export const MarketPurchaseModal = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div
-        className={`bg-white rounded-2xl shadow-2xl w-full flex flex-col max-h-[90vh] ${
-          currentStep === 1
-            ? "max-w-2xl"
-            : currentStep === 2
-              ? "max-w-6xl"
-              : "max-w-xl"
-        }`}
+        className={`bg-white rounded-2xl shadow-2xl w-full flex flex-col max-h-[90vh] ${currentStep === 1
+          ? "max-w-2xl"
+          : currentStep === 2
+            ? "max-w-6xl"
+            : "max-w-xl"
+          }`}
       >
         <div className="bg-linear-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex justify-between items-center shrink-0">
           <div>
@@ -1052,13 +1056,12 @@ export const MarketPurchaseModal = ({
               {[1, 2, 3].map((step) => (
                 <div
                   key={step}
-                  className={`h-2 rounded-full transition-all ${
-                    currentStep === step
-                      ? "bg-white w-8"
-                      : currentStep > step
-                        ? "bg-gray-400 w-6"
-                        : "bg-gray-600 w-6"
-                  }`}
+                  className={`h-2 rounded-full transition-all ${currentStep === step
+                    ? "bg-white w-8"
+                    : currentStep > step
+                      ? "bg-gray-400 w-6"
+                      : "bg-gray-600 w-6"
+                    }`}
                 />
               ))}
             </div>

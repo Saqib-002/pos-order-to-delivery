@@ -155,6 +155,7 @@ export const InventoryProductModal: React.FC<InventoryProductModalProps> = ({
                 ]}
                 placeholder={t("inventoryModal.selectExpenseType")}
                 disabled={isViewMode}
+                showSearch={true}
               />
             </div>
           </div>
