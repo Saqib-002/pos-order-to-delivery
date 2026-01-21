@@ -6,6 +6,12 @@ interface KitchenTimeEstimationRange {
   estimatedTime: number;
 }
 
+interface DeliveryMinOrderRange {
+  minKm: number;
+  maxKm: number;
+  minOrderAmount: number;
+}
+
 interface ConfigurationType {
   name?: string;
   logo: string;
@@ -15,6 +21,7 @@ interface ConfigurationType {
   mediumKitchenPriorityTime?: number;
   highKitchenPriorityTime?: number;
   kitchenTimeEstimationRanges?: KitchenTimeEstimationRange[];
+  deliveryMinOrderRanges?: DeliveryMinOrderRange[];
   googleMapsApiKey?: string;
   address: string;
   apartment?: string;
@@ -55,6 +62,7 @@ export const ConfigurationsProvider = ({
     mediumKitchenPriorityTime: 0,
     highKitchenPriorityTime: 0,
     googleMapsApiKey: "",
+    deliveryMinOrderRanges: [],
     address: "",
     apartment: "",
     postalCode: "",

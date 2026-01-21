@@ -83,7 +83,7 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
     if (actualAmount <= 0) {
       toast.error(
         t("marketPurchaseManagement.modal.errors.noRemainingAmount") ||
-          "No remaining amount to pay. The total has already been paid."
+        "No remaining amount to pay. The total has already been paid."
       );
       return;
     }
@@ -245,11 +245,10 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
             <div className="flex gap-3">
               <button
                 onClick={() => setSelectedType("cash")}
-                className={`flex-1 p-4 rounded-lg border-2 transition-colors touch-manipulation ${
-                  selectedType === "cash"
+                className={`flex-1 p-4 rounded-lg border-2 transition-colors touch-manipulation ${selectedType === "cash"
                     ? "border-green-400 bg-green-50 text-green-800"
                     : "border-gray-200 hover:border-green-300"
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-center gap-3">
                   <img src="./images/cash.png" alt="cash" className="w-8 h-8" />
@@ -259,12 +258,18 @@ const PaymentProcessingModal: React.FC<PaymentProcessingModalProps> = ({
                 </div>
               </button>
               <button
-                onClick={() => setSelectedType("card")}
-                className={`flex-1 p-4 rounded-lg border-2 transition-colors touch-manipulation ${
-                  selectedType === "card"
+                onClick={() => {
+                  setSelectedType("card");
+                  if (remainingAmount > 0) {
+                    setCurrentAmount(
+                      parseFloat(remainingAmount.toFixed(2))
+                    );
+                  }
+                }}
+                className={`flex-1 p-4 rounded-lg border-2 transition-colors touch-manipulation ${selectedType === "card"
                     ? "border-blue-400 bg-blue-50 text-blue-800"
                     : "border-gray-200 hover:border-blue-300"
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-center gap-3">
                   <img src="./images/card.png" alt="card" className="w-8 h-8" />

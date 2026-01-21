@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import OrderCart from "./OrderCart";
 import OrderProcessingModal from "./OrderProcessingModal";
 import RefundProcessingModal from "./modals/RefundProcessingModal";
+import PrintConfirmationModal from "./modals/PrintConfirmationModal";
 import { useOrder } from "../../contexts/OrderContext";
 import { toast } from "react-toastify";
 import { Order, OrderItem } from "@/types/order";
@@ -52,6 +53,8 @@ const OrderComponent = () => {
     totalAmount: number;
     paymentType: string;
   } | null>(null);
+  const [isPrintConfirmationModalOpen, setIsPrintConfirmationModalOpen] = useState(false);
+  const [postProcessOrderData, setPostProcessOrderData] = useState<any>(null);
   const {
     auth: { token, user },
   } = useAuth();
@@ -75,12 +78,40 @@ const OrderComponent = () => {
       return;
     }
 
+    setPostProcessOrderData(orderData);
+
+    const type = orderData.orderType?.toLowerCase();
+    if (type === "dine-in" || type === "pickup") {
+      setIsPrintConfirmationModalOpen(true);
+    } else {
+      handlePrintConfirm(true);
+    }
+  };
+
+  const handlePrintConfirm = async (shouldPrintMainReceipt: boolean | 'cancel') => {
+    setIsPrintConfirmationModalOpen(false);
+    if (!postProcessOrderData || !order) {
+      clearOrder();
+      setPostProcessOrderData(null);
+      return;
+    }
+
+    if (shouldPrintMainReceipt === 'cancel') {
+      clearOrder();
+      setPostProcessOrderData(null);
+      return;
+    }
+
+    const orderData = postProcessOrderData;
+    let anyPrintSuccessful = false;
+
     // Automatically print receipts after processing
     try {
       const printerGroups = groupItemsByPrinter(orderItems);
       if (!Object.keys(printerGroups).length) {
         toast.warn(t("orderCart.warnings.noPrintersAttached"));
         clearOrder();
+        setPostProcessOrderData(null);
         return;
       }
 
@@ -98,6 +129,7 @@ const OrderComponent = () => {
       if (!configRes.status) {
         toast.error(t("orderCart.errors.errorGettingConfigurations"));
         clearOrder();
+        setPostProcessOrderData(null);
         return;
       }
       if (configRes.data) {
@@ -110,13 +142,22 @@ const OrderComponent = () => {
         orderData.paymentType || "",
         orderTotal
       );
-      toast.info(t("orderCart.messages.printingCustomerReceipt"));
+
       // Print to all printers
       for (const [printer, items] of Object.entries(printerGroups)) {
         const printerName = printer.split("|")[0];
-        const printerIsMain = printer.split("|")[1];
+        const printerIsMainValue = printer.split("|")[1];
+        const isMainPrinter = printerIsMainValue === "true";
+        if (isMainPrinter && !shouldPrintMainReceipt) {
+          continue;
+        }
+
+        if (isMainPrinter) {
+          toast.info(t("orderCart.messages.printingCustomerReceipt"));
+        }
+
         let receiptHTML = "";
-        if (printerIsMain === "true") {
+        if (isMainPrinter) {
           let customerAddress: string | undefined = undefined;
           if (orderData.orderType?.toLowerCase() === "delivery") {
             if (orderData.customerAddress && orderData.customerAddress.trim()) {
@@ -212,7 +253,7 @@ const OrderComponent = () => {
             configs,
             { ...order, ...orderData },
             user!.role,
-            status,
+            paymentStatus.status,
             t
           );
         }
@@ -233,39 +274,29 @@ const OrderComponent = () => {
           } else {
             toast.error(t("orderCart.errors.errorPrintingReceipt"));
           }
-          return;
-        }
-        const updateRes = await (window as any).electronAPI.updateOrderItems(
-          token,
-          items.map((item: OrderItem) => ({
-            itemId: item.id,
-            itemData: { isKitchenPrinted: true },
-          }))
-        );
-        if (updateRes.status) {
-          const res = await (window as any).electronAPI.getOrderItems(
+          // continue printing to other printers
+        } else {
+          const updateRes = await (window as any).electronAPI.updateOrderItems(
             token,
-            order!.orderId
+            items.map((item: OrderItem) => ({
+              itemId: item.id,
+              itemData: { isKitchenPrinted: true },
+            }))
           );
-          if (res.status) {
-            clearOrder();
-            res.data.forEach((item: any) => {
-              addToOrder({
-                ...item,
-                complements: StringToComplements(item.complements),
-              });
-            });
-          }
+          anyPrintSuccessful = true;
         }
       }
 
-      toast.success(t("orderCart.messages.receiptPrintedSuccessfully"));
+      if (anyPrintSuccessful) {
+        toast.success(t("orderCart.messages.receiptPrintedSuccessfully"));
+      }
     } catch (error) {
       console.error("Failed to print receipts:", error);
       // Don't block order processing if printing fails
     }
 
     clearOrder();
+    setPostProcessOrderData(null);
   };
   const handleOrderClick = async (order: Order) => {
     // Check if order is assigned to a delivery person
@@ -374,13 +405,12 @@ const OrderComponent = () => {
                   return (
                     <button
                       key={order.id}
-                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${
-                        isAssignedToDelivery || order.orderType === "platform"
-                          ? "bg-gray-100 cursor-not-allowed opacity-75"
-                          : order.status === "cancelled"
-                            ? "hover:bg-red-50 cursor-pointer border-red-200"
-                            : "hover:bg-gray-50 cursor-pointer"
-                      }`}
+                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${isAssignedToDelivery || order.orderType === "platform"
+                        ? "bg-gray-100 cursor-not-allowed opacity-75"
+                        : order.status === "cancelled"
+                          ? "hover:bg-red-50 cursor-pointer border-red-200"
+                          : "hover:bg-gray-50 cursor-pointer"
+                        }`}
                       onClick={() => handleOrderClick(order)}
                       disabled={
                         isAssignedToDelivery || order.orderType === "platform"
@@ -412,10 +442,10 @@ const OrderComponent = () => {
                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getOrderTypeStyle(order.orderType || "")}`}
                           >
                             {order.orderType === "platform" &&
-                            order.platformName
+                              order.platformName
                               ? order.platformName
                               : translateOrderType(order.orderType || "") ||
-                                t("manageOrders.statuses.notSelected")}
+                              t("manageOrders.statuses.notSelected")}
                           </span>
 
                           {/* Order Status Pill */}
@@ -454,7 +484,21 @@ const OrderComponent = () => {
                         {order.customer && (
                           <div className="text-xs text-gray-600">
                             <span className="font-medium">
-                              {order.customer.name}
+                              {order.orderType?.toLowerCase() === "delivery" ? (
+                                order.customer.address ? (
+                                  order.customer.address.includes("|") ?
+                                    formatAddress(order.customer.address) :
+                                    order.customer.address
+                                ) : (
+                                  order.customer.name === "Dine-in Customer" ? t("orderProcessingModal.defaultCustomers.dineInCustomer") :
+                                    order.customer.name === "Walk-in Customer" ? t("orderProcessingModal.defaultCustomers.walkInCustomer") :
+                                      order.customer.name
+                                )
+                              ) : (
+                                order.customer.name === "Dine-in Customer" ? t("orderProcessingModal.defaultCustomers.dineInCustomer") :
+                                  order.customer.name === "Walk-in Customer" ? t("orderProcessingModal.defaultCustomers.walkInCustomer") :
+                                    order.customer.name
+                              )}
                             </span>
                             {order.customer.phone && (
                               <span className="ml-1">
@@ -527,6 +571,11 @@ const OrderComponent = () => {
           totalAmount={refundOrderData.totalAmount}
         />
       )}
+      <PrintConfirmationModal
+        isOpen={isPrintConfirmationModalOpen}
+        onClose={() => handlePrintConfirm("cancel")}
+        onConfirm={handlePrintConfirm}
+      />
     </>
   );
 };

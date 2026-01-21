@@ -58,7 +58,11 @@
     "save": "Guardar",
     "savedSuccess": "Configuraciones guardadas correctamente",
     "errorGetting": "Error al obtener las configuraciones",
-    "errorSaving": "Error al guardar las configuraciones"
+    "errorSaving": "Error al guardar las configuraciones",
+    "deliveryMinOrderLabel": "Pedido Mínimo de Entrega",
+    "addDistanceRange": "Añadir Rango de Distancia",
+    "distanceLabel": "Rango de Distancia",
+    "minOrderAmountLabel": "Cant. Mínima de Pedido"
   },
 
   "printers": {
@@ -2373,7 +2377,8 @@
       "name": "Nombre:",
       "phone": "Teléfono:",
       "email": "Correo:",
-      "address": "Dirección"
+      "address": "Dirección",
+      "distance": "Distancia actual: {{distance}}km"
     },
     "customerDetails": {
       "title": "Detalles del Cliente",
@@ -2433,7 +2438,9 @@
       "customerPhoneRequired": "Por favor, introduzca el número de teléfono del cliente para pedidos de entrega",
       "customerNoAddress": "El cliente seleccionado no tiene dirección. Por favor seleccione un cliente diferente o cambie a recogida.",
       "customerDetailsRequired": "Por favor seleccione un cliente o ingrese los detalles del cliente incluyendo la dirección para pedidos de entrega",
-      "orderAlreadyPaid": "El pedido ya está pagado. Procesando con la información de pago existente."
+      "orderAlreadyPaid": "El pedido ya está pagado. Procesando con la información de pago existente.",
+      "minOrderAmountNotMet": "Se requiere un pedido mínimo de €{{amount}} para una distancia de {{distance}}km. Por favor, añada más artículos.",
+      "maxDistanceExceeded": "La distancia de {{distance}}km excede nuestro rango máximo de entrega de {{maxDistance}}km."
     },
     "defaultCustomers": {
       "dineInCustomer": "Cliente de Comedor",
@@ -2495,5 +2502,20 @@
     "dangerWarningTitle": "Esta acción no se puede deshacer",
     "specialNote": "Una vez eliminado, este elemento se borrará permanentemente del sistema.",
     "confirmAction": "Confirmar Acción"
+  },
+  "printConfirmationModal": {
+    "title": "Imprimir Recibo",
+    "message": "¿Desea imprimir el recibo del cliente para este pedido?",
+    "yesPrint": "Imprimir Recibo",
+    "noPrint": "No, gracias"
+  },
+  "deliveryRangeMapModal": {
+    "title": "Vista Previa de Zona de Entrega",
+    "restaurant": "Restaurante",
+    "deliveryZone": "Zona de Entrega",
+    "excludedZone": "Zona Excluida (Radio menor)",
+    "errors": {
+      "couldNotLocate": "No se pudo localizar la dirección del restaurante: {{status}}"
+    }
   }
 }

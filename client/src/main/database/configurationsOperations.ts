@@ -15,6 +15,11 @@ export class ConfigurationsDatabaseOperations {
           processedData.kitchenTimeEstimationRanges || []
         );
       }
+      if (processedData.deliveryMinOrderRanges !== undefined) {
+        processedData.deliveryMinOrderRanges = JSON.stringify(
+          processedData.deliveryMinOrderRanges || []
+        );
+      }
 
       await db("configurations").insert({
         ...processedData,
@@ -54,6 +59,27 @@ export class ConfigurationsDatabaseOperations {
           configurations.kitchenTimeEstimationRanges = [];
         }
 
+        if (configurations.deliveryMinOrderRanges) {
+          try {
+            if (typeof configurations.deliveryMinOrderRanges === "string") {
+              configurations.deliveryMinOrderRanges = JSON.parse(
+                configurations.deliveryMinOrderRanges
+              );
+            }
+            if (!Array.isArray(configurations.deliveryMinOrderRanges)) {
+              configurations.deliveryMinOrderRanges = [];
+            }
+          } catch (parseError) {
+            console.warn(
+              "Failed to parse deliveryMinOrderRanges:",
+              parseError
+            );
+            configurations.deliveryMinOrderRanges = [];
+          }
+        } else {
+          configurations.deliveryMinOrderRanges = [];
+        }
+
         if (configurations.logo) {
           const uploadUrl = (store as any).get("cdnUrl");
           if (uploadUrl) {
@@ -70,9 +96,15 @@ export class ConfigurationsDatabaseOperations {
   static async updateConfigurations(id: string, updates: Partial<any>) {
     try {
       const processedUpdates = { ...updates };
+      delete processedUpdates.id;
       if (processedUpdates.kitchenTimeEstimationRanges !== undefined) {
         processedUpdates.kitchenTimeEstimationRanges = JSON.stringify(
           processedUpdates.kitchenTimeEstimationRanges || []
+        );
+      }
+      if (processedUpdates.deliveryMinOrderRanges !== undefined) {
+        processedUpdates.deliveryMinOrderRanges = JSON.stringify(
+          processedUpdates.deliveryMinOrderRanges || []
         );
       }
 

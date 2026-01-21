@@ -13,6 +13,7 @@ import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { calculateOrderTotal } from "@/renderer/utils/orderCalculations";
 import { formatAddress } from "@/renderer/utils/utils";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
+import { calculateDistance } from "@/renderer/utils/googleMaps";
 import { useTranslation } from "react-i18next";
 import {
   AddIcon,
@@ -72,7 +73,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const calculateEstimatedTime = (orderCount: number): number => {
     const ranges = configurations?.kitchenTimeEstimationRanges;
     if (!ranges || ranges.length === 0) {
-      return 0; 
+      return 0;
     }
 
     const applicableRange = ranges.find(
@@ -115,6 +116,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [customerDistance, setCustomerDistance] = useState<number | null>(null);
   const {
     auth: { token },
   } = useAuth();
@@ -229,55 +231,30 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     };
   }, [showSearchResults]);
 
-  const handleProcessOrder = () => {
-    if (orderType === "delivery" && !selectedCustomer) {
-      if (!customCustomerPhone.trim()) {
-        toast.error(t("orderProcessingModal.errors.customerPhoneRequired"));
+  useEffect(() => {
+    const updateDistance = async () => {
+      const customerAddress = selectedCustomer
+        ? selectedCustomer.address
+        : customCustomerAddress;
+
+      const restaurantAddress = configurations?.address;
+      const apiKey = configurations?.googleMapsApiKey;
+
+      if (!customerAddress || !customerAddress.trim() || !restaurantAddress || !apiKey) {
+        setCustomerDistance(null);
         return;
       }
-    }
-    const currentPaymentStatus = calculatePaymentStatus(
-      order?.paymentType || "",
-      orderTotal
-    );
 
-    if (currentPaymentStatus.status === "PAID") {
-      toast.info(t("orderProcessingModal.errors.orderAlreadyPaid"));
-      handlePaymentConfirm({
-        paymentType: order?.paymentType || "paid",
-        totalAmount: orderTotal,
-      });
-      return;
-    }
+      const distance = await calculateDistance(
+        restaurantAddress,
+        formatAddress(customerAddress),
+        apiKey
+      );
+      setCustomerDistance(distance);
+    };
 
-    if (orderType === "dine-in" || orderType === "pickup") {
-      setIsPaymentOptionModalOpen(true);
-    } else {
-      handlePaymentConfirm({
-        paymentType:
-          order?.paymentType && order.paymentType.trim() !== ""
-            ? order.paymentType
-            : "pending",
-        totalAmount: orderTotal,
-      });
-    }
-  };
-
-  const handlePayNow = () => {
-    setIsPaymentOptionModalOpen(false);
-    setIsPaymentModalOpen(true);
-  };
-
-  const handlePayLater = () => {
-    setIsPaymentOptionModalOpen(false);
-    handlePaymentConfirm({
-      paymentType:
-        order?.paymentType && order.paymentType.trim() !== ""
-          ? order.paymentType
-          : "pending",
-      totalAmount: orderTotal,
-    });
-  };
+    updateDistance();
+  }, [selectedCustomer, customCustomerAddress, configurations?.address, configurations?.googleMapsApiKey]);
 
   const handlePaymentConfirm = (paymentData: {
     paymentType: string;
@@ -312,8 +289,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       existingPaymentType.toLowerCase() !== "pending";
     const resolvedPaymentType =
       preserveExistingPaymentType &&
-      (!paymentData.paymentType ||
-        paymentData.paymentType.trim().toLowerCase() === "pending")
+        (!paymentData.paymentType ||
+          paymentData.paymentType.trim().toLowerCase() === "pending")
         ? existingPaymentType
         : paymentData.paymentType || existingPaymentType || "pending";
 
@@ -342,6 +319,137 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     onProcessOrder(orderData);
     setIsPaymentModalOpen(false);
     onClose();
+  };
+
+  const handlePayNow = () => {
+    setIsPaymentOptionModalOpen(false);
+    setIsPaymentModalOpen(true);
+  };
+
+  const handlePayLater = () => {
+    setIsPaymentOptionModalOpen(false);
+    handlePaymentConfirm({
+      paymentType:
+        order?.paymentType && order.paymentType.trim() !== ""
+          ? order.paymentType
+          : "pending",
+      totalAmount: orderTotal,
+    });
+  };
+
+  const proceedToPayment = () => {
+    const currentPaymentStatus = calculatePaymentStatus(
+      order?.paymentType || "",
+      orderTotal
+    );
+
+    if (currentPaymentStatus.status === "PAID") {
+      toast.info(t("orderProcessingModal.errors.orderAlreadyPaid"));
+      handlePaymentConfirm({
+        paymentType: order?.paymentType || "paid",
+        totalAmount: orderTotal,
+      });
+      return;
+    }
+
+    if (orderType === "dine-in" || orderType === "pickup") {
+      setIsPaymentOptionModalOpen(true);
+    } else {
+      handlePaymentConfirm({
+        paymentType:
+          order?.paymentType && order.paymentType.trim() !== ""
+            ? order.paymentType
+            : "pending",
+        totalAmount: orderTotal,
+      });
+    }
+  };
+
+  const handleProcessOrder = () => {
+    if (orderType === "delivery") {
+      if (!selectedCustomer && !customCustomerPhone.trim()) {
+        toast.error(t("orderProcessingModal.errors.customerPhoneRequired"));
+        return;
+      }
+
+      const checkDeliveryRequirement = async () => {
+        const customerAddress = selectedCustomer
+          ? selectedCustomer.address
+          : customCustomerAddress;
+
+        if (!customerAddress || !customerAddress.trim()) {
+          toast.error(t("orderProcessingModal.errors.customerDetailsRequired"));
+          return false;
+        }
+
+        const restaurantAddress = configurations.address;
+        const apiKey = configurations.googleMapsApiKey;
+
+        if (!restaurantAddress || !apiKey) {
+          console.warn("Restaurant address or Google Maps API key missing. Skipping distance check.");
+          return true;
+        }
+
+        const distance = await calculateDistance(
+          restaurantAddress,
+          formatAddress(customerAddress),
+          apiKey
+        );
+
+        if (distance === null) {
+          console.warn("Could not calculate distance. Proceeding without distance check.");
+          return true;
+        }
+
+        const ranges = (configurations as any).deliveryMinOrderRanges || [];
+        if (ranges.length === 0) return true;
+
+        const applicableRange = ranges.find(
+          (range: any) => distance >= range.minKm && distance <= range.maxKm
+        );
+
+        if (applicableRange) {
+          if (orderTotal < applicableRange.minOrderAmount) {
+            toast.error(
+              t("orderProcessingModal.errors.minOrderAmountNotMet", {
+                amount: applicableRange.minOrderAmount.toFixed(2),
+                distance: distance.toFixed(2),
+              })
+            );
+            return false;
+          }
+        } else {
+          const maxDefinedDistance = Math.max(...ranges.map((r: any) => r.maxKm));
+
+          if (distance > maxDefinedDistance) {
+            toast.error(
+              t("orderProcessingModal.errors.maxDistanceExceeded", {
+                distance: distance.toFixed(2),
+                maxDistance: maxDefinedDistance.toFixed(2),
+              })
+            );
+            return false;
+          }
+
+          toast.error(t("orderProcessingModal.errors.maxDistanceExceeded", {
+            distance: distance.toFixed(2),
+            maxDistance: maxDefinedDistance.toFixed(2),
+          }));
+          return false;
+        }
+
+        return true;
+      };
+
+      checkDeliveryRequirement().then((isValid) => {
+        if (isValid) {
+          proceedToPayment();
+        }
+      });
+      return;
+    }
+
+    proceedToPayment();
   };
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -378,12 +486,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               <p className="text-white text-xs bg-black/30 px-4 py-2 rounded-full backdrop-blur-sm border border-white/20 shadow-lg">
                 {sentToKitchenCount > 0 && estimatedTime > 0
                   ? t("orderProcessingModal.sentToKitchenWithTime", {
-                      count: sentToKitchenCount,
-                      time: estimatedTime,
-                    })
+                    count: sentToKitchenCount,
+                    time: estimatedTime,
+                  })
                   : t("orderProcessingModal.sentToKitchenCount", {
-                      count: sentToKitchenCount,
-                    })}
+                    count: sentToKitchenCount,
+                  })}
               </p>
             </div>
           )}
@@ -540,110 +648,117 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                         </div>
                         <div className="text-gray-800 text-sm leading-relaxed">
                           {selectedCustomer.address &&
-                          selectedCustomer.address.includes("|")
+                            selectedCustomer.address.includes("|")
                             ? formatAddress(selectedCustomer.address)
                             : selectedCustomer.address}
                         </div>
+                        {customerDistance !== null && orderType === "delivery" && (
+                          <div className="mt-2 flex items-center gap-2 text-emerald-600 font-semibold text-sm">
+                            <LocationIcon className="size-4" />
+                            <span>
+                              {t("orderProcessingModal.customerSearch.distance", {
+                                distance: customerDistance.toFixed(2),
+                              })}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )}
                 </div>
               </div>
             )}
- 
-          {/* Order Type */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                <div className="w-3 h-2 bg-orange-600"></div>
+
+            {/* Order Type */}
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <div className="w-3 h-2 bg-orange-600"></div>
+                </div>
+                <h3 className="text-xl font-bold text-black">
+                  {t("orderProcessingModal.orderType.title")}
+                </h3>
               </div>
-              <h3 className="text-xl font-bold text-black">
-                {t("orderProcessingModal.orderType.title")}
-              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <CustomButton
+                  type="button"
+                  onClick={() => setOrderType("delivery")}
+                  variant="transparent"
+                  className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${orderType === "delivery"
+                    ? "border-black bg-gray-50 text-gray-700 shadow-md"
+                    : "border-gray-200 hover:border-gray-300 bg-white"
+                    }`}
+                  label={
+                    <>
+                      <div className="mb-3 flex justify-center">
+                        <img
+                          src="./images/delivery-truck.png"
+                          alt="Delivery"
+                          className="w-12 h-12 object-contain"
+                        />
+                      </div>
+                      <div className="font-semibold text-base">
+                        {t("orderProcessingModal.orderType.delivery.title")}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {t("orderProcessingModal.orderType.delivery.description")}
+                      </div>
+                    </>
+                  }
+                />
+                <CustomButton
+                  type="button"
+                  onClick={() => setOrderType("pickup")}
+                  variant="transparent"
+                  className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${orderType === "pickup"
+                    ? "border-black bg-gray-50 text-gray-700 shadow-md"
+                    : "border-gray-200 hover:border-gray-300 bg-white"
+                    }`}
+                  label={
+                    <>
+                      <div className="mb-3 flex justify-center">
+                        <img
+                          src="./images/pickup.png"
+                          alt="Pickup"
+                          className="w-12 h-12 object-contain"
+                        />
+                      </div>
+                      <div className="font-semibold text-base">
+                        {t("orderProcessingModal.orderType.pickup.title")}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {t("orderProcessingModal.orderType.pickup.description")}
+                      </div>
+                    </>
+                  }
+                />
+                <CustomButton
+                  type="button"
+                  onClick={() => setOrderType("dine-in")}
+                  variant="transparent"
+                  className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${orderType === "dine-in"
+                    ? "border-black bg-gray-50 text-gray-700 shadow-md"
+                    : "border-gray-200 hover:border-gray-300 bg-white"
+                    }`}
+                  label={
+                    <>
+                      <div className="mb-3 flex justify-center">
+                        <img
+                          src="./images/dinein.png"
+                          alt="Dine In"
+                          className="w-12 h-12 object-contain"
+                        />
+                      </div>
+                      <div className="font-semibold text-base">
+                        {t("orderProcessingModal.orderType.dineIn.title")}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {t("orderProcessingModal.orderType.dineIn.description")}
+                      </div>
+                    </>
+                  }
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <CustomButton
-                type="button"
-                onClick={() => setOrderType("delivery")}
-                variant="transparent"
-                className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
-                  orderType === "delivery"
-                    ? "border-black bg-gray-50 text-gray-700 shadow-md"
-                    : "border-gray-200 hover:border-gray-300 bg-white"
-                }`}
-                label={
-                  <>
-                    <div className="mb-3 flex justify-center">
-                      <img
-                        src="./images/delivery-truck.png"
-                        alt="Delivery"
-                        className="w-12 h-12 object-contain"
-                      />
-                    </div>
-                    <div className="font-semibold text-base">
-                      {t("orderProcessingModal.orderType.delivery.title")}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {t("orderProcessingModal.orderType.delivery.description")}
-                    </div>
-                  </>
-                }
-              />
-              <CustomButton
-                type="button"
-                onClick={() => setOrderType("pickup")}
-                variant="transparent"
-                className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
-                  orderType === "pickup"
-                    ? "border-black bg-gray-50 text-gray-700 shadow-md"
-                    : "border-gray-200 hover:border-gray-300 bg-white"
-                }`}
-                label={
-                  <>
-                    <div className="mb-3 flex justify-center">
-                      <img
-                        src="./images/pickup.png"
-                        alt="Pickup"
-                        className="w-12 h-12 object-contain"
-                      />
-                    </div>
-                    <div className="font-semibold text-base">
-                      {t("orderProcessingModal.orderType.pickup.title")}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {t("orderProcessingModal.orderType.pickup.description")}
-                    </div>
-                  </>
-                }
-              />
-              <CustomButton
-                type="button"
-                onClick={() => setOrderType("dine-in")}
-                variant="transparent"
-                className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
-                  orderType === "dine-in"
-                    ? "border-black bg-gray-50 text-gray-700 shadow-md"
-                    : "border-gray-200 hover:border-gray-300 bg-white"
-                }`}
-                label={
-                  <>
-                    <div className="mb-3 flex justify-center">
-                      <img
-                        src="./images/dinein.png"
-                        alt="Dine In"
-                        className="w-12 h-12 object-contain"
-                      />
-                    </div>
-                    <div className="font-semibold text-base">
-                      {t("orderProcessingModal.orderType.dineIn.title")}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {t("orderProcessingModal.orderType.dineIn.description")}
-                    </div>
-                  </>
-                }
-              />
-            </div>
-          </div>
 
             {/* Custom Customer Fields - Show when no customer is selected */}
             {!selectedCustomer && (
@@ -800,17 +915,27 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                       name="custom-customer-address"
                       inputClasses="py-3 px-4"
                     />
+                    {customerDistance !== null && (
+                      <div className="mt-3 flex items-center gap-2 text-emerald-600 font-semibold text-sm">
+                        <LocationIcon className="size-4" />
+                        <span>
+                          {t("orderProcessingModal.customerSearch.distance", {
+                            distance: customerDistance.toFixed(2),
+                          })}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 <div className="mt-3 text-sm text-gray-600">
                   {orderType === "delivery"
                     ? t(
-                        "orderProcessingModal.customerDetails.descriptionRequired"
-                      )
+                      "orderProcessingModal.customerDetails.descriptionRequired"
+                    )
                     : t(
-                        "orderProcessingModal.customerDetails.descriptionOptional"
-                      )}
+                      "orderProcessingModal.customerDetails.descriptionOptional"
+                    )}
                 </div>
               </div>
             )}
@@ -871,7 +996,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   </div>
                   <div className="text-blue-700 text-sm leading-relaxed">
                     {selectedCustomer.address &&
-                    selectedCustomer.address.includes("|")
+                      selectedCustomer.address.includes("|")
                       ? formatAddress(selectedCustomer.address)
                       : selectedCustomer.address}
                   </div>

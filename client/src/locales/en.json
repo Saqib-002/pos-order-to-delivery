@@ -57,7 +57,11 @@
     "save": "Save",
     "savedSuccess": "Configurations saved successfully",
     "errorGetting": "Error getting configurations",
-    "errorSaving": "Error saving configurations"
+    "errorSaving": "Error saving configurations",
+    "deliveryMinOrderLabel": "Delivery Minimum Order",
+    "addDistanceRange": "Add Distance Range",
+    "distanceLabel": "Distance Range",
+    "minOrderAmountLabel": "Min. Order Amount"
   },
   "userManagement": {
     "title": "User Management",
@@ -2371,7 +2375,8 @@
       "name": "Name:",
       "phone": "Phone:",
       "email": "Email:",
-      "address": "Address"
+      "address": "Address",
+      "distance": "Current distance: {{distance}}km"
     },
     "customerDetails": {
       "title": "Customer Details",
@@ -2431,7 +2436,9 @@
       "customerPhoneRequired": "Please enter customer phone number for delivery orders",
       "customerNoAddress": "Selected customer has no address. Please select a different customer or change to pickup.",
       "customerDetailsRequired": "Please select a customer or enter customer details including address for delivery orders",
-      "orderAlreadyPaid": "Order is already paid. Processing with existing payment information."
+      "orderAlreadyPaid": "Order is already paid. Processing with existing payment information.",
+      "minOrderAmountNotMet": "Minimum order of €{{amount}} is required for {{distance}}km distance. Please add more items.",
+      "maxDistanceExceeded": "Distance of {{distance}}km exceeds our maximum delivery range of {{maxDistance}}km."
     },
     "defaultCustomers": {
       "dineInCustomer": "Dine-in Customer",
@@ -2493,5 +2500,20 @@
     "dangerWarningTitle": "This action cannot be undone",
     "specialNote": "Once deleted, this item will be permanently removed from the system.",
     "confirmAction": "Confirm Action"
+  },
+  "printConfirmationModal": {
+    "title": "Print Receipt",
+    "message": "Would you like to print the customer receipt for this order?",
+    "yesPrint": "Print Receipt",
+    "noPrint": "No, thanks"
+  },
+  "deliveryRangeMapModal": {
+    "title": "Delivery Zone Preview",
+    "restaurant": "Restaurant",
+    "deliveryZone": "Delivery Zone",
+    "excludedZone": "Excluded Zone (Smaller radius)",
+    "errors": {
+      "couldNotLocate": "Could not locate restaurant address: {{status}}"
+    }
   }
 }
