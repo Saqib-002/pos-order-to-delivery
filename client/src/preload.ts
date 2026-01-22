@@ -465,6 +465,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("get-configurations", token),
   updateConfigurations: (token: string, id: string, updates: Partial<any>) =>
     ipcRenderer.invoke("update-configurations", token, id, updates),
+  syncAuthorInfo: (token: string) =>
+    ipcRenderer.invoke("sync-author-info", token),
 
   // suppliers
   createSupplier: (token: string, supplierData: any) =>

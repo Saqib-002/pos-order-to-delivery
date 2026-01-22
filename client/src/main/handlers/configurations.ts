@@ -80,3 +80,53 @@ export const updateConfigurations = async (
         };
     }
 };
+
+const DEFAULT_SYNC_URL = "https://thunderjaw-licenses.vercel.app/api/v2/config";
+
+export const syncAuthorInfo = async (
+    event: IpcMainInvokeEvent,
+    token: string
+) => {
+    try {
+        await verifyToken(event, token);
+        const config = await ConfigurationsDatabaseOperations.getConfigurations();
+        const syncUrl = config?.externalApiUrl || DEFAULT_SYNC_URL;
+
+        const response = await fetch(syncUrl);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch from external API: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        // Map external data to our local schema
+        const updates: any = {};
+        if (data.authorName) updates.authorName = data.authorName;
+        if (data.authorWebsite) updates.authorWebsite = data.authorWebsite;
+        if (data.authorEmail) updates.authorEmail = data.authorEmail;
+        if (data.softwareVersion) updates.softwareVersion = data.softwareVersion;
+        if (data.contactTypes) updates.contactTypes = data.contactTypes;
+        if (data.newSyncUrl) updates.externalApiUrl = data.newSyncUrl;
+
+        if (Object.keys(updates).length > 0 && config?.id) {
+            await ConfigurationsDatabaseOperations.updateConfigurations(config.id, updates);
+            const updatedConfig = await ConfigurationsDatabaseOperations.getConfigurations();
+            return {
+                status: true,
+                data: updatedConfig,
+            };
+        }
+
+        return {
+            status: true,
+            data: config,
+            message: "No updates found"
+        };
+    } catch (error) {
+        console.error("Sync error:", error);
+        return {
+            status: false,
+            error: (error as Error).message,
+        };
+    }
+};

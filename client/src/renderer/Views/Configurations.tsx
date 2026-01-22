@@ -6,6 +6,7 @@ import Suppliers from "../components/configurations/Suppliers";
 import ExpenseTypes from "../components/configurations/ExpenseTypes";
 import IncomeSources from "../components/configurations/IncomeSources";
 import Inventory from "../components/configurations/Inventory";
+import AuthorInfo from "../components/configurations/AuthorInfo";
 import { useTranslation } from "react-i18next";
 
 const Configurations = () => {
@@ -28,6 +29,8 @@ const Configurations = () => {
         return <Inventory />;
       case "config":
         return <ConfigurationsTab />;
+      case "authorInfo":
+        return <AuthorInfo />;
       default:
         return <Printers />;
     }
@@ -77,6 +80,12 @@ const Configurations = () => {
           className={`px-5 py-3 ${currentSubview === "config" ? "border-b-2 border-black " : " text-gray-700 hover:bg-gray-200 cursor-pointer"} touch-manipulation transition-colors duration-300`}
         >
           {t("configurations.title")}
+        </button>
+        <button
+          onClick={() => setCurrentSubview("authorInfo")}
+          className={`px-5 py-3 ${currentSubview === "authorInfo" ? "border-b-2 border-black " : " text-gray-700 hover:bg-gray-200 cursor-pointer"} touch-manipulation transition-colors duration-300`}
+        >
+          {t("authorInfo.title")}
         </button>
       </div>
       <div>{renderSubview()}</div>

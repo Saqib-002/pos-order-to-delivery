@@ -15,6 +15,9 @@
     "actions": "Acciones",
     "confirmDelete": "¿Está seguro de que desea eliminar este elemento?",
     "noData": "No hay datos disponibles",
+    "notAvailable": "N/D",
+    "savedSuccessfully": "Guardado exitosamente",
+    "errorSaving": "Error al guardar",
     "seeAll": "Ver Todo",
     "paymentStatus": {
       "paid": "PAGADO",
@@ -63,6 +66,27 @@
     "addDistanceRange": "Añadir Rango de Distancia",
     "distanceLabel": "Rango de Distancia",
     "minOrderAmountLabel": "Cant. Mínima de Pedido"
+  },
+  "authorInfo": {
+    "title": "Información del Autor",
+    "subtitle": "Detalles del software e información de contacto del autor",
+    "syncButton": "Sincronizar Información",
+    "syncSuccess": "Información sincronizada exitosamente",
+    "syncError": "Error al sincronizar con la API externa",
+    "softwareDetails": "Detalles del Software",
+    "softwareVersion": "Versión",
+    "authorDetails": "Detalles del Autor",
+    "name": "Nombre",
+    "website": "Sitio Web",
+    "email": "Correo Electrónico",
+    "syncSettings": "Configuración de Sincronización",
+    "syncSettingsHelp": "Configure la URL de la API externa para sincronizar la información del autor."
+  },
+  "contactTypes": {
+    "title": "Canales de Contacto",
+    "subtitle": "Canales directos para soporte y ventas",
+    "noContacts": "No hay información de contacto disponible",
+    "syncHelp": "Haga clic en 'Sincronizar Información' en la pestaña Autor para obtener detalles."
   },
 
   "printers": {

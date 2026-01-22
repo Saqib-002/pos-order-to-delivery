@@ -20,6 +20,11 @@ export class ConfigurationsDatabaseOperations {
           processedData.deliveryMinOrderRanges || []
         );
       }
+      if (processedData.contactTypes !== undefined) {
+        processedData.contactTypes = JSON.stringify(
+          processedData.contactTypes || []
+        );
+      }
 
       await db("configurations").insert({
         ...processedData,
@@ -80,6 +85,24 @@ export class ConfigurationsDatabaseOperations {
           configurations.deliveryMinOrderRanges = [];
         }
 
+        if (configurations.contactTypes) {
+          try {
+            if (typeof configurations.contactTypes === "string") {
+              configurations.contactTypes = JSON.parse(
+                configurations.contactTypes
+              );
+            }
+            if (!Array.isArray(configurations.contactTypes)) {
+              configurations.contactTypes = [];
+            }
+          } catch (parseError) {
+            console.warn("Failed to parse contactTypes:", parseError);
+            configurations.contactTypes = [];
+          }
+        } else {
+          configurations.contactTypes = [];
+        }
+
         if (configurations.logo) {
           const uploadUrl = (store as any).get("cdnUrl");
           if (uploadUrl) {
@@ -105,6 +128,11 @@ export class ConfigurationsDatabaseOperations {
       if (processedUpdates.deliveryMinOrderRanges !== undefined) {
         processedUpdates.deliveryMinOrderRanges = JSON.stringify(
           processedUpdates.deliveryMinOrderRanges || []
+        );
+      }
+      if (processedUpdates.contactTypes !== undefined) {
+        processedUpdates.contactTypes = JSON.stringify(
+          processedUpdates.contactTypes || []
         );
       }
 

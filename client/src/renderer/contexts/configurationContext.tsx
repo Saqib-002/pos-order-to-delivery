@@ -28,6 +28,12 @@ interface ConfigurationType {
   postalCode?: string;
   city?: string;
   province?: string;
+  authorName?: string;
+  authorWebsite?: string;
+  authorEmail?: string;
+  softwareVersion?: string;
+  contactTypes?: any[];
+  externalApiUrl?: string;
 }
 interface ConfigurationContextType {
   configurations: ConfigurationType;

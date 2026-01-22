@@ -123,6 +123,7 @@ import {
   createConfigurations,
   getConfigurations,
   updateConfigurations,
+  syncAuthorInfo,
 } from "./handlers/configurations.js";
 import {
   createVehicle,
@@ -433,6 +434,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("create-configurations", createConfigurations);
   ipcMain.handle("get-configurations", getConfigurations);
   ipcMain.handle("update-configurations", updateConfigurations);
+  ipcMain.handle("sync-author-info", syncAuthorInfo);
 
   // suppliers
   ipcMain.handle("create-supplier", createSupplier);

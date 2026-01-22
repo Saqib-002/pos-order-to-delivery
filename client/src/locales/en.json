@@ -15,6 +15,9 @@
     "actions": "Actions",
     "confirmDelete": "Are you sure you want to delete this item?",
     "noData": "No data available",
+    "notAvailable": "N/A",
+    "savedSuccessfully": "Saved successfully",
+    "errorSaving": "Error while saving",
     "seeAll": "See All",
     "paymentStatus": {
       "paid": "PAID",
@@ -62,6 +65,27 @@
     "addDistanceRange": "Add Distance Range",
     "distanceLabel": "Distance Range",
     "minOrderAmountLabel": "Min. Order Amount"
+  },
+  "authorInfo": {
+    "title": "Author Information",
+    "subtitle": "Software details and author contact information",
+    "syncButton": "Sync Information",
+    "syncSuccess": "Information synchronized successfully",
+    "syncError": "Failed to sync with external API",
+    "softwareDetails": "Software Details",
+    "softwareVersion": "Version",
+    "authorDetails": "Author Details",
+    "name": "Name",
+    "website": "Website",
+    "email": "Email",
+    "syncSettings": "Sync Settings",
+    "syncSettingsHelp": "Configure the external API URL to sync author information."
+  },
+  "contactTypes": {
+    "title": "Contact Channels",
+    "subtitle": "Direct channels for support and sales",
+    "noContacts": "No contact information available",
+    "syncHelp": "Click 'Sync Information' in the Author tab to fetch details."
   },
   "userManagement": {
     "title": "User Management",
