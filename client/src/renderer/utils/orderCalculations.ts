@@ -106,7 +106,7 @@ export const calculateOrderTotal = (
   }, 0);
 
   return {
-    orderTotal: nonMenuTotal + menuTotal,
+    orderTotal: Math.round((nonMenuTotal + menuTotal) * 100) / 100,
     nonMenuItems,
     groups: Object.values(menuGroups),
   };

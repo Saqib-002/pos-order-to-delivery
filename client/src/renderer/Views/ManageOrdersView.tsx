@@ -79,6 +79,7 @@ export const ManageOrdersView = () => {
       endDateRange: null,
       selectedDeliveryPerson: "",
       selectedCustomer: "",
+      selectedOrderType: "",
     });
   }, []);
 
@@ -196,6 +197,7 @@ export const ManageOrdersView = () => {
       endDateRange: null,
       selectedDeliveryPerson: "",
       selectedCustomer: "",
+      selectedOrderType: "",
     });
   };
 
@@ -280,7 +282,7 @@ export const ManageOrdersView = () => {
           const customerName = order?.customer?.name;
 
           const receiptHTML = generateReceiptHTML(
-            order.items || [], 
+            order.items || [],
             configs,
             order.orderId,
             order.orderType,
@@ -343,14 +345,14 @@ export const ManageOrdersView = () => {
       if (!res.status) {
         toast.error(
           res.error ||
-            t("manageOrders.errors.cancelFailed") ||
-            "Failed to cancel order"
+          t("manageOrders.errors.cancelFailed") ||
+          "Failed to cancel order"
         );
         return;
       }
       toast.success(
         t("manageOrders.messages.orderCancelled") ||
-          "Order cancelled successfully"
+        "Order cancelled successfully"
       );
       setIsCancelOrderModalOpen(false);
       setSelectedOrderForCancel(null);
@@ -568,11 +570,10 @@ export const ManageOrdersView = () => {
             <button
               onClick={handleScrollLeft}
               disabled={!canScrollLeft}
-              className={`p-2 rounded-lg transition-all duration-200 ${
-                canScrollLeft
-                  ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
-                  : "bg-gray-100 text-gray-300 cursor-not-allowed"
-              }`}
+              className={`p-2 rounded-lg transition-all duration-200 ${canScrollLeft
+                ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
+                : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                }`}
               title="Scroll left"
             >
               <ChevronLeftIcon className="w-5 h-5" />
@@ -580,11 +581,10 @@ export const ManageOrdersView = () => {
             <button
               onClick={handleScrollRight}
               disabled={!canScrollRight}
-              className={`p-2 rounded-lg transition-all duration-200 ${
-                canScrollRight
-                  ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
-              }`}
+              className={`p-2 rounded-lg transition-all duration-200 ${canScrollRight
+                ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
+                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                }`}
               title="Scroll right"
             >
               <ChevronRightIcon className="w-5 h-5" />
@@ -649,6 +649,32 @@ export const ManageOrdersView = () => {
                       page: 0,
                     }));
                   }}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Order Type Filter */}
+              <div className="w-full lg:w-48">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("manageOrders.table.orderType")}
+                </label>
+                <CustomSelect
+                  options={[
+                    { value: "", label: t("reports.components.orderTypeSelector.types.all") },
+                    { value: "delivery", label: t("reports.components.orderTypeSelector.types.delivery") },
+                    { value: "pickup", label: t("reports.components.orderTypeSelector.types.pickup") },
+                    { value: "dine-in", label: t("reports.components.orderTypeSelector.types.dineIn") },
+                    { value: "platform", label: t("reports.components.orderTypeSelector.types.platform") },
+                  ]}
+                  value={filter.selectedOrderType}
+                  onChange={(value) => {
+                    setFilter((prev) => ({
+                      ...prev,
+                      selectedOrderType: value,
+                      page: 0,
+                    }));
+                  }}
+                  placeholder={t("reports.components.orderTypeSelector.types.all")}
                   className="w-full"
                 />
               </div>
@@ -794,10 +820,10 @@ export const ManageOrdersView = () => {
             }
             emptyStateTitle={
               filter.searchTerm ||
-              filter.selectedDate ||
-              filter.selectedDeliveryPerson ||
-              filter.selectedCustomer ||
-              filter.selectedStatus.length > 0
+                filter.selectedDate ||
+                filter.selectedDeliveryPerson ||
+                filter.selectedCustomer ||
+                filter.selectedStatus.length > 0
                 ? t("manageOrders.noOrdersMatch")
                 : t("manageOrders.noOrdersFound")
             }

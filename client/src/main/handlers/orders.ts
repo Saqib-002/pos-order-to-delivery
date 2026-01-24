@@ -365,6 +365,27 @@ export const getOrdersCountByType = async (
   }
 };
 
+export const getPendingOrdersByDeliveryPerson = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  deliveryPersonId: string
+) => {
+  try {
+    const result = await OrderDatabaseOperations.getPendingOrdersByDeliveryPerson(
+      deliveryPersonId
+    );
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};
+
 export const createPlatformOrder = async (
   event: IpcMainInvokeEvent,
   token: string,

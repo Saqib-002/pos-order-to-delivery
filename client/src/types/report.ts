@@ -14,7 +14,7 @@ export interface AnalyticsType {
   hourlyData: number[];
   topItems: { name: string; count: number }[];
   topMenus: { name: string; count: number }[];
-  orderTypeTotals: { type: string; total: number }[];
+  orderTypeTotals: { type: string; total: number; count: number }[];
   orders: Order[];
   ordersTotalCount: number;
 }

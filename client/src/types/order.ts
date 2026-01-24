@@ -88,6 +88,7 @@ export interface FilterType {
   selectedPaymentStatus: string[];
   selectedDeliveryPerson: string;
   selectedCustomer: string;
+  selectedOrderType: string;
   page: number;
   limit: number;
   startDateRange: Date | null;

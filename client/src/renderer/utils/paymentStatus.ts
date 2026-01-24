@@ -48,7 +48,7 @@ export const calculatePaymentStatus = (
     });
 
     paymentBreakdown.push(...payments);
-    totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+    totalPaid = Math.round(payments.reduce((sum, payment) => sum + payment.amount, 0) * 100) / 100;
   } catch (error) {
     console.error("Error parsing payment string:", paymentType, error);
     return {
@@ -59,14 +59,15 @@ export const calculatePaymentStatus = (
     };
   }
 
-  const remainingAmount = totalAmount - totalPaid;
+  const roundedTotalAmount = Math.round(totalAmount * 100) / 100;
+  const remainingAmount = Math.round((roundedTotalAmount - totalPaid) * 100) / 100;
   const tolerance = 0.01;
 
   let status: "PAID" | "UNPAID" | "PARTIAL";
 
   if (totalPaid <= 0) {
     status = "UNPAID";
-  } else if (Math.abs(remainingAmount) <= tolerance) {
+  } else if (Math.abs(remainingAmount) < tolerance) {
     status = "PAID";
   } else {
     status = "PARTIAL";

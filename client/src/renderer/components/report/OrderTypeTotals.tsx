@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { translateOrderType } from "../../utils/orderStatus";
 
 export const OrderTypeTotals: React.FC<{
-  orderTypeTotals: { type: string; total: number }[];
+  orderTypeTotals: { type: string; total: number; count: number }[];
   title: string;
 }> = ({ orderTypeTotals, title }) => {
   const { t } = useTranslation();
@@ -22,19 +22,20 @@ export const OrderTypeTotals: React.FC<{
             <span className="w-8 text-sm font-medium text-gray-600">
               #{index + 1}
             </span>
-            <span className="flex-1 text-sm text-gray-700">
-              {item.type
-                ? translateOrderType(item.type)
-                : t("reports.components.orderTypeTotals.unknown")}
-            </span>
+            <div className="flex-1 flex flex-col">
+              <span className="text-sm text-gray-700">
+                {item.type
+                  ? translateOrderType(item.type) + " (" + item.count + ")"
+                  : t("reports.components.orderTypeTotals.unknown")}
+              </span>
+            </div>
             <div className="flex items-center space-x-2">
               <div className="w-32 bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-green-500 h-2 rounded-full transition-all duration-300"
                   style={{
-                    width: `${
-                      maxTotal > 0 ? (item.total / maxTotal) * 100 : 0
-                    }%`,
+                    width: `${maxTotal > 0 ? (item.total / maxTotal) * 100 : 0
+                      }%`,
                   }}
                 ></div>
               </div>

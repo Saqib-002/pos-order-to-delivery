@@ -36,6 +36,37 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
   const [bulkPaymentMethod, setBulkPaymentMethod] = useState<"cash" | "card">(
     "cash"
   );
+  const [fetchedOrders, setFetchedOrders] = useState<Order[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+
+  React.useEffect(() => {
+    const fetchPendingOrders = async () => {
+      if (!selectedBulkDeliveryPerson || !isOpen) {
+        setFetchedOrders([]);
+        return;
+      }
+
+      setLoadingOrders(true);
+      try {
+        const res = await (window as any).electronAPI.getPendingOrdersByDeliveryPerson(
+          token,
+          selectedBulkDeliveryPerson
+        );
+        if (res.status) {
+          setFetchedOrders(res.data || []);
+        } else {
+          toast.error(t("bulkPaymentModal.errors.fetchFailed") || "Failed to fetch pending orders");
+        }
+      } catch (error) {
+        console.error("Error fetching pending orders:", error);
+        toast.error(t("bulkPaymentModal.errors.fetchFailed") || "Failed to fetch pending orders");
+      } finally {
+        setLoadingOrders(false);
+      }
+    };
+
+    fetchPendingOrders();
+  }, [selectedBulkDeliveryPerson, isOpen, token]);
 
   // Parse existing payments from payment string
   const parseExistingPayments = (paymentTypeString: string) => {
@@ -71,27 +102,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
 
   // Get orders for bulk payment processing
   const getOrdersForDeliveryPerson = (deliveryPersonId: string) => {
-    return orders.filter((order) => {
-      if (
-        !order.deliveryPerson ||
-        order.deliveryPerson.id !== deliveryPersonId
-      ) {
-        return false;
-      }
-
-      const { orderTotal } = calculateOrderTotal(order.items || []);
-      const paymentStatus = calculatePaymentStatus(
-        order.paymentType || "",
-        orderTotal
-      );
-
-      return (
-        order.status === "delivered" &&
-        (paymentStatus.status === "UNPAID" ||
-          paymentStatus.status === "PARTIAL") &&
-        paymentStatus.remainingAmount > 0
-      );
-    });
+    return fetchedOrders;
   };
 
   const getBulkPaymentTotal = (deliveryPersonId: string) => {
@@ -128,7 +139,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
     if (actualAmount <= 0) {
       toast.error(
         t("marketPurchaseManagement.modal.errors.noRemainingAmount") ||
-          "No remaining amount to pay. The total has already been paid."
+        "No remaining amount to pay. The total has already been paid."
       );
       return;
     }
@@ -404,6 +415,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                 <h3 className="font-semibold text-gray-900 text-lg">
                   {t("bulkPaymentModal.ordersSummary")}
                 </h3>
+                {loadingOrders && <span className="text-sm text-blue-500 italic ml-2">({t("common.loading") || "Loading..."})</span>}
               </div>
 
               <div className="space-y-3">
@@ -447,9 +459,8 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                     {t("bulkPaymentModal.remainingAmount")}
                   </span>
                   <span
-                    className={`text-lg font-bold ${
-                      remainingAmount > 0.01 ? "text-red-600" : "text-green-600"
-                    }`}
+                    className={`text-lg font-bold ${remainingAmount > 0.01 ? "text-red-600" : "text-green-600"
+                      }`}
                   >
                     €{remainingAmount.toFixed(2)}
                   </span>
@@ -527,11 +538,10 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setBulkPaymentMethod("cash")}
-                    className={`p-1 border-2 rounded-lg transition-all duration-200 flex items-center justify-center ${
-                      bulkPaymentMethod === "cash"
-                        ? "border-green-400 bg-green-50"
-                        : "border-gray-200 hover:border-green-300"
-                    }`}
+                    className={`p-1 border-2 rounded-lg transition-all duration-200 flex items-center justify-center ${bulkPaymentMethod === "cash"
+                      ? "border-green-400 bg-green-50"
+                      : "border-gray-200 hover:border-green-300"
+                      }`}
                   >
                     <img
                       src="./images/cash.png"
@@ -542,11 +552,10 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setBulkPaymentMethod("card")}
-                    className={`p-1 border-2 rounded-lg transition-all duration-200 flex items-center justify-center ${
-                      bulkPaymentMethod === "card"
-                        ? "border-blue-400 bg-blue-50"
-                        : "border-gray-200 hover:border-blue-300"
-                    }`}
+                    className={`p-1 border-2 rounded-lg transition-all duration-200 flex items-center justify-center ${bulkPaymentMethod === "card"
+                      ? "border-blue-400 bg-blue-50"
+                      : "border-gray-200 hover:border-blue-300"
+                      }`}
                   >
                     <img
                       src="./images/card.png"

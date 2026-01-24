@@ -27,6 +27,56 @@ const stringToComplements = (complementStr: any): any[] => {
 };
 
 export class OrderDatabaseOperations {
+  private static formatOrderItems(items: any[]): OrderItem[] {
+    return items.map((item: any) => {
+      let complements: any[] = [];
+      if (item.complements) {
+        try {
+          if (
+            typeof item.complements === "string" &&
+            item.complements.trim().startsWith("[")
+          ) {
+            complements = JSON.parse(item.complements);
+          } else {
+            complements = stringToComplements(item.complements);
+          }
+        } catch (e) {
+          complements = stringToComplements(item.complements);
+        }
+      }
+
+      return {
+        id: item.id,
+        productId: item.productId,
+        productName: item.productName,
+        productPrice: parseFloat(item.productPrice || 0),
+        productDescription: item.productDescription,
+        productPriority: parseInt(item.productPriority || 0),
+        productDiscount: parseFloat(item.productDiscount || 0),
+        productTax: parseFloat(item.productTax || 0),
+        variantId: item.variantId || "",
+        variantName: item.variantName || "",
+        variantPrice: parseFloat(item.variantPrice || 0),
+        complements: complements,
+        quantity: parseInt(item.quantity || 1),
+        totalPrice: parseFloat(item.totalPrice || 0),
+        menuId: item.menuId || undefined,
+        menuSecondaryId: item.menuSecondaryId || undefined,
+        menuName: item.menuName || undefined,
+        menuPrice: item.menuPrice ? parseFloat(item.menuPrice) : undefined,
+        menuTax: item.menuTax ? parseFloat(item.menuTax) : undefined,
+        menuDiscount: item.menuDiscount
+          ? parseFloat(item.menuDiscount)
+          : undefined,
+        supplement: item.supplement ? parseFloat(item.supplement) : undefined,
+        printers: item.printers
+          ? typeof item.printers === "string"
+            ? item.printers.split("=")
+            : item.printers
+          : [],
+      };
+    });
+  }
   static async getOrCreatePlatformOrderProduct(trx: any): Promise<string> {
     const PLATFORM_ORDER_PRODUCT_NAME = "250f812e66c1afab64c57bcea36bb3b7";
     const existingProduct = await trx("products")
@@ -627,7 +677,8 @@ export class OrderDatabaseOperations {
         endDate.toISOString(),
       ])
       .andWhere("order_items.menuId", null)
-      .andWhereNot("orders.status", "pending");
+      .andWhereNot("orders.status", "pending")
+      .andWhereNot("orders.orderType", "platform");
 
     if (orderType) {
       const normalizedOrderType = orderType.toLowerCase().replace(/-/g, "");
@@ -666,11 +717,12 @@ export class OrderDatabaseOperations {
 
     let topMenusQuery = db(subquery)
       .innerJoin("orders", "sub.orderId", "orders.id")
-      .whereBetween("orders.createdAt", [
+      .andWhereBetween("orders.createdAt", [
         startDate.toISOString(),
         endDate.toISOString(),
       ])
-      .andWhereNot("orders.status", "pending");
+      .andWhereNot("orders.status", "pending")
+      .andWhereNot("orders.orderType", "platform");
 
     if (orderType) {
       const normalizedOrderType = orderType.toLowerCase().replace(/-/g, "");
@@ -695,13 +747,14 @@ export class OrderDatabaseOperations {
     }));
 
     let ordersQuery = db("orders")
-      .whereBetween("createdAt", [
+      .leftJoin("platforms", "orders.platformId", "platforms.id")
+      .whereBetween("orders.createdAt", [
         startDate.toISOString(),
         endDate.toISOString(),
       ])
-      .andWhereNot("status", "pending")
-      .whereNotNull("orderType")
-      .whereNot("orderType", "");
+      .andWhereNot("orders.status", "pending")
+      .whereNotNull("orders.orderType")
+      .whereNot("orders.orderType", "");
 
     if (orderType) {
       const normalizedOrderType = orderType.toLowerCase().replace(/-/g, "");
@@ -712,9 +765,10 @@ export class OrderDatabaseOperations {
     }
 
     const ordersForTotals = await ordersQuery.select(
-      "id",
-      "orderType",
-      "status"
+      "orders.id",
+      "orders.orderType",
+      "orders.status",
+      "platforms.name as platformName"
     );
 
     const orderIds = ordersForTotals.map((o: any) => o.id);
@@ -723,65 +777,27 @@ export class OrderDatabaseOperations {
         ? await db("order_items").whereIn("orderId", orderIds)
         : [];
 
-    const orderTotalsMap = new Map<string, { type: string; total: number }>();
+    const orderTotalsMap = new Map<string, { type: string; total: number; count: number }>();
 
     for (const order of ordersForTotals) {
       const orderItems = allOrderItems.filter(
         (item: any) => item.orderId === order.id
       );
 
-      const formattedItems: OrderItem[] = orderItems.map((item: any) => {
-        let complements: any[] = [];
-        if (item.complements) {
-          try {
-            if (
-              typeof item.complements === "string" &&
-              item.complements.trim().startsWith("[")
-            ) {
-              complements = JSON.parse(item.complements);
-            } else {
-              complements = stringToComplements(item.complements);
-            }
-          } catch (e) {
-            complements = stringToComplements(item.complements);
-          }
-        }
-
-        return {
-          id: item.id,
-          productId: item.productId,
-          productName: item.productName,
-          productPrice: parseFloat(item.productPrice || 0),
-          productDescription: item.productDescription,
-          productPriority: parseInt(item.productPriority || 0),
-          productDiscount: parseFloat(item.productDiscount || 0),
-          productTax: parseFloat(item.productTax || 0),
-          variantId: item.variantId || "",
-          variantName: item.variantName || "",
-          variantPrice: parseFloat(item.variantPrice || 0),
-          complements: complements,
-          quantity: parseInt(item.quantity || 1),
-          totalPrice: parseFloat(item.totalPrice || 0),
-          menuId: item.menuId || undefined,
-          menuSecondaryId: item.menuSecondaryId || undefined,
-          menuName: item.menuName || undefined,
-          menuPrice: item.menuPrice ? parseFloat(item.menuPrice) : undefined,
-          menuTax: item.menuTax ? parseFloat(item.menuTax) : undefined,
-          menuDiscount: item.menuDiscount
-            ? parseFloat(item.menuDiscount)
-            : undefined,
-          supplement: item.supplement ? parseFloat(item.supplement) : undefined,
-        };
-      });
+      const formattedItems = this.formatOrderItems(orderItems);
 
       const { orderTotal } = calculateOrderTotal(formattedItems);
       if (order.status !== "cancelled") {
-        const orderTypeKey = order.orderType;
+        let orderTypeKey = order.orderType;
+        if (orderTypeKey === "platform" && order.platformName) {
+          orderTypeKey = order.platformName;
+        }
         if (!orderTotalsMap.has(orderTypeKey)) {
-          orderTotalsMap.set(orderTypeKey, { type: orderTypeKey, total: 0 });
+          orderTotalsMap.set(orderTypeKey, { type: orderTypeKey, total: 0, count: 0 });
         }
         const current = orderTotalsMap.get(orderTypeKey)!;
         current.total += orderTotal;
+        current.count += 1;
       }
     }
 
@@ -789,6 +805,7 @@ export class OrderDatabaseOperations {
       .map((item) => ({
         type: item.type,
         total: parseFloat(item.total.toFixed(2)),
+        count: item.count,
       }))
       .sort((a, b) => b.total - a.total);
 
@@ -899,14 +916,41 @@ export class OrderDatabaseOperations {
       const { page = 0, limit = 10 } = filter;
       const offset = page * limit;
       const query = db("orders");
-      if ((filter as any).orderType) {
-        query.where("orderType", (filter as any).orderType);
+      if (filter.selectedOrderType) {
+        const normalizedOrderType = filter.selectedOrderType.toLowerCase().replace(/-/g, "");
+        query.whereRaw(
+          "LOWER(REPLACE(\"orderType\", '-', '')) = LOWER(?)",
+          [normalizedOrderType]
+        );
       }
+      const configs = await db("configurations").select("orderPrefix").first();
+      const prefix = configs?.orderPrefix || "K";
+
       if (filter.searchTerm) {
+        const isNumeric = /^\d+$/.test(filter.searchTerm);
+        let extractedId: number | null = null;
+
+        if (isNumeric) {
+          extractedId = parseInt(filter.searchTerm, 10);
+        } else {
+          const lowerSearch = filter.searchTerm.toLowerCase();
+          const lowerPrefix = prefix.toLowerCase();
+          if (lowerSearch.startsWith(lowerPrefix)) {
+            const potentialId = filter.searchTerm.slice(prefix.length);
+            if (/^\d+$/.test(potentialId)) {
+              extractedId = parseInt(potentialId, 10);
+            }
+          }
+        }
+
         query.where(function () {
-          this.where("customerName", "like", `%${filter.searchTerm}%`)
+          this.whereRaw('LOWER("customerName") LIKE LOWER(?)', [`%${filter.searchTerm}%`])
             .orWhere("customerPhone", "like", `%${filter.searchTerm}%`)
-            .orWhere("orderId", filter.searchTerm);
+            .orWhere("ticketNumber", "like", `%${filter.searchTerm}%`);
+          
+          if (extractedId !== null) {
+            this.orWhere("orderId", extractedId);
+          }
         });
       }
       const parseLocalStart = (dateInput: Date | string): Date => {
@@ -1065,10 +1109,11 @@ export class OrderDatabaseOperations {
       const newOrders = [];
       for (const order of orders) {
         const items = await db("order_items").where("orderId", order.id);
-        const totalAmount = calculateOrderTotal(items).orderTotal;
+        const formattedItems = this.formatOrderItems(items);
+        const { orderTotal } = calculateOrderTotal(formattedItems);
         const paymentStatusResult = calculatePaymentStatus(
           order.paymentType,
-          totalAmount
+          orderTotal
         );
         const newOrder = {
           customer: {
@@ -1106,14 +1151,72 @@ export class OrderDatabaseOperations {
             licenseNo: order.deliveryPersonLicenseNo,
           },
           paymentStatus: paymentStatusResult.status,
-          items: items.map((item) => ({
-            ...item,
-            printers: item.printers ? item.printers.split("=") : [],
-          })),
+          items: formattedItems,
         };
         newOrders.push(newOrder);
       }
       return { orders: newOrders, totalCount };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getPendingOrdersByDeliveryPerson(
+    deliveryPersonId: string
+  ): Promise<Order[]> {
+    try {
+      // Fetch all delivered orders for this person
+      const orders = await db("orders")
+        .where("deliveryPersonId", deliveryPersonId)
+        .whereRaw("LOWER(status) = LOWER(?)", ["delivered"]);
+
+      const pendingOrders: Order[] = [];
+
+      for (const order of orders) {
+        const items = await db("order_items").where("orderId", order.id);
+        const formattedItems = this.formatOrderItems(items);
+        const { orderTotal } = calculateOrderTotal(formattedItems);
+        const paymentStatusResult = calculatePaymentStatus(
+          order.paymentType,
+          orderTotal
+        );
+
+        if (paymentStatusResult.status === "UNPAID" || paymentStatusResult.status === "PARTIAL") {
+          const newOrder = {
+            customer: {
+              name: order.customerName,
+              phone: order.customerPhone,
+              address: order.customerAddress,
+              cif: order.customerCIF,
+              email: order.customerEmail,
+              comments: order.customerComments,
+            },
+            createdAt: order.createdAt,
+            updatedAt: order.updatedAt,
+            orderId: order.orderId,
+            status: order.status,
+            paymentType: order.paymentType,
+            orderType: order.orderType,
+            notes: order.notes,
+            id: order.id,
+            isPaid: order.isPaid,
+            deliveryPerson: {
+              id: order.deliveryPersonId,
+              name: order.deliveryPersonName,
+              phone: order.deliveryPersonPhone,
+              email: order.deliveryPersonEmail,
+              vehicleType: order.deliveryPersonVehicleType,
+              licenseNo: order.deliveryPersonLicenseNo,
+            },
+            paymentStatus: paymentStatusResult.status,
+            items: formattedItems,
+          };
+          pendingOrders.push(newOrder);
+        }
+      }
+      return pendingOrders.sort((a: any, b: any) => 
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
     } catch (error) {
       throw error;
     }

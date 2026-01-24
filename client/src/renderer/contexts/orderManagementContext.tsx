@@ -16,6 +16,7 @@ const useOrderManagementInternal = (auth: AuthState) => {
     selectedPaymentStatus: [],
     selectedDeliveryPerson: "",
     selectedCustomer: "",
+    selectedOrderType: "",
     page: 0,
     limit: DEFAULT_PAGE_LIMIT,
     startDateRange: null,

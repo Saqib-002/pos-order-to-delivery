@@ -18,6 +18,7 @@ import {
   updateOrderItem,
   duplicateMenuInOrder,
   updateOrderItems,
+  getPendingOrdersByDeliveryPerson,
 } from "./handlers/orders.js";
 import {
   deleteUser,
@@ -398,6 +399,10 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-orders-count-by-type", getOrdersCountByType);
   ipcMain.handle("duplicate-menu-in-order", duplicateMenuInOrder);
   ipcMain.handle("create-platform-order", createPlatformOrder);
+  ipcMain.handle(
+    "get-pending-orders-by-delivery-person",
+    getPendingOrdersByDeliveryPerson
+  );
   // reports
   ipcMain.handle("get-order-analytics", getOrderAnalytics);
   ipcMain.handle("get-financial-analytics", getFinancialAnalytics);

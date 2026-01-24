@@ -54,6 +54,7 @@ const PlatformOrdersView = () => {
     endDateRange: null,
     selectedDeliveryPerson: "",
     selectedCustomer: "",
+    selectedOrderType: "platform",
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -232,6 +233,7 @@ const PlatformOrdersView = () => {
       endDateRange: null,
       selectedDeliveryPerson: "",
       selectedCustomer: "",
+      selectedOrderType: "platform",
     });
   };
 
