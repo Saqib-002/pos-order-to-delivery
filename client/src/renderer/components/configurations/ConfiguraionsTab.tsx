@@ -569,9 +569,9 @@ const ConfigurationsTab = () => {
                     (range: any, index: number) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg"
+                        className="flex items-center justify-between py-2"
                       >
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-2">
                           {/* Distance Range */}
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-gray-700 min-w-fit">
@@ -590,7 +590,7 @@ const ConfigurationsTab = () => {
                                 }}
                                 placeholder="0"
                                 min="0"
-                                inputClasses="w-16 text-center px-2 py-1 text-sm"
+                                inputClasses="w-10 text-center px-2 py-1 text-sm"
                                 name={`minKm-${index}`}
                               />
                               <span className="text-gray-500">-</span>
@@ -606,7 +606,7 @@ const ConfigurationsTab = () => {
                                 }}
                                 placeholder="5"
                                 min="0"
-                                inputClasses="w-16 text-center px-2 py-1 text-sm"
+                                inputClasses="w-10 text-center px-2 py-1 text-sm"
                                 name={`maxKm-${index}`}
                               />
                               <span className="text-sm text-gray-600">km</span>
@@ -619,7 +619,6 @@ const ConfigurationsTab = () => {
                               {t("configurations.minOrderAmountLabel")}
                             </span>
                             <div className="flex items-center gap-1">
-                              <span className="text-sm text-gray-600">€</span>
                               <CustomInput
                                 type="number"
                                 value={String(range.minOrderAmount)}
@@ -634,6 +633,7 @@ const ConfigurationsTab = () => {
                                 min="0"
                                 inputClasses="w-20 text-center px-2 py-1 text-sm"
                                 name={`minOrderAmount-${index}`}
+                                postLabel={"€"}
                               />
                             </div>
                           </div>

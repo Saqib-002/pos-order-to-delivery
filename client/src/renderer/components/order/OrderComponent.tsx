@@ -72,6 +72,7 @@ const OrderComponent = () => {
   };
 
   const handleProcessOrderSubmit = async (orderData: any) => {
+    const isFirstTime = order?.status === "pending";
     const result = await updateOrder(token!, order!.id, orderData);
     if (!result) {
       toast.error("Failed to process order");
@@ -81,28 +82,31 @@ const OrderComponent = () => {
     setPostProcessOrderData(orderData);
 
     const type = orderData.orderType?.toLowerCase();
-    if (type === "dine-in" || type === "pickup") {
+    if ((type === "dine-in" || type === "pickup") && !isFirstTime) {
       setIsPrintConfirmationModalOpen(true);
     } else {
-      handlePrintConfirm(true);
+      await handlePrintConfirm(true, orderData);
     }
   };
 
-  const handlePrintConfirm = async (shouldPrintMainReceipt: boolean | 'cancel') => {
+  const handlePrintConfirm = async (
+    shouldPrintMainReceipt: boolean | "cancel",
+    providedOrderData?: any
+  ) => {
     setIsPrintConfirmationModalOpen(false);
-    if (!postProcessOrderData || !order) {
+    const orderData = providedOrderData || postProcessOrderData;
+    if (!orderData || !order) {
       clearOrder();
       setPostProcessOrderData(null);
       return;
     }
 
-    if (shouldPrintMainReceipt === 'cancel') {
+    if (shouldPrintMainReceipt === "cancel") {
       clearOrder();
       setPostProcessOrderData(null);
       return;
     }
 
-    const orderData = postProcessOrderData;
     let anyPrintSuccessful = false;
 
     // Automatically print receipts after processing
