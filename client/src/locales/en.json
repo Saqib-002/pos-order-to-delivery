@@ -64,7 +64,10 @@
     "deliveryMinOrderLabel": "Delivery Minimum Order",
     "addDistanceRange": "Add Distance Range",
     "distanceLabel": "Distance Range",
-    "minOrderAmountLabel": "Min. Order Amount"
+    "minOrderAmountLabel": "Min. Amount",
+    "noRangeSetHelp": "Add a distance range to enable delivery minimum order",
+    "noTimeRangeSet": "No time ranges configured",
+    "addTimeRangeHelp": "Add ranges to estimate kitchen preparation time"
   },
   "authorInfo": {
     "title": "Author Information",

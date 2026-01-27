@@ -381,16 +381,16 @@ const ConfigurationsTab = () => {
                   }}
                   label={t("configurations.addTimeRange")}
                   size="sm"
-                  variant="secondary"
+                  variant="primary"
                 />
               </div>
 
               {(configurations.kitchenTimeEstimationRanges || []).length ===
                 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  <p className="text-sm">No time ranges configured</p>
+                  <p className="text-sm">{t("configurations.noTimeRangeSet")}</p>
                   <p className="text-xs mt-1">
-                    Add ranges to estimate kitchen preparation time
+                    {t("configurations.addTimeRangeHelp")}
                   </p>
                 </div>
               ) : (
@@ -555,13 +555,13 @@ const ConfigurationsTab = () => {
                   }}
                   label={t("configurations.addDistanceRange")}
                   size="sm"
-                  variant="secondary"
+                  variant="primary"
                 />
               </div>
 
               {(configurations.deliveryMinOrderRanges || []).length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  <p className="text-sm">No delivery minimum order ranges configured</p>
+                  <p className="text-sm">{t("configurations.noRangeSet")}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -575,7 +575,7 @@ const ConfigurationsTab = () => {
                           {/* Distance Range */}
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-gray-700 min-w-fit">
-                              {t("configurations.distanceLabel")}
+                              {t("configurations.distanceLabel")} km
                             </span>
                             <div className="flex items-center gap-1">
                               <CustomInput
@@ -590,7 +590,7 @@ const ConfigurationsTab = () => {
                                 }}
                                 placeholder="0"
                                 min="0"
-                                inputClasses="w-10 text-center px-2 py-1 text-sm"
+                                inputClasses="w-10 text-center px-2 py-1 text-sm w-30! bg-white"
                                 name={`minKm-${index}`}
                               />
                               <span className="text-gray-500">-</span>
@@ -606,10 +606,9 @@ const ConfigurationsTab = () => {
                                 }}
                                 placeholder="5"
                                 min="0"
-                                inputClasses="w-10 text-center px-2 py-1 text-sm"
+                                inputClasses="w-10 text-center px-2 py-1 text-sm w-30! bg-white"
                                 name={`maxKm-${index}`}
                               />
-                              <span className="text-sm text-gray-600">km</span>
                             </div>
                           </div>
 
@@ -631,7 +630,7 @@ const ConfigurationsTab = () => {
                                 }}
                                 placeholder="15"
                                 min="0"
-                                inputClasses="w-20 text-center px-2 py-1 text-sm"
+                                inputClasses="w-20 text-center px-2 py-1 text-sm w-30! bg-white"
                                 name={`minOrderAmount-${index}`}
                                 postLabel={"€"}
                               />

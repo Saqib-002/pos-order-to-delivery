@@ -65,7 +65,10 @@
     "deliveryMinOrderLabel": "Pedido Mínimo de Entrega",
     "addDistanceRange": "Añadir Rango de Distancia",
     "distanceLabel": "Rango de Distancia",
-    "minOrderAmountLabel": "Cant. Mínima de Pedido"
+    "minOrderAmountLabel": "Cant. Mín",
+    "noRangeSetHelp": "Agrega un rango de distancia para habilitar el pedido mínimo de entrega",
+    "noTimeRangeSet": "No hay rangos de tiempo configurados",
+    "addTimeRangeHelp": "Agrega rangos para estimar el tiempo de preparación de la cocina"
   },
   "authorInfo": {
     "title": "Información del Autor",
