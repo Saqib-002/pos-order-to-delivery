@@ -111,7 +111,7 @@ export const ComplementsToString = (complements: any[]) => {
   if (complements.length === 0) return "";
   let result = complements
     .map(
-      (c) => `${c.groupId}|${c.groupName}|${c.itemId}|${c.itemName}|${c.price}`
+      (c) => `${c.groupId}|${c.groupName}|${c.itemId}|${c.itemName}|${c.price}|${c.forProduct ? 1 : 0}`
     )
     .join("=");
   return result;
@@ -126,7 +126,8 @@ export const StringToComplements = (complementStr: any) => {
   
   const complements = complementStr.split("=");
   return complements.map((c) => {
-    const [groupId, groupName, itemId, itemName, price] = c.split("|");
+    const parts = c.split("|");
+    const [groupId, groupName, itemId, itemName, price, forProduct] = parts;
     return {
       groupId,
       groupName,
@@ -134,6 +135,7 @@ export const StringToComplements = (complementStr: any) => {
       itemName,
       price: parseFloat(price),
       priority: 0,
+      forProduct: forProduct === "1",
     };
   });
 };

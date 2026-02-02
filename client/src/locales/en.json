@@ -30,6 +30,7 @@
   "configurations": {
     "title": "Configurations",
     "languageLabel": "Language",
+    "noRangeSet": "No range has been set yet",
     "languageOptions": {
       "en": "English",
       "es": "Spanish"

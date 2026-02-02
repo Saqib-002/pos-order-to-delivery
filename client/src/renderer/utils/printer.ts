@@ -357,7 +357,7 @@ export const generateReceiptHTML = (
               html += `
                 <tr>
                     <td class="item-qty"></td>
-                    <td class="item-name sub-item indent">+ ${comp.itemName}</td>
+                    <td class="item-name sub-item indent">${comp.forProduct ? "✓" : "+"} ${comp.itemName}</td>
                     <td class="item-total">${comp.price.toFixed(2)}</td>
                 </tr>
               `;
@@ -399,7 +399,7 @@ export const generateReceiptHTML = (
             html += `
                 <tr>
                     <td class="item-qty"></td>
-                    <td class="item-name sub-item indent">+ ${comp.itemName}</td>
+                    <td class="item-name sub-item indent">${comp.forProduct ? "✓" : "+"} ${comp.itemName}</td>
                     <td class="item-total">${comp.price.toFixed(2)}</td>
                 </tr>
             `;
@@ -668,7 +668,7 @@ export const generateItemsReceiptHTML = (
           `;
           item.complements.forEach((comp) => {
             html += `
-                <div class="indent">+ ${comp.itemName}</div>
+                <div class="indent">${comp.forProduct ? "✓" : "+"} ${comp.itemName}</div>
             `;
           });
         });
@@ -687,7 +687,7 @@ export const generateItemsReceiptHTML = (
         `;
         item.complements.forEach((comp) => {
           html += `
-                <div class="sub-item bold">+ ${comp.itemName}</div>
+                <div class="sub-item bold">${comp.forProduct ? "✓" : "+"} ${comp.itemName}</div>
           `;
         });
       });

@@ -29,19 +29,16 @@ const useOrderManagementInternal = (auth: AuthState) => {
       items:
         order.items?.map((item) => ({
           ...item,
-          complements: StringToComplements(
-            typeof item.complements === "string" ? item.complements : ""
-          ),
+          complements: StringToComplements(item.complements),
         })) || [],
     }));
   };
-
   const refreshOrdersCallback = async () => {
     if (!auth.token) return;
     try {
       const res = await (window as any).electronAPI.getOrdersByFilter(
         auth.token,
-        filter
+        filter,
       );
       if (!res.status) {
         toast.error("Error fetching orders");
@@ -100,7 +97,7 @@ export const useOrderManagementContext = (): OrderContextType => {
   const context = useContext(OrderContext);
   if (context === undefined) {
     throw new Error(
-      "useOrderManagementContext must be used within an OrderManagementProvider"
+      "useOrderManagementContext must be used within an OrderManagementProvider",
     );
   }
   return context;

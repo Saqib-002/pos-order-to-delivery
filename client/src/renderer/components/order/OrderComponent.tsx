@@ -53,7 +53,8 @@ const OrderComponent = () => {
     totalAmount: number;
     paymentType: string;
   } | null>(null);
-  const [isPrintConfirmationModalOpen, setIsPrintConfirmationModalOpen] = useState(false);
+  const [isPrintConfirmationModalOpen, setIsPrintConfirmationModalOpen] =
+    useState(false);
   const [postProcessOrderData, setPostProcessOrderData] = useState<any>(null);
   const {
     auth: { token, user },
@@ -91,7 +92,7 @@ const OrderComponent = () => {
 
   const handlePrintConfirm = async (
     shouldPrintMainReceipt: boolean | "cancel",
-    providedOrderData?: any
+    providedOrderData?: any,
   ) => {
     setIsPrintConfirmationModalOpen(false);
     const orderData = providedOrderData || postProcessOrderData;
@@ -128,7 +129,7 @@ const OrderComponent = () => {
         orderPrefix: configurations.orderPrefix || "K",
       };
       const configRes = await (window as any).electronAPI.getConfigurations(
-        token
+        token,
       );
       if (!configRes.status) {
         toast.error(t("orderCart.errors.errorGettingConfigurations"));
@@ -144,7 +145,7 @@ const OrderComponent = () => {
       const { orderTotal } = calculateOrderTotal(orderItems);
       const paymentStatus = calculatePaymentStatus(
         orderData.paymentType || "",
-        orderTotal
+        orderTotal,
       );
 
       // Print to all printers
@@ -243,11 +244,11 @@ const OrderComponent = () => {
             customerName,
             user!.name,
             orderData.notes,
-            paymentStatus.totalPaid
+            paymentStatus.totalPaid,
           );
         } else {
           const unprintedItems = items.filter(
-            (item: OrderItem) => !item.isKitchenPrinted
+            (item: OrderItem) => !item.isKitchenPrinted,
           );
           if (unprintedItems.length === 0) {
             continue;
@@ -258,7 +259,7 @@ const OrderComponent = () => {
             { ...order, ...orderData },
             user!.role,
             paymentStatus.status,
-            t
+            t,
           );
         }
 
@@ -269,7 +270,7 @@ const OrderComponent = () => {
         const printRes = await (window as any).electronAPI.printToPrinter(
           token,
           printerName,
-          { html: receiptHTML }
+          { html: receiptHTML },
         );
 
         if (!printRes.status) {
@@ -285,7 +286,7 @@ const OrderComponent = () => {
             items.map((item: OrderItem) => ({
               itemId: item.id,
               itemData: { isKitchenPrinted: true },
-            }))
+            })),
           );
           anyPrintSuccessful = true;
         }
@@ -306,7 +307,7 @@ const OrderComponent = () => {
     // Check if order is assigned to a delivery person
     if (order.deliveryPerson && order.deliveryPerson.id) {
       toast.info(
-        "This order is assigned to a delivery person and cannot be edited. It can only be viewed."
+        "This order is assigned to a delivery person and cannot be edited. It can only be viewed.",
       );
       return;
     }
@@ -400,21 +401,22 @@ const OrderComponent = () => {
                     : { orderTotal: 0 };
                   const paymentStatus = calculatePaymentStatus(
                     order.paymentType || "",
-                    orderTotal
+                    orderTotal,
                   );
 
                   const isAssignedToDelivery = Boolean(
-                    order.deliveryPerson && order.deliveryPerson.id
+                    order.deliveryPerson && order.deliveryPerson.id,
                   );
                   return (
                     <button
                       key={order.id}
-                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${isAssignedToDelivery || order.orderType === "platform"
-                        ? "bg-gray-100 cursor-not-allowed opacity-75"
-                        : order.status === "cancelled"
-                          ? "hover:bg-red-50 cursor-pointer border-red-200"
-                          : "hover:bg-gray-50 cursor-pointer"
-                        }`}
+                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${
+                        isAssignedToDelivery || order.orderType === "platform"
+                          ? "bg-gray-100 cursor-not-allowed opacity-75"
+                          : order.status === "cancelled"
+                            ? "hover:bg-red-50 cursor-pointer border-red-200"
+                            : "hover:bg-gray-50 cursor-pointer"
+                      }`}
                       onClick={() => handleOrderClick(order)}
                       disabled={
                         isAssignedToDelivery || order.orderType === "platform"
@@ -446,10 +448,10 @@ const OrderComponent = () => {
                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getOrderTypeStyle(order.orderType || "")}`}
                           >
                             {order.orderType === "platform" &&
-                              order.platformName
+                            order.platformName
                               ? order.platformName
                               : translateOrderType(order.orderType || "") ||
-                              t("manageOrders.statuses.notSelected")}
+                                t("manageOrders.statuses.notSelected")}
                           </span>
 
                           {/* Order Status Pill */}
@@ -488,21 +490,29 @@ const OrderComponent = () => {
                         {order.customer && (
                           <div className="text-xs text-gray-600">
                             <span className="font-medium">
-                              {order.orderType?.toLowerCase() === "delivery" ? (
-                                order.customer.address ? (
-                                  order.customer.address.includes("|") ?
-                                    formatAddress(order.customer.address) :
-                                    order.customer.address
-                                ) : (
-                                  order.customer.name === "Dine-in Customer" ? t("orderProcessingModal.defaultCustomers.dineInCustomer") :
-                                    order.customer.name === "Walk-in Customer" ? t("orderProcessingModal.defaultCustomers.walkInCustomer") :
-                                      order.customer.name
-                                )
-                              ) : (
-                                order.customer.name === "Dine-in Customer" ? t("orderProcessingModal.defaultCustomers.dineInCustomer") :
-                                  order.customer.name === "Walk-in Customer" ? t("orderProcessingModal.defaultCustomers.walkInCustomer") :
-                                    order.customer.name
-                              )}
+                              {order.orderType?.toLowerCase() === "delivery"
+                                ? order.customer.address
+                                  ? order.customer.address.includes("|")
+                                    ? formatAddress(order.customer.address)
+                                    : order.customer.address
+                                  : order.customer.name === "Dine-in Customer"
+                                    ? t(
+                                        "orderProcessingModal.defaultCustomers.dineInCustomer",
+                                      )
+                                    : order.customer.name === "Walk-in Customer"
+                                      ? t(
+                                          "orderProcessingModal.defaultCustomers.walkInCustomer",
+                                        )
+                                      : order.customer.name
+                                : order.customer.name === "Dine-in Customer"
+                                  ? t(
+                                      "orderProcessingModal.defaultCustomers.dineInCustomer",
+                                    )
+                                  : order.customer.name === "Walk-in Customer"
+                                    ? t(
+                                        "orderProcessingModal.defaultCustomers.walkInCustomer",
+                                      )
+                                    : order.customer.name}
                             </span>
                             {order.customer.phone && (
                               <span className="ml-1">

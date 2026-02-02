@@ -17,6 +17,7 @@ export interface OrderItem {
     itemName: string;
     price: number;
     priority: number;
+    forProduct?: boolean;
   }>;
   printers?: string[];
   quantity: number;

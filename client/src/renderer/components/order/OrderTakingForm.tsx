@@ -68,7 +68,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       // Get variants
       const res = await (window as any).electronAPI.getVariantsByProductId(
         token,
-        selectedProduct?.id
+        selectedProduct?.id,
       );
       if (!res.status) {
         toast.error(t("orderTakingForm.errors.unableToGetVariants"));
@@ -123,7 +123,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       if (res.data.length > 0) {
         if (editingProduct) {
           const variant = res.data.find(
-            (v: any) => v.id === editingProduct.variantId
+            (v: any) => v.id === editingProduct.variantId,
           );
           if (variant) {
             setSelectedVariant(variant);
@@ -186,7 +186,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         }));
       } else {
         toast.warning(
-          t("orderTakingForm.warnings.maximumItemsAllowed", { maxComplements })
+          t("orderTakingForm.warnings.maximumItemsAllowed", { maxComplements }),
         );
       }
     }
@@ -274,9 +274,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
             itemName: item?.name || "",
             price: item?.price || 0,
             priority: item?.priority || 0,
+            forProduct: (group as any).forProduct || false,
           };
         });
-      }
+      },
     );
 
     // Check if this is a menu item or regular product
@@ -313,8 +314,12 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         }),
         supplement: currentOrderItem.supplement,
         menuSecondaryId: currentOrderItem.menuSecondaryId,
-        subCategoryName: (selectedMenu as any).subcategoryName || (selectedProduct as any).subcategoryName,
-        subCategoryPriority: (selectedMenu as any).subcategoryPriority ?? (selectedProduct as any).subcategoryPriority,
+        subCategoryName:
+          (selectedMenu as any).subcategoryName ||
+          (selectedProduct as any).subcategoryName,
+        subCategoryPriority:
+          (selectedMenu as any).subcategoryPriority ??
+          (selectedProduct as any).subcategoryPriority,
       };
 
       const stagedItem: OrderItem = {
@@ -332,7 +337,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
     const existingItem = findExactProductMatch(
       selectedProduct!.id,
       selectedVariant?.id || undefined,
-      complements
+      complements,
     );
     if (existingItem && !editingProduct) {
       // update quantity of existing item
@@ -342,7 +347,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       const res = await (window as any).electronAPI.updateItemQuantity(
         token,
         existingItem.id,
-        newQuantity
+        newQuantity,
       );
 
       if (!res.status) {
@@ -353,7 +358,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       // Update local state
       updateQuantity(existingItem.id, newQuantity);
       toast.success(
-        t("orderTakingForm.messages.quantityUpdated", { newQuantity })
+        t("orderTakingForm.messages.quantityUpdated", { newQuantity }),
       );
       setSelectedProduct(null);
       return;
@@ -387,7 +392,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         {
           ...orderItem,
           complements: newComplement,
-        }
+        },
       );
       if (!res.status) {
         toast.error(t("orderTakingForm.errors.unableToUpdateOrder"));
@@ -412,7 +417,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       const res = await (window as any).electronAPI.addItemToOrder(
         token,
         order!.id,
-        { ...orderItem, complements: newComplement }
+        { ...orderItem, complements: newComplement },
       );
       if (!res.status) {
         toast.error(t("orderTakingForm.errors.unableToUpdateOrder"));
@@ -534,18 +539,18 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                             onError={(e) => {
                               console.error(
                                 "Failed to load variant image:",
-                                item.imgUrl
+                                item.imgUrl,
                               );
                               const target = e.target as HTMLImageElement;
                               target.style.display = "none";
                               target.nextElementSibling?.classList.remove(
-                                "hidden"
+                                "hidden",
                               );
                             }}
                             onLoad={() => {
                               console.log(
                                 "Successfully loaded variant image:",
-                                item.imgUrl
+                                item.imgUrl,
                               );
                             }}
                           />
@@ -718,19 +723,19 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                                     onError={(e) => {
                                       console.error(
                                         "Failed to load group item image:",
-                                        item.imgUrl
+                                        item.imgUrl,
                                       );
                                       const target =
                                         e.target as HTMLImageElement;
                                       target.style.display = "none";
                                       target.nextElementSibling?.classList.remove(
-                                        "hidden"
+                                        "hidden",
                                       );
                                     }}
                                     onLoad={() => {
                                       console.log(
                                         "Successfully loaded group item image:",
-                                        item.imgUrl
+                                        item.imgUrl,
                                       );
                                     }}
                                   />
@@ -892,7 +897,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                         </div>
                       );
                     });
-                  }
+                  },
                 )}
 
                 <div className="border-t-2 border-gray-300 pt-4 mt-4">

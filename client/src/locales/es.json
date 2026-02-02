@@ -31,6 +31,7 @@
   "configurations": {
     "title": "Configuraciones",
     "languageLabel": "Idioma",
+    "noRangeSet": "Aún no se ha establecido ningún rango",
     "languageOptions": {
       "en": "Inglés",
       "es": "Español"

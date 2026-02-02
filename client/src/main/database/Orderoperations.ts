@@ -14,7 +14,8 @@ const stringToComplements = (complementStr: any): any[] => {
 
   const complements = complementStr.split("=");
   return complements.map((c) => {
-    const [groupId, groupName, itemId, itemName, price] = c.split("|");
+    const parts = c.split("|");
+    const [groupId, groupName, itemId, itemName, price, forProduct] = parts;
     return {
       groupId,
       groupName,
@@ -22,6 +23,7 @@ const stringToComplements = (complementStr: any): any[] => {
       itemName,
       price: parseFloat(price || "0"),
       priority: 0,
+      forProduct: forProduct === "1",
     };
   });
 };
