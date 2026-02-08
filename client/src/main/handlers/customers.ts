@@ -61,11 +61,13 @@ export const updateCustomer = async (
 };
 export const getAllCustomers = async (
   event: IpcMainInvokeEvent,
-  token: string
+  token: string,
+  params: { page: number; limit: number; searchTerm: string }
 ) => {
   try {
     await verifyToken(event, token);
-    const result = await CustomerDatabaseOperations.getAllCustomers();
+    const { page, limit, searchTerm } = params || { page: 0, limit: 20, searchTerm: "" };
+    const result = await CustomerDatabaseOperations.getAllCustomers(page, limit, searchTerm);
     return {
       status: true,
       data: result,

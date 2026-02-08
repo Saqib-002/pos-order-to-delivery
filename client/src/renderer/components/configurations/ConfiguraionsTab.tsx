@@ -22,7 +22,10 @@ const ConfigurationsTab = () => {
     useConfigurations();
   const { i18n, t } = useTranslation();
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
-  const [previewRange, setPreviewRange] = useState<{ minKm: number; maxKm: number } | null>(null);
+  const [previewRange, setPreviewRange] = useState<{
+    minKm: number;
+    maxKm: number;
+  } | null>(null);
 
   const getConfigurations = async () => {
     // Fetch CDN URL
@@ -139,7 +142,7 @@ const ConfigurationsTab = () => {
     if (mode === "add") {
       res = await (window as any).electronAPI.createConfigurations(
         token,
-        cleanedConfigurations
+        cleanedConfigurations,
       );
       if (res.data) {
         setConfigurations(res.data);
@@ -153,7 +156,7 @@ const ConfigurationsTab = () => {
       res = await (window as any).electronAPI.updateConfigurations(
         token,
         configurationsId,
-        cleanedConfigurations
+        cleanedConfigurations,
       );
     }
     if (!res.status) {
@@ -170,7 +173,7 @@ const ConfigurationsTab = () => {
       <form className="w-full flex flex-col gap-6" onSubmit={handleSubmit}>
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column - Form Fields */}
-          <div className="flex-1 flex flex-col gap-6">
+          <div className="flex-auto flex flex-col gap-6">
             <div className="flex gap-4">
               <CustomInput
                 type="text"
@@ -386,9 +389,11 @@ const ConfigurationsTab = () => {
               </div>
 
               {(configurations.kitchenTimeEstimationRanges || []).length ===
-                0 ? (
+              0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  <p className="text-sm">{t("configurations.noTimeRangeSet")}</p>
+                  <p className="text-sm">
+                    {t("configurations.noTimeRangeSet")}
+                  </p>
                   <p className="text-xs mt-1">
                     {t("configurations.addTimeRangeHelp")}
                   </p>
@@ -524,7 +529,7 @@ const ConfigurationsTab = () => {
                           label="✕"
                         />
                       </div>
-                    )
+                    ),
                   )}
                 </div>
               )}
@@ -583,10 +588,20 @@ const ConfigurationsTab = () => {
                                 value={String(range.minKm)}
                                 onChange={(e) => {
                                   const value = e.target.value;
-                                  const numValue = value === "" ? 0 : Number(value);
-                                  const updatedRanges = [...(configurations.deliveryMinOrderRanges || [])];
-                                  updatedRanges[index] = { ...range, minKm: numValue };
-                                  setConfigurations({ ...configurations, deliveryMinOrderRanges: updatedRanges });
+                                  const numValue =
+                                    value === "" ? 0 : Number(value);
+                                  const updatedRanges = [
+                                    ...(configurations.deliveryMinOrderRanges ||
+                                      []),
+                                  ];
+                                  updatedRanges[index] = {
+                                    ...range,
+                                    minKm: numValue,
+                                  };
+                                  setConfigurations({
+                                    ...configurations,
+                                    deliveryMinOrderRanges: updatedRanges,
+                                  });
                                 }}
                                 placeholder="0"
                                 min="0"
@@ -599,10 +614,20 @@ const ConfigurationsTab = () => {
                                 value={String(range.maxKm)}
                                 onChange={(e) => {
                                   const value = e.target.value;
-                                  const numValue = value === "" ? 0 : Number(value);
-                                  const updatedRanges = [...(configurations.deliveryMinOrderRanges || [])];
-                                  updatedRanges[index] = { ...range, maxKm: numValue };
-                                  setConfigurations({ ...configurations, deliveryMinOrderRanges: updatedRanges });
+                                  const numValue =
+                                    value === "" ? 0 : Number(value);
+                                  const updatedRanges = [
+                                    ...(configurations.deliveryMinOrderRanges ||
+                                      []),
+                                  ];
+                                  updatedRanges[index] = {
+                                    ...range,
+                                    maxKm: numValue,
+                                  };
+                                  setConfigurations({
+                                    ...configurations,
+                                    deliveryMinOrderRanges: updatedRanges,
+                                  });
                                 }}
                                 placeholder="5"
                                 min="0"
@@ -623,10 +648,20 @@ const ConfigurationsTab = () => {
                                 value={String(range.minOrderAmount)}
                                 onChange={(e) => {
                                   const value = e.target.value;
-                                  const numValue = value === "" ? 0 : Number(value);
-                                  const updatedRanges = [...(configurations.deliveryMinOrderRanges || [])];
-                                  updatedRanges[index] = { ...range, minOrderAmount: numValue };
-                                  setConfigurations({ ...configurations, deliveryMinOrderRanges: updatedRanges });
+                                  const numValue =
+                                    value === "" ? 0 : Number(value);
+                                  const updatedRanges = [
+                                    ...(configurations.deliveryMinOrderRanges ||
+                                      []),
+                                  ];
+                                  updatedRanges[index] = {
+                                    ...range,
+                                    minOrderAmount: numValue,
+                                  };
+                                  setConfigurations({
+                                    ...configurations,
+                                    deliveryMinOrderRanges: updatedRanges,
+                                  });
                                 }}
                                 placeholder="15"
                                 min="0"
@@ -642,7 +677,10 @@ const ConfigurationsTab = () => {
                           <CustomButton
                             type="button"
                             onClick={() => {
-                              setPreviewRange({ minKm: range.minKm, maxKm: range.maxKm });
+                              setPreviewRange({
+                                minKm: range.minKm,
+                                maxKm: range.maxKm,
+                              });
                               setIsPreviewModalOpen(true);
                             }}
                             variant="transparent"
@@ -653,16 +691,22 @@ const ConfigurationsTab = () => {
                           <CustomButton
                             type="button"
                             onClick={() => {
-                              const updatedRanges = [...(configurations.deliveryMinOrderRanges || [])];
+                              const updatedRanges = [
+                                ...(configurations.deliveryMinOrderRanges ||
+                                  []),
+                              ];
                               updatedRanges.splice(index, 1);
-                              setConfigurations({ ...configurations, deliveryMinOrderRanges: updatedRanges });
+                              setConfigurations({
+                                ...configurations,
+                                deliveryMinOrderRanges: updatedRanges,
+                              });
                             }}
                             className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2"
                             label="✕"
                           />
                         </div>
                       </div>
-                    )
+                    ),
                   )}
                 </div>
               )}
@@ -670,7 +714,7 @@ const ConfigurationsTab = () => {
           </div>
 
           {/* Right Column - Company Logo */}
-          <div className="flex-1 flex flex-col gap-2">
+          <div className="flex-auto flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
               {t("configurations.companyLogo")}
             </label>

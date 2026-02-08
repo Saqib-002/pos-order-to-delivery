@@ -209,8 +209,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("get-customers-by-phone", token, phone),
   getCustomerByPhone: (token: string, phone: string) =>
     ipcRenderer.invoke("get-customer-by-phone", token, phone),
-  getAllCustomers: (token: string) =>
-    ipcRenderer.invoke("get-all-customers", token),
+  getAllCustomers: (token: string, params?: { page: number, limit: number, searchTerm: string }) =>
+    ipcRenderer.invoke("get-all-customers", token, params),
   getCustomerById: (token: string, customerId: string) =>
     ipcRenderer.invoke("get-customer-by-id", token, customerId),
   upsertCustomer: (token: string, customer: any) =>

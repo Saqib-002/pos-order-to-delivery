@@ -41,12 +41,50 @@ export class CustomerDatabaseOperations {
       throw error;
     }
   }
-  static async getAllCustomers() {
+  static async getAllCustomers(page = 0, limit = 20, searchTerm = "") {
     try {
-      const customers = await db("customers")
+      let query = db("customers");
+
+      if (searchTerm) {
+        query = query.where((qb) => {
+          qb.whereLike("name", `%${searchTerm}%`)
+            .orWhereLike("phone", `%${searchTerm}%`)
+            .orWhereLike("email", `%${searchTerm}%`)
+            .orWhereLike("address", `%${searchTerm}%`);
+        });
+      }
+
+      const totalCountRes = await query.clone().count("id as count").first();
+      const totalCount = Number(totalCountRes?.count || 0);
+
+      const withEmailCountRes = await query
+        .clone()
+        .whereNotNull("email")
+        .whereNot("email", "")
+        .count("id as count")
+        .first();
+      const withEmailCount = Number(withEmailCountRes?.count || 0);
+
+      const withAddressCountRes = await query
+        .clone()
+        .whereNotNull("address")
+        .whereNot("address", "")
+        .count("id as count")
+        .first();
+      const withAddressCount = Number(withAddressCountRes?.count || 0);
+
+      const customers = await query
         .select("*")
-        .orderBy("name", "asc");
-      return customers || [];
+        .orderBy("name", "asc")
+        .limit(limit)
+        .offset(page * limit);
+
+      return {
+        customers: customers || [],
+        totalCount,
+        withEmailCount,
+        withAddressCount,
+      };
     } catch (error) {
       throw error;
     }

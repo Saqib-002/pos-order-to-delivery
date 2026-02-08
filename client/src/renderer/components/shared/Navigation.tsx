@@ -32,14 +32,14 @@ export const Navigation = ({
 
   const accessibleNavItems = [
     ...navItems.filter(({ view, roles }) =>
-      hasModuleAccess(view, userModulePermissions, userRole, roles)
+      hasModuleAccess(view, userModulePermissions, userRole, roles),
     ),
-    { view: "logout", roles: [] }, 
+    { view: "logout", roles: [] },
   ];
   useEffect(() => {
     const calculateVisibleItems = () => {
       const headerHeight = 64;
-      const itemHeight = 56; 
+      const itemHeight = 54;
       const scrollButtonsHeight = 100;
 
       const availableHeight = window.innerHeight - headerHeight;
@@ -67,15 +67,14 @@ export const Navigation = ({
   const scrollDown = () => {
     const maxScroll = Math.max(
       0,
-      accessibleNavItems.length - visibleItemsCount
+      accessibleNavItems.length - visibleItemsCount,
     );
     setScrollPosition(Math.min(maxScroll, scrollPosition + 1));
   };
 
   const canScrollUp = scrollPosition > 0;
   const canScrollDown =
-    scrollPosition <
-    Math.max(0, accessibleNavItems.length - visibleItemsCount);
+    scrollPosition < Math.max(0, accessibleNavItems.length - visibleItemsCount);
 
   const getConfigurations = async () => {
     const res = await (window as any).electronAPI.getConfigurations(token);
@@ -147,7 +146,7 @@ export const Navigation = ({
     }
     return accessibleNavItems.slice(
       scrollPosition,
-      scrollPosition + visibleItemsCount
+      scrollPosition + visibleItemsCount,
     );
   };
 
@@ -157,7 +156,7 @@ export const Navigation = ({
     view: string,
     label: string,
     onClickOverride?: () => void,
-    isPopover = false
+    isPopover = false,
   ) => (
     <button
       key={view}
@@ -245,7 +244,7 @@ export const Navigation = ({
           {/* Navigation Items */}
           <div
             ref={navContainerRef}
-            className={`flex-1 py-0 flex flex-col gap-1 ${
+            className={`flex-1 py-0 flex flex-col ${
               isOpen
                 ? "overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full"
                 : ""
@@ -256,8 +255,8 @@ export const Navigation = ({
               renderNavButton(
                 view,
                 getTranslatedLabel(view),
-                view === "logout" ? onLogout : undefined
-              )
+                view === "logout" ? onLogout : undefined,
+              ),
             )}
           </div>
 

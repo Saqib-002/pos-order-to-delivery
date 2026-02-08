@@ -20,12 +20,14 @@ import { formatAddress } from "../utils/utils";
 import * as XLSX from "xlsx";
 import CustomerModal from "../components/order/modals/CustomerModal";
 import HistoryModal from "../components/customer/modal/HistoryModal";
+import Pagination from "../components/shared/Pagination";
+import { DEFAULT_PAGE_LIMIT } from "@/constants";
 
 export const CustomerManagement = () => {
   const { t } = useTranslation();
   const confirm = useConfirm();
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [historyCustomer,setHistoryCustomer] = useState<Customer | null>(null);
+  const [historyCustomer, setHistoryCustomer] = useState<Customer | null>(null);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -36,29 +38,50 @@ export const CustomerManagement = () => {
     failed: number;
     errors: string[];
   } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalCustomers, setTotalCustomers] = useState(0);
+  const [withEmailCount, setWithEmailCount] = useState(0);
+  const [withAddressCount, setWithAddressCount] = useState(0);
   const {
     auth: { token },
   } = useAuth();
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
     fetchCustomers();
-  }, [token]);
+  }, [token, currentPage, debouncedSearchTerm]);
 
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const res = await (window as any).electronAPI.getAllCustomers(token);
+      const res = await (window as any).electronAPI.getAllCustomers(token, {
+        page: currentPage,
+        limit: DEFAULT_PAGE_LIMIT,
+        searchTerm: debouncedSearchTerm,
+      });
       if (!res.status) {
         toast.error(res.error || t("customerManagement.messages.fetchFailed"));
         return;
       }
-      setCustomers(res.data);
+      setCustomers(res.data.customers);
+      setTotalCustomers(res.data.totalCount);
+      setWithEmailCount(res.data.withEmailCount);
+      setWithAddressCount(res.data.withAddressCount);
     } catch (error) {
       toast.error(t("customerManagement.messages.fetchFailed"));
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   };
 
@@ -75,14 +98,16 @@ export const CustomerManagement = () => {
     try {
       const res = await (window as any).electronAPI.deleteCustomer(
         token,
-        customerId
+        customerId,
       );
       if (!res.status) {
         toast.error(res.error || t("customerManagement.messages.deleteFailed"));
         return;
       }
       setCustomers(customers.filter((c) => c.id !== customerId));
+      setTotalCustomers((prev) => prev - 1);
       toast.success(t("customerManagement.messages.deleted"));
+      fetchCustomers();
     } catch (error) {
       toast.error(t("customerManagement.messages.deleteFailed"));
     }
@@ -136,7 +161,7 @@ export const CustomerManagement = () => {
               row["PostalCode"] ||
               row["postal code"] ||
               row["postalCode"] ||
-              ""
+              "",
           ).trim();
           const city = String(row["City"] || row["city"] || "").trim();
           const province = String(
@@ -144,7 +169,7 @@ export const CustomerManagement = () => {
               row["State"] ||
               row["province"] ||
               row["state"] ||
-              ""
+              "",
           ).trim();
 
           const customerData = {
@@ -164,7 +189,7 @@ export const CustomerManagement = () => {
 
           if (!customerData.name) {
             errors.push(
-              `Row ${rowNumber}: ${t("customerManagement.validation.nameRequired")}`
+              `Row ${rowNumber}: ${t("customerManagement.validation.nameRequired")}`,
             );
             failedCount++;
             continue;
@@ -172,7 +197,7 @@ export const CustomerManagement = () => {
 
           if (!customerData.phone) {
             errors.push(
-              `Row ${rowNumber}: ${t("customerManagement.validation.phoneRequired")}`
+              `Row ${rowNumber}: ${t("customerManagement.validation.phoneRequired")}`,
             );
             failedCount++;
             continue;
@@ -181,7 +206,7 @@ export const CustomerManagement = () => {
           const phoneRegex = /^[0-9]+$/;
           if (!phoneRegex.test(customerData.phone)) {
             errors.push(
-              `Row ${rowNumber}: ${t("customerManagement.validation.phoneInvalid")}`
+              `Row ${rowNumber}: ${t("customerManagement.validation.phoneInvalid")}`,
             );
             failedCount++;
             continue;
@@ -189,7 +214,7 @@ export const CustomerManagement = () => {
 
           if (!customerData.address) {
             errors.push(
-              `Row ${rowNumber}: ${t("customerManagement.validation.addressRequired")}`
+              `Row ${rowNumber}: ${t("customerManagement.validation.addressRequired")}`,
             );
             failedCount++;
             continue;
@@ -197,7 +222,7 @@ export const CustomerManagement = () => {
 
           if (!customerData.postalCode) {
             errors.push(
-              `Row ${rowNumber}: ${t("customerManagement.validation.postalCodeRequired")}`
+              `Row ${rowNumber}: ${t("customerManagement.validation.postalCodeRequired")}`,
             );
             failedCount++;
             continue;
@@ -205,7 +230,7 @@ export const CustomerManagement = () => {
 
           if (!customerData.city) {
             errors.push(
-              `Row ${rowNumber}: ${t("customerManagement.validation.cityRequired")}`
+              `Row ${rowNumber}: ${t("customerManagement.validation.cityRequired")}`,
             );
             failedCount++;
             continue;
@@ -213,7 +238,7 @@ export const CustomerManagement = () => {
 
           if (!customerData.province) {
             errors.push(
-              `Row ${rowNumber}: ${t("customerManagement.validation.provinceRequired")}`
+              `Row ${rowNumber}: ${t("customerManagement.validation.provinceRequired")}`,
             );
             failedCount++;
             continue;
@@ -242,13 +267,13 @@ export const CustomerManagement = () => {
             res = await (window as any).electronAPI.updateCustomerById(
               token,
               existingCustomerRes.data.id,
-              customerPayload
+              customerPayload,
             );
           } else {
             // Create new customer
             res = await (window as any).electronAPI.createCustomer(
               token,
-              customerPayload
+              customerPayload,
             );
           }
 
@@ -270,7 +295,7 @@ export const CustomerManagement = () => {
               errorMessage = t("customerManagement.bulkImport.databaseError");
             }
             errors.push(
-              `Row ${rowNumber}: ${errorMessage} (${customerData.phone})`
+              `Row ${rowNumber}: ${errorMessage} (${customerData.phone})`,
             );
             failedCount++;
           } else {
@@ -309,20 +334,20 @@ export const CustomerManagement = () => {
         toast.success(
           t("customerManagement.bulkImport.success", {
             count: successCount,
-          })
+          }),
         );
       } else if (successCount > 0 && failedCount > 0) {
         toast.warning(
           t("customerManagement.bulkImport.partialSuccess", {
             success: successCount,
             failed: failedCount,
-          })
+          }),
         );
       } else if (failedCount > 0) {
         toast.error(
           t("customerManagement.bulkImport.failed", {
             count: failedCount,
-          })
+          }),
         );
       }
     } catch (error) {
@@ -385,16 +410,10 @@ export const CustomerManagement = () => {
     XLSX.writeFile(wb, fileName);
   };
 
-  const filteredCustomers = customers.filter((customer) => {
-    const matchesSearch =
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.address?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  });
+  // Client-side filtering is no longer needed as we fetch from server based on searchTerm
+  const filteredCustomers = customers || [];
 
-  if (loading) {
+  if (initialLoading && loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div>
@@ -404,11 +423,12 @@ export const CustomerManagement = () => {
 
   return (
     <div className="p-4">
-      {
-        historyCustomer && (
-          <HistoryModal customer={historyCustomer} onClose={()=>setHistoryCustomer(null)} />
-        )
-      }
+      {historyCustomer && (
+        <HistoryModal
+          customer={historyCustomer}
+          onClose={() => setHistoryCustomer(null)}
+        />
+      )}
       <div className="">
         <div className="flex justify-between items-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div>
@@ -440,21 +460,19 @@ export const CustomerManagement = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <StatsCard
             title={t("customerManagement.totalCustomers")}
-            value={customers.length}
+            value={totalCustomers}
             icon={<GroupIcon className="size-6 text-black" />}
             bgColor="bg-gray-100"
           />
           <StatsCard
             title={t("customerManagement.withEmail")}
-            value={customers.filter((c) => c.email && c.email.trim()).length}
+            value={withEmailCount}
             icon={<GroupIcon className="size-6 text-blue-600" />}
             bgColor="bg-blue-100"
           />
           <StatsCard
             title={t("customerManagement.withAddress")}
-            value={
-              customers.filter((c) => c.address && c.address.trim()).length
-            }
+            value={withAddressCount}
             icon={<GroupIcon className="size-6 text-green-600" />}
             bgColor="bg-green-100"
           />
@@ -464,7 +482,10 @@ export const CustomerManagement = () => {
           <CustomInput
             placeholder={t("customerManagement.searchPlaceholder")}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(0);
+            }}
             type="text"
             name="search"
             preLabel={<SearchIcon className="size-5 text-gray-400" />}
@@ -473,13 +494,18 @@ export const CustomerManagement = () => {
           />
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden relative">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-black">
-              {t("customerManagement.table.customers")} (
-              {filteredCustomers.length})
+              {t("customerManagement.table.customers")} ({totalCustomers})
             </h3>
           </div>
+
+          {loading && !initialLoading && (
+            <div className="absolute inset-x-0 top-14 bottom-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+            </div>
+          )}
 
           {filteredCustomers.length === 0 ? (
             <div className="text-center py-12">
@@ -488,7 +514,7 @@ export const CustomerManagement = () => {
                 {t("customerManagement.noCustomersTitle")}
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                {customers.length === 0
+                {totalCustomers === 0
                   ? t("customerManagement.noCustomersFirst")
                   : t("customerManagement.noCustomersTry")}
               </p>
@@ -593,6 +619,15 @@ export const CustomerManagement = () => {
               </table>
             </div>
           )}
+          {totalCustomers > DEFAULT_PAGE_LIMIT && (
+            <div className="border-t border-gray-200 px-6 py-4">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(totalCustomers / DEFAULT_PAGE_LIMIT)}
+                onPageChange={(page) => setCurrentPage(page)}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -603,13 +638,7 @@ export const CustomerManagement = () => {
         mode={modalMode}
         initialCustomer={editingCustomer}
         onSuccess={(customer) => {
-          if (modalMode === "add") {
-            setCustomers([...customers, customer]);
-          } else {
-            setCustomers(
-              customers.map((c) => (c.id === customer.id ? customer : c))
-            );
-          }
+          fetchCustomers();
         }}
       />
 
@@ -659,7 +688,7 @@ export const CustomerManagement = () => {
                         </li>
                         <li>
                           {t(
-                            "customerManagement.bulkImport.columns.postalCode"
+                            "customerManagement.bulkImport.columns.postalCode",
                           )}
                         </li>
                         <li>
@@ -685,7 +714,7 @@ export const CustomerManagement = () => {
                         variant="secondary"
                         onClick={handleDownloadTemplate}
                         label={t(
-                          "customerManagement.bulkImport.downloadTemplate"
+                          "customerManagement.bulkImport.downloadTemplate",
                         )}
                         className="hover:scale-105"
                       />
