@@ -15,9 +15,9 @@ export class ConfigurationsDatabaseOperations {
           processedData.kitchenTimeEstimationRanges || []
         );
       }
-      if (processedData.deliveryMinOrderRanges !== undefined) {
-        processedData.deliveryMinOrderRanges = JSON.stringify(
-          processedData.deliveryMinOrderRanges || []
+      if (processedData.deliveryZones !== undefined) {
+        processedData.deliveryZones = JSON.stringify(
+          processedData.deliveryZones || []
         );
       }
       if (processedData.contactTypes !== undefined) {
@@ -64,25 +64,25 @@ export class ConfigurationsDatabaseOperations {
           configurations.kitchenTimeEstimationRanges = [];
         }
 
-        if (configurations.deliveryMinOrderRanges) {
+        if (configurations.deliveryZones) {
           try {
-            if (typeof configurations.deliveryMinOrderRanges === "string") {
-              configurations.deliveryMinOrderRanges = JSON.parse(
-                configurations.deliveryMinOrderRanges
+            if (typeof configurations.deliveryZones === "string") {
+              configurations.deliveryZones = JSON.parse(
+                configurations.deliveryZones
               );
             }
-            if (!Array.isArray(configurations.deliveryMinOrderRanges)) {
-              configurations.deliveryMinOrderRanges = [];
+            if (!Array.isArray(configurations.deliveryZones)) {
+              configurations.deliveryZones = [];
             }
           } catch (parseError) {
             console.warn(
-              "Failed to parse deliveryMinOrderRanges:",
+              "Failed to parse deliveryZones:",
               parseError
             );
-            configurations.deliveryMinOrderRanges = [];
+            configurations.deliveryZones = [];
           }
         } else {
-          configurations.deliveryMinOrderRanges = [];
+          configurations.deliveryZones = [];
         }
 
         if (configurations.contactTypes) {
@@ -125,9 +125,9 @@ export class ConfigurationsDatabaseOperations {
           processedUpdates.kitchenTimeEstimationRanges || []
         );
       }
-      if (processedUpdates.deliveryMinOrderRanges !== undefined) {
-        processedUpdates.deliveryMinOrderRanges = JSON.stringify(
-          processedUpdates.deliveryMinOrderRanges || []
+      if (processedUpdates.deliveryZones !== undefined) {
+        processedUpdates.deliveryZones = JSON.stringify(
+          processedUpdates.deliveryZones || []
         );
       }
       if (processedUpdates.contactTypes !== undefined) {

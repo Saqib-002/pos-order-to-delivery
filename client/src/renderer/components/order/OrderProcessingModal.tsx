@@ -13,7 +13,8 @@ import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { calculateOrderTotal } from "@/renderer/utils/orderCalculations";
 import { formatAddress } from "@/renderer/utils/utils";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
-import { calculateDistance } from "@/renderer/utils/googleMaps";
+import DeliveryRouteModal from "./modals/DeliveryRouteModal";
+import { calculateDistance, geocodeAddress, isPointInPolygon } from "@/renderer/utils/googleMaps";
 import { useTranslation } from "react-i18next";
 import {
   AddIcon,
@@ -55,6 +56,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const [orderType, setOrderType] = useState<"delivery" | "pickup" | "dine-in">(
     "delivery"
   );
+  const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -403,51 +405,32 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           return true;
         }
 
-        const distance = await calculateDistance(
-          restaurantAddress,
-          formatAddress(customerAddress),
-          apiKey
-        );
-
-        if (distance === null) {
-          console.warn("Could not calculate distance. Proceeding without distance check.");
+        const customerLocation = await geocodeAddress(formatAddress(customerAddress), apiKey);
+        if (!customerLocation) {
+          console.warn("Could not geocode customer address. Proceeding without zone check.");
           return true;
         }
 
-        const ranges = (configurations as any).deliveryMinOrderRanges || [];
-        if (ranges.length === 0) return true;
+        const zones = configurations.deliveryZones || [];
+        if (zones.length === 0) return true;
 
-        const applicableRange = ranges.find(
-          (range: any) => distance >= range.minKm && distance <= range.maxKm
+        const applicableZone = zones.find((zone: any) =>
+          isPointInPolygon(customerLocation, zone.points)
         );
 
-        if (applicableRange) {
-          if (orderTotal < applicableRange.minOrderAmount) {
+        if (applicableZone) {
+          if (orderTotal < applicableZone.minOrderAmount) {
             toast.error(
-              t("orderProcessingModal.errors.minOrderAmountNotMet", {
-                amount: applicableRange.minOrderAmount.toFixed(2),
-                distance: distance.toFixed(2),
+              t("orderProcessingModal.errors.minOrderAmountNotMetZone", {
+                zoneName: applicableZone.name,
+                minAmount: applicableZone.minOrderAmount.toFixed(2),
+                currentAmount: orderTotal.toFixed(2),
               })
             );
             return false;
           }
         } else {
-          const maxDefinedDistance = Math.max(...ranges.map((r: any) => r.maxKm));
-
-          if (distance > maxDefinedDistance) {
-            toast.error(
-              t("orderProcessingModal.errors.maxDistanceExceeded", {
-                distance: distance.toFixed(2),
-                maxDistance: maxDefinedDistance.toFixed(2),
-              })
-            );
-            return false;
-          }
-
-          toast.error(t("orderProcessingModal.errors.maxDistanceExceeded", {
-            distance: distance.toFixed(2),
-            maxDistance: maxDefinedDistance.toFixed(2),
-          }));
+          toast.error(t("orderProcessingModal.errors.outsideDeliveryZones"));
           return false;
         }
 
@@ -703,13 +686,24 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                             : selectedCustomer.address}
                         </div>
                         {customerDistance !== null && orderType === "delivery" && (
-                          <div className="mt-2 flex items-center gap-2 text-emerald-600 font-semibold text-sm">
-                            <LocationIcon className="size-4" />
-                            <span>
-                              {t("orderProcessingModal.customerSearch.distance", {
-                                distance: customerDistance.toFixed(2),
-                              })}
-                            </span>
+                          <div className="mt-2 flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-emerald-600 font-semibold text-sm">
+                              <LocationIcon className="size-4" />
+                              <span>
+                                {t("orderProcessingModal.customerSearch.distance", {
+                                  distance: customerDistance.toFixed(2),
+                                })}
+                              </span>
+                            </div>
+                            <CustomButton
+                              type="button"
+                              onClick={() => setIsRouteModalOpen(true)}
+                              label={t("orderProcessingModal.customerSearch.viewRoute")}
+                              size="xs"
+                              variant="transparent"
+                              className="text-blue-600 hover:bg-blue-50 py-1"
+                              Icon={<CarIcon className="size-3" />}
+                            />
                           </div>
                         )}
                       </div>
@@ -965,14 +959,25 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                       name="custom-customer-address"
                       inputClasses="py-3 px-4"
                     />
-                    {customerDistance !== null && (
-                      <div className="mt-3 flex items-center gap-2 text-emerald-600 font-semibold text-sm">
-                        <LocationIcon className="size-4" />
-                        <span>
-                          {t("orderProcessingModal.customerSearch.distance", {
-                            distance: customerDistance.toFixed(2),
-                          })}
-                        </span>
+                    {customerDistance !== null && orderType === "delivery" && (
+                      <div className="mt-2 flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-emerald-600 font-semibold text-sm">
+                          <LocationIcon className="size-4" />
+                          <span>
+                            {t("orderProcessingModal.customerSearch.distance", {
+                              distance: customerDistance.toFixed(2),
+                            })}
+                          </span>
+                        </div>
+                        <CustomButton
+                          type="button"
+                          onClick={() => setIsRouteModalOpen(true)}
+                          label={t("orderProcessingModal.customerSearch.viewRoute")}
+                          size="xs"
+                          variant="transparent"
+                          className="text-blue-600 hover:bg-blue-50 py-1"
+                          Icon={<CarIcon className="size-3" />}
+                        />
                       </div>
                     )}
                   </div>
@@ -1315,6 +1320,14 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         onConfirm={handlePaymentConfirm}
         totalAmount={orderTotal}
         existingPaymentType={order?.paymentType}
+      />
+
+      <DeliveryRouteModal
+        isOpen={isRouteModalOpen}
+        onClose={() => setIsRouteModalOpen(false)}
+        origin={configurations.address}
+        destination={formatAddress(selectedCustomer?.address || customCustomerAddress)}
+        googleMapsApiKey={configurations.googleMapsApiKey || ""}
       />
     </div>
   );

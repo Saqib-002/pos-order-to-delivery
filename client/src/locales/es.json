@@ -18,6 +18,7 @@
     "notAvailable": "N/D",
     "savedSuccessfully": "Guardado exitosamente",
     "errorSaving": "Error al guardar",
+    "error": "Error",
     "seeAll": "Ver Todo",
     "paymentStatus": {
       "paid": "PAGADO",
@@ -69,7 +70,32 @@
     "minOrderAmountLabel": "Cant. Mín",
     "noRangeSetHelp": "Agrega un rango de distancia para habilitar el pedido mínimo de entrega",
     "noTimeRangeSet": "No hay rangos de tiempo configurados",
-    "addTimeRangeHelp": "Agrega rangos para estimar el tiempo de preparación de la cocina"
+    "addTimeRangeHelp": "Agrega rangos para estimar el tiempo de preparación de la cocina",
+    "deliveryZones": {
+      "title": "Gestionar Zonas de Entrega",
+      "subtitle": "Dibuja zonas en el mapa y establece montos mínimos de pedido",
+      "clearMap": "Limpiar Mapa",
+      "listTitle": "Zonas de Entrega",
+      "noZones": "Aún no se han creado zonas.",
+      "drawHelp": "Usa la herramienta de polígono en el mapa para comenzar a dibujar.",
+      "zoneNamePlaceholder": "Nombre de la Zona",
+      "minOrderLabel": "Pedido Mín.:",
+      "saveButton": "Guardar Zonas",
+      "editHelp": "* Haz clic en una zona en la lista o en el mapa para editar.",
+      "pointsCount": "{{count}} puntos",
+      "manageButton": "Gestionar Zonas de Entrega",
+      "noZonesConfigured": "Aún no hay zonas de entrega configuradas.",
+      "drawFirstZoneHelp": "Haz clic en \"Gestionar Zonas de Entrega\" para dibujar tu primera zona en el mapa.",
+      "minOrderShort": "Pedido mín.:",
+      "validation": {
+        "atLeastOneZone": "Por favor crea al menos una zona de entrega"
+      },
+      "errors": {
+        "couldNotLocateRestaurant": "No se pudo localizar la dirección del restaurante",
+        "mapInitError": "Error al inicializar el mapa",
+        "loadFailed": "Error al cargar Google Maps"
+      }
+    }
   },
   "authorInfo": {
     "title": "Información del Autor",
@@ -2418,7 +2444,8 @@
       "phone": "Teléfono:",
       "email": "Correo:",
       "address": "Dirección",
-      "distance": "Distancia actual: {{distance}}km"
+      "distance": "Distancia actual: {{distance}}km",
+      "viewRoute": "Ver Ruta"
     },
     "customerDetails": {
       "title": "Detalles del Cliente",
@@ -2480,7 +2507,9 @@
       "customerDetailsRequired": "Por favor seleccione un cliente o ingrese los detalles del cliente incluyendo la dirección para pedidos de entrega",
       "orderAlreadyPaid": "El pedido ya está pagado. Procesando con la información de pago existente.",
       "minOrderAmountNotMet": "Se requiere un pedido mínimo de €{{amount}} para una distancia de {{distance}}km. Por favor, añada más artículos.",
-      "maxDistanceExceeded": "La distancia de {{distance}}km excede nuestro rango máximo de entrega de {{maxDistance}}km."
+      "maxDistanceExceeded": "La distancia de {{distance}}km excede nuestro rango máximo de entrega de {{maxDistance}}km.",
+      "minOrderAmountNotMetZone": "El monto mínimo de pedido para {{zoneName}} es {{minAmount}}€. Actualmente: {{currentAmount}}€",
+      "outsideDeliveryZones": "La dirección de entrega está fuera de nuestras zonas de entrega."
     },
     "defaultCustomers": {
       "dineInCustomer": "Cliente de Comedor",
@@ -2543,19 +2572,35 @@
     "specialNote": "Una vez eliminado, este elemento se borrará permanentemente del sistema.",
     "confirmAction": "Confirmar Acción"
   },
+  "deliveryRouteModal": {
+    "title": "Ruta de Entrega",
+    "subtitle": "Ruta estimada desde el restaurante al cliente",
+    "alternativeRoutes": "Rutas Alternativas",
+    "routeLabel": "Ruta {{index}}",
+    "modes": {
+      "car": "Coche",
+      "bike": "Bicicleta"
+    },
+    "layers": {
+      "title": "Capas del Mapa",
+      "traffic": "Estado del Tráfico",
+      "zones": "Zonas de Reparto"
+    },
+    "estimation": {
+      "distance": "Distancia",
+      "duration": "Tiempo de Viaje",
+      "minutes": "min",
+      "hours": "h"
+    },
+    "errors": {
+      "routeNotFound": "No se pudo encontrar una ruta entre estas direcciones.",
+      "loadFailed": "Error al cargar Google Maps"
+    }
+  },
   "printConfirmationModal": {
     "title": "Imprimir Recibo",
     "message": "¿Desea imprimir el recibo del cliente para este pedido?",
     "yesPrint": "Imprimir Recibo",
     "noPrint": "No, gracias"
-  },
-  "deliveryRangeMapModal": {
-    "title": "Vista Previa de Zona de Entrega",
-    "restaurant": "Restaurante",
-    "deliveryZone": "Zona de Entrega",
-    "excludedZone": "Zona Excluida (Radio menor)",
-    "errors": {
-      "couldNotLocate": "No se pudo localizar la dirección del restaurante: {{status}}"
-    }
   }
 }

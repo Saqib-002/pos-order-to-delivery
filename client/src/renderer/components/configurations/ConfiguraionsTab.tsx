@@ -8,7 +8,7 @@ import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { useTranslation } from "react-i18next";
 import { EyeIcon, ImgIcon, LocationIcon } from "@/renderer/public/Svg";
 import { AddressAutocomplete } from "../shared/AddressAutocomplete";
-import DeliveryRangeMapModal from "./Modals/DeliveryRangeMapModal";
+import DeliveryZoneMapModal from "./Modals/DeliveryZoneMapModal";
 
 const ConfigurationsTab = () => {
   const [configurationsId, setConfigurationsId] = useState<string>("");
@@ -21,11 +21,7 @@ const ConfigurationsTab = () => {
   const { configurations, setConfigurations, language, setLanguage } =
     useConfigurations();
   const { i18n, t } = useTranslation();
-  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
-  const [previewRange, setPreviewRange] = useState<{
-    minKm: number;
-    maxKm: number;
-  } | null>(null);
+  const [isZoneModalOpen, setIsZoneModalOpen] = useState(false);
 
   const getConfigurations = async () => {
     // Fetch CDN URL
@@ -101,38 +97,34 @@ const ConfigurationsTab = () => {
         }));
     }
 
-    let cleanedDeliveryRanges: any[] = [];
+    let cleanedDeliveryZones: any[] = [];
     if (
-      configurations.deliveryMinOrderRanges &&
-      Array.isArray(configurations.deliveryMinOrderRanges)
+      configurations.deliveryZones &&
+      Array.isArray(configurations.deliveryZones)
     ) {
-      cleanedDeliveryRanges = configurations.deliveryMinOrderRanges
-        .filter((range: any) => {
+      cleanedDeliveryZones = configurations.deliveryZones
+        .filter((zone: any) => {
           return (
-            range &&
-            typeof range === "object" &&
-            typeof range.minKm === "number" &&
-            typeof range.maxKm === "number" &&
-            typeof range.minOrderAmount === "number" &&
-            !isNaN(range.minKm) &&
-            !isNaN(range.maxKm) &&
-            !isNaN(range.minOrderAmount) &&
-            range.minKm >= 0 &&
-            range.maxKm >= 0 &&
-            range.minOrderAmount >= 0
+            zone &&
+            typeof zone === "object" &&
+            zone.id &&
+            zone.name &&
+            Array.isArray(zone.points) &&
+            typeof zone.minOrderAmount === "number"
           );
         })
-        .map((range: any) => ({
-          minKm: Math.max(0, range.minKm),
-          maxKm: Math.max(0, range.maxKm),
-          minOrderAmount: Math.max(0, range.minOrderAmount),
+        .map((zone: any) => ({
+          id: zone.id,
+          name: zone.name,
+          points: zone.points,
+          minOrderAmount: Math.max(0, zone.minOrderAmount),
         }));
     }
 
     const cleanedConfigurations = {
       ...configurations,
       kitchenTimeEstimationRanges: cleanedRanges,
-      deliveryMinOrderRanges: cleanedDeliveryRanges,
+      deliveryZones: cleanedDeliveryZones,
     };
 
     // Save CDN URL
@@ -389,7 +381,7 @@ const ConfigurationsTab = () => {
               </div>
 
               {(configurations.kitchenTimeEstimationRanges || []).length ===
-              0 ? (
+                0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <p className="text-sm">
                     {t("configurations.noTimeRangeSet")}
@@ -535,7 +527,7 @@ const ConfigurationsTab = () => {
               )}
             </div>
 
-            {/* Delivery Minimum Order Ranges */}
+            {/* Delivery Minimum Order Zones */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-800">
@@ -543,167 +535,37 @@ const ConfigurationsTab = () => {
                 </h3>
                 <CustomButton
                   type="button"
-                  onClick={() => {
-                    const newRange = {
-                      minKm: 0,
-                      maxKm: 5,
-                      minOrderAmount: 15,
-                    };
-                    const updatedRanges = [
-                      ...(configurations.deliveryMinOrderRanges || []),
-                      newRange,
-                    ];
-                    setConfigurations({
-                      ...configurations,
-                      deliveryMinOrderRanges: updatedRanges,
-                    });
-                  }}
-                  label={t("configurations.addDistanceRange")}
+                  onClick={() => setIsZoneModalOpen(true)}
+                  label={t("configurations.deliveryZones.manageButton")}
                   size="sm"
                   variant="primary"
+                  Icon={<LocationIcon className="size-4" />}
                 />
               </div>
 
-              {(configurations.deliveryMinOrderRanges || []).length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <p className="text-sm">{t("configurations.noRangeSet")}</p>
+              {(configurations.deliveryZones || []).length === 0 ? (
+                <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
+                  <p className="text-sm">{t("configurations.deliveryZones.noZonesConfigured")}</p>
+                  <p className="text-xs mt-1">{t("configurations.deliveryZones.drawFirstZoneHelp")}</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {(configurations.deliveryMinOrderRanges || []).map(
-                    (range: any, index: number) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {(configurations.deliveryZones || []).map(
+                    (zone: any, index: number) => (
                       <div
-                        key={index}
-                        className="flex items-center justify-between py-2"
+                        key={zone.id || index}
+                        className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm"
                       >
-                        <div className="flex items-center gap-2">
-                          {/* Distance Range */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-700 min-w-fit">
-                              {t("configurations.distanceLabel")} km
-                            </span>
-                            <div className="flex items-center gap-1">
-                              <CustomInput
-                                type="number"
-                                value={String(range.minKm)}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  const numValue =
-                                    value === "" ? 0 : Number(value);
-                                  const updatedRanges = [
-                                    ...(configurations.deliveryMinOrderRanges ||
-                                      []),
-                                  ];
-                                  updatedRanges[index] = {
-                                    ...range,
-                                    minKm: numValue,
-                                  };
-                                  setConfigurations({
-                                    ...configurations,
-                                    deliveryMinOrderRanges: updatedRanges,
-                                  });
-                                }}
-                                placeholder="0"
-                                min="0"
-                                inputClasses="w-10 text-center px-2 py-1 text-sm w-30! bg-white"
-                                name={`minKm-${index}`}
-                              />
-                              <span className="text-gray-500">-</span>
-                              <CustomInput
-                                type="number"
-                                value={String(range.maxKm)}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  const numValue =
-                                    value === "" ? 0 : Number(value);
-                                  const updatedRanges = [
-                                    ...(configurations.deliveryMinOrderRanges ||
-                                      []),
-                                  ];
-                                  updatedRanges[index] = {
-                                    ...range,
-                                    maxKm: numValue,
-                                  };
-                                  setConfigurations({
-                                    ...configurations,
-                                    deliveryMinOrderRanges: updatedRanges,
-                                  });
-                                }}
-                                placeholder="5"
-                                min="0"
-                                inputClasses="w-10 text-center px-2 py-1 text-sm w-30! bg-white"
-                                name={`maxKm-${index}`}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Min Order Amount */}
-                          <div className="flex items-center gap-2 mr-4">
-                            <span className="text-sm font-medium text-gray-700 min-w-fit">
-                              {t("configurations.minOrderAmountLabel")}
-                            </span>
-                            <div className="flex items-center gap-1">
-                              <CustomInput
-                                type="number"
-                                value={String(range.minOrderAmount)}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  const numValue =
-                                    value === "" ? 0 : Number(value);
-                                  const updatedRanges = [
-                                    ...(configurations.deliveryMinOrderRanges ||
-                                      []),
-                                  ];
-                                  updatedRanges[index] = {
-                                    ...range,
-                                    minOrderAmount: numValue,
-                                  };
-                                  setConfigurations({
-                                    ...configurations,
-                                    deliveryMinOrderRanges: updatedRanges,
-                                  });
-                                }}
-                                placeholder="15"
-                                min="0"
-                                inputClasses="w-20 text-center px-2 py-1 text-sm w-30! bg-white"
-                                name={`minOrderAmount-${index}`}
-                                postLabel={"€"}
-                              />
-                            </div>
-                          </div>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-gray-800">{zone.name}</span>
+                          <span className="text-xs text-gray-500">
+                            {t("configurations.deliveryZones.minOrderShort")} <span className="font-semibold text-emerald-600">{zone.minOrderAmount}€</span>
+                          </span>
                         </div>
-
                         <div className="flex items-center gap-2">
-                          <CustomButton
-                            type="button"
-                            onClick={() => {
-                              setPreviewRange({
-                                minKm: range.minKm,
-                                maxKm: range.maxKm,
-                              });
-                              setIsPreviewModalOpen(true);
-                            }}
-                            variant="transparent"
-                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 !p-2"
-                            Icon={<EyeIcon className="size-5" />}
-                            title="Preview on Map"
-                          />
-                          <CustomButton
-                            type="button"
-                            onClick={() => {
-                              const updatedRanges = [
-                                ...(configurations.deliveryMinOrderRanges ||
-                                  []),
-                              ];
-                              updatedRanges.splice(index, 1);
-                              setConfigurations({
-                                ...configurations,
-                                deliveryMinOrderRanges: updatedRanges,
-                              });
-                            }}
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2"
-                            label="✕"
-                          />
+                          <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium uppercase">
+                            {t("configurations.deliveryZones.pointsCount", { count: zone.points.length })}
+                          </span>
                         </div>
                       </div>
                     ),
@@ -756,11 +618,11 @@ const ConfigurationsTab = () => {
           label={t("configurations.save")}
         />
       </form>
-      <DeliveryRangeMapModal
-        isOpen={isPreviewModalOpen}
-        onClose={() => setIsPreviewModalOpen(false)}
-        minKm={previewRange?.minKm || 0}
-        maxKm={previewRange?.maxKm || 0}
+      <DeliveryZoneMapModal
+        isOpen={isZoneModalOpen}
+        onClose={() => setIsZoneModalOpen(false)}
+        initialZones={configurations.deliveryZones || []}
+        onSave={(zones) => setConfigurations({ ...configurations, deliveryZones: zones })}
         restaurantAddress={configurations.address || ""}
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
       />

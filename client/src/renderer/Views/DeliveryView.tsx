@@ -25,6 +25,8 @@ import {
 import { DEFAULT_PAGE_LIMIT, FUNCTIONS } from "@/constants";
 import { CancelOrderModal } from "../components/order/modals/CancelOrderModal";
 import { CustomSelect } from "../components/ui/CustomSelect";
+import DeliveryRouteModal from "../components/order/modals/DeliveryRouteModal";
+import { MapIcon } from "../public/Svg";
 
 export const DeliveryView = () => {
   const { t } = useTranslation();
@@ -53,6 +55,9 @@ export const DeliveryView = () => {
     useState<Order | null>(null);
   const [changeDeliveryPerson, setChangeDeliveryPerson] =
     useState<DeliveryPerson | null>(null);
+  const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
+  const [selectedOrderForRoute, setSelectedOrderForRoute] =
+    useState<Order | null>(null);
 
   useEffect(() => {
     const fetchDeliveryPersons = async () => {
@@ -78,6 +83,7 @@ export const DeliveryView = () => {
       endDateRange: null,
       selectedDeliveryPerson: "",
       selectedCustomer: "",
+      selectedOrderType: "",
     });
   }, []);
 
@@ -374,6 +380,16 @@ export const DeliveryView = () => {
               <CrossIcon className="w-4 h-4" />
             </button>
           )}
+          <button
+            onClick={() => {
+              setSelectedOrderForRoute(order);
+              setIsRouteModalOpen(true);
+            }}
+            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+            title={t("orderProcessingModal.customerSearch.viewRoute") || "View Route"}
+          >
+            <MapIcon className="w-4 h-4" />
+          </button>
         </td>
       </tr>
     );
@@ -462,6 +478,16 @@ export const DeliveryView = () => {
                 <CrossIcon className="size-4" />
               </button>
             )}
+            <button
+              onClick={() => {
+                setSelectedOrderForRoute(order);
+                setIsRouteModalOpen(true);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 text-sm cursor-pointer"
+              title={t("orderProcessingModal.customerSearch.viewRoute") || "View Route"}
+            >
+              <MapIcon className="size-4" />
+            </button>
           </>
         )}
         {/* Change Delivery Person Button */}
@@ -649,6 +675,17 @@ export const DeliveryView = () => {
         onConfirm={handleCancelOrderConfirm}
         order={selectedOrderForCancel}
         orderPrefix={configurations.orderPrefix || "K"}
+      />
+      {/* Delivery Route Modal */}
+      <DeliveryRouteModal
+        isOpen={isRouteModalOpen}
+        onClose={() => {
+          setIsRouteModalOpen(false);
+          setSelectedOrderForRoute(null);
+        }}
+        origin={configurations.address}
+        destination={formatAddress(selectedOrderForRoute?.customer?.address || "")}
+        googleMapsApiKey={configurations.googleMapsApiKey || ""}
       />
     </div>
   );
