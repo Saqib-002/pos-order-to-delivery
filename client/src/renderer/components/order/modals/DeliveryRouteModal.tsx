@@ -49,7 +49,15 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
 
     // Load Google Maps Core
     useEffect(() => {
-        if (!isOpen || !googleMapsApiKey) return;
+        if (!isOpen) {
+            mapInstanceRef.current = null;
+            polylinesRef.current = [];
+            markersRef.current = [];
+            zonePolygonsRef.current = [];
+            return;
+        }
+
+        if (!googleMapsApiKey) return;
         const scriptId = "google-maps-script-delivery-route";
         if (document.getElementById(scriptId)) {
             setIsLoaded(true);
@@ -230,6 +238,8 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     useEffect(() => {
         if (isLoaded && isOpen && mapRef.current) {
             if (!mapInstanceRef.current) {
+                setRoutes([]);
+                setSelectedRouteIndex(0);
                 mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
                     center: { lat: 0, lng: 0 },
                     zoom: 12,
