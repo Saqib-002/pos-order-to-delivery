@@ -87,45 +87,79 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       setIsLoaded(false);
       return;
     }
-    const existingScripts = document.querySelectorAll(
-      'script[src*="maps.googleapis.com"]'
-    );
-    existingScripts.forEach((script) => script.remove());
 
     if (window.google?.maps?.importLibrary) {
       setIsLoaded(true);
       return;
     }
 
-    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
-      const checkInterval = setInterval(() => {
-        if (window.google?.maps?.importLibrary) {
-          setIsLoaded(true);
-          clearInterval(checkInterval);
+    const POLL_INTERVAL_MS = 200;
+    const POLL_TIMEOUT_MS = 15000; 
+    let cancelled = false;
+
+    const waitForGoogleMaps = () => {
+      const start = Date.now();
+      const interval = setInterval(() => {
+        if (cancelled) {
+          clearInterval(interval);
+          return;
         }
-      }, 100);
-      return () => clearInterval(checkInterval);
+        if (window.google?.maps?.importLibrary) {
+          clearInterval(interval);
+          setIsLoaded(true);
+          return;
+        }
+        if (Date.now() - start >= POLL_TIMEOUT_MS) {
+          clearInterval(interval);
+          console.warn("Google Maps API did not load within timeout");
+        }
+      }, POLL_INTERVAL_MS);
+      return () => clearInterval(interval);
+    };
+
+    const existingScript = document.querySelector(
+      'script[src*="maps.googleapis.com"]'
+    );
+    if (existingScript) {
+      const clearWait = waitForGoogleMaps();
+      return () => {
+        cancelled = true;
+        clearWait();
+      };
+    }
+
+    const loaderScript = document.querySelector(
+      'script[data-google-maps-loader="true"]'
+    ) as HTMLScriptElement | null;
+    if (loaderScript && loaderScript.dataset.apiKey === apiKey) {
+      const clearWait = waitForGoogleMaps();
+      return () => {
+        cancelled = true;
+        clearWait();
+      };
     }
 
     const script = document.createElement("script");
     script.type = "text/javascript";
+    script.setAttribute("data-google-maps-loader", "true");
+    script.dataset.apiKey = apiKey;
     script.innerHTML = `
       (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=\`https://maps.\${c}apis.com/maps/api/js?\`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
       ({key: "${apiKey}", v: "weekly"});
     `;
     document.head.appendChild(script);
 
-    script.onload = () => {
-      setTimeout(() => {
-        if (window.google?.maps?.importLibrary) {
-          setIsLoaded(true);
-        }
-      }, 100);
-    };
-
     script.onerror = () => {
+      cancelled = true;
       setIsLoaded(false);
       console.error("Failed to load Google Maps API");
+    };
+
+    const clearWait = waitForGoogleMaps();
+
+    return () => {
+      cancelled = true;
+      clearWait();
     };
   }, [apiKey]);
 
