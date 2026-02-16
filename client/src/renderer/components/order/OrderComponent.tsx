@@ -102,7 +102,7 @@ const OrderComponent = () => {
       return;
     }
 
-    if (shouldPrintMainReceipt === "cancel") {
+    if (shouldPrintMainReceipt === "cancel" || !shouldPrintMainReceipt) {
       clearOrder();
       setPostProcessOrderData(null);
       return;
@@ -409,18 +409,24 @@ const OrderComponent = () => {
                   const isAssignedToDelivery = Boolean(
                     order.deliveryPerson && order.deliveryPerson.id,
                   );
+                  const isPaid = paymentStatus.status === "PAID";
                   return (
                     <button
                       key={order.id}
-                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${isAssignedToDelivery || order.orderType === "platform"
-                        ? "bg-gray-100 cursor-not-allowed opacity-75"
-                        : order.status === "cancelled"
-                          ? "hover:bg-red-50 cursor-pointer border-red-200"
-                          : "hover:bg-gray-50 cursor-pointer"
-                        }`}
+                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${
+                        isAssignedToDelivery ||
+                        order.orderType === "platform" ||
+                        isPaid
+                          ? "bg-gray-100 cursor-not-allowed opacity-75"
+                          : order.status === "cancelled"
+                            ? "hover:bg-red-50 cursor-pointer border-red-200"
+                            : "hover:bg-gray-50 cursor-pointer"
+                      }`}
                       onClick={() => handleOrderClick(order)}
                       disabled={
-                        isAssignedToDelivery || order.orderType === "platform"
+                        isAssignedToDelivery ||
+                        order.orderType === "platform" ||
+                        isPaid
                       }
                     >
                       <div className="flex flex-col items-start gap-2 flex-1">
