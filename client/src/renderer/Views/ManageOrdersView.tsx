@@ -129,7 +129,7 @@ export const ManageOrdersView = () => {
         toast.error(t("deliveryManagement.errors.fetchFailed"));
         return;
       }
-      setCustomers(res.data || []);
+      setCustomers(res.data.customers || []);
     } catch (error) {
       console.error("Error fetching customers:", error);
       toast.error(t("deliveryManagement.errors.fetchFailed"));
@@ -227,7 +227,7 @@ export const ManageOrdersView = () => {
         orderPrefix: configurations.orderPrefix || "K",
       };
       const configRes = await (window as any).electronAPI.getConfigurations(
-        token
+        token,
       );
       if (!configRes.status) {
         toast.error(t("orderCart.errors.errorGettingConfigurations"));
@@ -240,7 +240,7 @@ export const ManageOrdersView = () => {
       const { orderTotal } = calculateOrderTotal(order.items || []);
       const paymentStatus = calculatePaymentStatus(
         order.paymentType || "",
-        orderTotal
+        orderTotal,
       );
 
       toast.info(t("orderCart.messages.printingCustomerReceipt"));
@@ -295,7 +295,7 @@ export const ManageOrdersView = () => {
             customerName,
             user?.name,
             order.notes,
-            paymentStatus.totalPaid
+            paymentStatus.totalPaid,
           );
 
           if (!receiptHTML) {
@@ -305,13 +305,13 @@ export const ManageOrdersView = () => {
           const printRes = await (window as any).electronAPI.printToPrinter(
             token,
             printerName,
-            { html: receiptHTML }
+            { html: receiptHTML },
           );
 
           if (!printRes.status) {
             if (printRes.error === t("orderCart.errors.printerNotFoundError")) {
               toast.error(
-                t("orderCart.errors.printerNotFound", { printerName })
+                t("orderCart.errors.printerNotFound", { printerName }),
               );
             } else {
               toast.error(t("orderCart.errors.errorPrintingReceipt"));
@@ -340,19 +340,19 @@ export const ManageOrdersView = () => {
       const res = await (window as any).electronAPI.deleteOrder(
         token,
         selectedOrderForCancel.id,
-        cancelNote
+        cancelNote,
       );
       if (!res.status) {
         toast.error(
           res.error ||
-          t("manageOrders.errors.cancelFailed") ||
-          "Failed to cancel order"
+            t("manageOrders.errors.cancelFailed") ||
+            "Failed to cancel order",
         );
         return;
       }
       toast.success(
         t("manageOrders.messages.orderCancelled") ||
-        "Order cancelled successfully"
+          "Order cancelled successfully",
       );
       setIsCancelOrderModalOpen(false);
       setSelectedOrderForCancel(null);
@@ -360,7 +360,7 @@ export const ManageOrdersView = () => {
     } catch (error) {
       console.error("Error cancelling order:", error);
       toast.error(
-        t("manageOrders.errors.cancelFailed") || "Failed to cancel order"
+        t("manageOrders.errors.cancelFailed") || "Failed to cancel order",
       );
     }
   };
@@ -399,7 +399,7 @@ export const ManageOrdersView = () => {
     const { orderTotal } = calculateOrderTotal(order.items || []);
     const paymentStatus = calculatePaymentStatus(
       order.paymentType || "",
-      orderTotal
+      orderTotal,
     );
 
     return (
@@ -467,7 +467,7 @@ export const ManageOrdersView = () => {
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
           {dayjs(new Date(order.createdAt || "").toLocaleDateString()).format(
-            "DD/MM/YYYY"
+            "DD/MM/YYYY",
           )}
           <div className="text-xs text-gray-400">
             {new Date(order.createdAt || "").toLocaleTimeString()}
@@ -498,7 +498,7 @@ export const ManageOrdersView = () => {
               const { orderTotal } = calculateOrderTotal(order.items || []);
               const paymentStatus = calculatePaymentStatus(
                 order.paymentType || "",
-                orderTotal
+                orderTotal,
               );
 
               const isPaymentAllowed =
@@ -570,10 +570,11 @@ export const ManageOrdersView = () => {
             <button
               onClick={handleScrollLeft}
               disabled={!canScrollLeft}
-              className={`p-2 rounded-lg transition-all duration-200 ${canScrollLeft
-                ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
-                : "bg-gray-100 text-gray-300 cursor-not-allowed"
-                }`}
+              className={`p-2 rounded-lg transition-all duration-200 ${
+                canScrollLeft
+                  ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
+                  : "bg-gray-100 text-gray-300 cursor-not-allowed"
+              }`}
               title="Scroll left"
             >
               <ChevronLeftIcon className="w-5 h-5" />
@@ -581,10 +582,11 @@ export const ManageOrdersView = () => {
             <button
               onClick={handleScrollRight}
               disabled={!canScrollRight}
-              className={`p-2 rounded-lg transition-all duration-200 ${canScrollRight
-                ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
-                : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                }`}
+              className={`p-2 rounded-lg transition-all duration-200 ${
+                canScrollRight
+                  ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              }`}
               title="Scroll right"
             >
               <ChevronRightIcon className="w-5 h-5" />
@@ -660,11 +662,36 @@ export const ManageOrdersView = () => {
                 </label>
                 <CustomSelect
                   options={[
-                    { value: "", label: t("reports.components.orderTypeSelector.types.all") },
-                    { value: "delivery", label: t("reports.components.orderTypeSelector.types.delivery") },
-                    { value: "pickup", label: t("reports.components.orderTypeSelector.types.pickup") },
-                    { value: "dine-in", label: t("reports.components.orderTypeSelector.types.dineIn") },
-                    { value: "platform", label: t("reports.components.orderTypeSelector.types.platform") },
+                    {
+                      value: "",
+                      label: t(
+                        "reports.components.orderTypeSelector.types.all",
+                      ),
+                    },
+                    {
+                      value: "delivery",
+                      label: t(
+                        "reports.components.orderTypeSelector.types.delivery",
+                      ),
+                    },
+                    {
+                      value: "pickup",
+                      label: t(
+                        "reports.components.orderTypeSelector.types.pickup",
+                      ),
+                    },
+                    {
+                      value: "dine-in",
+                      label: t(
+                        "reports.components.orderTypeSelector.types.dineIn",
+                      ),
+                    },
+                    {
+                      value: "platform",
+                      label: t(
+                        "reports.components.orderTypeSelector.types.platform",
+                      ),
+                    },
                   ]}
                   value={filter.selectedOrderType}
                   onChange={(value) => {
@@ -674,7 +701,9 @@ export const ManageOrdersView = () => {
                       page: 0,
                     }));
                   }}
-                  placeholder={t("reports.components.orderTypeSelector.types.all")}
+                  placeholder={t(
+                    "reports.components.orderTypeSelector.types.all",
+                  )}
                   className="w-full"
                 />
               </div>
@@ -820,10 +849,10 @@ export const ManageOrdersView = () => {
             }
             emptyStateTitle={
               filter.searchTerm ||
-                filter.selectedDate ||
-                filter.selectedDeliveryPerson ||
-                filter.selectedCustomer ||
-                filter.selectedStatus.length > 0
+              filter.selectedDate ||
+              filter.selectedDeliveryPerson ||
+              filter.selectedCustomer ||
+              filter.selectedStatus.length > 0
                 ? t("manageOrders.noOrdersMatch")
                 : t("manageOrders.noOrdersFound")
             }
