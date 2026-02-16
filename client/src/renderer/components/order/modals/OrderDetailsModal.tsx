@@ -143,14 +143,14 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   (itemTotal, item) => {
                     const complementsTotal = Array.isArray(item.complements)
                       ? item.complements.reduce(
-                          (sum, complement) => sum + complement.price,
-                          0
-                        )
+                        (sum, complement) => sum + complement.price,
+                        0
+                      )
                       : 0;
                     return (
                       itemTotal +
                       ((item.variantPrice || 0) + complementsTotal) *
-                        item.quantity
+                      item.quantity
                     );
                   },
                   0
@@ -183,9 +183,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                             <td className="pl-5 text-base">
                               {item.productName}{" "}
                               {item.variantName &&
-                              item.variantId &&
-                              String(item.variantName).trim() !== "0" &&
-                              String(item.variantName).trim() !== ""
+                                item.variantId &&
+                                String(item.variantName).trim() !== "0" &&
+                                String(item.variantName).trim() !== ""
                                 ? `(${item.variantName})`
                                 : ""}
                             </td>
@@ -243,10 +243,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 const parsedComplements = parseComplements(item.complements);
                 const complementsTotal = Array.isArray(item.complements)
                   ? item.complements.reduce(
-                      (complementSum, complement) =>
-                        complementSum + complement.price,
-                      0
-                    )
+                    (complementSum, complement) =>
+                      complementSum + complement.price,
+                    0
+                  )
                   : 0;
                 const subtotal =
                   item.productPrice +
@@ -273,7 +273,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     </tr>
                     {/* UPDATED: Removed price > 0 check to allow free variants */}
                     {item.variantName &&
-                    item.variantId &&
+                      item.variantId &&
                       String(item.variantName).trim() !== "0" && (
                         <tr>
                           <td></td>
@@ -401,10 +401,11 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-black">
-                {t("orderDetailsModal.title", { orderId: order.orderId })}
-                {order.ticketNumber
-                  ? ` (${order.ticketNumber.toString()})`
-                  : ""}
+                {order.orderType === "platform" && order.ticketNumber ? (
+                  <>#{order.ticketNumber}</>
+                ) : (
+                  t("orderDetailsModal.title", { orderId: order.orderId })
+                )}
               </h2>
               <p className="text-sm text-gray-600 mt-1">
                 {t("orderDetailsModal.created")} {" "}
@@ -507,8 +508,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     <p className="text-black">
                       {formatAddress(
                         order.customer?.address ||
-                          (order as any).customerAddress ||
-                          "-"
+                        (order as any).customerAddress ||
+                        "-"
                       )}
                     </p>
                   </div>
@@ -732,7 +733,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         {order.assignedAt
                           ? dayjs(order.assignedAt).format("DD/MM/YYYY HH:mm:ss")
                           : order.status === "out for delivery" ||
-                              order.status === "delivered"
+                            order.status === "delivered"
                             ? t("orderDetailsModal.notRecorded")
                             : t("orderDetailsModal.notAssignedYet")}
                       </p>

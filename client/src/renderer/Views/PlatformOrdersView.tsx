@@ -194,14 +194,14 @@ const PlatformOrdersView = () => {
       if (!res.status) {
         toast.error(
           res.error ||
-            t("platformOrders.errors.failedToCancelOrder") ||
-            "Failed to cancel order"
+          t("platformOrders.errors.failedToCancelOrder") ||
+          "Failed to cancel order"
         );
         return;
       }
       toast.success(
         t("platformOrders.messages.orderCancelled") ||
-          "Order cancelled successfully"
+        "Order cancelled successfully"
       );
       setIsCancelOrderModalOpen(false);
       setSelectedOrderForCancel(null);
@@ -210,7 +210,7 @@ const PlatformOrdersView = () => {
       console.error("Error cancelling order:", error);
       toast.error(
         t("platformOrders.errors.failedToCancelOrder") ||
-          "Failed to cancel order"
+        "Failed to cancel order"
       );
     }
   };
@@ -274,7 +274,7 @@ const PlatformOrdersView = () => {
     return (
       <tr key={order.id} className="hover:bg-gray-50">
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
-          #{order.orderId}
+          {order.ticketNumber ? `#${order.ticketNumber}` : `#${order.orderId}`}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
           {getPlatformName(orderAny.platformId || (order as any).platformId)}
@@ -305,8 +305,8 @@ const PlatformOrdersView = () => {
         <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
           {orderAny.receivingTime || (order as any).receivingTime
             ? dayjs(
-                orderAny.receivingTime || (order as any).receivingTime
-              ).format("DD/MM/YYYY HH:mm:ss")
+              orderAny.receivingTime || (order as any).receivingTime
+            ).format("DD/MM/YYYY HH:mm:ss")
             : "-"}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -416,11 +416,10 @@ const PlatformOrdersView = () => {
           <button
             onClick={handleScrollLeft}
             disabled={!canScrollLeft}
-            className={`p-2 rounded-lg transition-all duration-200 ${
-              canScrollLeft
+            className={`p-2 rounded-lg transition-all duration-200 ${canScrollLeft
                 ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
                 : "bg-gray-100 text-gray-300 cursor-not-allowed"
-            }`}
+              }`}
             title="Scroll left"
           >
             <ChevronLeftIcon className="w-5 h-5" />
@@ -428,11 +427,10 @@ const PlatformOrdersView = () => {
           <button
             onClick={handleScrollRight}
             disabled={!canScrollRight}
-            className={`p-2 rounded-lg transition-all duration-200 ${
-              canScrollRight
+            className={`p-2 rounded-lg transition-all duration-200 ${canScrollRight
                 ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"
-            }`}
+              }`}
             title="Scroll right"
           >
             <ChevronRightIcon className="w-5 h-5" />
@@ -522,9 +520,8 @@ const PlatformOrdersView = () => {
 
             {/* Payment Status Filter */}
             <div
-              className={`w-full ${
-                i18n.language === "es" ? "lg:w-54" : "lg:w-48"
-              }`}
+              className={`w-full ${i18n.language === "es" ? "lg:w-54" : "lg:w-48"
+                }`}
             >
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t("platformOrders.paymentStatus")}
@@ -550,16 +547,16 @@ const PlatformOrdersView = () => {
               filter.selectedPaymentStatus.length > 0 ||
               filter.startDateRange ||
               filter.endDateRange) && (
-              <div className="w-full lg:w-auto">
-                <CustomButton
-                  type="button"
-                  label={t("platformOrders.clearFilters")}
-                  onClick={clearFilters}
-                  variant="transparent"
-                  className="border border-gray-300"
-                />
-              </div>
-            )}
+                <div className="w-full lg:w-auto">
+                  <CustomButton
+                    type="button"
+                    label={t("platformOrders.clearFilters")}
+                    onClick={clearFilters}
+                    variant="transparent"
+                    className="border border-gray-300"
+                  />
+                </div>
+              )}
           </div>
         </div>
       </div>

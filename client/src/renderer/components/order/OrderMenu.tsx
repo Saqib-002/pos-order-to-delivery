@@ -17,7 +17,7 @@ import MenuOrderTakingForm from "./MenuOrderTakingForm";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import { UnifiedCard } from "@/renderer/components/ui/UnifiedCard";
 import { DocumentIcon } from "@/renderer/public/Svg";
-import { useTranslation } from "react-i18next"; 
+import { useTranslation } from "react-i18next";
 const OrderMenu = () => {
   const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[] | null>(null);
@@ -168,7 +168,7 @@ const OrderMenu = () => {
                 {/* Menus */}
                 {menus && menus.length > 0 && (
                   <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
                       {t("menuComponents.menus.title")}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -203,6 +203,7 @@ const OrderMenu = () => {
                                 imgUrl: menu.imgUrl,
                                 description: menu.description,
                                 price: menu.price,
+                                discount: menu.discount,
                                 color: menu.color || "gray",
                                 isAvailable: true,
                               }}

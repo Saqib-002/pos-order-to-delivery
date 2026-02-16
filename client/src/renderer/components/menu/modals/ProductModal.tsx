@@ -529,18 +529,18 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
   // Calculate price breakdown
   const calculatePriceBreakdown = () => {
-    const basePrice = formData.price || 0;
-    const discountPercentage = formData.discount || 0;
-    const taxPercentage = formData.tax || 0;
+    const basePrice = parseFloat(formDataRaw.price) || 0;
+    const discountPercentage = parseFloat(formDataRaw.discount) || 0;
+    const taxPercentage = parseFloat(formDataRaw.tax) || 0;
 
-    const tax = ((basePrice / (1 + taxPercentage / 100)) * taxPercentage) / 100;
-    const subtotal = basePrice - tax;
-    const discountAmount = (subtotal * discountPercentage) / 100;
-    const total = subtotal - discountAmount;
+    const taxAmount = (basePrice / (1 + taxPercentage / 100)) * (taxPercentage / 100);
+    const subtotal = basePrice - taxAmount;
+    const discountAmount = (basePrice * discountPercentage) / 100;
+    const total = basePrice - discountAmount;
 
     return {
       subtotal: subtotal,
-      taxAmount: tax,
+      taxAmount: taxAmount,
       discount: discountAmount,
       total: total,
     };
@@ -742,11 +742,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`cursor-pointer py-2 px-1 text-sm font-medium border-b-2 transition-colors duration-200 ${
-                  activeTab === tab.id
-                    ? "border-gray-500 text-black"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`cursor-pointer py-2 px-1 text-sm font-medium border-b-2 transition-colors duration-200 ${activeTab === tab.id
+                  ? "border-gray-500 text-black"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
                 {tab.label}
               </button>
@@ -776,16 +775,14 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           isAvailable: !formData.isAvailable,
                         })
                       }
-                      className={`cursor-pointer relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                        formData.isAvailable ? "bg-black" : "bg-gray-200"
-                      }`}
+                      className={`cursor-pointer relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${formData.isAvailable ? "bg-black" : "bg-gray-200"
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                          formData.isAvailable
-                            ? "translate-x-6"
-                            : "translate-x-1"
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${formData.isAvailable
+                          ? "translate-x-6"
+                          : "translate-x-1"
+                          }`}
                       />
                     </button>
                   </div>
@@ -880,11 +877,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       placeholder={
                         !formData.categoryId
                           ? t(
-                              "menuComponents.modals.productModal.selectCategoryFirst"
-                            )
+                            "menuComponents.modals.productModal.selectCategoryFirst"
+                          )
                           : t(
-                              "menuComponents.modals.productModal.selectSubcategory"
-                            )
+                            "menuComponents.modals.productModal.selectSubcategory"
+                          )
                       }
                       portalClassName="product-subcategory-dropdown-portal"
                       disabled={!formData.categoryId}
@@ -1072,7 +1069,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         €{calculatePriceBreakdown().taxAmount.toFixed(2)}
                       </span>
                     </div>
-                    {formData.discount > 0 && (
+                    {parseFloat(formDataRaw.discount) > 0 && (
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-700">
                           {t(
@@ -1276,11 +1273,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setSelectedAddonPage(page.pageNo)}
-                          className={`cursor-pointer px-5 py-3 rounded-md text-sm font-medium transition-colors duration-200 ml-1 ${
-                            selectedAddonPage === page.pageNo
-                              ? "bg-black text-white"
-                              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                          }`}
+                          className={`cursor-pointer px-5 py-3 rounded-md text-sm font-medium transition-colors duration-200 ml-1 ${selectedAddonPage === page.pageNo
+                            ? "bg-black text-white"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
                         >
                           {index + 1}
                         </button>
@@ -1414,11 +1410,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       onClick={() =>
                         handlePagePluginGroupChange(selectedAddonPage, group.id)
                       }
-                      className={`cursor-pointer relative px-4 py-3 rounded-md text-sm font-medium text-white transition-colors duration-200 ${getPluginGroupColorClasses(group.color)} ${
-                        getCurrentPageData()?.selectedGroup === group.id
-                          ? `ring-2 ${getPluginGroupRingClasses(group.color)} ring-offset-2`
-                          : ""
-                      }`}
+                      className={`cursor-pointer relative px-4 py-3 rounded-md text-sm font-medium text-white transition-colors duration-200 ${getPluginGroupColorClasses(group.color)} ${getCurrentPageData()?.selectedGroup === group.id
+                        ? `ring-2 ${getPluginGroupRingClasses(group.color)} ring-offset-2`
+                        : ""
+                        }`}
                     >
                       {group.name}
                       {getCurrentPageData()?.selectedGroup === group.id && (

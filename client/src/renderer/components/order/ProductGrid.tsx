@@ -67,6 +67,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                 description: product.description,
                 imgUrl: product.imgUrl,
                 price: product.price,
+                discount: product.discount,
                 color: product.color,
                 isAvailable: product.isAvailable,
                 isOutOfStock: (product as any).isOutOfStock,
@@ -81,7 +82,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                 }
                 onProductSelect(product);
               }}
-              onEdit={() => {}} // No edit functionality in order context
+              onEdit={() => { }} 
               showActions={false}
             />
           </div>

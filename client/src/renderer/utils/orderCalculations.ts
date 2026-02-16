@@ -12,6 +12,7 @@ export const calculateOrderTotal = (
     secondaryId: number;
     basePrice: number;
     taxPerUnit: number;
+    menuDiscount: number;
     supplementTotal: number;
     items: OrderItem[];
   }>;
@@ -27,14 +28,11 @@ export const calculateOrderTotal = (
         )
       : 0;
 
-    const subtotal =
-      item.productPrice +
-      item.productTax +
-      item.variantPrice +
-      complementsTotal;
-
-    const discountAmount = (subtotal * item.productDiscount) / 100;
-    const itemTotal = (subtotal - discountAmount) * item.quantity;
+    const baseProductPriceWithTax = item.productPrice + item.productTax;
+    const discountAmount = (baseProductPriceWithTax * item.productDiscount) / 100;
+    const itemTotal =
+      (baseProductPriceWithTax - discountAmount + item.variantPrice + complementsTotal) *
+      item.quantity;
 
     return sum + itemTotal;
   }, 0);
@@ -50,6 +48,7 @@ export const calculateOrderTotal = (
           secondaryId: number;
           basePrice: number;
           taxPerUnit: number;
+          menuDiscount: number;
           supplementTotal: number;
           items: OrderItem[];
         }
@@ -59,6 +58,7 @@ export const calculateOrderTotal = (
       const key = `${item.menuId}-${item.menuSecondaryId}`;
       const menuPrice = item.menuPrice ?? 0;
       const menuTax = item.menuTax ?? 0;
+      const menuDiscount = item.menuDiscount ?? 0;
       const supplement = item.supplement ?? 0;
 
       if (!acc[key]) {
@@ -69,6 +69,7 @@ export const calculateOrderTotal = (
           secondaryId: item.menuSecondaryId! as number,
           basePrice: menuPrice,
           taxPerUnit: menuTax,
+          menuDiscount: menuDiscount,
           supplementTotal: supplement,
           items: [],
         };
@@ -83,8 +84,11 @@ export const calculateOrderTotal = (
 
   const menuTotal = Object.values(menuGroups).reduce((total, group) => {
     const qty = group.items[0]?.quantity || 1;
-    const menuGroupPrice =
-      (group.basePrice + group.taxPerUnit + group.supplementTotal) * qty;
+    const menuDiscount = group.menuDiscount || 0;
+    const menuPriceWithTax = group.basePrice + group.taxPerUnit;
+    const discountAmount = (menuPriceWithTax * menuDiscount) / 100;
+    const menuGroupPrice = (menuPriceWithTax - discountAmount + group.supplementTotal) * qty;
+
     const variantsAndComplementsTotal = group.items.reduce(
       (itemTotal, item) => {
         const complementsTotal = Array.isArray(item.complements)
@@ -123,14 +127,9 @@ export const calculateItemTotal = (item: OrderItem): number => {
       ? item.complements.reduce((sum, complement) => sum + complement.price, 0)
       : 0;
 
-    const subtotal =
-      item.productPrice +
-      item.productTax +
-      item.variantPrice +
-      complementsTotal;
-
-    const discountAmount = (subtotal * item.productDiscount) / 100;
-    const itemTotal = (subtotal - discountAmount) * item.quantity;
+    const baseProductPriceWithTax = item.productPrice + item.productTax;
+    const discountAmount = (baseProductPriceWithTax * item.productDiscount) / 100;
+    const itemTotal = (baseProductPriceWithTax - discountAmount + item.variantPrice + complementsTotal) * item.quantity;
 
     return itemTotal;
   }

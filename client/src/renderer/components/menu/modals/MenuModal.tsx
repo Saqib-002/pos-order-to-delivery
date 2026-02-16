@@ -452,14 +452,14 @@ export const MenuModal: React.FC<MenuModalProps> = ({
     const discountPercentage = formData.discount || 0;
     const taxPercentage = formData.tax || 0;
 
-    const tax = ((basePrice / (1 + taxPercentage / 100)) * taxPercentage) / 100;
-    const subtotal = basePrice - tax;
-    const discountAmount = (subtotal * discountPercentage) / 100;
-    const total = subtotal - discountAmount;
+    const taxAmount = (basePrice / (1 + taxPercentage / 100)) * (taxPercentage / 100);
+    const subtotal = basePrice - taxAmount;
+    const discountAmount = (basePrice * discountPercentage) / 100;
+    const total = basePrice - discountAmount;
 
     return {
       subtotal: subtotal,
-      taxAmount: tax,
+      taxAmount: taxAmount,
       discount: discountAmount,
       total: total,
     };
@@ -794,10 +794,10 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                     onChange={handlePageSelect}
                     placeholder={
                       availableMenuPages.length === 1 &&
-                      availableMenuPages[0].disabled
+                        availableMenuPages[0].disabled
                         ? t(
-                            "menuComponents.modals.menuModal.noMenuPagesAvailable"
-                          )
+                          "menuComponents.modals.menuModal.noMenuPagesAvailable"
+                        )
                         : t("menuComponents.modals.menuModal.selectMenuPage")
                     }
                     className="w-full"
@@ -926,9 +926,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   prev.map((assoc) =>
                                     assoc.id === association.id
                                       ? {
-                                          ...assoc,
-                                          minimum: value,
-                                        }
+                                        ...assoc,
+                                        minimum: value,
+                                      }
                                       : assoc
                                   )
                                 );
@@ -947,9 +947,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   prev.map((assoc) =>
                                     assoc.id === association.id
                                       ? {
-                                          ...assoc,
-                                          maximum: value,
-                                        }
+                                        ...assoc,
+                                        maximum: value,
+                                      }
                                       : assoc
                                   )
                                 );
@@ -968,9 +968,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                                   prev.map((assoc) =>
                                     assoc.id === association.id
                                       ? {
-                                          ...assoc,
-                                          priority: value,
-                                        }
+                                        ...assoc,
+                                        priority: value,
+                                      }
                                       : assoc
                                   )
                                 );

@@ -854,6 +854,7 @@
     "from": "De",
     "menuPrice": "Precio del Menú",
     "supplements": "Suplementos",
+    "discount": "Descuento",
     "total": "Total",
     "processOrder": "Procesar Pedido",
     "pointOfSale": "Punto de Venta",
@@ -2333,6 +2334,7 @@
     "base": "Base",
     "tax": "Impuesto",
     "thankYou": "Gracias por su visita",
+    "discount": "Descuento",
     "extra": "Extra",
     "waiter": "Camarero",
     "customerName": "Nombre del Cliente",
@@ -2564,7 +2566,8 @@
     "menuCountText": "Menús",
     "groupCountText": "complementos",
     "variantCountText": "Variantes",
-    "noDescription": "Sin descripción"
+    "noDescription": "Sin descripción",
+    "off": "DTO"
   },
   "confirmationModal": {
     "subtitle": "Por favor, confirma tu acción",

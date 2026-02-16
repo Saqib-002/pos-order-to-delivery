@@ -213,7 +213,7 @@ export const generateReceiptHTML = (
             <div class="center">
                 <div class="bold large order-type-header">${orderTypeLabel}</div>
                 <div class="bold">${t("receipt.date")}: ${dateTimeStr}</div>
-                <div class="bold extra-large" style="margin: 15px 0;">${configurations.orderPrefix}${orderId}</div>
+                <div class="bold extra-large" style="margin: 15px 0;">${originalOrderType === "PLATFORM" ? orderId : `${configurations.orderPrefix}${orderId}`}</div>
             </div>
 
             <div class="dashed-line"></div>
@@ -307,63 +307,63 @@ export const generateReceiptHTML = (
     if (category.isMenu) {
       (category.data as any[]).forEach((group) => {
         const sectionQty = group.items[0]?.quantity || 1;
-        const menuPrice = group.basePrice;
-        const menuTax = group.taxPerUnit;
         const supplementTotal = group.supplementTotal;
-        const menuGroupPrice = (menuPrice + menuTax + supplementTotal) * sectionQty;
-        
-        const variantsAndComplementsTotal = group.items.reduce(
-          (itemTotal: number, item: any) => {
-            const complementsTotal = Array.isArray(item.complements)
-              ? item.complements.reduce(
-                  (sum: number, complement: any) => sum + complement.price,
-                  0
-                )
-              : 0;
-          return itemTotal + ((item.variantPrice || 0) + complementsTotal) * item.quantity;
-        }, 0);
-
-        const totalGroupPrice = menuGroupPrice + variantsAndComplementsTotal;
+        const menuPriceWithTax = group.basePrice + group.taxPerUnit;
+        const discountAmountLine = (menuPriceWithTax * group.menuDiscount / 100) * sectionQty;
+        const menuGroupPrice = menuPriceWithTax * sectionQty - discountAmountLine + supplementTotal * sectionQty;
+        const menuBasePrice = (group.basePrice + group.taxPerUnit) * sectionQty;
 
         html += `
                 <tr class="bold">
                     <td class="item-qty">${sectionQty} X</td>
                     <td class="item-name">${group.menuName}</td>
-                    <td class="item-total">${totalGroupPrice.toFixed(2)}</td>
+                    <td class="item-total">${menuBasePrice.toFixed(2)}</td>
                 </tr>
         `;
 
         group.items.forEach((item: OrderItem) => {
+          const itemSupplementTotal = (item.supplement || 0) * item.quantity;
           html += `
                 <tr>
                     <td class="item-qty"></td>
                     <td class="item-name sub-item">• ${item.productName}</td>
-                    <td class="item-total">${item.supplement && item.supplement > 0 ? item.supplement.toFixed(2) : ""}</td>
+                    <td class="item-total">${itemSupplementTotal.toFixed(2)}</td>
                 </tr>
           `;
 
           if (item.variantId && item.variantName) {
+            const variantTotal = (item.variantPrice || 0) * item.quantity;
             html += `
                 <tr>
                     <td class="item-qty"></td>
                     <td class="item-name sub-item indent">${item.variantName}</td>
-                    <td class="item-total">${item.variantPrice && item.variantPrice > 0 ? item.variantPrice.toFixed(2) : ""}</td>
+                    <td class="item-total">${variantTotal.toFixed(2)}</td>
                 </tr>
             `;
           }
 
           if (Array.isArray(item.complements) && item.complements.length > 0) {
             item.complements.forEach((comp) => {
+              const compTotal = comp.price * item.quantity;
               html += `
                 <tr>
                     <td class="item-qty"></td>
                     <td class="item-name sub-item indent">${comp.forProduct ? "✓" : "+"} ${comp.itemName}</td>
-                    <td class="item-total">${comp.price.toFixed(2)}</td>
+                    <td class="item-total">${compTotal.toFixed(2)}</td>
                 </tr>
               `;
             });
           }
         });
+        if (discountAmountLine > 0) {
+          html += `
+                <tr>
+                    <td class="item-qty"></td>
+                    <td class="item-name sub-item" style="font-style: italic; color: #666;">${t("receipt.discount")} (-${group.menuDiscount}%)</td>
+                    <td class="item-total">-${discountAmountLine.toFixed(2)}</td>
+                </tr>
+          `;
+        }
         html += `<tr style="height: 8px;"><td colspan="3"></td></tr>`;
       });
     } else {
@@ -372,38 +372,50 @@ export const generateReceiptHTML = (
           ? item.complements.reduce((sum, complement) => sum + complement.price, 0)
           : 0;
 
-        const subtotal = item.productPrice + item.productTax + item.variantPrice + complementsTotal;
-        const discountAmount = (subtotal * item.productDiscount) / 100;
-        const itemTotal = (subtotal - discountAmount) * item.quantity;
+        const productBaseTotal = (item.productPrice + item.productTax) * item.quantity;
+        const baseProductPriceWithTax = item.productPrice + item.productTax;
+        const discountAmountLine = (baseProductPriceWithTax * item.productDiscount / 100) * item.quantity;
 
         html += `
                 <tr class="bold">
                     <td class="item-qty">${item.quantity} X</td>
                     <td class="item-name">${item.productName}</td>
-                    <td class="item-total">${itemTotal.toFixed(2)}</td>
+                    <td class="item-total">${productBaseTotal.toFixed(2)}</td>
                 </tr>
         `;
 
         if (item.variantId && item.variantName) {
+          const variantTotal = item.variantPrice * item.quantity;
           html += `
                 <tr>
                     <td class="item-qty"></td>
                     <td class="item-name sub-item">${item.variantName}</td>
-                    <td class="item-total">${item.variantPrice > 0 ? item.variantPrice.toFixed(2) : ""}</td>
+                    <td class="item-total">${variantTotal.toFixed(2)}</td>
                 </tr>
           `;
         }
 
         if (Array.isArray(item.complements) && item.complements.length > 0) {
           item.complements.forEach((comp) => {
+            const compTotal = comp.price * item.quantity;
             html += `
                 <tr>
                     <td class="item-qty"></td>
                     <td class="item-name sub-item indent">${comp.forProduct ? "✓" : "+"} ${comp.itemName}</td>
-                    <td class="item-total">${comp.price.toFixed(2)}</td>
+                    <td class="item-total">${compTotal.toFixed(2)}</td>
                 </tr>
             `;
           });
+        }
+
+        if (discountAmountLine > 0) {
+          html += `
+                <tr>
+                    <td class="item-qty"></td>
+                    <td class="item-name sub-item" style="font-style: italic; color: #666;">${t("receipt.discount")} (-${item.productDiscount}%)</td>
+                    <td class="item-total">-${discountAmountLine.toFixed(2)}</td>
+                </tr>
+          `;
         }
         html += `<tr style="height: 8px;"><td colspan="3"></td></tr>`;
       });
@@ -560,7 +572,7 @@ export const generateItemsReceiptHTML = (
         </head>
         <body>
         <div class="order-info center">
-            <h1 class="bold" style="font-size: 24px;">${configurations.orderPrefix}${order.orderId}</h1>
+            <h1 class="bold" style="font-size: 24px;">${order.orderType?.toUpperCase() === "PLATFORM" && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`}</h1>
             <h1 class="bold" style="font-size: 16px;">${order.orderType.toUpperCase()}</h1>
             <p class="bold" style="font-size: 14px;">${dateTimeStr}</p>
             <p class="bold" style="font-size: 14px;">${status}</p>
@@ -654,7 +666,7 @@ export const generateItemsReceiptHTML = (
         group.items.forEach((item: OrderItem) => {
           const supplementText =
             item.supplement && item.supplement > 0
-              ? ` (+${item.supplement.toFixed(2)})`
+              ? ` (+${(item.supplement * item.quantity).toFixed(2)})`
               : "";
           html += `
                 <div class="sub-item bold">
@@ -699,7 +711,7 @@ export const generateItemsReceiptHTML = (
         </div>
         <div class="line"></div>
         <div class="bold">
-            ${t("receipt.order")} ${configurations.orderPrefix}${order.orderId} - ${dateTimeStr}
+            ${t("receipt.order")} ${order.orderType?.toUpperCase() === "PLATFORM" && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`} - ${dateTimeStr}
         </div>
         ${order.notes ? `<div class="bold">${t("receipt.notes")}: ${order.notes}</div>` : ""}
         <div class="center bold">

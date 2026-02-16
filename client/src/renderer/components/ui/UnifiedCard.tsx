@@ -22,18 +22,19 @@ interface BaseCardData {
   isOutOfStock?: boolean;
   groupName?: string;
   variantCount?: number;
+  discount?: number;
 }
 
 interface UnifiedCardProps {
   data: BaseCardData;
   type:
-    | "category"
-    | "subcategory"
-    | "product"
-    | "group"
-    | "variant"
-    | "menuPage"
-    | "menu";
+  | "category"
+  | "subcategory"
+  | "product"
+  | "group"
+  | "variant"
+  | "menuPage"
+  | "menu";
   onEdit: () => void;
   onDelete?: () => void;
   onClick?: () => void;
@@ -104,10 +105,29 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
           : t("unifiedCard.noDescription")}
       </p>
     ),
-    getLeft: (data, t) => ({
-      text: `€${Number(data.price || 0).toFixed(2)}`,
-      className: "text-lg font-semibold text-white",
-    }),
+    getLeft: (data, t) => {
+      const price = Number(data.price || 0);
+      const discount = Number(data.discount || 0);
+      if (discount > 0) {
+        const discountedPrice = price - (price * discount) / 100;
+        return {
+          text: (
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-[14px] line-through opacity-70 leading-none">€{price.toFixed(2)}</span>
+              <div className="flex items-center gap-1 leading-none">
+                <span className="text-lg font-bold text-white">€{discountedPrice.toFixed(2)}</span>
+                <span className="text-[12px] bg-white text-black px-1 rounded font-bold uppercase">{discount}% {t("unifiedCard.off")}</span>
+              </div>
+            </div>
+          ),
+          className: "text-white",
+        };
+      }
+      return {
+        text: `€${price.toFixed(2)}`,
+        className: "text-lg font-semibold text-white",
+      };
+    },
   },
   group: {
     padding: "p-3",
@@ -173,10 +193,29 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
           : t("unifiedCard.noDescription")}
       </p>
     ),
-    getLeft: (data, t) => ({
-      text: `€${Number(data.price || 0).toFixed(2)}`,
-      className: "text-lg font-semibold text-white",
-    }),
+    getLeft: (data, t) => {
+      const price = Number(data.price || 0);
+      const discount = Number(data.discount || 0);
+      if (discount > 0) {
+        const discountedPrice = price - (price * discount) / 100;
+        return {
+          text: (
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-[14px] line-through opacity-70 leading-none">€{price.toFixed(2)}</span>
+              <div className="flex items-center gap-1 leading-none">
+                <span className="text-lg font-bold text-white">€{discountedPrice.toFixed(2)}</span>
+                <span className="text-[12px] bg-white text-black px-1 rounded font-bold uppercase">{discount}% {t("unifiedCard.off")}</span>
+              </div>
+            </div>
+          ),
+          className: "text-white",
+        };
+      }
+      return {
+        text: `€${price.toFixed(2)}`,
+        className: "text-lg font-semibold text-white",
+      };
+    },
   },
 };
 
@@ -253,11 +292,10 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(
           <Icon className={iconSize} />
         </button>
       );
-      const actionClass = `flex ${
-        actionsLayout === "col"
-          ? "flex-col items-center gap-1"
-          : "items-center gap-1"
-      }`;
+      const actionClass = `flex ${actionsLayout === "col"
+        ? "flex-col items-center gap-1"
+        : "items-center gap-1"
+        }`;
       const shouldShowDelete =
         hasDelete &&
         onDelete &&
@@ -281,9 +319,8 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(
         {...(type === "product" ? dragAttributes : {})}
         {...(type === "product" ? dragListeners : {})}
         onClick={isDisabled ? undefined : onClick}
-        className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${
-          isClickable && !isDisabled ? "cursor-pointer" : ""
-        } ${isDisabled ? "opacity-60 cursor-not-allowed" : ""} ${["product", "menu"].includes(type) && !isDisabled ? "cursor-grab active:cursor-grabbing" : ""} ${layout === "row" ? "flex flex-row items-center gap-2 !p-2 w-full min-w-0" : ""}`}
+        className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${isClickable && !isDisabled ? "cursor-pointer" : ""
+          } ${isDisabled ? "opacity-60 cursor-not-allowed" : ""} ${["product", "menu"].includes(type) && !isDisabled ? "cursor-grab active:cursor-grabbing" : ""} ${layout === "row" ? "flex flex-row items-center gap-2 !p-2 w-full min-w-0" : ""}`}
       >
         {["product", "menu", "category", "subcategory"].includes(type) && (
           <img

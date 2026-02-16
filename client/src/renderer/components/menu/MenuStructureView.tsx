@@ -53,6 +53,7 @@ const SortableMenuCard = ({ menu, onEdit, onDelete }: { menu: Menu, onEdit: () =
           description: menu.description,
           imgUrl: menu.imgUrl,
           price: menu.price,
+          discount: menu.discount,
           isAvailable: true,
           color: "orange",
         }}
