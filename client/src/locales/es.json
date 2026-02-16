@@ -892,9 +892,9 @@
         "confirmText": "Limpiar Pedido"
       },
       "clearOrder": {
-        "title": "Limpiar Pedido",
-        "message": "¿Estás seguro de que quieres limpiar todo el pedido? Esta acción no se puede deshacer.",
-        "confirmText": "Limpiar Pedido"
+        "title": "Cancelar Pedido",
+        "message": "¿Estás seguro de que quieres cancelar todo el pedido? Esta acción no se puede deshacer.",
+        "confirmText": "Cancelar Pedido"
       }
     }
   },

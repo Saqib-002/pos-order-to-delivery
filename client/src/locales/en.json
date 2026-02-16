@@ -890,9 +890,9 @@
         "confirmText": "Clear Order"
       },
       "clearOrder": {
-        "title": "Clear Order",
-        "message": "Are you sure you want to clear the entire order? This action cannot be undone.",
-        "confirmText": "Clear Order"
+        "title": "Cancel Order",
+        "message": "Are you sure you want to cancel the entire order? This action cannot be undone.",
+        "confirmText": "Cancel Order"
       }
     }
   },
