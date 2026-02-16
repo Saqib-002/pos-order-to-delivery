@@ -102,7 +102,7 @@ const OrderComponent = () => {
       return;
     }
 
-    if (shouldPrintMainReceipt === "cancel") {
+    if (shouldPrintMainReceipt === "cancel" || !shouldPrintMainReceipt) {
       clearOrder();
       setPostProcessOrderData(null);
       return;
