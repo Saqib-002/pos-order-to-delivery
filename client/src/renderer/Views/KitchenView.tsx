@@ -1,4 +1,10 @@
-import React, { useEffect, useCallback, useMemo, useState, cloneElement } from "react";
+import React, {
+  useEffect,
+  useCallback,
+  useMemo,
+  useState,
+  cloneElement,
+} from "react";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { FilterControls } from "../components/shared/FilterControl.order";
@@ -11,10 +17,7 @@ import { OrderTable } from "../components/shared/OrderTable";
 import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
-import {
-  translateOrderType,
-  getOrderTypeStyle,
-} from "../utils/orderStatus";
+import { translateOrderType, getOrderTypeStyle } from "../utils/orderStatus";
 import {
   CheckIcon,
   ClipboardIcon,
@@ -28,6 +31,7 @@ import {
   AnalyticsIcon,
 } from "../public/Svg";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
+import { formatAddress } from "../utils/utils";
 
 export const KitchenView = () => {
   const { t } = useTranslation();
@@ -41,7 +45,7 @@ export const KitchenView = () => {
   const { configurations } = useConfigurations();
   useEffect(() => {
     setFilter({
-      selectedDate: null,
+      selectedDate: new Date(),
       searchTerm: "",
       selectedStatus: ["sent to kitchen"],
       selectedPaymentStatus: [],
@@ -87,13 +91,13 @@ export const KitchenView = () => {
         toast.success(
           updates.status === "completed"
             ? t("kitchenView.messages.orderMarkedAsCompleted")
-            : t("kitchenView.messages.orderMarkedAsReady")
+            : t("kitchenView.messages.orderMarkedAsReady"),
         );
       } catch (error) {
         console.error("Failed to update order:", error);
       }
     },
-    [token, refreshOrdersCallback]
+    [token, refreshOrdersCallback],
   );
 
   const handleViewDetails = useCallback((order: Order) => {
@@ -207,7 +211,7 @@ export const KitchenView = () => {
     const orderTime = new Date(order.createdAt || "");
     const now = new Date();
     const diffMinutes = Math.floor(
-      (now.getTime() - orderTime.getTime()) / (1000 * 60)
+      (now.getTime() - orderTime.getTime()) / (1000 * 60),
     );
     const timeInKitchen = `${Math.floor(diffMinutes / 60)}${t("kitchenView.timeFormat.hours")} ${diffMinutes % 60}${t("kitchenView.timeFormat.minutes")}`;
     const { label, color } = getPriorityLabel(diffMinutes);
@@ -224,21 +228,20 @@ export const KitchenView = () => {
           </span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-2xl font-bold text-black">
-          {
-            order.ticketNumber ? (
-              <>
-                {order.ticketNumber}
-              </>
-            ) : (
-              <>
-                {configurations.orderPrefix || "K"}
-                {order.orderId}
-              </>
-            )
-          }
+          {order.ticketNumber ? (
+            <>{order.ticketNumber}</>
+          ) : (
+            <>
+              {configurations.orderPrefix || "K"}
+              {order.orderId}
+            </>
+          )}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
           {order.customer.name}
+          <div className="max-w-24 whitespace-normal text-xs text-gray-500">
+            {formatAddress(order.customer.address)}
+          </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
           <span
@@ -347,10 +350,12 @@ export const KitchenView = () => {
                         className={`p-1 ${stat.bgColor} rounded-md flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}
                       >
                         {cloneElement(
-                          stat.icon as React.ReactElement<{ className?: string }>,
+                          stat.icon as React.ReactElement<{
+                            className?: string;
+                          }>,
                           {
                             className: "size-7 " + stat.textColor,
-                          }
+                          },
                         )}
                       </div>
                       <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest truncate">

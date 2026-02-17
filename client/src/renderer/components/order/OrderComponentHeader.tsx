@@ -33,7 +33,7 @@ const OrderComponentHeader = () => {
       now.getDate(),
       5,
       0,
-      0
+      0,
     );
     setFilter({
       searchTerm: "",
@@ -46,11 +46,12 @@ const OrderComponentHeader = () => {
       endDateRange: null,
       selectedDeliveryPerson: "",
       selectedCustomer: "",
+      selectedOrderType: "",
     });
   }, []);
   const handleDateRangeChange = (
     startDate: Date | null,
-    endDate: Date | null
+    endDate: Date | null,
   ) => {
     setFilter((prev: FilterType) => ({
       ...prev,
