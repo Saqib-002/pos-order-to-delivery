@@ -67,6 +67,8 @@ export class OrderDatabaseOperations {
         menuName: item.menuName || undefined,
         menuPrice: item.menuPrice ? parseFloat(item.menuPrice) : undefined,
         menuTax: item.menuTax ? parseFloat(item.menuTax) : undefined,
+        menuPageId: item.menuPageId || undefined,
+        menuPageName: item.menuPageName || undefined,
         menuDiscount: item.menuDiscount
           ? parseFloat(item.menuDiscount)
           : undefined,

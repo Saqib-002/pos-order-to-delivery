@@ -93,7 +93,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       let receiptHTML = "";
       const paymentStatus = calculatePaymentStatus(
         order?.paymentType || "",
-        orderTotal
+        orderTotal,
       );
       if (printerIsMain === "true") {
         // Get customer address only for delivery orders
@@ -144,7 +144,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
           customerName,
           user!.name,
           order?.notes,
-          paymentStatus.totalPaid
+          paymentStatus.totalPaid,
         );
       }
       if (!receiptHTML) {
@@ -153,7 +153,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       const res = await (window as any).electronAPI.printToPrinter(
         token,
         printerName,
-        { html: receiptHTML }
+        { html: receiptHTML },
       );
       if (!res.status) {
         if (res.error === t("orderCart.errors.printerNotFoundError")) {
@@ -169,7 +169,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
   const handleRemoveItem = async (itemId: string, itemName: string) => {
     const paymentStatusDerive = calculatePaymentStatus(
       order?.paymentType || "",
-      orderTotal
+      orderTotal,
     );
 
     const isPaidOrPartial =
@@ -199,7 +199,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     const res = await (window as any).electronAPI.removeItemFromOrder(
       token,
       orderId,
-      itemId
+      itemId,
     );
     if (!res.status) {
       toast.error(t("orderCart.errors.errorRemovingItem"));
@@ -210,7 +210,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
   const handleEditItem = async (item: any) => {
     const res = await (window as any).electronAPI.getProductById(
       token,
-      item.productId
+      item.productId,
     );
     if (!res.status) {
       toast.error(t("orderCart.errors.errorGettingProduct"));
@@ -236,7 +236,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       token,
       orderId,
       group.menuId,
-      group.secondaryId
+      group.secondaryId,
     );
     if (!res.status) {
       toast.error(t("orderCart.errors.errorRemovingItem"));
@@ -247,7 +247,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
   const handleEditGroup = async (group: any) => {
     const res = await (window as any).electronAPI.getMenuById(
       token,
-      group.menuId
+      group.menuId,
     );
     if (!res.status) {
       toast.error(t("orderCart.errors.errorGettingMenu"));
@@ -276,14 +276,14 @@ const OrderCart: React.FC<OrderCartProps> = ({
         token,
         orderId,
         group.menuId,
-        group.secondaryId
+        group.secondaryId,
       );
 
       if (res.status) {
         toast.success(t("orderCart.messages.menuDuplicated"));
         const itemsRes = await (window as any).electronAPI.getOrderItems(
           token,
-          orderId
+          orderId,
         );
 
         if (itemsRes.status) {
@@ -312,7 +312,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
       orderId,
       group.menuId,
       group.secondaryId,
-      quantity
+      quantity,
     );
     if (!res.status) {
       toast.error(t("orderCart.errors.errorUpdatingQuantity"));
@@ -342,12 +342,12 @@ const OrderCart: React.FC<OrderCartProps> = ({
 
   const handleUpdateQuantity = async (
     itemId: string | undefined,
-    quantity: number
+    quantity: number,
   ) => {
     const res = await (window as any).electronAPI.updateItemQuantity(
       token,
       itemId,
-      quantity
+      quantity,
     );
     if (!res.status) {
       toast.error(t("orderCart.errors.errorUpdatingQuantity"));
@@ -452,7 +452,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
                   )}
                   {item.productDiscount > 0 && (
                     <div className="flex justify-between text-yellow-600 font-medium">
-                      <span>{t("orderCart.discount")} (-{item.productDiscount}%)</span>
+                      <span>
+                        {t("orderCart.discount")} (-{item.productDiscount}%)
+                      </span>
                       <span>
                         -€
                         {(
@@ -506,7 +508,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                   onClick={() =>
                     handleUpdateQuantity(
                       item.id,
-                      Math.max(1, item.quantity - 1)
+                      Math.max(1, item.quantity - 1),
                     )
                   }
                   className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-sm hover:bg-gray-50 cursor-pointer"
@@ -530,13 +532,15 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 {(
                   (item.productPrice +
                     item.productTax -
-                    ((item.productPrice + item.productTax) * item.productDiscount) / 100 +
+                    ((item.productPrice + item.productTax) *
+                      item.productDiscount) /
+                      100 +
                     item.variantPrice +
                     (Array.isArray(item.complements)
                       ? item.complements.reduce(
-                        (sum, complement) => sum + complement.price,
-                        0
-                      )
+                          (sum, complement) => sum + complement.price,
+                          0,
+                        )
                       : 0)) *
                   item.quantity
                 ).toFixed(2)}
@@ -550,15 +554,17 @@ const OrderCart: React.FC<OrderCartProps> = ({
           const sectionQuantity = group.items[0]?.quantity || 1;
           const menuPriceWithTax = group.basePrice + group.taxPerUnit;
           const discountAmount = (menuPriceWithTax * group.menuDiscount) / 100;
-          const menuGroupPrice = (menuPriceWithTax - discountAmount + group.supplementTotal) * sectionQuantity;
+          const menuGroupPrice =
+            (menuPriceWithTax - discountAmount + group.supplementTotal) *
+            sectionQuantity;
 
           const variantsAndComplementsTotal = group.items.reduce(
             (itemTotal, item) => {
               const complementsTotal = Array.isArray(item.complements)
                 ? item.complements.reduce(
-                  (sum, complement) => sum + complement.price,
-                  0
-                )
+                    (sum, complement) => sum + complement.price,
+                    0,
+                  )
                 : 0;
 
               return (
@@ -566,7 +572,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 ((item.variantPrice || 0) + complementsTotal) * item.quantity
               );
             },
-            0
+            0,
           );
 
           const sectionTotal = menuGroupPrice + variantsAndComplementsTotal;
@@ -624,8 +630,17 @@ const OrderCart: React.FC<OrderCartProps> = ({
                   )}
                   {group.menuDiscount > 0 && (
                     <div className="flex justify-between text-yellow-600 font-medium">
-                      <span>{t("orderCart.discount")} (-{group.menuDiscount}%)</span>
-                      <span>-€{((group.basePrice + group.taxPerUnit) * group.menuDiscount / 100).toFixed(2)}</span>
+                      <span>
+                        {t("orderCart.discount")} (-{group.menuDiscount}%)
+                      </span>
+                      <span>
+                        -€
+                        {(
+                          ((group.basePrice + group.taxPerUnit) *
+                            group.menuDiscount) /
+                          100
+                        ).toFixed(2)}
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between">
@@ -642,7 +657,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                     onClick={() =>
                       handleUpdateGroupQuantity(
                         group,
-                        Math.max(1, sectionQuantity - 1)
+                        Math.max(1, sectionQuantity - 1),
                       )
                     }
                     className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-sm hover:bg-gray-50 cursor-pointer"
@@ -682,7 +697,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                             ) : null}
                           </div>
                         </div>
-                        <div className="text-sm text-gray-600 space-y-1">
+                        <div className="text-sm text-gray-600 spacec-y-1">
                           {/* <div className="flex justify-between">
                             <span>Base Product</span>
                             <span>€{item.productPrice.toFixed(2)}</span>
