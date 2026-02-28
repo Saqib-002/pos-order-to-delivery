@@ -29,9 +29,11 @@ import {
   CarIcon,
   PersonIcon,
   AnalyticsIcon,
+  MapIcon,
 } from "../public/Svg";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
 import { formatAddress } from "../utils/utils";
+import DeliveryRouteModal from "../components/order/modals/DeliveryRouteModal";
 
 export const KitchenView = () => {
   const { t } = useTranslation();
@@ -43,6 +45,9 @@ export const KitchenView = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
   const { configurations } = useConfigurations();
+  const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
+  const [selectedOrderForRoute, setSelectedOrderForRoute] =
+    useState<Order | null>(null);
   useEffect(() => {
     setFilter({
       selectedDate: new Date(),
@@ -310,6 +315,19 @@ export const KitchenView = () => {
             >
               <CheckIcon className="size-4" />
             </button>
+            <button
+              onClick={() => {
+                setSelectedOrderForRoute(order);
+                setIsRouteModalOpen(true);
+              }}
+              className="bg-teal-600 hover:bg-teal-700 text-white p-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+              title={
+                t("orderProcessingModal.customerSearch.viewRoute") ||
+                "View Route"
+              }
+            >
+              <MapIcon className="size-4" />
+            </button>
           </div>
         </td>
       </tr>
@@ -410,6 +428,20 @@ export const KitchenView = () => {
           }}
         />
       )}
+
+      {/* Delivery Route Modal */}
+      <DeliveryRouteModal
+        isOpen={isRouteModalOpen}
+        onClose={() => {
+          setIsRouteModalOpen(false);
+          setSelectedOrderForRoute(null);
+        }}
+        origin={configurations.address}
+        destination={formatAddress(
+          selectedOrderForRoute?.customer?.address || "",
+        )}
+        googleMapsApiKey={configurations.googleMapsApiKey || ""}
+      />
     </div>
   );
 };
