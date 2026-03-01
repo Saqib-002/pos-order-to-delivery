@@ -657,6 +657,8 @@
     "orderStatus": "Order Status",
     "paymentStatus": "Payment Status",
     "clearFilters": "Clear All Filters",
+    "orderType": "Order Type",
+    "selectOrderType": "Select order type",
     "filters": {
       "allStatuses": "All Statuses",
       "allPaymentStatuses": "All Payment Statuses",
@@ -2547,10 +2549,13 @@
     "noDataFound": "No data found"
   },
   "orderTypes": {
-    "pickup": "Pickup",
+    "title": "Order Type",
+    "pickup": "Takeaway",
     "delivery": "Delivery",
     "dineIn": "Dine In",
-    "platform": "Platform"
+    "platform": "Platform",
+    "platformDelivery": "Delivery",
+    "platformPickup": "Takeaway"
   },
   "orderComponent": {
     "partialPayment": "Paid: €{{paid}} / €{{total}}",

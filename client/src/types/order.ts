@@ -63,7 +63,7 @@ export interface Order {
   orderId: string;
   customer: Customer;
   notes: string;
-  orderType: "pickup" | "delivery" | "dine-in" | "platform";
+  orderType: "pickup" | "delivery" | "dine-in" | "platform" | "platform:delivery" | "platform:pickup";
   paymentType: "cash" | "card" | string;
   isPaid: boolean;
   status: string;

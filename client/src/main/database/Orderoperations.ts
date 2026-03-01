@@ -147,7 +147,7 @@ export class OrderDatabaseOperations {
         id: randomUUID(),
         status: "sent to kitchen",
         orderId: newDailyOrderId,
-        orderType: "platform",
+        orderType: orderData.orderType || "platform:delivery",
         platformId: orderData.platformId,
         ticketNumber: orderData.ticketNumber || null,
         customerName: orderData.customerName || "",
@@ -536,6 +536,9 @@ export class OrderDatabaseOperations {
 
     const applyOrderTypeFilter = (query: any) => {
       if (orderType) {
+        if (orderType === "platform") {
+          return query.where("orderType", "like", "platform%");
+        }
         // Normalize orderType: handle both "dine-in" and "dinein"
         const normalizedOrderType = orderType.toLowerCase().replace(/-/g, "");
         return query.whereRaw(
@@ -793,8 +796,12 @@ export class OrderDatabaseOperations {
       const { orderTotal } = calculateOrderTotal(formattedItems);
       if (order.status !== "cancelled") {
         let orderTypeKey = order.orderType;
-        if (orderTypeKey === "platform" && order.platformName) {
-          orderTypeKey = order.platformName;
+        if (orderTypeKey.startsWith("platform")) {
+          if (order.platformName) {
+            orderTypeKey = order.platformName;
+          } else {
+            orderTypeKey = "platform";
+          }
         }
         if (!orderTotalsMap.has(orderTypeKey)) {
           orderTotalsMap.set(orderTypeKey, { type: orderTypeKey, total: 0, count: 0 });
@@ -921,11 +928,16 @@ export class OrderDatabaseOperations {
       const offset = page * limit;
       const query = db("orders");
       if (filter.selectedOrderType) {
-        const normalizedOrderType = filter.selectedOrderType.toLowerCase().replace(/-/g, "");
-        query.whereRaw(
-          "LOWER(REPLACE(\"orderType\", '-', '')) = LOWER(?)",
-          [normalizedOrderType]
-        );
+        if (filter.selectedOrderType === "platform") {
+          query.where("orderType", "like", "platform%");
+        } else {
+          const normalizedOrderType = filter.selectedOrderType
+            .toLowerCase()
+            .replace(/-/g, "");
+          query.whereRaw("LOWER(REPLACE(\"orderType\", '-', '')) = LOWER(?)", [
+            normalizedOrderType,
+          ]);
+        }
       }
       const configs = await db("configurations").select("orderPrefix").first();
       const prefix = configs?.orderPrefix || "K";

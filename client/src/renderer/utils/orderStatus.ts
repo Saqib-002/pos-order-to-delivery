@@ -120,8 +120,21 @@ export const translateOrderType = (orderType: string): string => {
     normalized.includes("dine")
   ) {
     translationKey = "orderTypes.dineIn";
-  } else if (normalized === "platform" || normalized.includes("platform")) {
-    translationKey = "orderTypes.platform";
+  }
+  // Check for platform variations
+  else if (
+    normalized === "platform" ||
+    normalized === "platform:delivery" ||
+    normalized === "platform:pickup" ||
+    normalized.includes("platform")
+  ) {
+    if (normalized === "platform:delivery") {
+      translationKey = "orderTypes.platformDelivery";
+    } else if (normalized === "platform:pickup") {
+      translationKey = "orderTypes.platformPickup";
+    } else {
+      translationKey = "orderTypes.platform";
+    }
   } else {
     return orderType;
   }
@@ -130,16 +143,18 @@ export const translateOrderType = (orderType: string): string => {
 };
 
 export const getOrderTypeStyle = (orderType: string) => {
-  switch (orderType?.toLowerCase()) {
-    case "pickup":
-      return "bg-blue-100 text-blue-800 border-blue-200";
-    case "dine-in":
-      return "bg-purple-100 text-purple-800 border-purple-200";
-    case "delivery":
-      return "bg-orange-100 text-orange-800 border-orange-200";
-    case "platform":
-      return "bg-pink-100 text-pink-800 border-pink-200";
-    default:
-      return "bg-gray-100 text-gray-800 border-gray-200";
+  const normalized = orderType?.toLowerCase();
+  if (normalized === "pickup" || normalized === "platform:pickup") {
+    return "bg-blue-100 text-blue-800 border-blue-200";
   }
+  if (normalized === "dine-in") {
+    return "bg-purple-100 text-purple-800 border-purple-200";
+  }
+  if (normalized === "delivery" || normalized === "platform:delivery") {
+    return "bg-orange-100 text-orange-800 border-orange-200";
+  }
+  if (normalized === "platform") {
+    return "bg-pink-100 text-pink-800 border-pink-200";
+  }
+  return "bg-gray-100 text-gray-800 border-gray-200";
 };

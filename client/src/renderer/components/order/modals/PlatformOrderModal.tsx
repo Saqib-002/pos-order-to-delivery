@@ -54,6 +54,9 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
     province: "",
   });
   const [receivingTime, setReceivingTime] = useState<Dayjs | null>(null);
+  const [orderType, setOrderType] = useState<
+    "platform:delivery" | "platform:pickup"
+  >("platform:delivery");
   const [isPaid, setIsPaid] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
 
@@ -66,7 +69,7 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
         setTicketNumber(orderAny.ticketNumber || ""); // Populate Ticket Number
         setCustomerName(orderAny.customer?.name || orderAny.customerName || "");
         setCustomerPhone(
-          orderAny.customer?.phone || orderAny.customerPhone || ""
+          orderAny.customer?.phone || orderAny.customerPhone || "",
         );
 
         const { orderTotal } = calculateOrderTotal(initialOrder.items || []);
@@ -104,6 +107,15 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
           setReceivingTime(dayjs(orderAny.receivingTime));
         }
 
+        if (
+          initialOrder.orderType === "platform:delivery" ||
+          initialOrder.orderType === "platform:pickup"
+        ) {
+          setOrderType(initialOrder.orderType);
+        } else {
+          setOrderType("platform:delivery");
+        }
+
         const paymentType = initialOrder.paymentType || "";
         setIsPaid(!paymentType.includes("pending"));
       }
@@ -126,6 +138,7 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
         province: "",
       });
       setReceivingTime(null);
+      setOrderType("platform:delivery");
       setIsPaid(false);
     }
   }, [isOpen]);
@@ -162,16 +175,14 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
 
     try {
       const selectedPlatform = platforms.find(
-        (p) => p.id === selectedPlatformId
+        (p) => p.id === selectedPlatformId,
       );
       if (!selectedPlatform) {
         throw new Error("Platform not found");
       }
 
       const priceAmount = parseFloat(price);
-      const paymentType = isPaid
-        ? `cash:${priceAmount}`
-        : "pending:0";
+      const paymentType = isPaid ? `cash:${priceAmount}` : "pending:0";
 
       let formattedAddress = "";
       if (addressFields.address.trim()) {
@@ -193,6 +204,7 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
         paymentType: paymentType,
         price: priceAmount,
         isPaid: isPaid,
+        orderType: orderType,
         receivingTime: receivingTime ? receivingTime.toISOString() : null,
         notes: "",
       };
@@ -208,6 +220,7 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
           paymentType: orderData.paymentType,
           price: orderData.price,
           isPaid: orderData.isPaid,
+          orderType: orderData.orderType,
           receivingTime: orderData.receivingTime,
         });
         if (!result) {
@@ -217,7 +230,7 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
       } else {
         result = await (window as any).electronAPI.createPlatformOrder(
           token,
-          orderData
+          orderData,
         );
 
         if (!result || !result.status) {
@@ -240,6 +253,10 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
     value: platform.id,
     label: platform.name,
   }));
+  const orderTypeOptions = [
+    { value: "platform:delivery", label: t("orderTypes.platformDelivery") },
+    { value: "platform:pickup", label: t("orderTypes.platformPickup") },
+  ];
 
   if (!isOpen) return null;
 
@@ -290,6 +307,22 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
                   inputClasses="py-3 px-4"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("orderTypes.title") || "Order Type"}{" "}
+                <span className="text-red-500">*</span>
+              </label>
+              <CustomSelect
+                options={orderTypeOptions}
+                value={orderType}
+                onChange={(value: string) => setOrderType(value as any)}
+                placeholder={
+                  t("orderTypes.selectOrderType") || "Select order type"
+                }
+                className="w-full"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -424,6 +424,8 @@
     "orderStatus": "Estado del Pedido",
     "paymentStatus": "Estado de Pago",
     "clearFilters": "Limpiar Todos los Filtros",
+    "orderType": "Tipo de Pedido",
+    "selectOrderType": "Seleccionar tipo de pedido",
     "filters": {
       "allStatuses": "Todos los Estados",
       "allPaymentStatuses": "Todos los Estados de Pago",
@@ -2549,10 +2551,13 @@
     "noDataFound": "No se encontraron datos"
   },
   "orderTypes": {
-    "pickup": "Recoger",
+    "title": "Tipo de Pedido",
+    "pickup": "Para llevar",
     "delivery": "Domicilio",
-    "dineIn": "Comer Aquí",
-    "platform": "Plataforma"
+    "dineIn": "Consumo en local",
+    "platform": "Plataforma",
+    "platformDelivery": "Envío por plataforma",
+    "platformPickup": "Recogida en plataforma"
   },
   "orderComponent": {
     "partialPayment": "Pagado: €{{paid}} / €{{total}}",
