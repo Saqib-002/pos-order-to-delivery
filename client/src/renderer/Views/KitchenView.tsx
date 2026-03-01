@@ -315,6 +315,7 @@ export const KitchenView = () => {
             >
               <CheckIcon className="size-4" />
             </button>
+            {order.orderType === 'delivery' && (
             <button
               onClick={() => {
                 setSelectedOrderForRoute(order);
@@ -328,6 +329,7 @@ export const KitchenView = () => {
             >
               <MapIcon className="size-4" />
             </button>
+            )}
           </div>
         </td>
       </tr>
