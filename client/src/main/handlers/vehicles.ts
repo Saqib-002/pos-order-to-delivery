@@ -59,6 +59,42 @@ export const addVehicleMaintenance = async (event: IpcMainInvokeEvent, token: st
   }
 };
 
+export const addMultipleVehicleMaintenance = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  records: any[]
+) => {
+  try {
+    await verifyToken(event, token);
+    const result = await VehicleDatabaseOperations.addMultipleMaintenanceRecords(
+      records
+    );
+    return { status: true, data: result };
+  } catch (error) {
+    Logger.error("Error adding multiple maintenance:", error);
+    return { status: false, error: (error as Error).message };
+  }
+};
+
+export const updateMultipleVehicleMaintenancePayments = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  maintenanceIds: string[],
+  paymentType: string
+) => {
+  try {
+    await verifyToken(event, token);
+    await VehicleDatabaseOperations.updateMultipleMaintenancePayments(
+      maintenanceIds,
+      paymentType
+    );
+    return { status: true, data: { message: "Payments updated" } };
+  } catch (error) {
+    Logger.error("Error updating multiple maintenance payments:", error);
+    return { status: false, error: (error as Error).message };
+  }
+};
+
 export const updateVehicleMaintenance = async (event: IpcMainInvokeEvent, token: string, id: string, updates: any) => {
   try {
     await verifyToken(event, token);

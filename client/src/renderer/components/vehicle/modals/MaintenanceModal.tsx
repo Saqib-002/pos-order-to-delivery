@@ -40,16 +40,23 @@ interface MaintenanceModalProps {
   vehicle: Vehicle | null;
   onAddRecord: (
     vehicleId: string,
-    data: Partial<VehicleMaintenance>
+    data: Partial<VehicleMaintenance>,
+  ) => Promise<boolean>;
+  onAddMultipleRecords: (
+    records: Partial<VehicleMaintenance>[],
   ) => Promise<boolean>;
   onUpdateRecord: (
     maintenanceId: string,
-    data: Partial<VehicleMaintenance>
+    data: Partial<VehicleMaintenance>,
+  ) => Promise<boolean>;
+  onUpdateMultiplePayments: (
+    maintenanceIds: string[],
+    paymentType: string,
   ) => Promise<boolean>;
   onDeleteRecord: (maintenanceId: string) => Promise<boolean>;
   fetchRecords: (
     vehicleId: string,
-    filters: MaintenanceFilters
+    filters: MaintenanceFilters,
   ) => Promise<PaginatedResult<VehicleMaintenance>>;
 }
 
@@ -63,7 +70,7 @@ interface MaintenanceForm {
 
 const INITIAL_FILTERS: MaintenanceFilters = {
   page: 1,
-  pageSize: 5,
+  pageSize: 20,
   search: "",
   startDate: undefined,
   endDate: undefined,
@@ -73,7 +80,7 @@ const INITIAL_FILTERS: MaintenanceFilters = {
 
 const formatDate = (dateString: string | Date | undefined) => {
   if (!dateString) return "-";
-  return dayjs(dateString).format("YYYY-MM-DD")
+  return dayjs(dateString).format("YYYY-MM-DD");
 };
 
 export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
@@ -81,7 +88,9 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   onClose,
   vehicle,
   onAddRecord,
+  onAddMultipleRecords,
   onUpdateRecord,
+  onUpdateMultiplePayments,
   onDeleteRecord,
   fetchRecords,
 }) => {
@@ -106,12 +115,18 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [maintenanceItems, setMaintenanceItems] = useState<
+    Partial<VehicleMaintenance>[]
+  >([]);
+  const [selectedRecordIds, setSelectedRecordIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (isOpen && vehicle) {
       setFilters(INITIAL_FILTERS);
       resetForm();
       loadRecords(INITIAL_FILTERS);
+      setMaintenanceItems([]);
+      setSelectedRecordIds([]);
     }
   }, [isOpen, vehicle]);
 
@@ -126,6 +141,8 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
     setEditingId(null);
     setCurrentStep(1);
     setPaymentMethods([]);
+    setMaintenanceItems([]);
+    setSelectedRecordIds([]);
   };
 
   const loadRecords = async (currentFilters: MaintenanceFilters) => {
@@ -138,19 +155,21 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   const handleFilterChange = (key: keyof MaintenanceFilters, value: any) => {
     const newFilters = { ...filters, [key]: value, page: 1 };
     setFilters(newFilters);
+    setSelectedRecordIds([]); // Reset selection on filter change
     loadRecords(newFilters);
   };
 
   const handlePageChange = (zeroIndexedPage: number) => {
     const newFilters = { ...filters, page: zeroIndexedPage + 1 };
     setFilters(newFilters);
+    setSelectedRecordIds([]); // Reset selection on page change
     loadRecords(newFilters);
   };
 
   const validateStep1 = (): boolean => {
     if (!form.sparePart || !form.sparePart.trim()) {
       toast.error(
-        t("vehicleManagement.maintenanceModal.errors.sparePartRequired")
+        t("vehicleManagement.maintenanceModal.errors.sparePartRequired"),
       );
       return false;
     }
@@ -171,10 +190,53 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
 
   const handleNext = () => {
     if (currentStep === 1) {
-      if (validateStep1()) {
+      if (editingId) {
+        if (validateStep1()) {
+          setCurrentStep(2);
+        }
+      } else if (maintenanceItems.length > 0 || selectedRecordIds.length > 0) {
         setCurrentStep(2);
+      } else {
+        if (validateStep1()) {
+          addItemToList();
+          setCurrentStep(2);
+        }
       }
     }
+  };
+
+  const addItemToList = () => {
+    if (validateStep1()) {
+      const priceVal = parseFloat(form.price);
+      const unitVal = parseInt(form.unit);
+      const total = priceVal * (isNaN(unitVal) ? 1 : unitVal);
+
+      const newItem: Partial<VehicleMaintenance> = {
+        sparePart: form.sparePart,
+        price: priceVal,
+        unit: isNaN(unitVal) ? 1 : unitVal,
+        total: total,
+        date: form.date,
+        currentMileage: form.currentMileage
+          ? parseInt(form.currentMileage)
+          : undefined,
+        vehicleId: vehicle?.id,
+      };
+
+      setMaintenanceItems([...maintenanceItems, newItem]);
+      setForm({ ...form, sparePart: "", price: "", unit: "1" });
+    }
+  };
+
+  const removeItemFromList = (index: number) => {
+    setMaintenanceItems(maintenanceItems.filter((_, i) => i !== index));
+  };
+
+  const toggleRecordSelection = (id: string, isUnpaid: boolean) => {
+    if (!isUnpaid) return;
+    setSelectedRecordIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
   };
 
   const handlePrevious = () => {
@@ -186,11 +248,6 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   const handleSubmit = async () => {
     if (!vehicle || !validateStep2()) return;
 
-    const priceVal = parseFloat(form.price);
-    const unitVal = parseInt(form.unit);
-    if (isNaN(priceVal)) return;
-
-    const total = priceVal * (isNaN(unitVal) ? 1 : unitVal);
     const paymentTypeString =
       paymentMethods.length > 0
         ? paymentMethods
@@ -198,23 +255,59 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
             .join(", ")
         : "";
 
-    const payload = {
-      sparePart: form.sparePart,
-      price: priceVal,
-      unit: isNaN(unitVal) ? 1 : unitVal,
-      total: total,
-      date: form.date,
-      currentMileage: form.currentMileage
-        ? parseInt(form.currentMileage)
-        : undefined,
-      paymentType: paymentTypeString,
-    };
-
     let success = false;
+
     if (editingId) {
+      const priceVal = parseFloat(form.price);
+      const unitVal = parseInt(form.unit);
+      const total = priceVal * (isNaN(unitVal) ? 1 : unitVal);
+
+      const payload = {
+        sparePart: form.sparePart,
+        price: priceVal,
+        unit: isNaN(unitVal) ? 1 : unitVal,
+        total: total,
+        date: form.date,
+        currentMileage: form.currentMileage
+          ? parseInt(form.currentMileage)
+          : undefined,
+        paymentType: paymentTypeString,
+      };
       success = await onUpdateRecord(editingId, payload);
+    } else if (selectedRecordIds.length > 0) {
+      success = await onUpdateMultiplePayments(
+        selectedRecordIds,
+        paymentTypeString,
+      );
     } else {
-      success = await onAddRecord(vehicle.id, payload);
+      let remainingPayments = paymentMethods.map((m) => ({
+        type: m.type,
+        amount: m.amount,
+      }));
+
+      const recordsToSave = maintenanceItems.map((item) => {
+        const itemTotal = item.total || 0;
+        let itemRemainingToPay = itemTotal;
+        const itemPaymentParts: string[] = [];
+
+        for (const method of remainingPayments) {
+          if (itemRemainingToPay <= 0) break;
+          if (method.amount <= 0) continue;
+
+          const amountToTake = Math.min(itemRemainingToPay, method.amount);
+          if (amountToTake > 0) {
+            itemPaymentParts.push(`${method.type}:${amountToTake.toFixed(2)}`);
+            method.amount -= amountToTake;
+            itemRemainingToPay -= amountToTake;
+          }
+        }
+
+        return {
+          ...item,
+          paymentType: itemPaymentParts.join(", "),
+        };
+      });
+      success = await onAddMultipleRecords(recordsToSave as any);
     }
 
     if (success) {
@@ -234,20 +327,16 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
     setEditingId(record.id);
     setCurrentStep(1);
 
-    // Parse payment methods
     if (record.paymentType) {
       if (record.paymentType.includes(":")) {
         try {
           const payments: PaymentMethod[] = record.paymentType
-            .split(", ")
+            .split(/[,;]\s*/)
+            .filter((p) => p.trim() !== "")
             .map((payment) => {
               const [type, amount] = payment.split(":");
               return {
-                type: type.trim() as
-                  | "cash"
-                  | "card"
-                  | "bizum"
-                  | "bank-transfer",
+                type: type.trim() as any,
                 amount: parseFloat(amount) || 0,
               };
             })
@@ -257,23 +346,12 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
           setPaymentMethods([]);
         }
       } else {
-        if (
-          record.paymentType === "cash" ||
-          record.paymentType === "card" ||
-          record.paymentType === "bizum" ||
-          record.paymentType === "bank-transfer"
-        ) {
-          setPaymentMethods([
-            {
-              type: record.paymentType as
-                | "cash"
-                | "card"
-                | "bizum"
-                | "bank-transfer",
-              amount: record.total || 0,
-            },
-          ]);
-        }
+        setPaymentMethods([
+          {
+            type: record.paymentType as any,
+            amount: record.total || 0,
+          },
+        ]);
       }
     } else {
       setPaymentMethods([]);
@@ -289,14 +367,14 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
         data.data,
         { startDate: filters.startDate, endDate: filters.endDate },
         configurations,
-        t
+        t,
       );
       const defaultFileName = `maintenance-report-${vehicle.licensePlate}-${dayjs().format("YYYY-MM-DD")}.pdf`;
 
       const result = await (window as any).electronAPI.saveMaintenanceReportPDF(
         token,
         html,
-        defaultFileName
+        defaultFileName,
       );
 
       if (result.status) {
@@ -343,22 +421,20 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
               <p className="text-sm text-gray-300 opacity-90">
                 {vehicle.model} - {vehicle.licensePlate}
               </p>
-              {editingId && (
-                <div className="flex gap-2 mt-2">
-                  {[1, 2].map((step) => (
-                    <div
-                      key={step}
-                      className={`h-2 rounded-full transition-all ${
-                        currentStep === step
-                          ? "bg-white w-8"
-                          : currentStep > step
-                            ? "bg-gray-400 w-6"
-                            : "bg-gray-600 w-6"
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
+              <div className="flex gap-2 mt-2">
+                {[1, 2].map((step) => (
+                  <div
+                    key={step}
+                    className={`h-2 rounded-full transition-all ${
+                      currentStep === step
+                        ? "bg-white w-8"
+                        : currentStep > step
+                          ? "bg-gray-400 w-6"
+                          : "bg-gray-600 w-6"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
             <CustomButton
               type="button"
@@ -371,526 +447,465 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
         </div>
 
         <div className="p-4 overflow-y-auto flex-1 flex flex-col">
-          {editingId ? (
+          {/* Step 1: Form & List / History */}
+          {currentStep === 1 && (
             <>
-              {/* Add/Edit Record Form - Step 1 */}
-              {currentStep === 1 && (
-                <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100 shrink-0">
-                  <h4 className="font-semibold mb-3 text-sm text-black uppercase tracking-wider">
-                    {t("vehicleManagement.maintenanceModal.editRecord")}
-                  </h4>
-                  <div className="grid grid-cols-12 gap-3 items-end">
-                    <div className="col-span-2">
-                      <CustomInput
-                        name="sparePart"
-                        type="text"
-                        label={t(
-                          "vehicleManagement.maintenanceModal.sparePart"
-                        )}
-                        placeholder={t(
-                          "vehicleManagement.maintenanceModal.sparePartPlaceholder"
-                        )}
-                        value={form.sparePart}
-                        onChange={(e) =>
-                          setForm({ ...form, sparePart: e.target.value })
-                        }
-                        inputClasses="bg-white py-2"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <DatePicker
-                        label={t("vehicleManagement.maintenanceModal.date")}
-                        value={form.date}
-                        onChange={(date) =>
-                          setForm({ ...form, date: date || "" })
-                        }
-                        placeholder={t(
-                          "vehicleManagement.maintenanceModal.selectDate"
-                        )}
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <CustomInput
-                        name="unit"
-                        type="number"
-                        label={t("vehicleManagement.maintenanceModal.unit")}
-                        value={form.unit}
-                        onChange={(e) =>
-                          setForm({ ...form, unit: e.target.value })
-                        }
-                        inputClasses="bg-white py-2"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <CustomInput
-                        name="price"
-                        type="number"
-                        label={t("vehicleManagement.maintenanceModal.price")}
-                        placeholder={t(
-                          "vehicleManagement.maintenanceModal.pricePlaceholder"
-                        )}
-                        value={form.price}
-                        onChange={(e) =>
-                          setForm({ ...form, price: e.target.value })
-                        }
-                        inputClasses="bg-white py-2"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <CustomInput
-                        name="currentMileage"
-                        type="number"
-                        label={t(
-                          "vehicleManagement.maintenanceModal.currentMileage"
-                        )}
-                        value={form.currentMileage}
-                        onChange={(e) =>
-                          setForm({ ...form, currentMileage: e.target.value })
-                        }
-                        inputClasses="bg-white py-2"
-                        placeholder={t(
-                          "vehicleManagement.maintenanceModal.currentMileagePlaceholder"
-                        )}
-                      />
-                    </div>
-                    <div className="col-span-2 flex gap-1">
-                      <CustomButton
-                        type="button"
-                        onClick={handleNext}
-                        label={
-                          <span className="flex items-center gap-2">
-                            {t("marketPurchaseManagement.modal.next")}
-                            <ChevronRightIcon className="size-5" />
-                          </span>
-                        }
-                        className="flex-1 justify-center bg-black hover:bg-gray-800 text-white py-2"
-                      />
-                      <CustomButton
-                        type="button"
-                        onClick={resetForm}
-                        label="X"
-                        className="bg-gray-200 text-black hover:bg-gray-300 py-2 px-3"
-                        title={t(
-                          "vehicleManagement.maintenanceModal.cancelEdit"
-                        )}
-                      />
-                    </div>
+              {/* Form Section */}
+              <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100 shrink-0">
+                <h4 className="font-semibold mb-3 text-sm text-black uppercase tracking-wider">
+                  {editingId
+                    ? t("vehicleManagement.maintenanceModal.editRecord")
+                    : t("vehicleManagement.maintenanceModal.addNewRecord")}
+                </h4>
+                <div className="grid grid-cols-12 gap-3 items-end">
+                  <div className="col-span-3">
+                    <CustomInput
+                      name="sparePart"
+                      type="text"
+                      label={t("vehicleManagement.maintenanceModal.sparePart")}
+                      placeholder={t(
+                        "vehicleManagement.maintenanceModal.sparePartPlaceholder",
+                      )}
+                      value={form.sparePart}
+                      onChange={(e) =>
+                        setForm({ ...form, sparePart: e.target.value })
+                      }
+                      inputClasses="bg-white py-2"
+                    />
                   </div>
-                </div>
-              )}
-
-              {/* Payment Step - Step 2 */}
-              {currentStep === 2 && (
-                <div className="mb-6">
-                  <PaymentStep
-                    totalAmount={
-                      parseFloat(form.price) * parseInt(form.unit || "1") || 0
-                    }
-                    paymentMethods={paymentMethods}
-                    onPaymentMethodsChange={setPaymentMethods}
-                    initialPaymentType={undefined}
-                  />
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              {/* Add New Record - Step 1 */}
-              {currentStep === 1 && (
-                <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100 shrink-0">
-                  <h4 className="font-semibold mb-3 text-sm text-black uppercase tracking-wider">
-                    {t("vehicleManagement.maintenanceModal.addNewRecord")}
-                  </h4>
-                  <div className="grid grid-cols-12 gap-3 items-end">
-                    <div className="col-span-3">
-                      <CustomInput
-                        name="sparePart"
-                        type="text"
-                        label={t(
-                          "vehicleManagement.maintenanceModal.sparePart"
-                        )}
-                        placeholder={t(
-                          "vehicleManagement.maintenanceModal.sparePartPlaceholder"
-                        )}
-                        value={form.sparePart}
-                        onChange={(e) =>
-                          setForm({ ...form, sparePart: e.target.value })
-                        }
-                        inputClasses="bg-white py-2"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <DatePicker
-                        label={t("vehicleManagement.maintenanceModal.date")}
-                        value={form.date}
-                        onChange={(date) =>
-                          setForm({ ...form, date: date || "" })
-                        }
-                        placeholder={t(
-                          "vehicleManagement.maintenanceModal.selectDate"
-                        )}
-                      />
-                    </div>
-                    <div className="col-span-1">
-                      <CustomInput
-                        name="unit"
-                        type="number"
-                        label={t("vehicleManagement.maintenanceModal.unit")}
-                        value={form.unit}
-                        onChange={(e) =>
-                          setForm({ ...form, unit: e.target.value })
-                        }
-                        inputClasses="bg-white py-2"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <CustomInput
-                        name="price"
-                        type="number"
-                        label={t("vehicleManagement.maintenanceModal.price")}
-                        value={form.price}
-                        onChange={(e) =>
-                          setForm({ ...form, price: e.target.value })
-                        }
-                        inputClasses="bg-white py-2"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <CustomInput
-                        name="currentMileage"
-                        type="number"
-                        label={t(
-                          "vehicleManagement.maintenanceModal.currentMileage"
-                        )}
-                        value={form.currentMileage}
-                        onChange={(e) =>
-                          setForm({ ...form, currentMileage: e.target.value })
-                        }
-                        inputClasses="bg-white py-2"
-                        placeholder={t(
-                          "vehicleManagement.maintenanceModal.currentMileagePlaceholder"
-                        )}
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <CustomButton
-                        type="button"
-                        onClick={handleNext}
-                        label={
-                          <span className="flex items-center gap-2">
-                            {t("marketPurchaseManagement.modal.next")}
-                            <ChevronRightIcon className="size-5" />
-                          </span>
-                        }
-                        className="w-full justify-center bg-black hover:bg-gray-800 text-white py-2"
-                      />
-                    </div>
+                  <div className="col-span-2">
+                    <DatePicker
+                      label={t("vehicleManagement.maintenanceModal.date")}
+                      value={form.date}
+                      onChange={(date) =>
+                        setForm({ ...form, date: date || "" })
+                      }
+                      placeholder={t(
+                        "vehicleManagement.maintenanceModal.selectDate",
+                      )}
+                    />
                   </div>
-                </div>
-              )}
-
-              {/* Payment Step - Step 2 */}
-              {currentStep === 2 && (
-                <div className="mb-6">
-                  <PaymentStep
-                    totalAmount={
-                      parseFloat(form.price) * parseInt(form.unit || "1") || 0
-                    }
-                    paymentMethods={paymentMethods}
-                    onPaymentMethodsChange={setPaymentMethods}
-                    initialPaymentType={undefined}
-                  />
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Navigation Buttons for Step 2 */}
-          {editingId && currentStep === 2 && (
-            <div className="flex justify-between gap-4 mb-6 pt-4 border-t border-gray-200 shrink-0">
-              <CustomButton
-                type="button"
-                variant="secondary"
-                onClick={handlePrevious}
-                label={t("marketPurchaseManagement.modal.previous")}
-                Icon={<ChevronLeftIcon className="size-5" />}
-              />
-              <div className="flex gap-4">
-                <CustomButton
-                  type="button"
-                  variant="secondary"
-                  onClick={resetForm}
-                  label={t("common.cancel")}
-                />
-                <CustomButton
-                  type="button"
-                  onClick={handleSubmit}
-                  label={t("common.update")}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Navigation Buttons for Step 2 (Add New) */}
-          {!editingId && currentStep === 2 && (
-            <div className="flex justify-between gap-4 mb-6 pt-4 border-t border-gray-200 shrink-0">
-              <CustomButton
-                type="button"
-                variant="secondary"
-                onClick={handlePrevious}
-                label={t("marketPurchaseManagement.modal.previous")}
-                Icon={<ChevronLeftIcon className="size-5" />}
-              />
-              <div className="flex gap-4">
-                <CustomButton
-                  type="button"
-                  variant="secondary"
-                  onClick={resetForm}
-                  label={t("common.cancel")}
-                />
-                <CustomButton
-                  type="button"
-                  onClick={handleSubmit}
-                  label={t("vehicleManagement.maintenanceModal.add")}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Filters - Only show when not editing and on step 1 */}
-          {!editingId && currentStep === 1 && (
-            <div className="flex flex-col gap-3 mb-4 shrink-0">
-              <div className="flex gap-3 items-end">
-                <div className="flex-1">
-                  <CustomInput
-                    name="search"
-                    type="text"
-                    placeholder={t(
-                      "vehicleManagement.maintenanceModal.searchPlaceholder"
-                    )}
-                    value={filters.search}
-                    onChange={(e) =>
-                      handleFilterChange("search", e.target.value)
-                    }
-                    preLabel={
-                      <SearchIcon className="size-4.5 text-gray-400 mt-1.5" />
-                    }
-                    inputClasses="pl-9 py-3 text-sm"
-                  />
-                </div>
-                <div className="w-48">
-                  <DateRangePicker
-                    startDate={
-                      filters.startDate ? dayjs(filters.startDate).toDate() : null
-                    }
-                    endDate={filters.endDate ? new Date(filters.endDate) : null}
-                    selectedDate={
-                      filters.startDate ? new Date(filters.startDate) : null
-                    }
-                    onChange={(startDate, endDate) => {
-                      const newFilters = {
-                        ...filters,
-                        startDate: startDate
-                          ? dayjs(startDate).format("YYYY-MM-DD")
-                          : undefined,
-                        endDate: endDate
-                          ? dayjs(endDate).format("YYYY-MM-DD")
-                          : undefined,
-                        page: 1,
-                      };
-                      setFilters(newFilters);
-                      loadRecords(newFilters);
-                    }}
-                    className="w-full"
-                  />
-                </div>
-                <div className="w-32">
-                  <CustomInput
-                    name="minPrice"
-                    type="number"
-                    placeholder={t(
-                      "vehicleManagement.maintenanceModal.minPrice"
-                    )}
-                    value={filters.minPrice || ""}
-                    onChange={(e) =>
-                      handleFilterChange(
-                        "minPrice",
-                        e.target.value ? parseFloat(e.target.value) : undefined
-                      )
-                    }
-                    inputClasses="py-3 text-sm"
-                  />
-                </div>
-                <div className="w-32">
-                  <CustomInput
-                    name="maxPrice"
-                    type="number"
-                    placeholder={t(
-                      "vehicleManagement.maintenanceModal.maxPrice"
-                    )}
-                    value={filters.maxPrice || ""}
-                    onChange={(e) =>
-                      handleFilterChange(
-                        "maxPrice",
-                        e.target.value ? parseFloat(e.target.value) : undefined
-                      )
-                    }
-                    inputClasses="py-3 text-sm"
-                  />
-                </div>
-                <CustomButton
-                  type="button"
-                  onClick={() => {
-                    const clearedFilters = { ...INITIAL_FILTERS };
-                    setFilters(clearedFilters);
-                    loadRecords(clearedFilters);
-                  }}
-                  label={t("vehicleManagement.filters.clearFilters")}
-                  className="bg-gray-200 hover:bg-gray-300 text-black whitespace-nowrap"
-                />
-                <CustomButton
-                  type="button"
-                  onClick={handlePrint}
-                  label={t("vehicleManagement.maintenanceModal.print")}
-                  Icon={<PrinterIcon className="size-5" />}
-                  className="bg-black hover:bg-gray-800 text-white whitespace-nowrap"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Table - Only show when not editing and on step 1 */}
-          {!editingId && currentStep === 1 && (
-            <div className="flex-1 rounded-lg overflow-hidden flex flex-col">
-              <div className="overflow-y-auto flex-1">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-gray-50 sticky top-0">
-                    <tr>
-                      <th className="p-3 text-left font-medium text-gray-500">
-                        {t("vehicleManagement.maintenanceModal.table.date")}
-                      </th>
-                      <th className="p-3 text-left font-medium text-gray-500">
-                        {t(
-                          "vehicleManagement.maintenanceModal.table.servicePart"
-                        )}
-                      </th>
-                      <th className="p-3 text-right font-medium text-gray-500">
-                        {t("vehicleManagement.maintenanceModal.table.unit")}
-                      </th>
-                      <th className="p-3 text-right font-medium text-gray-500">
-                        {t("vehicleManagement.maintenanceModal.table.price")}
-                      </th>
-                      <th className="p-3 text-right font-medium text-gray-500">
-                        {t("vehicleManagement.maintenanceModal.table.total")}
-                      </th>
-                      <th className="p-3 text-right font-medium text-gray-500">
-                        {t(
-                          "vehicleManagement.maintenanceModal.table.currentMileage"
-                        )}
-                      </th>
-                      <th className="p-3 text-left font-medium text-gray-500">
-                        {t(
-                          "vehicleManagement.maintenanceModal.table.paymentStatus"
-                        )}
-                      </th>
-                      <th className="p-3 text-right font-medium text-gray-500 w-24">
-                        {t("vehicleManagement.maintenanceModal.table.actions")}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {data.data.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={8}
-                          className="p-8 text-center text-gray-400"
-                        >
-                          {t(
-                            "vehicleManagement.maintenanceModal.table.noRecordsFound"
-                          )}
-                        </td>
-                      </tr>
+                  <div className="col-span-1">
+                    <CustomInput
+                      name="unit"
+                      type="number"
+                      label={t("vehicleManagement.maintenanceModal.unit")}
+                      value={form.unit}
+                      onChange={(e) =>
+                        setForm({ ...form, unit: e.target.value })
+                      }
+                      inputClasses="bg-white py-2"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <CustomInput
+                      name="price"
+                      type="number"
+                      label={t("vehicleManagement.maintenanceModal.price")}
+                      value={form.price}
+                      onChange={(e) =>
+                        setForm({ ...form, price: e.target.value })
+                      }
+                      inputClasses="bg-white py-2"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <CustomInput
+                      name="currentMileage"
+                      type="number"
+                      label={t(
+                        "vehicleManagement.maintenanceModal.currentMileage",
+                      )}
+                      value={form.currentMileage}
+                      onChange={(e) =>
+                        setForm({ ...form, currentMileage: e.target.value })
+                      }
+                      inputClasses="bg-white py-2"
+                      placeholder={t(
+                        "vehicleManagement.maintenanceModal.currentMileagePlaceholder",
+                      )}
+                    />
+                  </div>
+                  <div className="col-span-2 flex gap-2">
+                    {!editingId ? (
+                      <>
+                        <CustomButton
+                          type="button"
+                          onClick={addItemToList}
+                          label={t("common.add")}
+                          className="flex-1 justify-center bg-gray-200 hover:bg-gray-300 text-black py-2"
+                        />
+                        <CustomButton
+                          type="button"
+                          onClick={handleNext}
+                          label={<ChevronRightIcon className="size-5" />}
+                          className="w-12 justify-center bg-black hover:bg-gray-800 text-white py-2"
+                          title={t("marketPurchaseManagement.modal.next")}
+                        />
+                      </>
                     ) : (
-                      data.data.map((r) => (
-                        <tr key={r.id} className="hover:bg-gray-50">
-                          <td className="p-3 text-gray-600">
-                            {formatDate(r.date)}
-                          </td>
-                          <td className="p-3 font-medium text-black">
-                            {r.sparePart}
-                          </td>
-                          <td className="p-3 text-right text-gray-600">
-                            {r.unit}
-                          </td>
-                          <td className="p-3 text-right text-gray-600">
-                            {Number(r.price).toFixed(2)}€
-                          </td>
-                          <td className="p-3 text-right font-semibold text-black">
-                            {Number(r.total).toFixed(2)}€
-                          </td>
-                          <td className="p-3 text-right text-gray-600">
-                            {r.currentMileage
-                              ? `${r.currentMileage.toLocaleString()} km`
-                              : "-"}
-                          </td>
-                          <td className="p-3 text-sm">
-                            {(() => {
+                      <>
+                        <CustomButton
+                          type="button"
+                          onClick={handleNext}
+                          label={t("marketPurchaseManagement.modal.next")}
+                          className="flex-1 justify-center bg-black hover:bg-gray-800 text-white py-2"
+                        />
+                        <CustomButton
+                          type="button"
+                          onClick={resetForm}
+                          label="X"
+                          className="bg-gray-200 text-black py-2 px-3"
+                        />
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Pending Items List */}
+              {!editingId && maintenanceItems.length > 0 && (
+                <div className="mb-6 bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm flex flex-col max-h-[30%] shrink-0">
+                  <div className="bg-blue-50/50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                    <h4 className="font-semibold text-sm text-blue-800 uppercase tracking-wider">
+                      {t("vehicleManagement.maintenanceModal.pendingItems")} (
+                      {maintenanceItems.length})
+                    </h4>
+                    <span className="text-blue-700 font-bold bg-blue-100/50 px-3 py-1 rounded-full text-sm">
+                      Total:{" "}
+                      {maintenanceItems
+                        .reduce((acc, item) => acc + (item.total || 0), 0)
+                        .toFixed(2)}
+                      €
+                    </span>
+                  </div>
+                  <div className="overflow-auto">
+                    <table className="min-w-full divide-y divide-gray-200 text-sm">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 text-left font-medium text-gray-500">
+                            {t(
+                              "vehicleManagement.maintenanceModal.table.servicePart",
+                            )}
+                          </th>
+                          <th className="px-4 py-2 text-right font-medium text-gray-500">
+                            {t("vehicleManagement.maintenanceModal.table.unit")}
+                          </th>
+                          <th className="px-4 py-2 text-right font-medium text-gray-500">
+                            {t(
+                              "vehicleManagement.maintenanceModal.table.price",
+                            )}
+                          </th>
+                          <th className="px-4 py-2 text-right font-medium text-gray-500">
+                            {t(
+                              "vehicleManagement.maintenanceModal.table.total",
+                            )}
+                          </th>
+                          <th className="px-4 py-2 text-right font-medium text-gray-500">
+                            {t(
+                              "vehicleManagement.maintenanceModal.currentMileage",
+                            )}
+                          </th>
+                          <th className="px-4 py-2 text-center font-medium text-gray-500 w-16">
+                            {t("marketPurchaseManagement.modal.actions")}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {maintenanceItems.map((item, index) => (
+                          <tr
+                            key={index}
+                            className="hover:bg-gray-50 transition-colors"
+                          >
+                            <td className="px-4 py-2 font-medium text-gray-900">
+                              {item.sparePart}
+                            </td>
+                            <td className="px-4 py-2 text-right text-gray-600">
+                              {item.unit}
+                            </td>
+                            <td className="px-4 py-2 text-right text-gray-600">
+                              {Number(item.price).toFixed(2)}€
+                            </td>
+                            <td className="px-4 py-2 text-right font-semibold text-gray-900">
+                              {item.total?.toFixed(2)}€
+                            </td>
+                            <td className="px-4 py-2 text-right text-gray-600">
+                              {item.currentMileage || "-"}
+                            </td>
+                            <td className="px-4 py-2 text-center">
+                              <button
+                                onClick={() => removeItemFromList(index)}
+                                className="p-1.5 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                              >
+                                <DeleteIcon className="size-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Filters & History Table */}
+              {!editingId && (
+                <div className="flex flex-col flex-1 min-h-0">
+                  <div className="flex gap-3 mb-4 items-end shrink-0">
+                    <div className="flex-1">
+                      <CustomInput
+                        name="search"
+                        type="text"
+                        placeholder={t(
+                          "vehicleManagement.maintenanceModal.searchPlaceholder",
+                        )}
+                        value={filters.search}
+                        onChange={(e) =>
+                          handleFilterChange("search", e.target.value)
+                        }
+                        preLabel={
+                          <SearchIcon className="size-4.5 text-gray-400 mt-1.5" />
+                        }
+                        inputClasses="pl-9 py-3 text-sm"
+                      />
+                    </div>
+                    <div className="w-48">
+                      <DateRangePicker
+                        startDate={
+                          filters.startDate
+                            ? dayjs(filters.startDate).toDate()
+                            : null
+                        }
+                        endDate={
+                          filters.endDate
+                            ? dayjs(filters.endDate).toDate()
+                            : null
+                        }
+                        onChange={(start, end) => {
+                          handleFilterChange(
+                            "startDate",
+                            start
+                              ? dayjs(start).format("YYYY-MM-DD")
+                              : undefined,
+                          );
+                          handleFilterChange(
+                            "endDate",
+                            end ? dayjs(end).format("YYYY-MM-DD") : undefined,
+                          );
+                        }}
+                        className="w-full"
+                      />
+                    </div>
+                    <CustomButton
+                      type="button"
+                      onClick={handlePrint}
+                      label={t("vehicleManagement.maintenanceModal.print")}
+                      Icon={<PrinterIcon className="size-5" />}
+                      className="bg-black text-white px-4 h-[42px]"
+                    />
+                    {selectedRecordIds.length > 0 && (
+                      <CustomButton
+                        type="button"
+                        onClick={handleNext}
+                        label={
+                          t("common.paySelected") +
+                          ` (${selectedRecordIds.length})`
+                        }
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 h-[42px]"
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex-1 rounded-lg border border-gray-100 overflow-hidden flex flex-col bg-white">
+                    <div className="overflow-y-auto flex-1">
+                      <table className="min-w-full text-sm">
+                        <thead className="bg-gray-50 sticky top-0 z-10">
+                          <tr>
+                            <th className="p-3 text-left w-10"></th>
+                            <th className="p-3 text-left font-medium text-gray-500">
+                              {t(
+                                "vehicleManagement.maintenanceModal.table.date",
+                              )}
+                            </th>
+                            <th className="p-3 text-left font-medium text-gray-500">
+                              {t(
+                                "vehicleManagement.maintenanceModal.table.servicePart",
+                              )}
+                            </th>
+                            <th className="p-3 text-right font-medium text-gray-500">
+                              {t(
+                                "vehicleManagement.maintenanceModal.table.unit",
+                              )}
+                            </th>
+                            <th className="p-3 text-right font-medium text-gray-500">
+                              {t(
+                                "vehicleManagement.maintenanceModal.table.price",
+                              )}
+                            </th>
+                            <th className="p-3 text-right font-medium text-gray-500">
+                              {t(
+                                "vehicleManagement.maintenanceModal.table.total",
+                              )}
+                            </th>
+                            <th className="p-3 text-right font-medium text-gray-500">
+                              {t(
+                                "vehicleManagement.maintenanceModal.currentMileage",
+                              )}
+                            </th>
+                            <th className="p-3 text-right font-medium text-gray-500">
+                              {t(
+                                "vehicleManagement.maintenanceModal.table.actions",
+                              )}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {data.data.length === 0 ? (
+                            <tr>
+                              <td
+                                colSpan={8}
+                                className="p-8 text-center text-gray-400"
+                              >
+                                {t(
+                                  "vehicleManagement.maintenanceModal.table.noRecordsFound",
+                                )}
+                              </td>
+                            </tr>
+                          ) : (
+                            data.data.map((r) => {
                               const total =
                                 typeof r.total === "number"
                                   ? r.total
                                   : parseFloat(String(r.total || 0)) || 0;
                               const paymentStatus = calculatePaymentStatus(
                                 r.paymentType || "",
-                                total
+                                total,
                               );
+                              const isUnpaid =
+                                paymentStatus.status === "UNPAID";
                               return (
-                                <span
-                                  className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPaymentStatusStyle(
-                                    paymentStatus.status
-                                  )}`}
+                                <tr
+                                  key={r.id}
+                                  className={`hover:bg-gray-50 ${selectedRecordIds.includes(r.id) ? "bg-blue-50" : ""}`}
                                 >
-                                  {t(
-                                    `common.paymentStatus.${paymentStatus.status.toLowerCase()}`
-                                  )}
-                                </span>
+                                  <td className="p-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedRecordIds.includes(r.id)}
+                                      onChange={() =>
+                                        toggleRecordSelection(r.id, isUnpaid)
+                                      }
+                                      disabled={!isUnpaid}
+                                      className={`size-4 rounded border-gray-300 text-black focus:ring-black ${!isUnpaid ? "opacity-20" : "cursor-pointer"}`}
+                                    />
+                                  </td>
+                                  <td className="p-3 text-gray-600">
+                                    {formatDate(r.date)}
+                                  </td>
+                                  <td className="p-3 font-medium text-black">
+                                    <div className="flex flex-col">
+                                      <span>{r.sparePart}</span>
+                                      <span
+                                        className={`text-[10px] px-1.5 py-0.5 rounded-full w-fit border ${getPaymentStatusStyle(paymentStatus.status)}`}
+                                      >
+                                        {t(
+                                          `common.paymentStatus.${paymentStatus.status.toLowerCase()}`,
+                                        )}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td className="p-3 text-right">{r.unit}</td>
+                                  <td className="p-3 text-right">
+                                    {Number(r.price).toFixed(2)}€
+                                  </td>
+                                  <td className="p-3 text-right font-semibold">
+                                    {total.toFixed(2)}€
+                                  </td>
+                                  <td className="p-3 text-right">
+                                    {r.currentMileage || "-"}
+                                  </td>
+                                  <td className="p-3 text-right flex justify-end gap-1">
+                                    <CustomButton
+                                      type="button"
+                                      variant="transparent"
+                                      onClick={() => handleEdit(r)}
+                                      Icon={<EditIcon className="size-4" />}
+                                      className="text-black p-1.5!"
+                                    />
+                                    <CustomButton
+                                      type="button"
+                                      variant="transparent"
+                                      onClick={() => handleDelete(r.id)}
+                                      Icon={<DeleteIcon className="size-4" />}
+                                      className="text-red-500 p-1.5!"
+                                    />
+                                  </td>
+                                </tr>
                               );
-                            })()}
-                          </td>
-                          <td className="p-3 text-right flex justify-end gap-1">
-                            <CustomButton
-                              type="button"
-                              variant="transparent"
-                              onClick={() => handleEdit(r)}
-                              Icon={<EditIcon className="size-4" />}
-                              className="text-black hover:text-blue-600 p-1.5!"
-                              title="Edit"
-                            />
-                            <CustomButton
-                              type="button"
-                              variant="transparent"
-                              onClick={() => handleDelete(r.id)}
-                              Icon={<DeleteIcon className="size-4" />}
-                              className="text-red-500 hover:text-red-700 p-1.5!"
-                              title="Delete"
-                            />
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                            })
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="p-3 border-t border-gray-100 bg-gray-50/50">
+                      <Pagination
+                        currentPage={data.pagination.page - 1}
+                        totalPages={data.pagination.totalPages}
+                        onPageChange={handlePageChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
-          {/* Pagination - Only show when not editing and on step 1 */}
-          {!editingId && currentStep === 1 && (
-            <div className="mt-4 shrink-0">
-              <Pagination
-                currentPage={data.pagination.page - 1}
-                totalPages={data.pagination.totalPages}
-                onPageChange={handlePageChange}
+          {/* Step 2: Payment */}
+          {currentStep === 2 && (
+            <div className="flex flex-col gap-6">
+              <PaymentStep
+                totalAmount={
+                  editingId
+                    ? parseFloat(form.price) * parseInt(form.unit || "1") || 0
+                    : selectedRecordIds.length > 0
+                      ? data.data
+                          .filter((r) => selectedRecordIds.includes(r.id))
+                          .reduce(
+                            (acc, r) =>
+                              acc +
+                              (typeof r.total === "number"
+                                ? r.total
+                                : parseFloat(String(r.total)) || 0),
+                            0,
+                          )
+                      : maintenanceItems.reduce(
+                          (acc, item) => acc + (item.total || 0),
+                          0,
+                        )
+                }
+                paymentMethods={paymentMethods}
+                onPaymentMethodsChange={setPaymentMethods}
+                initialPaymentType={undefined}
               />
+              <div className="flex justify-between gap-4 pt-4 border-t border-gray-200">
+                <CustomButton
+                  type="button"
+                  variant="secondary"
+                  onClick={handlePrevious}
+                  label={t("marketPurchaseManagement.modal.previous")}
+                  Icon={<ChevronLeftIcon className="size-5" />}
+                />
+                <CustomButton
+                  type="button"
+                  onClick={handleSubmit}
+                  label={
+                    editingId
+                      ? t("common.update")
+                      : t("vehicleManagement.maintenanceModal.add")
+                  }
+                  className="bg-black text-white px-8"
+                />
+              </div>
             </div>
           )}
         </div>

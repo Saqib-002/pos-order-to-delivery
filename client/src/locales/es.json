@@ -20,6 +20,7 @@
     "errorSaving": "Error al guardar",
     "error": "Error",
     "seeAll": "Ver Todo",
+    "paySelected": "Pagar",
     "paymentStatus": {
       "paid": "PAGADO",
       "unpaid": "NO PAGADO",
@@ -28,7 +29,6 @@
     }
   },
   "welcome": "Bienvenido a nuestro sitio web.",
-
   "configurations": {
     "title": "Configuraciones",
     "languageLabel": "Idioma",
@@ -2282,6 +2282,7 @@
       "maxPrice": "Máx €",
       "date": "Fecha",
       "selectDate": "Seleccionar fecha",
+      "pendingItems": "Items pendientes",
       "errors": {
         "sparePartRequired": "El nombre del repuesto/servicio es requerido",
         "priceRequired": "El precio debe ser mayor que 0",

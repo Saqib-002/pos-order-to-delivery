@@ -29,7 +29,9 @@ export const VehicleManagement = () => {
     updateVehicle,
     deleteVehicle,
     addMaintenance,
+    addMultipleMaintenance,
     updateMaintenance,
+    updateMultipleMaintenancePayments,
     deleteMaintenance,
     fetchMaintenanceRecords,
   } = useVehicleData();
@@ -262,7 +264,9 @@ export const VehicleManagement = () => {
         onClose={handleClose}
         vehicle={modalState.vehicle}
         onAddRecord={addMaintenance}
+        onAddMultipleRecords={addMultipleMaintenance}
         onUpdateRecord={updateMaintenance}
+        onUpdateMultiplePayments={updateMultipleMaintenancePayments}
         onDeleteRecord={deleteMaintenance}
         fetchRecords={fetchMaintenanceRecords}
       />
