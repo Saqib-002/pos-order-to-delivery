@@ -8,7 +8,11 @@ import {
 } from "@/types/vehicles";
 import CustomButton from "../../ui/CustomButton";
 import CustomInput from "../../shared/CustomInput";
+import { CustomSelect } from "../../ui/CustomSelect";
 import Pagination from "../../shared/Pagination";
+import { DatePicker } from "../../ui/DatePicker";
+import { DateRangePicker } from "../../ui/DateRangePicker";
+import { toast } from "react-toastify";
 import {
   CrossIcon,
   SearchIcon,
@@ -17,9 +21,6 @@ import {
 } from "../../../public/Svg";
 import { useConfirm } from "../../../hooks/useConfirm";
 import { PaymentStep, PaymentMethod } from "../../shared/PaymentStep";
-import { DatePicker } from "../../ui/DatePicker";
-import { DateRangePicker } from "../../ui/DateRangePicker";
-import { toast } from "react-toastify";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -76,6 +77,7 @@ const INITIAL_FILTERS: MaintenanceFilters = {
   endDate: undefined,
   minPrice: undefined,
   maxPrice: undefined,
+  paymentStatus: "all",
 };
 
 const formatDate = (dateString: string | Date | undefined) => {
@@ -95,6 +97,12 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   fetchRecords,
 }) => {
   const { t } = useTranslation();
+  const paymentStatusOptions = [
+    { value: "all", label: t("platformOrders.filters.allPaymentStatuses") },
+    { value: "PAID", label: t("common.paymentStatus.paid") },
+    { value: "UNPAID", label: t("common.paymentStatus.unpaid") },
+    { value: "PARTIAL", label: t("common.paymentStatus.partial") },
+  ];
   const confirm = useConfirm();
   const { configurations } = useConfigurations();
   const {
@@ -694,6 +702,18 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                           );
                         }}
                         className="w-full"
+                      />
+                    </div>
+                    <div className="w-48">
+                      <CustomSelect
+                        options={paymentStatusOptions}
+                        value={filters.paymentStatus}
+                        onChange={(val) =>
+                          handleFilterChange("paymentStatus", val as any)
+                        }
+                        placeholder={t(
+                          "platformOrders.filters.allPaymentStatuses",
+                        )}
                       />
                     </div>
                     <CustomButton

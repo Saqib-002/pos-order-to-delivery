@@ -309,6 +309,7 @@ export class VehicleDatabaseOperations {
         endDate,
         minPrice,
         maxPrice,
+        paymentStatus,
       } = filters;
 
       const query = db("vehicle_maintenance").where("vehicleId", vehicleId);
@@ -327,6 +328,43 @@ export class VehicleDatabaseOperations {
       }
       if (maxPrice !== undefined) {
         query.where("total", "<=", maxPrice);
+      }
+
+      if (paymentStatus && paymentStatus !== "all") {
+        const amountPattern = "^[0-9]+(\\.[0-9]*)?$";
+        const sql = `
+          CASE
+            WHEN (
+              CASE
+                WHEN "paymentType" IS NULL OR "paymentType" = '' OR LOWER("paymentType") = 'pending'
+                THEN 0
+                ELSE COALESCE(
+                  (SELECT SUM(CAST(TRIM(split_part(elem, ':', 2)) AS NUMERIC))
+                   FROM unnest(string_to_array("paymentType", ',')) AS elem
+                   WHERE TRIM(split_part(elem, ':', 2)) ~ ?),
+                  0
+                )
+              END
+            ) <= 0 THEN 'UNPAID'
+            WHEN ABS(
+              COALESCE("total", 0) -
+              (
+                CASE
+                  WHEN "paymentType" IS NULL OR "paymentType" = '' OR LOWER("paymentType") = 'pending'
+                  THEN 0
+                  ELSE COALESCE(
+                    (SELECT SUM(CAST(TRIM(split_part(elem, ':', 2)) AS NUMERIC))
+                     FROM unnest(string_to_array("paymentType", ',')) AS elem
+                     WHERE TRIM(split_part(elem, ':', 2)) ~ ?),
+                    0
+                  )
+                END
+              )
+            ) <= 0.01 THEN 'PAID'
+            ELSE 'PARTIAL'
+          END = ?
+        `;
+        query.whereRaw(sql, [amountPattern, amountPattern, paymentStatus]);
       }
 
       const countQuery = query
