@@ -41,11 +41,6 @@ const ConfigurationsTab = () => {
         setLogoPreview(res.data.logo);
       }
     }
-    const savedLanguage = localStorage.getItem("language");
-    if (savedLanguage && (savedLanguage === "en" || savedLanguage === "es")) {
-      i18n.changeLanguage(savedLanguage);
-      setLanguage(savedLanguage as "en" | "es");
-    }
   };
 
   useEffect(() => {
@@ -381,7 +376,7 @@ const ConfigurationsTab = () => {
               </div>
 
               {(configurations.kitchenTimeEstimationRanges || []).length ===
-                0 ? (
+              0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <p className="text-sm">
                     {t("configurations.noTimeRangeSet")}
@@ -545,8 +540,12 @@ const ConfigurationsTab = () => {
 
               {(configurations.deliveryZones || []).length === 0 ? (
                 <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
-                  <p className="text-sm">{t("configurations.deliveryZones.noZonesConfigured")}</p>
-                  <p className="text-xs mt-1">{t("configurations.deliveryZones.drawFirstZoneHelp")}</p>
+                  <p className="text-sm">
+                    {t("configurations.deliveryZones.noZonesConfigured")}
+                  </p>
+                  <p className="text-xs mt-1">
+                    {t("configurations.deliveryZones.drawFirstZoneHelp")}
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -557,14 +556,21 @@ const ConfigurationsTab = () => {
                         className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm"
                       >
                         <div className="flex flex-col">
-                          <span className="font-bold text-gray-800">{zone.name}</span>
+                          <span className="font-bold text-gray-800">
+                            {zone.name}
+                          </span>
                           <span className="text-xs text-gray-500">
-                            {t("configurations.deliveryZones.minOrderShort")} <span className="font-semibold text-emerald-600">{zone.minOrderAmount}€</span>
+                            {t("configurations.deliveryZones.minOrderShort")}{" "}
+                            <span className="font-semibold text-emerald-600">
+                              {zone.minOrderAmount}€
+                            </span>
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium uppercase">
-                            {t("configurations.deliveryZones.pointsCount", { count: zone.points.length })}
+                            {t("configurations.deliveryZones.pointsCount", {
+                              count: zone.points.length,
+                            })}
                           </span>
                         </div>
                       </div>
@@ -622,7 +628,9 @@ const ConfigurationsTab = () => {
         isOpen={isZoneModalOpen}
         onClose={() => setIsZoneModalOpen(false)}
         initialZones={configurations.deliveryZones || []}
-        onSave={(zones) => setConfigurations({ ...configurations, deliveryZones: zones })}
+        onSave={(zones) =>
+          setConfigurations({ ...configurations, deliveryZones: zones })
+        }
         restaurantAddress={configurations.address || ""}
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
       />

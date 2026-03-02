@@ -218,6 +218,7 @@ interface DbCredentials {
 interface StoreSchema {
   dbCredentials: DbCredentials;
   cdnUrl: string;
+  language: string;
 }
 const store = new Store<StoreSchema>({
   defaults: {
@@ -229,6 +230,7 @@ const store = new Store<StoreSchema>({
       password: "",
     },
     cdnUrl: "http://192.168.1.0:3000",
+    language: "en",
   },
 });
 
@@ -243,6 +245,15 @@ export function registerIpcHandlers() {
   });
   ipcMain.handle("save-cdn-url", async (event, url: string) => {
     (store as any).set("cdnUrl", url);
+    return true;
+  });
+
+  // language handlers
+  ipcMain.handle("get-language", async () => {
+    return (store as any).get("language");
+  });
+  ipcMain.handle("save-language", async (event, language: string) => {
+    (store as any).set("language", language);
     return true;
   });
 

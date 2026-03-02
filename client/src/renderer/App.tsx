@@ -68,14 +68,9 @@ const App: React.FC = () => {
         toast.error("Failed to log out");
       }
     },
-    [logout]
+    [logout],
   );
   useEffect(() => {
-    const savedLanguage = localStorage.getItem("language");
-    if (savedLanguage && (savedLanguage === "en" || savedLanguage === "es")) {
-      i18n.changeLanguage(savedLanguage);
-      setLanguage(savedLanguage as "en" | "es");
-    }
     checkDbStatus();
   }, []);
   const handleSetupSuccess = () => {
@@ -96,7 +91,7 @@ const App: React.FC = () => {
     (window as any).electronAPI.onTokenExpired(handleTokenExpired);
     return () => {
       (window as any).electronAPI.removeTokenExpiredListener(
-        handleTokenExpired
+        handleTokenExpired,
       );
     };
   }, [handleLogout]);
@@ -189,7 +184,7 @@ const App: React.FC = () => {
         view,
         auth.user?.modulePermissions,
         auth.user?.role,
-        currentView.roles
+        currentView.roles,
       )
     ) {
       return (

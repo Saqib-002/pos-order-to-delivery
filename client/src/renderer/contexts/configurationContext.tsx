@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from "react";
+import i18n from "@/i18n";
+import { createContext, useContext, useEffect, useState } from "react";
 
 interface KitchenTimeEstimationRange {
   minOrders: number;
@@ -44,13 +45,13 @@ interface ConfigurationContextType {
 }
 
 const ConfigurationContext = createContext<ConfigurationContextType | null>(
-  null
+  null,
 );
 export const useConfigurations = () => {
   const context = useContext(ConfigurationContext);
   if (context === null) {
     throw new Error(
-      "useConfigurations must be used within a ConfigurationsProvider"
+      "useConfigurations must be used within a ConfigurationsProvider",
     );
   }
   return context;
@@ -76,12 +77,49 @@ export const ConfigurationsProvider = ({
     city: "",
     province: "",
   });
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState<"en" | "es">("en");
+
+  useEffect(() => {
+    i18n.changeLanguage(language);
+  }, [language]);
+
+  useEffect(() => {
+    const loadLanguage = async () => {
+      try {
+        const storedLanguage = await (window as any).electronAPI.getLanguage();
+        if (
+          storedLanguage &&
+          (storedLanguage === "en" || storedLanguage === "es")
+        ) {
+          setLanguage(storedLanguage as "en" | "es");
+          localStorage.setItem("language", storedLanguage);
+        }
+      } catch (error) {
+        console.error("Failed to load language from store:", error);
+      }
+    };
+    loadLanguage();
+  }, []);
+
+  const handleSetLanguage = async (
+    newLanguage: "en" | "es" | ((prevState: "en" | "es") => "en" | "es"),
+  ) => {
+    const lang =
+      typeof newLanguage === "function" ? newLanguage(language) : newLanguage;
+    setLanguage(lang);
+    localStorage.setItem("language", lang);
+    try {
+      await (window as any).electronAPI.saveLanguage(lang);
+    } catch (error) {
+      console.error("Failed to save language to store:", error);
+    }
+  };
+
   const value = {
     configurations,
     setConfigurations,
     language,
-    setLanguage,
+    setLanguage: handleSetLanguage,
   } as ConfigurationContextType;
   return (
     <ConfigurationContext.Provider value={value}>

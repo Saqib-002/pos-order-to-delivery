@@ -36,6 +36,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // CDN URL
   getCdnUrl: () => ipcRenderer.invoke("get-cdn-url"),
   saveCdnUrl: (url: string) => ipcRenderer.invoke("save-cdn-url", url),
+  // Language handlers
+  getLanguage: () => ipcRenderer.invoke("get-language"),
+  saveLanguage: (language: string) => ipcRenderer.invoke("save-language", language),
   // Google Maps API
   getGoogleMapsApiKey: () => ipcRenderer.invoke("get-google-maps-api-key"),
   // Vehicle operations
