@@ -35,7 +35,9 @@ export const calculatePaymentStatus = (
   let totalPaid = 0;
 
   try {
-    const payments = paymentType.split(", ").map((payment) => {
+    // Support both ", " and ";" as separators
+    const separators = /[,;]\s*/;
+    const payments = paymentType.split(separators).filter(p => p.trim() !== "").map((payment) => {
       const [type, amount] = payment.split(":");
       const numericAmount = parseFloat(amount);
 
@@ -67,7 +69,7 @@ export const calculatePaymentStatus = (
 
   if (totalPaid <= 0) {
     status = "UNPAID";
-  } else if (Math.abs(remainingAmount) < tolerance) {
+  } else if (remainingAmount <= tolerance) {
     status = "PAID";
   } else {
     status = "PARTIAL";

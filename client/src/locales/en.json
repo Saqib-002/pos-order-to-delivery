@@ -20,6 +20,7 @@
     "errorSaving": "Error while saving",
     "error": "Error",
     "seeAll": "See All",
+    "paySelected": "Pay",
     "paymentStatus": {
       "paid": "PAID",
       "unpaid": "UNPAID",
@@ -2209,7 +2210,7 @@
       "all": "All",
       "yes": "Yes",
       "no": "No",
-      "bike": "Bike",
+      "bike": "Motorcycle",
       "car": "Car",
       "unassigned": "Unassigned",
       "hasAlerts": "Has Alerts",
@@ -2284,6 +2285,7 @@
       "maxPrice": "Max €",
       "date": "Date",
       "selectDate": "Select date",
+      "pendingItems": "Pending Items",
       "errors": {
         "sparePartRequired": "Spare part/service name is required",
         "priceRequired": "Price must be greater than 0",

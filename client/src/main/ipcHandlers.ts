@@ -135,6 +135,8 @@ import {
   getVehicleMaintenance,
   deleteVehicleMaintenance,
   updateVehicleMaintenance,
+  addMultipleVehicleMaintenance,
+  updateMultipleVehicleMaintenancePayments,
 } from "./handlers/vehicles.js";
 import Store from "electron-store";
 import { initDatabase } from "./database/index.js";
@@ -286,6 +288,8 @@ export function registerIpcHandlers() {
   ipcMain.handle("update-vehicle", updateVehicle);
   ipcMain.handle("delete-vehicle", deleteVehicle);
   ipcMain.handle("add-vehicle-maintenance", addVehicleMaintenance);
+  ipcMain.handle("add-multiple-vehicle-maintenance", addMultipleVehicleMaintenance);
+  ipcMain.handle("update-multiple-vehicle-maintenance-payments", updateMultipleVehicleMaintenancePayments);
   ipcMain.handle("update-vehicle-maintenance", updateVehicleMaintenance);
   ipcMain.handle("delete-vehicle-maintenance", deleteVehicleMaintenance);
   ipcMain.handle("get-vehicle-maintenance", getVehicleMaintenance);

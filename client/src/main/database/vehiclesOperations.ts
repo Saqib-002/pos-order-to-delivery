@@ -201,6 +201,81 @@ export class VehicleDatabaseOperations {
       throw error;
     }
   }
+
+  static async addMultipleMaintenanceRecords(
+    records: Omit<VehicleMaintenance, "id">[]
+  ): Promise<VehicleMaintenance[]> {
+    const trx = await db.transaction();
+    try {
+      const recordsWithIds = records.map((r) => ({
+        id: randomUUID(),
+        ...r,
+      }));
+      await trx("vehicle_maintenance").insert(recordsWithIds);
+      await trx.commit();
+      return recordsWithIds;
+    } catch (error) {
+      await trx.rollback();
+      throw error;
+    }
+  }
+
+  static async updateMultipleMaintenancePayments(
+    maintenanceIds: string[],
+    paymentType: string
+  ): Promise<void> {
+    const trx = await db.transaction();
+    try {
+      // 1. Fetch the records to know their totals
+      const records = await trx("vehicle_maintenance")
+        .whereIn("id", maintenanceIds)
+        .select("id", "total");
+
+      // 2. Parse the total payment amount from the string
+      // Support both comma and semicolon separators
+      const separators = /[,;]\s*/;
+      const payments = paymentType.split(separators).filter(p => p.trim() !== "").map(p => {
+        const [, amount] = p.split(":");
+        return { type: p.split(":")[0]?.trim() || "unknown", amount: parseFloat(amount) || 0 };
+      });
+
+      // Keep track of remaining funds from each payment method
+      let remainingPayments = payments.map(p => ({ ...p }));
+      let totalFunds = remainingPayments.reduce((sum, p) => sum + p.amount, 0);
+
+      // 3. Distribute funds sequentially across records
+      for (const recordId of maintenanceIds) {
+        const record = records.find(r => r.id === recordId);
+        if (!record) continue;
+
+        const recordTotal = parseFloat(String(record.total)) || 0;
+        let recordPaymentParts: string[] = [];
+        let recordRemainingToPay = recordTotal;
+
+        for (const method of remainingPayments) {
+          if (recordRemainingToPay <= 0) break;
+          if (method.amount <= 0) continue;
+
+          const amountToTake = Math.min(recordRemainingToPay, method.amount);
+          if (amountToTake > 0) {
+            recordPaymentParts.push(`${method.type}:${amountToTake.toFixed(2)}`);
+            method.amount -= amountToTake;
+            recordRemainingToPay -= amountToTake;
+          }
+        }
+
+        const recordPaymentString = recordPaymentParts.join(", ");
+        await trx("vehicle_maintenance")
+          .where("id", record.id)
+          .update({ paymentType: recordPaymentString });
+      }
+
+      await trx.commit();
+    } catch (error) {
+      await trx.rollback();
+      throw error;
+    }
+  }
   static async updateMaintenanceRecord(
     id: string,
     updates: Partial<VehicleMaintenance>
@@ -234,6 +309,7 @@ export class VehicleDatabaseOperations {
         endDate,
         minPrice,
         maxPrice,
+        paymentStatus,
       } = filters;
 
       const query = db("vehicle_maintenance").where("vehicleId", vehicleId);
@@ -252,6 +328,43 @@ export class VehicleDatabaseOperations {
       }
       if (maxPrice !== undefined) {
         query.where("total", "<=", maxPrice);
+      }
+
+      if (paymentStatus && paymentStatus !== "all") {
+        const amountPattern = "^[0-9]+(\\.[0-9]*)?$";
+        const sql = `
+          CASE
+            WHEN (
+              CASE
+                WHEN "paymentType" IS NULL OR "paymentType" = '' OR LOWER("paymentType") = 'pending'
+                THEN 0
+                ELSE COALESCE(
+                  (SELECT SUM(CAST(TRIM(split_part(elem, ':', 2)) AS NUMERIC))
+                   FROM unnest(string_to_array("paymentType", ',')) AS elem
+                   WHERE TRIM(split_part(elem, ':', 2)) ~ ?),
+                  0
+                )
+              END
+            ) <= 0 THEN 'UNPAID'
+            WHEN ABS(
+              COALESCE("total", 0) -
+              (
+                CASE
+                  WHEN "paymentType" IS NULL OR "paymentType" = '' OR LOWER("paymentType") = 'pending'
+                  THEN 0
+                  ELSE COALESCE(
+                    (SELECT SUM(CAST(TRIM(split_part(elem, ':', 2)) AS NUMERIC))
+                     FROM unnest(string_to_array("paymentType", ',')) AS elem
+                     WHERE TRIM(split_part(elem, ':', 2)) ~ ?),
+                    0
+                  )
+                END
+              )
+            ) <= 0.01 THEN 'PAID'
+            ELSE 'PARTIAL'
+          END = ?
+        `;
+        query.whereRaw(sql, [amountPattern, amountPattern, paymentStatus]);
       }
 
       const countQuery = query

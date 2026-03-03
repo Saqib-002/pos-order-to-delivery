@@ -57,6 +57,7 @@ export interface MaintenanceFilters {
   endDate?: string;
   minPrice?: number;
   maxPrice?: number;
+  paymentStatus?: "all" | "PAID" | "UNPAID" | "PARTIAL";
   page: number;
   pageSize: number;
 }

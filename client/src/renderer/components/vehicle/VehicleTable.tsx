@@ -3,7 +3,12 @@ import { useTranslation } from "react-i18next";
 import { Vehicle } from "@/types/vehicles";
 import CustomButton from "../ui/CustomButton";
 import { Car, Bike, LocateFixed, Toolbox } from "lucide-react";
-import { ExclamationIcon, EditIcon, DeleteIcon } from "../../public/Svg";
+import {
+  ExclamationIcon,
+  EditIcon,
+  DeleteIcon,
+  MotorcycleIcon,
+} from "../../public/Svg";
 import dayjs from "dayjs";
 
 interface VehicleTableProps {
@@ -72,7 +77,7 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
                 <div className="flex items-center">
                   <div className="shrink-0 h-12 w-12 bg-linear-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center shadow-sm">
                     {vehicle.type === "bike" ? (
-                      <Bike className="size-6 text-blue-600" />
+                      <MotorcycleIcon className="size-6 text-blue-600" />
                     ) : (
                       <Car className="size-6 text-green-600" />
                     )}

@@ -68,6 +68,18 @@ export const useVehicleData = () => {
      toast.error(res.error); return false;
   };
 
+  const addMultipleMaintenance = async (records: any[]) => {
+    const res = await (window as any).electronAPI.addMultipleVehicleMaintenance(auth.token, records);
+    if(res.status) { toast.success("Maintenance records added"); return true; }
+    toast.error(res.error); return false;
+  };
+
+  const updateMultipleMaintenancePayments = async (maintenanceIds: string[], paymentType: string) => {
+    const res = await (window as any).electronAPI.updateMultipleVehicleMaintenancePayments(auth.token, maintenanceIds, paymentType);
+    if(res.status) { toast.success("Maintenance payments updated"); return true; }
+    toast.error(res.error); return false;
+  };
+
   const updateMaintenance = async (maintenanceId: string, data: Partial<VehicleMaintenance>) => {
     const total = (data.price || 0) * (data.unit || 1);
     const res = await (window as any).electronAPI.updateVehicleMaintenance(auth.token, maintenanceId, { ...data, total });
@@ -84,7 +96,7 @@ export const useVehicleData = () => {
   const fetchMaintenanceRecords = async (vehicleId: string, filters: MaintenanceFilters) => {
       const res = await (window as any).electronAPI.getVehicleMaintenance(auth.token, vehicleId, filters);
       if (res.status) return res.data;
-      return { data: [], pagination: { total: 0, page: 1, pageSize: 5, totalPages: 0 } };
+      return { data: [], pagination: { total: 0, page: 1, pageSize: 20, totalPages: 0 } };
   };
 
   return {
@@ -97,6 +109,8 @@ export const useVehicleData = () => {
     updateVehicle,
     deleteVehicle,
     addMaintenance,
+    addMultipleMaintenance,
+    updateMultipleMaintenancePayments,
     updateMaintenance,
     deleteMaintenance,
     fetchMaintenanceRecords

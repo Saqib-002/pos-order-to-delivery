@@ -87,7 +87,7 @@ export const PaymentStep = ({
   }, 0);
   const totalCustomerGiven = paymentMethods.reduce(
     (sum, method) => sum + (method.amountTendered || method.amount || 0),
-    0
+    0,
   );
   const remainingAmount = totalAmount - totalPaid;
   const changeAmount = Math.max(0, totalCustomerGiven - totalAmount);
@@ -96,7 +96,7 @@ export const PaymentStep = ({
     const amountNum = parseFloat(currentPaymentAmount) || 0;
     if (amountNum <= 0) {
       toast.error(
-        t("marketPurchaseManagement.modal.errors.pleaseEnterValidAmount")
+        t("marketPurchaseManagement.modal.errors.pleaseEnterValidAmount"),
       );
       return;
     }
@@ -109,13 +109,13 @@ export const PaymentStep = ({
     if (actualAmount <= 0) {
       toast.error(
         t("marketPurchaseManagement.modal.errors.noRemainingAmount") ||
-          "No remaining amount to pay. The total has already been paid."
+          "No remaining amount to pay. The total has already been paid.",
       );
       return;
     }
 
     const existingMethodIndex = paymentMethods.findIndex(
-      (method) => method.type === selectedPaymentType
+      (method) => method.type === selectedPaymentType,
     );
 
     if (existingMethodIndex !== -1) {
@@ -241,11 +241,11 @@ export const PaymentStep = ({
         <label className="block text-sm font-medium text-gray-700">
           {t("marketPurchaseManagement.modal.step3.selectPaymentMethod")}
         </label>
-        <div className="grid grid-cols-5 gap-3">
+        <div className="flex flex-wrap justify-center gap-3">
           <button
             type="button"
             onClick={() => setSelectedPaymentType("cash")}
-            className={`p-4 rounded-lg border-2 transition-colors ${
+            className={`p-4 rounded-lg border-2 transition-colors w-[calc(33.33%-0.5rem)] min-w-[150px] ${
               selectedPaymentType === "cash"
                 ? "border-green-400 bg-green-50 text-green-800"
                 : "border-gray-200 hover:border-green-300"
@@ -261,7 +261,7 @@ export const PaymentStep = ({
           <button
             type="button"
             onClick={() => setSelectedPaymentType("card")}
-            className={`p-4 rounded-lg border-2 transition-colors ${
+            className={`p-4 rounded-lg border-2 transition-colors w-[calc(33.33%-0.5rem)] min-w-[150px] ${
               selectedPaymentType === "card"
                 ? "border-blue-400 bg-blue-50 text-blue-800"
                 : "border-gray-200 hover:border-blue-300"
@@ -277,7 +277,7 @@ export const PaymentStep = ({
           <button
             type="button"
             onClick={() => setSelectedPaymentType("bizum")}
-            className={`p-4 rounded-lg border-2 transition-colors ${
+            className={`p-4 rounded-lg border-2 transition-colors w-[calc(33.33%-0.5rem)] min-w-[150px] ${
               selectedPaymentType === "bizum"
                 ? "border-purple-400 bg-purple-50 text-purple-800"
                 : "border-gray-200 hover:border-purple-300"
@@ -293,7 +293,7 @@ export const PaymentStep = ({
           <button
             type="button"
             onClick={() => setSelectedPaymentType("bank-transfer")}
-            className={`p-4 rounded-lg border-2 transition-colors ${
+            className={`p-4 rounded-lg border-2 transition-colors w-[calc(33.33%-0.5rem)] min-w-[150px] ${
               selectedPaymentType === "bank-transfer"
                 ? "border-orange-400 bg-orange-50 text-orange-800"
                 : "border-gray-200 hover:border-orange-300"
@@ -313,7 +313,7 @@ export const PaymentStep = ({
           <button
             type="button"
             onClick={() => setSelectedPaymentType("account-direct-debit")}
-            className={`p-4 rounded-lg border-2 transition-colors ${
+            className={`p-4 rounded-lg border-2 transition-colors w-[calc(33.33%-0.5rem)] min-w-[150px] ${
               selectedPaymentType === "account-direct-debit"
                 ? "border-indigo-400 bg-indigo-50 text-indigo-800"
                 : "border-gray-200 hover:border-indigo-300"
