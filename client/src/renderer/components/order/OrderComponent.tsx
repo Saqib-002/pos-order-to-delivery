@@ -157,9 +157,7 @@ const OrderComponent = () => {
           continue;
         }
 
-        if (isMainPrinter) {
-          toast.info(t("orderCart.messages.printingCustomerReceipt"));
-        }
+        toast.info(t("orderCart.messages.preparingForPrinting") || "Preparing for printing...");
 
         let receiptHTML = "";
         if (isMainPrinter) {

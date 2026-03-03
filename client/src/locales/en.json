@@ -883,6 +883,7 @@
     },
     "messages": {
       "printingCustomerReceipt": "Printing customer receipt...",
+      "preparingForPrinting": "Preparing for printing...",
       "receiptPrintedSuccessfully": "Receipt printed successfully",
       "menuDuplicated": "Menu duplicated successfully"
     },

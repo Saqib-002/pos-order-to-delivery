@@ -380,16 +380,22 @@ export const DeliveryView = () => {
               <CrossIcon className="w-4 h-4" />
             </button>
           )}
-          <button
-            onClick={() => {
-              setSelectedOrderForRoute(order);
-              setIsRouteModalOpen(true);
-            }}
-            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-            title={t("orderProcessingModal.customerSearch.viewRoute") || "View Route"}
-          >
-            <MapIcon className="w-4 h-4" />
-          </button>
+          {(order.orderType === "delivery" ||
+            order.orderType === "platform:delivery") && (
+              <button
+                onClick={() => {
+                  setSelectedOrderForRoute(order);
+                  setIsRouteModalOpen(true);
+                }}
+                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                title={
+                  t("orderProcessingModal.customerSearch.viewRoute") ||
+                  "View Route"
+                }
+              >
+                <MapIcon className="w-4 h-4" />
+              </button>
+            )}
         </td>
       </tr>
     );
@@ -478,16 +484,22 @@ export const DeliveryView = () => {
                 <CrossIcon className="size-4" />
               </button>
             )}
-            <button
-              onClick={() => {
-                setSelectedOrderForRoute(order);
-                setIsRouteModalOpen(true);
-              }}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 text-sm cursor-pointer"
-              title={t("orderProcessingModal.customerSearch.viewRoute") || "View Route"}
-            >
-              <MapIcon className="size-4" />
-            </button>
+            {(order.orderType === "delivery" ||
+              order.orderType === "platform:delivery") && (
+                <button
+                  onClick={() => {
+                    setSelectedOrderForRoute(order);
+                    setIsRouteModalOpen(true);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 text-sm cursor-pointer"
+                  title={
+                    t("orderProcessingModal.customerSearch.viewRoute") ||
+                    "View Route"
+                  }
+                >
+                  <MapIcon className="size-4" />
+                </button>
+              )}
           </>
         )}
         {/* Change Delivery Person Button */}

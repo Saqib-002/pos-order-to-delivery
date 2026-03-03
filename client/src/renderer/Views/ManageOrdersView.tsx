@@ -6,7 +6,7 @@ import { CustomSelect } from "../components/ui/CustomSelect";
 import { DateRangePicker } from "../components/ui/DateRangePicker";
 import { calculateOrderTotal } from "../utils/orderCalculations";
 import { calculatePaymentStatus } from "../utils/paymentStatus";
-import { generateReceiptHTML, groupItemsByPrinter } from "../utils/printer";
+import { generateItemsReceiptHTML, generateReceiptHTML, groupItemsByPrinter } from "../utils/printer";
 import {
   translateOrderStatus,
   getOrderStatusStyle,
@@ -284,7 +284,9 @@ export const ManageOrdersView = () => {
           const receiptHTML = generateReceiptHTML(
             order.items || [],
             configs,
-            order.orderId,
+            order.orderType?.toLowerCase().includes("platform")
+              ? order.ticketNumber || order.orderId
+              : order.orderId,
             order.orderType,
             user?.role || "",
             paymentStatus.status,
@@ -318,6 +320,43 @@ export const ManageOrdersView = () => {
             }
             return;
           }
+        } else {
+          // Kitchen printing
+          const unprintedItems = items.filter(
+            (item: any) => !item.isKitchenPrinted,
+          );
+          if (unprintedItems.length === 0) {
+            continue;
+          }
+
+          const receiptHTML = generateItemsReceiptHTML(
+            unprintedItems,
+            configs,
+            order,
+            user?.role || "",
+            paymentStatus.status,
+            t,
+          );
+
+          if (!receiptHTML) {
+            continue;
+          }
+
+          const printRes = await (window as any).electronAPI.printToPrinter(
+            token,
+            printerName,
+            { html: receiptHTML },
+          );
+
+          if (printRes.status) {
+            await (window as any).electronAPI.updateOrderItems(
+              token,
+              unprintedItems.map((item: any) => ({
+                itemId: item.id,
+                itemData: { isKitchenPrinted: true },
+              })),
+            );
+          }
         }
       }
 
@@ -345,14 +384,14 @@ export const ManageOrdersView = () => {
       if (!res.status) {
         toast.error(
           res.error ||
-            t("manageOrders.errors.cancelFailed") ||
-            "Failed to cancel order",
+          t("manageOrders.errors.cancelFailed") ||
+          "Failed to cancel order",
         );
         return;
       }
       toast.success(
         t("manageOrders.messages.orderCancelled") ||
-          "Order cancelled successfully",
+        "Order cancelled successfully",
       );
       setIsCancelOrderModalOpen(false);
       setSelectedOrderForCancel(null);
@@ -485,13 +524,15 @@ export const ManageOrdersView = () => {
             </button>
 
             {/* Print Order Button */}
-            <button
-              onClick={() => handlePrintOrder(order)}
-              className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200 cursor-pointer"
-              title={t("manageOrders.actions.printOrder")}
-            >
-              <DocumentIcon className="w-5 h-5" />
-            </button>
+            {!order.orderType?.toLowerCase().includes("platform") && (
+              <button
+                onClick={() => handlePrintOrder(order)}
+                className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200 cursor-pointer"
+                title={t("manageOrders.actions.printOrder")}
+              >
+                <DocumentIcon className="w-5 h-5" />
+              </button>
+            )}
 
             {/* Process Payment Button - Only show for UNPAID or PARTIAL orders with remaining amount > 0 */}
             {(() => {
@@ -570,11 +611,10 @@ export const ManageOrdersView = () => {
             <button
               onClick={handleScrollLeft}
               disabled={!canScrollLeft}
-              className={`p-2 rounded-lg transition-all duration-200 ${
-                canScrollLeft
-                  ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
-                  : "bg-gray-100 text-gray-300 cursor-not-allowed"
-              }`}
+              className={`p-2 rounded-lg transition-all duration-200 ${canScrollLeft
+                ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
+                : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                }`}
               title="Scroll left"
             >
               <ChevronLeftIcon className="w-5 h-5" />
@@ -582,11 +622,10 @@ export const ManageOrdersView = () => {
             <button
               onClick={handleScrollRight}
               disabled={!canScrollRight}
-              className={`p-2 rounded-lg transition-all duration-200 ${
-                canScrollRight
-                  ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
-              }`}
+              className={`p-2 rounded-lg transition-all duration-200 ${canScrollRight
+                ? "bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
+                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                }`}
               title="Scroll right"
             >
               <ChevronRightIcon className="w-5 h-5" />
@@ -849,10 +888,10 @@ export const ManageOrdersView = () => {
             }
             emptyStateTitle={
               filter.searchTerm ||
-              filter.selectedDate ||
-              filter.selectedDeliveryPerson ||
-              filter.selectedCustomer ||
-              filter.selectedStatus.length > 0
+                filter.selectedDate ||
+                filter.selectedDeliveryPerson ||
+                filter.selectedCustomer ||
+                filter.selectedStatus.length > 0
                 ? t("manageOrders.noOrdersMatch")
                 : t("manageOrders.noOrdersFound")
             }

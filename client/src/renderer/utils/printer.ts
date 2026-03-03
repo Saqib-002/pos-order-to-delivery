@@ -538,15 +538,24 @@ export const generateItemsReceiptHTML = (
       status = t("receipt.paymentStatus.PARTIAL");
       break;
   }
-  switch (order.orderType?.toUpperCase()) {
+  let orderTypeDisplay = order.orderType || "";
+  switch (orderTypeDisplay?.toUpperCase()) {
     case "DELIVERY":
-      order.orderType = t("receipt.orderType.delivery");
+      orderTypeDisplay = t("receipt.orderType.delivery");
       break;
     case "PICKUP":
-      order.orderType = t("receipt.orderType.pickup");
+      orderTypeDisplay = t("receipt.orderType.pickup");
       break;
     case "DINE-IN":
-      order.orderType = t("receipt.orderType.dineIn");
+      orderTypeDisplay = t("receipt.orderType.dineIn");
+      break;
+    default:
+      if (orderTypeDisplay?.toLowerCase().startsWith("platform")) {
+        const normalized = orderTypeDisplay.toLowerCase();
+        if (normalized === "platform:delivery") orderTypeDisplay = t("orderTypes.platformDelivery");
+        else if (normalized === "platform:pickup") orderTypeDisplay = t("orderTypes.platformPickup");
+        else if (normalized === "platform") orderTypeDisplay = t("orderTypes.platform");
+      }
       break;
   }
 
@@ -590,8 +599,8 @@ export const generateItemsReceiptHTML = (
         </head>
         <body>
         <div class="order-info center">
-            <h1 class="bold" style="font-size: 24px;">${order.orderType?.toUpperCase() === "PLATFORM" && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`}</h1>
-            <h1 class="bold" style="font-size: 16px;">${order.orderType.toUpperCase()}</h1>
+            <h1 class="bold" style="font-size: 24px;">${order.orderType?.toLowerCase().startsWith("platform") && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`}</h1>
+            <h1 class="bold" style="font-size: 16px;">${orderTypeDisplay.toUpperCase()}</h1>
             <p class="bold" style="font-size: 14px;">${dateTimeStr}</p>
             <p class="bold" style="font-size: 14px;">${status}</p>
         </div>
@@ -737,7 +746,7 @@ export const generateItemsReceiptHTML = (
         </div>
         <div class="line"></div>
         <div class="bold">
-            ${t("receipt.order")} ${order.orderType?.toUpperCase() === "PLATFORM" && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`} - ${dateTimeStr}
+            ${t("receipt.order")} ${order.orderType?.toLowerCase().startsWith("platform") && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`} - ${dateTimeStr}
         </div>
         ${order.notes ? `<div class="bold">${t("receipt.notes")}: ${order.notes}</div>` : ""}
         <div class="center bold">

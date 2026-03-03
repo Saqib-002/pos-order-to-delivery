@@ -87,7 +87,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     if (res.data) {
       configurations = res.data;
     }
-    toast.info(t("orderCart.messages.printingCustomerReceipt"));
+    toast.info(t("orderCart.messages.preparingForPrinting") || "Preparing for printing...");
     for (const [printer, items] of Object.entries(printerGroups)) {
       const printerName = printer.split("|")[0];
       const printerIsMain = printer.split("|")[1];
@@ -155,9 +155,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
         receiptHTML = generateItemsReceiptHTML(
           items,
           configurations,
-          order?.orderType?.toLowerCase().includes("platform")
-            ? order.ticketNumber || order.orderId
-            : order!.orderId,
+          order,
           user!.role,
           paymentStatus.status,
           t,

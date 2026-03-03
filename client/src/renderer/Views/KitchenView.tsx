@@ -75,7 +75,7 @@ export const KitchenView = () => {
         };
         if (
           order.orderType === "delivery" ||
-          order.orderType?.toLowerCase().includes("platform")
+          order.orderType === "platform:delivery"
         ) {
           updates = {
             status: "ready for delivery",
@@ -318,21 +318,22 @@ export const KitchenView = () => {
             >
               <CheckIcon className="size-4" />
             </button>
-            {order.orderType === "delivery" && (
-              <button
-                onClick={() => {
-                  setSelectedOrderForRoute(order);
-                  setIsRouteModalOpen(true);
-                }}
-                className="bg-teal-600 hover:bg-teal-700 text-white p-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
-                title={
-                  t("orderProcessingModal.customerSearch.viewRoute") ||
-                  "View Route"
-                }
-              >
-                <MapIcon className="size-4" />
-              </button>
-            )}
+            {(order.orderType === "delivery" ||
+              order.orderType === "platform:delivery") && (
+                <button
+                  onClick={() => {
+                    setSelectedOrderForRoute(order);
+                    setIsRouteModalOpen(true);
+                  }}
+                  className="bg-teal-600 hover:bg-teal-700 text-white p-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+                  title={
+                    t("orderProcessingModal.customerSearch.viewRoute") ||
+                    "View Route"
+                  }
+                >
+                  <MapIcon className="size-4" />
+                </button>
+              )}
           </div>
         </td>
       </tr>

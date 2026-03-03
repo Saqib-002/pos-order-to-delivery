@@ -884,6 +884,7 @@
     },
     "messages": {
       "printingCustomerReceipt": "Imprimiendo recibo del cliente...",
+      "preparingForPrinting": "Preparando para imprimir...",
       "receiptPrintedSuccessfully": "Recibo impreso exitosamente",
       "menuDuplicated": "Menú duplicado correctamente"
     },
