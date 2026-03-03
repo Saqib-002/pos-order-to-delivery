@@ -2561,8 +2561,8 @@
     "delivery": "Domicilio",
     "dineIn": "Consumo en local",
     "platform": "Plataforma",
-    "platformDelivery": "Envío por plataforma",
-    "platformPickup": "Recogida en plataforma"
+    "platformDelivery": "Plataforma (Envío)",
+    "platformPickup": "Plataforma (Recogida)"
   },
   "orderComponent": {
     "partialPayment": "Pagado: €{{paid}} / €{{total}}",

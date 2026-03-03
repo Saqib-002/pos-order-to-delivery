@@ -2560,8 +2560,8 @@
     "delivery": "Delivery",
     "dineIn": "Dine In",
     "platform": "Platform",
-    "platformDelivery": "Delivery",
-    "platformPickup": "Takeaway"
+    "platformDelivery": "Platform (Delivery)",
+    "platformPickup": "Platform (Takeaway)"
   },
   "orderComponent": {
     "partialPayment": "Paid: €{{paid}} / €{{total}}",

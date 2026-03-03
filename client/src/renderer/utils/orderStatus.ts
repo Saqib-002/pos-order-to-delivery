@@ -139,17 +139,19 @@ export const translateOrderType = (orderType: string): string => {
 
 export const getOrderTypeStyle = (orderType: string) => {
   const normalized = orderType?.toLowerCase();
-  if (normalized === "pickup" || normalized === "platform:pickup") {
+  
+  if (normalized?.startsWith("platform")) {
+    return "bg-pink-100 text-pink-800 border-pink-200";
+  }
+  
+  if (normalized === "pickup") {
     return "bg-blue-100 text-blue-800 border-blue-200";
   }
   if (normalized === "dine-in") {
     return "bg-purple-100 text-purple-800 border-purple-200";
   }
-  if (normalized === "delivery" || normalized === "platform:delivery") {
+  if (normalized === "delivery") {
     return "bg-orange-100 text-orange-800 border-orange-200";
-  }
-  if (normalized?.startsWith("platform")) {
-    return "bg-pink-100 text-pink-800 border-pink-200";
   }
   return "bg-gray-100 text-gray-800 border-gray-200";
 };
