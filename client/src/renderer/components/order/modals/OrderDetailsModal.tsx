@@ -401,7 +401,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-black">
-                {order.orderType === "platform" && order.ticketNumber ? (
+                {order.orderType?.toLowerCase().includes("platform") && order.ticketNumber ? (
                   <>#{order.ticketNumber}</>
                 ) : (
                   t("orderDetailsModal.title", { orderId: order.orderId })

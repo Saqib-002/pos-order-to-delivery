@@ -25,7 +25,8 @@
       "unpaid": "NO PAGADO",
       "partial": "PARCIAL",
       "pending": "PENDIENTE"
-    }
+    },
+    "note": "Nota"
   },
   "welcome": "Bienvenido a nuestro sitio web.",
 
@@ -409,6 +410,7 @@
       "priceRequired": "Por favor ingrese un precio válido",
       "fetchPlatformsError": "Error al obtener las plataformas",
       "createOrderError": "Error al crear el pedido de plataforma",
+      "addressRequired": "Por favor ingrese una dirección para pedidos de entrega",
       "failedToUpdateOrder": "Error al actualizar el pedido",
       "failedToCancelOrder": "Error al cancelar el pedido"
     },
@@ -821,6 +823,8 @@
     "tax": "Impuesto",
     "variant": "Variante",
     "total": "Total",
+    "productInstructions": "Instrucciones del Producto",
+    "productInstructionsPlaceholder": "Añadir instrucciones personalizadas para este producto...",
     "addToOrder": "Agregar al Pedido",
     "errors": {
       "unableToGetVariants": "No se pudieron obtener las variantes del producto",

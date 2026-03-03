@@ -75,8 +75,7 @@ export const KitchenView = () => {
         };
         if (
           order.orderType === "delivery" ||
-          order.orderType === "platform" ||
-          order.orderType === "platform:delivery"
+          order.orderType?.toLowerCase().includes("platform")
         ) {
           updates = {
             status: "ready for delivery",

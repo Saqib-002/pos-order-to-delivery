@@ -173,6 +173,16 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
       return;
     }
 
+    if (
+      orderType === "platform:delivery" &&
+      !addressFields.address.trim() &&
+      !address.trim()
+    ) {
+      toast.error(t("platformOrders.errors.addressRequired"));
+      setLoading(false);
+      return;
+    }
+
     try {
       const selectedPlatform = platforms.find(
         (p) => p.id === selectedPlatformId,
@@ -367,14 +377,12 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsPaid(!isPaid)}
-                    className={`cursor-pointer relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                      isPaid ? "bg-black" : "bg-gray-200"
-                    }`}
+                    className={`cursor-pointer relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${isPaid ? "bg-black" : "bg-gray-200"
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                        isPaid ? "translate-x-6" : "translate-x-1"
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${isPaid ? "translate-x-6" : "translate-x-1"
+                        }`}
                     />
                   </button>
                 </div>
@@ -392,106 +400,110 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("platformOrders.address")}
-              </label>
-              <AddressAutocomplete
-                value={addressFields.address}
-                onChange={(value) => {
-                  setAddressFields((prev) => {
-                    const updated = { ...prev, address: value };
-                    if (value.trim()) {
-                      let addressString = `address=${value}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}`;
-                      if (updated.apartment.trim()) {
-                        addressString += `|apartment=${updated.apartment}`;
+            {orderType === "platform:delivery" && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("platformOrders.address")}
+                </label>
+                <AddressAutocomplete
+                  value={addressFields.address}
+                  onChange={(value) => {
+                    setAddressFields((prev) => {
+                      const updated = { ...prev, address: value };
+                      if (value.trim()) {
+                        let addressString = `address=${value}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}`;
+                        if (updated.apartment.trim()) {
+                          addressString += `|apartment=${updated.apartment}`;
+                        }
+                        setAddress(addressString);
+                      } else {
+                        setAddress("");
                       }
-                      setAddress(addressString);
-                    } else {
-                      setAddress("");
+                      return updated;
+                    });
+                  }}
+                  onAddressSelect={(components) => {
+                    let addressString = `address=${components.address}|postal=${components.postalCode}|city=${components.city}|province=${components.province}`;
+                    if (components.apartment) {
+                      addressString += `|apartment=${components.apartment}`;
                     }
-                    return updated;
-                  });
-                }}
-                onAddressSelect={(components) => {
-                  let addressString = `address=${components.address}|postal=${components.postalCode}|city=${components.city}|province=${components.province}`;
-                  if (components.apartment) {
-                    addressString += `|apartment=${components.apartment}`;
-                  }
-                  setAddress(addressString);
-                  setAddressFields({
-                    address: components.address,
-                    apartment: components.apartment || "",
-                    postalCode: components.postalCode,
-                    city: components.city,
-                    province: components.province,
-                  });
-                }}
-                apartmentValue={addressFields.apartment}
-                postalCodeValue={addressFields.postalCode}
-                cityValue={addressFields.city}
-                provinceValue={addressFields.province}
-                onApartmentChange={(value) => {
-                  setAddressFields((prev) => {
-                    const updated = { ...prev, apartment: value };
-                    if (updated.address.trim()) {
-                      let addressString = `address=${updated.address}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}`;
-                      if (updated.apartment.trim()) {
-                        addressString += `|apartment=${updated.apartment}`;
+                    setAddress(addressString);
+                    setAddressFields({
+                      address: components.address,
+                      apartment: components.apartment || "",
+                      postalCode: components.postalCode,
+                      city: components.city,
+                      province: components.province,
+                    });
+                  }}
+                  apartmentValue={addressFields.apartment}
+                  postalCodeValue={addressFields.postalCode}
+                  cityValue={addressFields.city}
+                  provinceValue={addressFields.province}
+                  onApartmentChange={(value) => {
+                    setAddressFields((prev) => {
+                      const updated = { ...prev, apartment: value };
+                      if (updated.address.trim()) {
+                        let addressString = `address=${updated.address}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}`;
+                        if (updated.apartment.trim()) {
+                          addressString += `|apartment=${updated.apartment}`;
+                        }
+                        setAddress(addressString);
                       }
-                      setAddress(addressString);
-                    }
-                    return updated;
-                  });
-                }}
-                onPostalCodeChange={(value) => {
-                  setAddressFields((prev) => {
-                    const updated = { ...prev, postalCode: value };
-                    if (updated.address.trim()) {
-                      let addressString = `address=${updated.address}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}`;
-                      if (updated.apartment.trim()) {
-                        addressString += `|apartment=${updated.apartment}`;
+                      return updated;
+                    });
+                  }}
+                  onPostalCodeChange={(value) => {
+                    setAddressFields((prev) => {
+                      const updated = { ...prev, postalCode: value };
+                      if (updated.address.trim()) {
+                        let addressString = `address=${updated.address}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}`;
+                        if (updated.apartment.trim()) {
+                          addressString += `|apartment=${updated.apartment}`;
+                        }
+                        setAddress(addressString);
                       }
-                      setAddress(addressString);
-                    }
-                    return updated;
-                  });
-                }}
-                onCityChange={(value) => {
-                  setAddressFields((prev) => {
-                    const updated = { ...prev, city: value };
-                    if (updated.address.trim()) {
-                      let addressString = `address=${updated.address}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}`;
-                      if (updated.apartment.trim()) {
-                        addressString += `|apartment=${updated.apartment}`;
+                      return updated;
+                    });
+                  }}
+                  onCityChange={(value) => {
+                    setAddressFields((prev) => {
+                      const updated = { ...prev, city: value };
+                      if (updated.address.trim()) {
+                        let addressString = `address=${updated.address}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}`;
+                        if (updated.apartment.trim()) {
+                          addressString += `|apartment=${updated.apartment}`;
+                        }
+                        setAddress(addressString);
                       }
-                      setAddress(addressString);
-                    }
-                    return updated;
-                  });
-                }}
-                onProvinceChange={(value) => {
-                  setAddressFields((prev) => {
-                    const updated = { ...prev, province: value };
-                    if (updated.address.trim()) {
-                      let addressString = `address=${updated.address}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}`;
-                      if (updated.apartment.trim()) {
-                        addressString += `|apartment=${updated.apartment}`;
+                      return updated;
+                    });
+                  }}
+                  onProvinceChange={(value) => {
+                    setAddressFields((prev) => {
+                      const updated = { ...prev, province: value };
+                      if (updated.address.trim()) {
+                        let addressString = `address=${updated.address}|postal=${updated.postalCode}|city=${updated.city}|province=${updated.province}`;
+                        if (updated.apartment.trim()) {
+                          addressString += `|apartment=${updated.apartment}`;
+                        }
+                        setAddress(addressString);
                       }
-                      setAddress(addressString);
-                    }
-                    return updated;
-                  });
-                }}
-                searchAddressLabel={t("customerManagement.modal.searchAddress")}
-                apartmentLabel={t("customerManagement.modal.apartment")}
-                postalCodeLabel={t("customerManagement.modal.postalCode")}
-                cityLabel={t("customerManagement.modal.city")}
-                provinceLabel={t("customerManagement.modal.province")}
-                name="platform-order-address"
-                inputClasses="py-3 px-4"
-              />
-            </div>
+                      return updated;
+                    });
+                  }}
+                  searchAddressLabel={t(
+                    "customerManagement.modal.searchAddress",
+                  )}
+                  apartmentLabel={t("customerManagement.modal.apartment")}
+                  postalCodeLabel={t("customerManagement.modal.postalCode")}
+                  cityLabel={t("customerManagement.modal.city")}
+                  provinceLabel={t("customerManagement.modal.province")}
+                  name="platform-order-address"
+                  inputClasses="py-3 px-4"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

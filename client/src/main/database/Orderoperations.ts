@@ -536,7 +536,7 @@ export class OrderDatabaseOperations {
 
     const applyOrderTypeFilter = (query: any) => {
       if (orderType) {
-        if (orderType === "platform") {
+        if (orderType?.toLowerCase().startsWith("platform")) {
           return query.where("orderType", "like", "platform%");
         }
         // Normalize orderType: handle both "dine-in" and "dinein"
@@ -685,7 +685,7 @@ export class OrderDatabaseOperations {
       ])
       .andWhere("order_items.menuId", null)
       .andWhereNot("orders.status", "pending")
-      .andWhereNot("orders.orderType", "platform");
+      .andWhere("orders.orderType", "not like", "platform%");
 
     if (orderType) {
       const normalizedOrderType = orderType.toLowerCase().replace(/-/g, "");
@@ -729,7 +729,7 @@ export class OrderDatabaseOperations {
         endDate.toISOString(),
       ])
       .andWhereNot("orders.status", "pending")
-      .andWhereNot("orders.orderType", "platform");
+      .andWhere("orders.orderType", "not like", "platform%");
 
     if (orderType) {
       const normalizedOrderType = orderType.toLowerCase().replace(/-/g, "");
@@ -928,7 +928,7 @@ export class OrderDatabaseOperations {
       const offset = page * limit;
       const query = db("orders");
       if (filter.selectedOrderType) {
-        if (filter.selectedOrderType === "platform") {
+        if (filter.selectedOrderType?.toLowerCase().startsWith("platform")) {
           query.where("orderType", "like", "platform%");
         } else {
           const normalizedOrderType = filter.selectedOrderType

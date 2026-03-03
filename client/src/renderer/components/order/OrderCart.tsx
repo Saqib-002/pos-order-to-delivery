@@ -18,6 +18,7 @@ import {
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import {
   generateReceiptHTML,
+  generateItemsReceiptHTML,
   groupItemsByPrinter,
 } from "@/renderer/utils/printer";
 import { useAuth } from "@/renderer/contexts/AuthContext";
@@ -96,6 +97,10 @@ const OrderCart: React.FC<OrderCartProps> = ({
         orderTotal,
       );
       if (printerIsMain === "true") {
+        if (order?.orderType?.toLowerCase().includes("platform")) {
+          continue;
+        }
+
         // Get customer address only for delivery orders
         let customerAddress: string | undefined = undefined;
         if (order?.orderType === "delivery") {
@@ -131,7 +136,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
         receiptHTML = generateReceiptHTML(
           orderItems,
           configurations,
-          order?.orderType === "platform"
+          order?.orderType?.toLowerCase().includes("platform")
             ? order.ticketNumber || order.orderId
             : order!.orderId,
           order?.orderType,
@@ -145,6 +150,17 @@ const OrderCart: React.FC<OrderCartProps> = ({
           user!.name,
           order?.notes,
           paymentStatus.totalPaid,
+        );
+      } else {
+        receiptHTML = generateItemsReceiptHTML(
+          items,
+          configurations,
+          order?.orderType?.toLowerCase().includes("platform")
+            ? order.ticketNumber || order.orderId
+            : order!.orderId,
+          user!.role,
+          paymentStatus.status,
+          t,
         );
       }
       if (!receiptHTML) {
@@ -362,7 +378,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
         <div className="text-4xl mb-2">🛒</div>
         <p className="text-lg font-medium">
           {t("orderCart.yourOrder")}{" "}
-          {order?.orderType === "platform" ? (
+          {order?.orderType?.toLowerCase().includes("platform") ? (
             order.ticketNumber || order.orderId
           ) : (
             <>
@@ -392,7 +408,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
           />
           <h2 className="text-lg font-semibold text-gray-800">
             {t("orderCart.yourOrder")}{" "}
-            {order?.orderType === "platform" ? (
+            {order?.orderType?.toLowerCase().includes("platform") ? (
               order.ticketNumber || order.orderId
             ) : (
               <>
@@ -534,13 +550,13 @@ const OrderCart: React.FC<OrderCartProps> = ({
                     item.productTax -
                     ((item.productPrice + item.productTax) *
                       item.productDiscount) /
-                      100 +
+                    100 +
                     item.variantPrice +
                     (Array.isArray(item.complements)
                       ? item.complements.reduce(
-                          (sum, complement) => sum + complement.price,
-                          0,
-                        )
+                        (sum, complement) => sum + complement.price,
+                        0,
+                      )
                       : 0)) *
                   item.quantity
                 ).toFixed(2)}
@@ -562,9 +578,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
             (itemTotal, item) => {
               const complementsTotal = Array.isArray(item.complements)
                 ? item.complements.reduce(
-                    (sum, complement) => sum + complement.price,
-                    0,
-                  )
+                  (sum, complement) => sum + complement.price,
+                  0,
+                )
                 : 0;
 
               return (
@@ -753,6 +769,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
           type="button"
           className="w-full"
           onClick={onProcessOrder}
+          disabled={order?.orderType?.toLowerCase().includes("platform")}
         />
       </div>
     </div>

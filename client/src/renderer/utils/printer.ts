@@ -326,7 +326,7 @@ export const generateReceiptHTML = (
           html += `
                 <tr>
                     <td class="item-qty"></td>
-                    <td class="item-name sub-item">• ${item.productName}</td>
+                    <td class="item-name sub-item">• ${item.quantity} X ${item.productName}</td>
                     <td class="item-total">${itemSupplementTotal.toFixed(2)}</td>
                 </tr>
           `;
@@ -348,11 +348,20 @@ export const generateReceiptHTML = (
               html += `
                 <tr>
                     <td class="item-qty"></td>
-                    <td class="item-name sub-item indent">${comp.forProduct ? "✓" : "+"} ${comp.itemName}</td>
+                    <td class="item-name sub-item indent">${comp.forProduct ? `( ${item.quantity} X ${comp.itemName} )` : `+ ${comp.itemName}`}</td>
                     <td class="item-total">${compTotal.toFixed(2)}</td>
                 </tr>
               `;
             });
+          }
+
+          if (item.productNote) {
+            html += `
+                <tr>
+                    <td colspan="2" class="italic" style="font-size: 11px; padding: 0;">${t("common.note")}: ${item.productNote}</td>
+                    <td class="item-total"></td>
+                </tr>
+            `;
           }
         });
         if (discountAmountLine > 0) {
@@ -401,11 +410,20 @@ export const generateReceiptHTML = (
             html += `
                 <tr>
                     <td class="item-qty"></td>
-                    <td class="item-name sub-item indent">${comp.forProduct ? "✓" : "+"} ${comp.itemName}</td>
+                    <td class="item-name sub-item indent">${comp.forProduct ? `( ${item.quantity} X ${comp.itemName} )` : `+ ${comp.itemName}`}</td>
                     <td class="item-total">${compTotal.toFixed(2)}</td>
                 </tr>
             `;
           });
+        }
+
+        if (item.productNote) {
+          html += `
+              <tr>
+                  <td colspan="2" class="italic" style="font-size: 11px; padding: 0;">${t("common.note")}: ${item.productNote}</td>
+                  <td class="item-total"></td>
+              </tr>
+          `;
         }
 
         if (discountAmountLine > 0) {
@@ -680,9 +698,13 @@ export const generateItemsReceiptHTML = (
           `;
           item.complements.forEach((comp) => {
             html += `
-                <div class="indent">${comp.forProduct ? "✓" : "+"} ${comp.itemName}</div>
+                <div class="indent">${comp.forProduct ? `( ${item.quantity} X ${comp.itemName} )` : `+ ${comp.itemName}`}</div>
             `;
           });
+
+          if (item.productNote) {
+            html += `<div class="italic" style="font-size: 12px; margin-left: 0;">${t("common.note")}: ${item.productNote}</div>`;
+          }
         });
       });
     } else {
@@ -699,9 +721,13 @@ export const generateItemsReceiptHTML = (
         `;
         item.complements.forEach((comp) => {
           html += `
-                <div class="sub-item bold">${comp.forProduct ? "✓" : "+"} ${comp.itemName}</div>
+                <div class="sub-item bold">${comp.forProduct ? `( ${item.quantity} X ${comp.itemName} )` : `+ ${comp.itemName}`}</div>
           `;
         });
+
+        if (item.productNote) {
+          html += `<div class="italic" style="font-size: 12px; margin-left: 0;">${t("common.note")}: ${item.productNote}</div>`;
+        }
       });
     }
   });

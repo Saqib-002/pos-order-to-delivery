@@ -122,12 +122,7 @@ export const translateOrderType = (orderType: string): string => {
     translationKey = "orderTypes.dineIn";
   }
   // Check for platform variations
-  else if (
-    normalized === "platform" ||
-    normalized === "platform:delivery" ||
-    normalized === "platform:pickup" ||
-    normalized.includes("platform")
-  ) {
+  else if (normalized?.startsWith("platform")) {
     if (normalized === "platform:delivery") {
       translationKey = "orderTypes.platformDelivery";
     } else if (normalized === "platform:pickup") {
@@ -153,7 +148,7 @@ export const getOrderTypeStyle = (orderType: string) => {
   if (normalized === "delivery" || normalized === "platform:delivery") {
     return "bg-orange-100 text-orange-800 border-orange-200";
   }
-  if (normalized === "platform") {
+  if (normalized?.startsWith("platform")) {
     return "bg-pink-100 text-pink-800 border-pink-200";
   }
   return "bg-gray-100 text-gray-800 border-gray-200";

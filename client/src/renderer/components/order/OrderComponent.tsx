@@ -233,7 +233,7 @@ const OrderComponent = () => {
           receiptHTML = generateReceiptHTML(
             orderItems,
             configs,
-            orderData.orderType?.toLowerCase().includes("platform")
+            orderData.orderType?.toLowerCase()?.includes("platform")
               ? order!.ticketNumber || order!.orderId
               : order!.orderId,
             orderData.orderType,
@@ -413,20 +413,17 @@ const OrderComponent = () => {
                   return (
                     <button
                       key={order.id}
-                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${
-                        isAssignedToDelivery ||
-                        order.orderType.includes("platform") ||
-                        isPaid
-                          ? "bg-gray-100 cursor-not-allowed opacity-75"
-                          : order.status === "cancelled"
-                            ? "hover:bg-red-50 cursor-pointer border-red-200"
-                            : "hover:bg-gray-50 cursor-pointer"
-                      }`}
+                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${isAssignedToDelivery ||
+                        (isPaid && !order.orderType?.toLowerCase().includes("platform"))
+                        ? "bg-gray-100 cursor-not-allowed opacity-75"
+                        : order.status === "cancelled"
+                          ? "hover:bg-red-50 cursor-pointer border-red-200"
+                          : "hover:bg-gray-50 cursor-pointer"
+                        }`}
                       onClick={() => handleOrderClick(order)}
                       disabled={
                         isAssignedToDelivery ||
-                        order.orderType.includes("platform") ||
-                        isPaid
+                        (isPaid && !order.orderType?.toLowerCase().includes("platform"))
                       }
                     >
                       <div className="flex flex-col items-start gap-2 flex-1">
@@ -434,7 +431,7 @@ const OrderComponent = () => {
                         <div className="flex items-center justify-between gap-3 w-full">
                           <div className="flex gap-2">
                             <h3 className="font-semibold text-black text-3xl">
-                              {order.orderType.includes("platform") ? (
+                              {order.orderType?.includes("platform") ? (
                                 order.ticketNumber || order.orderId
                               ) : (
                                 <>
@@ -460,11 +457,11 @@ const OrderComponent = () => {
                           <span
                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getOrderTypeStyle(order.orderType || "")}`}
                           >
-                            {order.orderType.includes("platform") &&
-                            order.platformName
+                            {order.orderType?.includes("platform") &&
+                              order.platformName
                               ? order.platformName
                               : translateOrderType(order.orderType || "") ||
-                                t("manageOrders.statuses.notSelected")}
+                              t("manageOrders.statuses.notSelected")}
                           </span>
 
                           {/* Order Status Pill */}
@@ -510,21 +507,21 @@ const OrderComponent = () => {
                                     : order.customer.address
                                   : order.customer.name === "Dine-in Customer"
                                     ? t(
-                                        "orderProcessingModal.defaultCustomers.dineInCustomer",
-                                      )
+                                      "orderProcessingModal.defaultCustomers.dineInCustomer",
+                                    )
                                     : order.customer.name === "Walk-in Customer"
                                       ? t(
-                                          "orderProcessingModal.defaultCustomers.walkInCustomer",
-                                        )
+                                        "orderProcessingModal.defaultCustomers.walkInCustomer",
+                                      )
                                       : order.customer.name
                                 : order.customer.name === "Dine-in Customer"
                                   ? t(
-                                      "orderProcessingModal.defaultCustomers.dineInCustomer",
-                                    )
+                                    "orderProcessingModal.defaultCustomers.dineInCustomer",
+                                  )
                                   : order.customer.name === "Walk-in Customer"
                                     ? t(
-                                        "orderProcessingModal.defaultCustomers.walkInCustomer",
-                                      )
+                                      "orderProcessingModal.defaultCustomers.walkInCustomer",
+                                    )
                                     : order.customer.name}
                             </span>
                             {order.customer.phone && (

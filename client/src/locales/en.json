@@ -25,7 +25,8 @@
       "unpaid": "UNPAID",
       "partial": "PARTIAL",
       "pending": "PENDING"
-    }
+    },
+    "note": "Note"
   },
   "welcome": "Welcome to our website.",
   "configurations": {
@@ -642,6 +643,7 @@
       "priceRequired": "Please enter a valid price",
       "fetchPlatformsError": "Error fetching platforms",
       "createOrderError": "Failed to create platform order",
+      "addressRequired": "Please enter an address for delivery orders",
       "failedToUpdateOrder": "Failed to update order",
       "failedToCancelOrder": "Failed to cancel order"
     },
@@ -819,6 +821,8 @@
     "tax": "Tax",
     "variant": "Variant",
     "total": "Total",
+    "productInstructions": "Product Instructions",
+    "productInstructionsPlaceholder": "Add custom instructions for this product...",
     "addToOrder": "Add to Order",
     "errors": {
       "unableToGetVariants": "Unable to get product's variants",

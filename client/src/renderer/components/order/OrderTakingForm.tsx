@@ -60,6 +60,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [autoAddPending, setAutoAddPending] = useState(false);
+  const [productNote, setProductNote] = useState("");
 
   const getVariantAndGroups = async () => {
     try {
@@ -101,23 +102,23 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       const allowedGroupIds = new Set(filteredGroups.map((g: any) => g.id));
       const filteredAddonPages = isMenuMode
         ? groupRes.data
-            .filter((page: any) => allowedGroupIds.has(page.selectedGroup))
-            .map((page: any) => ({
-              id: page.id,
-              minComplements: page.minComplements,
-              maxComplements: page.maxComplements,
-              freeAddons: page.freeAddons,
-              selectedGroup: page.selectedGroup,
-              pageNo: page.pageNo,
-            }))
-        : groupRes.data.map((page: any) => ({
+          .filter((page: any) => allowedGroupIds.has(page.selectedGroup))
+          .map((page: any) => ({
             id: page.id,
             minComplements: page.minComplements,
             maxComplements: page.maxComplements,
             freeAddons: page.freeAddons,
             selectedGroup: page.selectedGroup,
             pageNo: page.pageNo,
-          }));
+          }))
+        : groupRes.data.map((page: any) => ({
+          id: page.id,
+          minComplements: page.minComplements,
+          maxComplements: page.maxComplements,
+          freeAddons: page.freeAddons,
+          selectedGroup: page.selectedGroup,
+          pageNo: page.pageNo,
+        }));
       setAddonPages(filteredAddonPages);
 
       if (res.data.length > 0) {
@@ -162,8 +163,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         }
       });
       setSelectedComplements(newSelections);
+      setProductNote(editingProduct.productNote || "");
     } else if (!editingProduct) {
       setSelectedComplements({});
+      setProductNote("");
     }
   }, [addOnPages, editingProduct]);
   const handleComplementToggle = (groupId: string, itemId: string) => {
@@ -239,8 +242,8 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
   };
   const generateTempId = () =>
     typeof globalThis !== "undefined" &&
-    globalThis.crypto &&
-    "randomUUID" in globalThis.crypto
+      globalThis.crypto &&
+      "randomUUID" in globalThis.crypto
       ? globalThis.crypto.randomUUID()
       : Math.random().toString(36).substring(2, 11);
 
@@ -320,6 +323,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         subCategoryPriority:
           (selectedMenu as any).subcategoryPriority ??
           (selectedProduct as any).subcategoryPriority,
+        productNote,
       };
 
       const stagedItem: OrderItem = {
@@ -383,7 +387,23 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       totalPrice: calculateTotalPrice(),
       subCategoryName: (selectedProduct as any).subcategoryName,
       subCategoryPriority: (selectedProduct as any).subcategoryPriority,
+      productNote,
     };
+
+    if (order?.orderType?.toLowerCase().includes("platform")) {
+      orderItem.productPrice = 0;
+      orderItem.productTax = 0;
+      orderItem.variantPrice = 0;
+      orderItem.productDiscount = 0;
+      orderItem.totalPrice = 0;
+      if (orderItem.complements) {
+        orderItem.complements = orderItem.complements.map((c) => ({
+          ...c,
+          price: 0,
+        }));
+      }
+    }
+
     const newComplement = ComplementsToString(orderItem.complements);
     if (editingProduct) {
       const res = await (window as any).electronAPI.updateOrderItem(
@@ -512,11 +532,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                 {variantItems.map((item) => (
                   <label
                     key={item.id}
-                    className={`group relative flex flex-col p-2 border-2 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md touch-manipulation ${
-                      selectedVariant?.id === item.id
-                        ? "border-gray-500 bg-gray-50 shadow-md"
-                        : "border-gray-200 hover:border-gray-300 bg-white"
-                    }`}
+                    className={`group relative flex flex-col p-2 border-2 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md touch-manipulation ${selectedVariant?.id === item.id
+                      ? "border-gray-500 bg-gray-50 shadow-md"
+                      : "border-gray-200 hover:border-gray-300 bg-white"
+                      }`}
                   >
                     <input
                       type="radio"
@@ -578,11 +597,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
 
                       {/* Selection Indicator */}
                       <div
-                        className={`absolute top-1 right-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                          selectedVariant?.id === item.id
-                            ? "border-gray-500 bg-gray-500"
-                            : "border-white bg-white shadow-sm group-hover:border-gray-400"
-                        }`}
+                        className={`absolute top-1 right-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedVariant?.id === item.id
+                          ? "border-gray-500 bg-gray-500"
+                          : "border-white bg-white shadow-sm group-hover:border-gray-400"
+                          }`}
                       >
                         {selectedVariant?.id === item.id && (
                           <div className="w-3 h-3 bg-white rounded-full"></div>
@@ -652,20 +670,18 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                     <div className="flex flex-wrap gap-2">
                       {page.minComplements > 0 && (
                         <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${
-                            (selectedComplements[group.id]?.length || 0) >=
+                          className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${(selectedComplements[group.id]?.length || 0) >=
                             page.minComplements
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                            }`}
                         >
                           <div
-                            className={`size-[14px] p-[2px] ${
-                              (selectedComplements[group.id]?.length || 0) >=
+                            className={`size-[14px] p-[2px] ${(selectedComplements[group.id]?.length || 0) >=
                               page.minComplements
-                                ? "bg-green-600"
-                                : "bg-red-600"
-                            } flex items-center justify-center rounded-full`}
+                              ? "bg-green-600"
+                              : "bg-red-600"
+                              } flex items-center justify-center rounded-full`}
                           >
                             <CheckIcon className="size-2 text-white" />
                           </div>
@@ -705,11 +721,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                             onClick={() =>
                               handleComplementToggle(group.id, item.id)
                             }
-                            className={`group relative flex flex-col p-3 border-2 rounded-lg text-left transition-all duration-200 hover:shadow-md touch-manipulation ${
-                              isSelected
-                                ? "border-gray-500 bg-gray-50 shadow-md"
-                                : "border-gray-200 hover:border-gray-300 bg-white"
-                            }`}
+                            className={`group relative flex flex-col p-3 border-2 rounded-lg text-left transition-all duration-200 hover:shadow-md touch-manipulation ${isSelected
+                              ? "border-gray-500 bg-gray-50 shadow-md"
+                              : "border-gray-200 hover:border-gray-300 bg-white"
+                              }`}
                           >
                             {/* Image Section */}
                             <div className="relative mb-2">
@@ -763,11 +778,10 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
 
                               {/* Selection Indicator */}
                               <div
-                                className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                                  isSelected
-                                    ? "border-gray-500 bg-gray-500"
-                                    : "border-gray-300 bg-white shadow-sm group-hover:border-gray-400"
-                                }`}
+                                className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected
+                                  ? "border-gray-500 bg-gray-500"
+                                  : "border-gray-300 bg-white shadow-sm group-hover:border-gray-400"
+                                  }`}
                               >
                                 {isSelected && (
                                   <CheckIcon className="size-3 text-white" />
@@ -830,6 +844,36 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
               </div>
             </div>
           )}
+
+          {/* Product Note Section */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg
+                  className="size-4 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-black">
+                {t("orderTakingForm.productInstructions")}
+              </h3>
+            </div>
+            <textarea
+              value={productNote}
+              onChange={(e) => setProductNote(e.target.value)}
+              placeholder={t("orderTakingForm.productInstructionsPlaceholder")}
+              className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-gray-500 focus:outline-none transition-colors duration-200 resize-none h-24 text-gray-700"
+            />
+          </div>
 
           {/* Price Breakdown */}
           {!currentOrderItem?.menuId && (
