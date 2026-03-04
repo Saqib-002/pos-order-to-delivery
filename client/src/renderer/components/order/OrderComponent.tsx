@@ -3,6 +3,7 @@ import OrderCart from "./OrderCart";
 import OrderProcessingModal from "./OrderProcessingModal";
 import RefundProcessingModal from "./modals/RefundProcessingModal";
 import PrintConfirmationModal from "./modals/PrintConfirmationModal";
+import OrderDetailsModal from "./modals/OrderDetailsModal";
 import { useOrder } from "../../contexts/OrderContext";
 import { toast } from "react-toastify";
 import { Order, OrderItem } from "@/types/order";
@@ -24,6 +25,7 @@ import {
   translateOrderType,
   getOrderTypeStyle,
 } from "@/renderer/utils/orderStatus";
+import { EyeIcon } from "@/renderer/public/Svg";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
@@ -56,9 +58,28 @@ const OrderComponent = () => {
   const [isPrintConfirmationModalOpen, setIsPrintConfirmationModalOpen] =
     useState(false);
   const [postProcessOrderData, setPostProcessOrderData] = useState<any>(null);
+  const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false);
+  const [selectedOrderForDetails, setSelectedOrderForDetails] = useState<Order | null>(null);
+  const [platforms, setPlatforms] = useState<Array<{ id: string; name: string }>>([]);
+
   const {
     auth: { token, user },
   } = useAuth();
+
+  useEffect(() => {
+    const fetchPlatforms = async () => {
+      try {
+        const res = await (window as any).electronAPI.getAllPlatforms(token);
+        if (res.status) {
+          setPlatforms(res.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching platforms:", error);
+      }
+    };
+    fetchPlatforms();
+  }, [token]);
+
   useEffect(() => {
     if (orderItems.length == 0) {
       refreshOrdersCallback();
@@ -315,17 +336,16 @@ const OrderComponent = () => {
     setPostProcessOrderData(null);
   };
   const handleOrderClick = async (order: Order) => {
+    if (order.status === "cancelled") {
+      handleRefundClick(order);
+      return;
+    }
+
     // Check if order is assigned to a delivery person
     if (order.deliveryPerson && order.deliveryPerson.id) {
       toast.info(
         "This order is assigned to a delivery person and cannot be edited. It can only be viewed.",
       );
-      return;
-    }
-
-    // Handle cancelled orders for refund
-    if (order.status === "cancelled") {
-      handleRefundClick(order);
       return;
     }
 
@@ -338,6 +358,10 @@ const OrderComponent = () => {
         });
       });
     }
+  };
+  const handleViewDetails = (order: Order) => {
+    setSelectedOrderForDetails(order);
+    setIsOrderDetailsModalOpen(true);
   };
 
   const handleRefundClick = (order: Order) => {
@@ -419,21 +443,20 @@ const OrderComponent = () => {
                     order.deliveryPerson && order.deliveryPerson.id,
                   );
                   const isPaid = paymentStatus.status === "PAID";
+                  const isPlatform = order.orderType?.toLowerCase().includes("platform");
+                  const isCancelled = order.status === "cancelled";
+                  const isLocked = (isAssignedToDelivery || (isPaid && !isPlatform)) && !isCancelled;
+
                   return (
-                    <button
+                    <div
                       key={order.id}
-                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 ${isAssignedToDelivery ||
-                        (isPaid && !order.orderType?.toLowerCase().includes("platform"))
-                        ? "bg-gray-100 cursor-not-allowed opacity-75"
-                        : order.status === "cancelled"
+                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 relative ${isLocked
+                        ? "bg-gray-100 opacity-75"
+                        : isCancelled
                           ? "hover:bg-red-50 cursor-pointer border-red-200"
                           : "hover:bg-gray-50 cursor-pointer"
                         }`}
-                      onClick={() => handleOrderClick(order)}
-                      disabled={
-                        isAssignedToDelivery ||
-                        (isPaid && !order.orderType?.toLowerCase().includes("platform"))
-                      }
+                      onClick={() => !isLocked && handleOrderClick(order)}
                     >
                       <div className="flex flex-col items-start gap-2 flex-1">
                         {/* Order Number and Total*/}
@@ -541,7 +564,19 @@ const OrderComponent = () => {
                           </div>
                         )}
                       </div>
-                    </button>
+                      {((isLocked && !isPlatform) || isCancelled) && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewDetails(order);
+                          }}
+                          className="p-1 bg-white rounded-full shadow-sm hover:bg-blue-50 text-black transition-all duration-200 cursor-pointer border border-blue-100 flex items-center justify-center"
+                          title={t("manageOrders.actions.viewOrder")}
+                        >
+                          <EyeIcon className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -609,6 +644,17 @@ const OrderComponent = () => {
         onClose={() => handlePrintConfirm("cancel")}
         onConfirm={handlePrintConfirm}
       />
+      {isOrderDetailsModalOpen && selectedOrderForDetails && (
+        <OrderDetailsModal
+          order={selectedOrderForDetails}
+          onClose={() => {
+            setIsOrderDetailsModalOpen(false);
+            setSelectedOrderForDetails(null);
+          }}
+          view="manage"
+          platforms={platforms}
+        />
+      )}
     </>
   );
 };
