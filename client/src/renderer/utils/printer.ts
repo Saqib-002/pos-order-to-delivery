@@ -31,19 +31,26 @@ export const fetchPrinters = async (
   setPrinters(res.data);
 };
 export const groupItemsByPrinter = (
-  items: OrderItem[]
+  items: OrderItem[],
+  orderType?: string
 ): Record<string, OrderItem[]> => {
   const printerGroups: Record<string, OrderItem[]> = {};
+  const isPlatform = orderType?.toLowerCase()?.includes("platform");
+
   items.forEach((item) => {
     item.printers?.forEach((printerStr) => {
-      const parts= printerStr.split("|");
+      const parts = printerStr.split("|");
+      if (parts.length < 3) return;
       const printerName = parts[1];
-      const printerIsMain = parts[2];
-      if(parts.length<3) return;
-      if (!printerGroups[`${printerName}|${printerIsMain}`]) {
-        printerGroups[`${printerName}|${printerIsMain}`] = [];
+      const printerIsMainValue = parts[2];
+      const isMain = printerIsMainValue === "true";
+
+      if (isPlatform && !isMain) return;
+
+      if (!printerGroups[`${printerName}|${printerIsMainValue}`]) {
+        printerGroups[`${printerName}|${printerIsMainValue}`] = [];
       }
-      printerGroups[`${printerName}|${printerIsMain}`].push(item);
+      printerGroups[`${printerName}|${printerIsMainValue}`].push(item);
     });
   });
 
@@ -471,7 +478,7 @@ export const generateReceiptHTML = (
             <div class="client-details">
                 <div class="client-details-header">${t("receipt.clientDetails")}</div>
                 ${customerName ? `<div class="bold">${customerName}</div>` : ""}
-                ${customerAddress ? `<div>${customerAddress}</div>` : ""}
+                ${customerAddress ? `<div style="font-size:14px">${customerAddress}</div>` : ""}
                 ${customerPhone ? `<div>${customerPhone}</div>` : ""}
                 ${pickupTime ? `<div><span class="bold">${t("receipt.pickupTime")}:</span> ${pickupTime}</div>` : ""}
                 ${notes ? `<div style="margin-top:5px;"><span class="bold">${t("receipt.notes")}:</span> ${notes}</div>` : ""}
@@ -697,7 +704,7 @@ export const generateItemsReceiptHTML = (
               : "";
           html += `
                 <div class="sub-item bold">
-                • ${item.quantity}x ${item.productName}${supplementText}
+                • ${item.quantity}x ${item.productName}
                 </div>
                 ${
                   item.variantName && item.variantId

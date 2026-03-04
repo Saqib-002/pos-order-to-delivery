@@ -68,7 +68,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     auth: { user, token },
   } = useAuth();
   const handlePrint = async () => {
-    const printerGroups = groupItemsByPrinter(orderItems);
+    const printerGroups = groupItemsByPrinter(orderItems, order?.orderType);
     if (!Object.keys(printerGroups).length) {
       toast.warn(t("orderCart.warnings.noPrintersAttached"));
       return;
@@ -98,59 +98,66 @@ const OrderCart: React.FC<OrderCartProps> = ({
       );
       if (printerIsMain === "true") {
         if (order?.orderType?.toLowerCase().includes("platform")) {
-          continue;
-        }
-
-        // Get customer address only for delivery orders
-        let customerAddress: string | undefined = undefined;
-        if (order?.orderType === "delivery") {
-          if (order?.customer?.address && order.customer.address.trim()) {
-            customerAddress = order.customer.address.includes("|")
-              ? formatAddress(order.customer.address)
-              : order.customer.address;
+          receiptHTML = generateItemsReceiptHTML(
+            items,
+            configurations,
+            order,
+            user!.role,
+            paymentStatus.status,
+            t,
+          );
+        } else {
+          // Get customer address only for delivery orders
+          let customerAddress: string | undefined = undefined;
+          if (order?.orderType === "delivery") {
+            if (order?.customer?.address && order.customer.address.trim()) {
+              customerAddress = order.customer.address.includes("|")
+                ? formatAddress(order.customer.address)
+                : order.customer.address;
+            }
           }
-        }
 
-        // Get pickup time and format it
-        let formattedPickupTime: string | undefined = undefined;
-        if (order?.orderType === "pickup" && order.pickupTime) {
-          try {
-            const pickupDate = new Date(order.pickupTime);
-            if (!isNaN(pickupDate.getTime())) {
-              formattedPickupTime = pickupDate.toLocaleTimeString("es-ES", {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
-            } else {
+          // Get pickup time and format it
+          let formattedPickupTime: string | undefined = undefined;
+          if (order?.orderType === "pickup" && order.pickupTime) {
+            try {
+              const pickupDate = new Date(order.pickupTime);
+              if (!isNaN(pickupDate.getTime())) {
+                formattedPickupTime = pickupDate.toLocaleTimeString("es-ES", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+              } else {
+                formattedPickupTime = order.pickupTime;
+              }
+            } catch (e) {
               formattedPickupTime = order.pickupTime;
             }
-          } catch (e) {
-            formattedPickupTime = order.pickupTime;
           }
+
+          // Get customer phone
+          const customerPhone = order?.customer?.phone;
+          const customerName = order?.customer?.name;
+
+          receiptHTML = generateReceiptHTML(
+            orderItems,
+            configurations,
+            order?.orderType?.toLowerCase().includes("platform")
+              ? order.ticketNumber || order.orderId
+              : order!.orderId,
+            order?.orderType,
+            user!.role,
+            paymentStatus.status,
+            t,
+            customerAddress,
+            formattedPickupTime,
+            customerPhone,
+            customerName,
+            user!.name,
+            order?.notes,
+            paymentStatus.totalPaid,
+          );
         }
-
-        // Get customer phone
-        const customerPhone = order?.customer?.phone;
-        const customerName = order?.customer?.name;
-
-        receiptHTML = generateReceiptHTML(
-          orderItems,
-          configurations,
-          order?.orderType?.toLowerCase().includes("platform")
-            ? order.ticketNumber || order.orderId
-            : order!.orderId,
-          order?.orderType,
-          user!.role,
-          paymentStatus.status,
-          t,
-          customerAddress,
-          formattedPickupTime,
-          customerPhone,
-          customerName,
-          user!.name,
-          order?.notes,
-          paymentStatus.totalPaid,
-        );
       } else {
         receiptHTML = generateItemsReceiptHTML(
           items,

@@ -231,6 +231,16 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                               </td>
                             </tr>
                           ))}
+                          {item.productNote && (
+                            <tr>
+                              <td></td>
+                              <td className="pl-8 text-xs italic text-gray-500">
+                                {t("common.note")}: {item.productNote}
+                              </td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                          )}
                         </React.Fragment>
                       );
                     })}
@@ -292,6 +302,16 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         <td className="text-right">€{comp.price.toFixed(2)}</td>
                       </tr>
                     ))}
+                    {item.productNote && (
+                      <tr>
+                        <td></td>
+                        <td className="pl-5 text-xs italic text-gray-500">
+                          {t("common.note")}: {item.productNote}
+                        </td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    )}
                   </React.Fragment>
                 );
               })}

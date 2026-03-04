@@ -112,7 +112,7 @@ const OrderComponent = () => {
 
     // Automatically print receipts after processing
     try {
-      const printerGroups = groupItemsByPrinter(orderItems);
+      const printerGroups = groupItemsByPrinter(orderItems, orderData.orderType);
       if (!Object.keys(printerGroups).length) {
         toast.warn(t("orderCart.warnings.noPrintersAttached"));
         clearOrder();
@@ -228,24 +228,35 @@ const OrderComponent = () => {
             orderData.customerPhone || order?.customer?.phone;
           const customerName = orderData.customerName || order?.customer?.name;
 
-          receiptHTML = generateReceiptHTML(
-            orderItems,
-            configs,
-            orderData.orderType?.toLowerCase()?.includes("platform")
-              ? order!.ticketNumber || order!.orderId
-              : order!.orderId,
-            orderData.orderType,
-            user!.role,
-            paymentStatus.status,
-            t,
-            customerAddress,
-            formattedPickupTime,
-            customerPhone,
-            customerName,
-            user!.name,
-            orderData.notes,
-            paymentStatus.totalPaid,
-          );
+          if (orderData.orderType?.toLowerCase()?.includes("platform")) {
+            receiptHTML = generateItemsReceiptHTML(
+              orderItems,
+              configs,
+              { ...order, ...orderData },
+              user!.role,
+              paymentStatus.status,
+              t,
+            );
+          } else {
+            receiptHTML = generateReceiptHTML(
+              orderItems,
+              configs,
+              orderData.orderType?.toLowerCase()?.includes("platform")
+                ? order!.ticketNumber || order!.orderId
+                : order!.orderId,
+              orderData.orderType,
+              user!.role,
+              paymentStatus.status,
+              t,
+              customerAddress,
+              formattedPickupTime,
+              customerPhone,
+              customerName,
+              user!.name,
+              orderData.notes,
+              paymentStatus.totalPaid,
+            );
+          }
         } else {
           const unprintedItems = items.filter(
             (item: OrderItem) => !item.isKitchenPrinted,

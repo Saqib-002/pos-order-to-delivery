@@ -287,8 +287,14 @@ export class ProductsDatabaseOperations {
     static async getProductById(productId: string) {
         try {
             const product = await db("products")
-                .where("id", productId)
-                .select("products.*")
+                .join(
+                    "sub_categories",
+                    "products.subcategoryId",
+                    "=",
+                    "sub_categories.id"
+                )
+                .where("products.id", productId)
+                .select("products.*", "sub_categories.name as subcategoryName", "sub_categories.priority as subcategoryPriority")
                 .first();
             const productPrinters = await db("printers_products")
                 .join(

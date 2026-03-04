@@ -73,6 +73,12 @@ export class OrderDatabaseOperations {
           ? parseFloat(item.menuDiscount)
           : undefined,
         supplement: item.supplement ? parseFloat(item.supplement) : undefined,
+        subCategoryName: item.subCategoryName || "",
+        subCategoryPriority: item.subCategoryPriority
+          ? parseInt(item.subCategoryPriority)
+          : 0,
+        isKitchenPrinted: item.isKitchenPrinted === 1 || item.isKitchenPrinted === true,
+        productNote: item.productNote || "",
         printers: item.printers
           ? typeof item.printers === "string"
             ? item.printers.split("=")

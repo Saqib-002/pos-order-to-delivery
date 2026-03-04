@@ -212,8 +212,11 @@ export const ManageOrdersView = () => {
   };
 
   const handlePrintOrder = async (order: Order) => {
+    if (order.orderType?.toLowerCase().includes("platform")) {
+      return;
+    }
     try {
-      const printerGroups = groupItemsByPrinter(order.items || []);
+      const printerGroups = groupItemsByPrinter(order.items || [], order.orderType);
       if (!Object.keys(printerGroups).length) {
         toast.warn(t("orderCart.warnings.noPrintersAttached"));
         return;

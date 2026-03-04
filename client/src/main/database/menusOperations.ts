@@ -82,8 +82,15 @@ export class MenusOperations {
     }
     static async getMenuById(id: string): Promise<Menu> {
         try {
-            const menu = await db("menus").where("id", id).first();
-            return {...menu, imgUrl: `${menu.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${menu.imgUrl}` : ""}`};
+            const menu = await db("menus")
+                .leftJoin("sub_categories", "menus.subcategoryId", "sub_categories.id")
+                .where("menus.id", id)
+                .select("menus.*", "sub_categories.name as subcategoryName", "sub_categories.priority as subcategoryPriority")
+                .first();
+            return {
+                ...menu,
+                imgUrl: `${menu.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${menu.imgUrl}` : ""}`,
+            };
         } catch (error) {
             throw error;
         }
