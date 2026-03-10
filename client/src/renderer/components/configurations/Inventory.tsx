@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AddIcon, DeleteIcon, EditIcon, EyeIcon } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
+import CustomInput from "../shared/CustomInput";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { toast } from "react-toastify";
 import { InventoryProductModal } from "./Modals/InventoryProductModal";
@@ -30,6 +31,7 @@ const fetchInventoryProducts = async (
 
 const Inventory = () => {
   const [inventoryProducts, setInventoryProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showInventoryProductModal, setShowInventoryProductModal] =
     useState(false);
   const [mode, setMode] = useState<"add" | "edit" | "view">("add");
@@ -93,6 +95,15 @@ const Inventory = () => {
     setMode("add");
   };
 
+  const filteredProducts = inventoryProducts.filter((product: any) => {
+    const searchLower = searchTerm.toLowerCase();
+    const matchesName = product.name.toLowerCase().includes(searchLower);
+    const matchesExpenseType = product.expenseType?.name
+      ?.toLowerCase()
+      .includes(searchLower);
+    return matchesName || matchesExpenseType;
+  });
+
   return (
     <div className="relative">
       {showInventoryProductModal && (
@@ -133,11 +144,27 @@ const Inventory = () => {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-black mb-4">
-            {t("inventory.productsList")}
-          </h3>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+            <h3 className="text-lg font-semibold text-black">
+              {t("inventory.productsList")}
+            </h3>
+            <div className="w-full md:w-64">
+              <CustomInput
+                name="search"
+                type="text"
+                placeholder={t("inventory.searchPlaceholder")}
+                value={searchTerm}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSearchTerm(e.target.value)
+                }
+                inputClasses="py-1.5!"
+              />
+            </div>
+          </div>
           {inventoryProducts.length === 0 ? (
             <p className="text-gray-500">{t("inventory.noProducts")}</p>
+          ) : filteredProducts.length === 0 ? (
+            <p className="text-gray-500">{t("inventory.noResultsFound")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -158,7 +185,7 @@ const Inventory = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {inventoryProducts.map((product: any) => (
+                  {filteredProducts.map((product: any) => (
                     <tr key={product.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
                         {product.name}

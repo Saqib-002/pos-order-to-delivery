@@ -33,6 +33,7 @@ export const DeliveryManagement = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedVehicleType, setSelectedVehicleType] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const {
@@ -181,10 +182,10 @@ export const DeliveryManagement = () => {
           res.error.includes("UNIQUE constraint failed: delivery_persons.email")
             ? t("deliveryManagement.errors.emailExists")
             : t(
-                isEditing
-                  ? "deliveryManagement.errors.updateFailed"
-                  : "deliveryManagement.errors.addFailed"
-              )
+              isEditing
+                ? "deliveryManagement.errors.updateFailed"
+                : "deliveryManagement.errors.addFailed"
+            )
         );
         return;
       }
@@ -288,11 +289,15 @@ export const DeliveryManagement = () => {
       const matchesVehicleType =
         selectedVehicleType === "all" ||
         person.vehicleType === selectedVehicleType;
+      const matchesStatus =
+        selectedStatus === "all" ||
+        (selectedStatus === "active" && (person as any).isActive !== false) ||
+        (selectedStatus === "inactive" && (person as any).isActive === false);
       const matchesSearch =
         person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         person.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         person.phone?.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesVehicleType && matchesSearch;
+      return matchesVehicleType && matchesStatus && matchesSearch;
     }
   );
 
@@ -351,11 +356,10 @@ export const DeliveryManagement = () => {
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            (person as any).isActive !== false
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${(person as any).isActive !== false
+            ? "bg-green-100 text-green-800"
+            : "bg-red-100 text-red-800"
+            }`}
         >
           {(person as any).isActive !== false
             ? t("deliveryManagement.active")
@@ -381,18 +385,18 @@ export const DeliveryManagement = () => {
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2">
         <CustomButton
           type="button"
-          label={t("deliveryManagement.edit")}
+          // label={t("deliveryManagement.edit")}
           variant="transparent"
           onClick={() => handleEditDeliveryPerson(person as DeliveryPerson)}
-          Icon={<EditIcon className="size-4" />}
+          Icon={<EditIcon className="size-5" />}
           className="text-black hover:text-black hover:bg-gray-50 hover:scale-105 !px-2 !py-1 !gap-1"
         />
         <CustomButton
           type="button"
-          label={t("deliveryManagement.delete")}
+          // label={t("deliveryManagement.delete")}
           variant="transparent"
           onClick={() => person.id && handleDeleteDeliveryPerson(person.id)}
-          Icon={<DeleteIcon className="size-4" />}
+          Icon={<DeleteIcon className="size-5" />}
           className="text-red-600 hover:text-red-900 hover:bg-red-50 hover:scale-105 !px-2 !py-1 !gap-1"
         />
       </td>
@@ -503,6 +507,17 @@ export const DeliveryManagement = () => {
                 />
               )
             )}
+          </div>
+          <div className="flex gap-2 border-l border-gray-200 pl-4">
+            {["all", "active", "inactive"].map((status) => (
+              <CustomButton
+                key={status}
+                type="button"
+                label={t(`deliveryManagement.${status}`)}
+                onClick={() => setSelectedStatus(status)}
+                variant={selectedStatus !== status ? "secondary" : "primary"}
+              />
+            ))}
           </div>
         </div>
 

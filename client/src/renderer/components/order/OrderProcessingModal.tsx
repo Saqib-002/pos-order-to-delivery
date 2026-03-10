@@ -309,6 +309,29 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         ? existingPaymentType
         : paymentData.paymentType || existingPaymentType || "pending";
 
+    const isTransitioningToNonDelivery = (orderType === "pickup" || orderType === "dine-in") && order?.orderType === "delivery";
+    const isTransitioningToDelivery = orderType === "delivery" && (order?.orderType === "pickup" || order?.orderType === "dine-in");
+
+    let finalStatus = order?.status === "pending" ? "sent to kitchen" : (order?.status || "sent to kitchen");
+    let deliveryPerson: any = order?.deliveryPerson;
+    let assignedAt: any = order?.assignedAt;
+    let deliveredAt: any = order?.deliveredAt;
+
+    if (isTransitioningToNonDelivery) {
+      if (finalStatus === "ready for delivery" || finalStatus === "out for delivery") {
+        finalStatus = "completed";
+      }
+      deliveryPerson = null;
+      assignedAt = null;
+      deliveredAt = null;
+    } else if (isTransitioningToDelivery) {
+      if (finalStatus === "completed") {
+        finalStatus = "ready for delivery";
+        assignedAt = null;
+        deliveredAt = null;
+      }
+    }
+
     const orderData = {
       customerName,
       customerPhone,
@@ -323,10 +346,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             : t("orderProcessingModal.defaultCustomers.inStore"),
       orderType,
       paymentType: resolvedPaymentType,
-      status:
-        order?.status === "pending"
-          ? "sent to kitchen"
-          : order?.status || "sent to kitchen",
+      status: finalStatus,
+      deliveryPerson: deliveryPerson,
+      assignedAt,
+      deliveredAt,
       notes: notes || "",
       pickupTime:
         orderType === "pickup" && pickupTime ? pickupTime.format("HH:mm") : "",

@@ -428,6 +428,8 @@
     "manageDescription": "Add and manage suppliers for market purchases",
     "suppliersList": "Suppliers List",
     "noSuppliers": "No suppliers added yet. Add one above.",
+    "searchPlaceholder": "Search suppliers...",
+    "noResultsFound": "No suppliers found matching your search.",
     "table": {
       "supplierName": "Supplier Name",
       "createdAt": "Created At",
@@ -471,6 +473,8 @@
     "manageDescription": "Add and manage expense types for market purchases",
     "expenseTypesList": "Expense Types List",
     "noExpenseTypes": "No expense types added yet. Add one above.",
+    "searchPlaceholder": "Search expense types...",
+    "noResultsFound": "No expense types found matching your search.",
     "table": {
       "expenseTypeName": "Expense Type Name",
       "createdAt": "Created At",
@@ -559,6 +563,8 @@
     "addProduct": "Add Product",
     "productsList": "Products List",
     "noProducts": "No products added yet. Add one above.",
+    "searchPlaceholder": "Search products...",
+    "noResultsFound": "No products found matching your search.",
     "table": {
       "productName": "Product Name",
       "expenseType": "Expense Type",
@@ -1328,7 +1334,8 @@
       "failedToCancelOrder": "Failed to cancel order",
       "orderCancelled": "Order cancelled successfully",
       "deliveryPersonChanged": "Delivery person changed successfully",
-      "failedToChangeDeliveryPerson": "Failed to change delivery person"
+      "failedToChangeDeliveryPerson": "Failed to change delivery person",
+      "currentlyAssignedTo": "Currently assigned to"
     }
   },
   "kitchenView": {
@@ -2097,6 +2104,11 @@
       "endDate": "End Date",
       "allSuppliers": "All Suppliers",
       "allExpenseTypes": "All Expense Types",
+      "paymentStatus": "Payment Status",
+      "allPayments": "All Payments",
+      "paid": "Paid",
+      "unpaid": "Unpaid",
+      "partial": "Partial",
       "clearFilters": "Clear Filters"
     },
     "table": {

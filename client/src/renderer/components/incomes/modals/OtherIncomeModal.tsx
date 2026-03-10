@@ -158,6 +158,10 @@ export const OtherIncomeModal = ({
   const handleNext = () => {
     if (currentStep === 1) {
       if (validateStep1()) {
+        setFormData((prev) => ({
+          ...prev,
+          total: parseFloat(totalRaw) || 0,
+        }));
         setCurrentStep(2);
       }
     }
@@ -178,8 +182,8 @@ export const OtherIncomeModal = ({
     const paymentTypeString =
       paymentMethods.length > 0
         ? paymentMethods
-            .map((method) => `${method.type}:${method.amount}`)
-            .join(", ")
+          .map((method) => `${method.type}:${method.amount}`)
+          .join(", ")
         : "";
 
     // Get the selected income source name
@@ -263,7 +267,13 @@ export const OtherIncomeModal = ({
           type="number"
           step="0.01"
           value={totalRaw}
-          onChange={(e) => setTotalRaw(e.target.value)}
+          onChange={(e) => {
+            setTotalRaw(e.target.value);
+            setFormData((prev) => ({
+              ...prev,
+              total: parseFloat(e.target.value) || 0,
+            }));
+          }}
           min="0"
         />
         <div className="md:col-span-2">
@@ -294,9 +304,8 @@ export const OtherIncomeModal = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div
-        className={`bg-white rounded-2xl shadow-2xl w-full flex flex-col max-h-[90vh] ${
-          currentStep === 1 ? "max-w-2xl" : "max-w-xl"
-        }`}
+        className={`bg-white rounded-2xl shadow-2xl w-full flex flex-col max-h-[90vh] ${currentStep === 1 ? "max-w-2xl" : "max-w-xl"
+          }`}
       >
         <div className="bg-linear-to-r from-black to-gray-800 px-8 py-6 text-white rounded-t-2xl flex justify-between items-center shrink-0">
           <div>
@@ -309,13 +318,12 @@ export const OtherIncomeModal = ({
               {[1, 2].map((step) => (
                 <div
                   key={step}
-                  className={`h-2 rounded-full transition-all ${
-                    currentStep === step
+                  className={`h-2 rounded-full transition-all ${currentStep === step
                       ? "bg-white w-8"
                       : currentStep > step
                         ? "bg-gray-400 w-6"
                         : "bg-gray-600 w-6"
-                  }`}
+                    }`}
                 />
               ))}
             </div>

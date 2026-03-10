@@ -194,6 +194,8 @@
     "manageDescription": "Agregar y gestionar proveedores para compras de mercado",
     "suppliersList": "Lista de Proveedores",
     "noSuppliers": "No se han agregado proveedores todavía. Agrega uno arriba.",
+    "searchPlaceholder": "Buscar proveedores...",
+    "noResultsFound": "No se encontraron proveedores que coincidan con su búsqueda.",
     "table": {
       "supplierName": "Nombre del Proveedor",
       "createdAt": "Fecha de Creación",
@@ -237,6 +239,8 @@
     "manageDescription": "Agregar y gestionar tipos de gasto para compras de mercado",
     "expenseTypesList": "Lista de Tipos de Gasto",
     "noExpenseTypes": "No se han agregado tipos de gasto todavía. Agrega uno arriba.",
+    "searchPlaceholder": "Buscar tipos de gasto...",
+    "noResultsFound": "No se encontraron tipos de gasto que coincidan con su búsqueda.",
     "table": {
       "expenseTypeName": "Nombre del Tipo de Gasto",
       "createdAt": "Fecha de Creación",
@@ -325,6 +329,8 @@
     "addProduct": "Agregar Producto",
     "productsList": "Lista de Productos",
     "noProducts": "Aún no se han agregado productos. Agregue uno arriba.",
+    "searchPlaceholder": "Buscar productos...",
+    "noResultsFound": "No se encontraron productos que coincidan con su búsqueda.",
     "table": {
       "productName": "Nombre del Producto",
       "expenseType": "Tipo de Gasto",
@@ -1329,7 +1335,8 @@
       "failedToCancelOrder": "Error al cancelar el pedido",
       "orderCancelled": "Pedido cancelado exitosamente",
       "deliveryPersonChanged": "Repartidor cambiado exitosamente",
-      "failedToChangeDeliveryPerson": "Error al cambiar el repartidor"
+      "failedToChangeDeliveryPerson": "Error al cambiar el repartidor",
+      "currentlyAssignedTo": "Asignado actualmente a"
     }
   },
   "kitchenView": {
@@ -2098,6 +2105,11 @@
       "endDate": "Fecha de Fin",
       "allSuppliers": "Todos los Proveedores",
       "allExpenseTypes": "Todos los Tipos de Gasto",
+      "paymentStatus": "Estado de Pago",
+      "allPayments": "Todos los Pagos",
+      "paid": "Pagado",
+      "unpaid": "Sin Pagar",
+      "partial": "Pago Parcial",
       "clearFilters": "Limpiar Filtros"
     },
     "table": {

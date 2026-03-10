@@ -466,7 +466,35 @@ export class OrderDatabaseOperations {
     const trx = await db.transaction();
     try {
       const now = new Date().toISOString();
-      const { price, ...fieldsToUpdate } = orderData as any;
+      let { price, customer, deliveryPerson, ...fieldsToUpdate } = orderData as any;
+
+      if (customer) {
+        if (customer.name) fieldsToUpdate.customerName = customer.name;
+        if (customer.phone) fieldsToUpdate.customerPhone = customer.phone;
+        if (customer.address) fieldsToUpdate.customerAddress = customer.address;
+        if (customer.cif) fieldsToUpdate.customerCIF = customer.cif;
+        if (customer.email) fieldsToUpdate.customerEmail = customer.email;
+        if (customer.comments) fieldsToUpdate.customerComments = customer.comments;
+      }
+
+      if (deliveryPerson === null) {
+        fieldsToUpdate.deliveryPersonId = null;
+        fieldsToUpdate.deliveryPersonName = null;
+        fieldsToUpdate.deliveryPersonPhone = null;
+        fieldsToUpdate.deliveryPersonEmail = null;
+        fieldsToUpdate.deliveryPersonVehicleType = null;
+        fieldsToUpdate.deliveryPersonLicenseNo = null;
+      } else if (deliveryPerson && typeof deliveryPerson === "object") {
+        if (deliveryPerson.id) fieldsToUpdate.deliveryPersonId = deliveryPerson.id;
+        if (deliveryPerson.name) fieldsToUpdate.deliveryPersonName = deliveryPerson.name;
+        if (deliveryPerson.phone) fieldsToUpdate.deliveryPersonPhone = deliveryPerson.phone;
+        if (deliveryPerson.email) fieldsToUpdate.deliveryPersonEmail = deliveryPerson.email;
+        if (deliveryPerson.vehicleType)
+          fieldsToUpdate.deliveryPersonVehicleType = deliveryPerson.vehicleType;
+        if (deliveryPerson.licenseNo)
+          fieldsToUpdate.deliveryPersonLicenseNo = deliveryPerson.licenseNo;
+      }
+
       if (Object.keys(fieldsToUpdate).length > 0) {
         await trx("orders")
           .where("id", orderId)

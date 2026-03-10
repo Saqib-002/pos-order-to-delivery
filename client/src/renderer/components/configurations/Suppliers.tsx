@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AddIcon, DeleteIcon, EditIcon, EyeIcon } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
+import CustomInput from "../shared/CustomInput";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { toast } from "react-toastify";
 import { SupplierModal } from "./Modals/SupplierModal";
@@ -28,6 +29,7 @@ const fetchSuppliers = async (
 
 const Suppliers = () => {
   const [suppliers, setSuppliers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showSupplierModal, setShowSupplierModal] = useState(false);
   const [mode, setMode] = useState<"add" | "edit" | "view">("add");
   const [currentSupplier, setCurrentSupplier] = useState<any>(null);
@@ -87,6 +89,10 @@ const Suppliers = () => {
     setMode("add");
   };
 
+  const filteredSuppliers = suppliers.filter((supplier: any) =>
+    supplier.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="relative">
       {showSupplierModal && (
@@ -125,11 +131,25 @@ const Suppliers = () => {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-black mb-4">
-            {t("suppliers.suppliersList")}
-          </h3>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+            <h3 className="text-lg font-semibold text-black">
+              {t("suppliers.suppliersList")}
+            </h3>
+            <div className="w-full md:w-64">
+              <CustomInput
+                name="search"
+                type="text"
+                placeholder={t("suppliers.searchPlaceholder")}
+                value={searchTerm}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                inputClasses="py-1.5!"
+              />
+            </div>
+          </div>
           {suppliers.length === 0 ? (
             <p className="text-gray-500">{t("suppliers.noSuppliers")}</p>
+          ) : filteredSuppliers.length === 0 ? (
+            <p className="text-gray-500">{t("suppliers.noResultsFound")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -147,7 +167,7 @@ const Suppliers = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {suppliers.map((supplier: any) => (
+                  {filteredSuppliers.map((supplier: any) => (
                     <tr key={supplier.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
                         {supplier.name}

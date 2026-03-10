@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+ import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 import {
   MarketPurchase,
@@ -6,11 +6,13 @@ import {
   PaginatedResult,
 } from "@/types/marketPurchases";
 import { useAuth } from "../contexts/AuthContext";
+import { calculatePaymentStatus } from "../utils/paymentStatus";
 
 const INITIAL_FILTERS: MarketPurchaseFilters = {
   page: 1,
   pageSize: 10,
   search: "",
+  paymentStatus: "all",
 };
 
 export const useMarketPurchaseData = () => {
@@ -49,7 +51,21 @@ export const useMarketPurchaseData = () => {
         filterParams
       );
       if (res.status) {
-        const allData = res.data || [];
+        let allData: MarketPurchase[] = res.data || [];
+        if (filters.paymentStatus && filters.paymentStatus !== "all") {
+          allData = allData.filter((purchase) => {
+            const total =
+              typeof purchase.totalAmount === "number"
+                ? purchase.totalAmount
+                : parseFloat(String(purchase.totalAmount || 0)) || 0;
+            const statusInfo = calculatePaymentStatus(
+              purchase.paymentType || "",
+              total
+            );
+            return statusInfo.status.toLowerCase() === filters.paymentStatus;
+          });
+        }
+
         const startIndex = (filters.page - 1) * filters.pageSize;
         const endIndex = startIndex + filters.pageSize;
         const paginatedData = allData.slice(startIndex, endIndex);

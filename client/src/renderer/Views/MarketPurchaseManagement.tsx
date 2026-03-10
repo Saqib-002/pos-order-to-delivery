@@ -42,6 +42,7 @@ export const MarketPurchaseManagement = () => {
       startDate: undefined,
       endDate: undefined,
       ticketNumber: undefined,
+      paymentStatus: "all",
     });
   };
 
@@ -125,6 +126,13 @@ export const MarketPurchaseManagement = () => {
     ...expenseTypes.map((e) => ({ value: e.id, label: e.name })),
   ];
 
+  const paymentStatusOptions = [
+    { value: "all", label: t("marketPurchaseManagement.filters.allPayments") },
+    { value: "paid", label: t("marketPurchaseManagement.filters.paid") },
+    { value: "unpaid", label: t("marketPurchaseManagement.filters.unpaid") },
+    { value: "partial", label: t("marketPurchaseManagement.filters.partial") },
+  ];
+
   return (
     <div className="p-4">
       <div className="flex justify-between items-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -146,7 +154,7 @@ export const MarketPurchaseManagement = () => {
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 flex-1">
             <div className="sm:col-span-1 lg:col-span-1">
               <CustomInput
                 name="search"
@@ -174,6 +182,14 @@ export const MarketPurchaseManagement = () => {
                 handleFilterChange("expenseTypeId", val || undefined)
               }
               placeholder={t("marketPurchaseManagement.filters.expenseType")}
+            />
+            <CustomSelect
+              options={paymentStatusOptions}
+              value={filters.paymentStatus || "all"}
+              onChange={(val) =>
+                handleFilterChange("paymentStatus", val || "all")
+              }
+              placeholder={t("marketPurchaseManagement.filters.paymentStatus")}
             />
             <div className="sm:col-span-1 lg:col-span-1">
               <DateRangePicker

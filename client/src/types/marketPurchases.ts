@@ -35,6 +35,7 @@ export interface MarketPurchaseFilters {
   startDate?: string;
   endDate?: string;
   ticketNumber?: string;
+  paymentStatus?: "all" | "paid" | "unpaid" | "partial";
 }
 
 export interface PaginatedResult<T> {

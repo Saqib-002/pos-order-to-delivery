@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AddIcon, DeleteIcon, EditIcon, EyeIcon } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
+import CustomInput from "../shared/CustomInput";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { toast } from "react-toastify";
 import { ExpenseTypeModal } from "./Modals/ExpenseTypeModal";
@@ -28,6 +29,7 @@ const fetchExpenseTypes = async (
 
 const ExpenseTypes = () => {
   const [expenseTypes, setExpenseTypes] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showExpenseTypeModal, setShowExpenseTypeModal] = useState(false);
   const [mode, setMode] = useState<"add" | "edit" | "view">("add");
   const [currentExpenseType, setCurrentExpenseType] = useState<any>(null);
@@ -89,6 +91,9 @@ const ExpenseTypes = () => {
     setCurrentExpenseType(null);
     setMode("add");
   };
+  const filteredExpenseTypes = expenseTypes.filter((expenseType: any) =>
+    expenseType.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="relative">
@@ -130,11 +135,25 @@ const ExpenseTypes = () => {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-black mb-4">
-            {t("expenseTypes.expenseTypesList")}
-          </h3>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+            <h3 className="text-lg font-semibold text-black">
+              {t("expenseTypes.expenseTypesList")}
+            </h3>
+            <div className="w-full md:w-64">
+              <CustomInput
+                name="search"
+                type="text"
+                placeholder={t("expenseTypes.searchPlaceholder")}
+                value={searchTerm}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                inputClasses="py-1.5!"
+              />
+            </div>
+          </div>
           {expenseTypes.length === 0 ? (
             <p className="text-gray-500">{t("expenseTypes.noExpenseTypes")}</p>
+          ) : filteredExpenseTypes.length === 0 ? (
+            <p className="text-gray-500">{t("expenseTypes.noResultsFound")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -152,7 +171,7 @@ const ExpenseTypes = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {expenseTypes.map((expenseType: any) => (
+                  {filteredExpenseTypes.map((expenseType: any) => (
                     <tr key={expenseType.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
                         {expenseType.name}

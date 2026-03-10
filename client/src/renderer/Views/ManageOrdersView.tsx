@@ -35,13 +35,16 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   CrossIcon,
+  EditIcon,
 } from "@/renderer/public/Svg";
+import ChangeDeliveryPersonModal from "../components/order/modals/ChangeDeliveryPersonModal";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 import { DEFAULT_PAGE_LIMIT, FUNCTIONS } from "@/constants";
 import Pagination from "../components/shared/Pagination";
 import { formatAddress } from "../utils/utils";
 import dayjs from "dayjs";
+import { Bike } from "lucide-react";
 
 export const ManageOrdersView = () => {
   const { t } = useTranslation();
@@ -100,6 +103,7 @@ export const ManageOrdersView = () => {
   const [platforms, setPlatforms] = useState<
     Array<{ id: string; name: string }>
   >([]);
+  const [isChangeDeliveryModalOpen, setIsChangeDeliveryModalOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -209,6 +213,11 @@ export const ManageOrdersView = () => {
   const handleViewOrder = (order: Order) => {
     setSelectedOrder(order);
     setIsOrderDetailsOpen(true);
+  };
+
+  const handleChangeDeliveryClick = (order: Order) => {
+    setSelectedOrder(order);
+    setIsChangeDeliveryModalOpen(true);
   };
 
   const handlePrintOrder = async (order: Order) => {
@@ -580,6 +589,19 @@ export const ManageOrdersView = () => {
                   <CrossIcon className="w-5 h-5" />
                 </button>
               )}
+
+            {/* Change Delivery Person Button - Show for all delivery orders that are not cancelled and already have a delivery person assigned */}
+            {(order.orderType === "delivery" || order.orderType?.toLowerCase().includes("platform:delivery")) &&
+              (order.deliveryPerson?.id || order.deliveryPerson?.name) &&
+              order.status !== "cancelled" && order.status !== "sentToKitchen" && (
+                <button
+                  onClick={() => handleChangeDeliveryClick(order)}
+                  className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 cursor-pointer"
+                  title={t("deliveryView.changeDeliveryPerson") || "Change Delivery Person"}
+                >
+                  <Bike className="w-5 h-5" />
+                </button>
+              )}
           </div>
         </td>
       </tr>
@@ -949,6 +971,19 @@ export const ManageOrdersView = () => {
         onConfirm={handleCancelOrderConfirm}
         order={selectedOrderForCancel}
         orderPrefix={configurations.orderPrefix || "K"}
+      />
+
+      {/* Change Delivery Person Modal */}
+      <ChangeDeliveryPersonModal
+        isOpen={isChangeDeliveryModalOpen}
+        onClose={() => {
+          setIsChangeDeliveryModalOpen(false);
+          setSelectedOrder(null);
+        }}
+        order={selectedOrder}
+        deliveryPersons={deliveryPersons}
+        token={token || ""}
+        refreshOrdersCallback={refreshOrdersCallback}
       />
     </div>
   );

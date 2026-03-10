@@ -221,6 +221,29 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
 
       let result;
       if (mode === "edit" && initialOrder) {
+        const isTransitioningToNonDelivery = orderType === "platform:pickup" && initialOrder.orderType === "platform:delivery";
+        const isTransitioningToDelivery = orderType === "platform:delivery" && initialOrder.orderType === "platform:pickup";
+
+        let finalStatus = initialOrder.status;
+        let deliveryPerson: any = (initialOrder as any).deliveryPerson;
+        let assignedAt: any = initialOrder.assignedAt;
+        let deliveredAt: any = initialOrder.deliveredAt;
+
+        if (isTransitioningToNonDelivery) {
+          if (finalStatus === "ready for delivery" || finalStatus === "out for delivery") {
+            finalStatus = "completed";
+          }
+          deliveryPerson = null;
+          assignedAt = null;
+          deliveredAt = null;
+        } else if (isTransitioningToDelivery) {
+          if (finalStatus === "completed") {
+            finalStatus = "ready for delivery";
+            assignedAt = null;
+            deliveredAt = null;
+          }
+        }
+
         result = await updateOrder(token, initialOrder.id, {
           platformId: selectedPlatformId,
           ticketNumber: orderData.ticketNumber, // Update Ticket Number
@@ -232,6 +255,10 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
           isPaid: orderData.isPaid,
           orderType: orderData.orderType,
           receivingTime: orderData.receivingTime,
+          status: finalStatus,
+          deliveryPerson: deliveryPerson,
+          assignedAt: assignedAt,
+          deliveredAt: deliveredAt,
         });
         if (!result) {
           throw new Error("Failed to update order");
