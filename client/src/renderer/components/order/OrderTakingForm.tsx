@@ -30,6 +30,8 @@ interface AddonPage {
   freeAddons: number;
   selectedGroup: string;
   pageNo: number;
+  dependsOnGroupId?: string;
+  dependsOnItemIds?: string[];
 }
 
 const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
@@ -110,6 +112,8 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
             freeAddons: page.freeAddons,
             selectedGroup: page.selectedGroup,
             pageNo: page.pageNo,
+            dependsOnGroupId: page.dependsOnGroupId || "",
+            dependsOnItemIds: page.dependsOnItemIds ? JSON.parse(page.dependsOnItemIds) : [],
           }))
         : groupRes.data.map((page: any) => ({
           id: page.id,
@@ -118,6 +122,8 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
           freeAddons: page.freeAddons,
           selectedGroup: page.selectedGroup,
           pageNo: page.pageNo,
+          dependsOnGroupId: page.dependsOnGroupId || "",
+          dependsOnItemIds: page.dependsOnItemIds ? JSON.parse(page.dependsOnItemIds) : [],
         }));
       setAddonPages(filteredAddonPages);
 
@@ -195,12 +201,19 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
     }
   };
 
+  const isPageVisible = (page: AddonPage) => {
+    if (!page.dependsOnGroupId) return true;
+    const parentSelections = selectedComplements[page.dependsOnGroupId] || [];
+    return parentSelections.some((itemId) => page.dependsOnItemIds?.includes(itemId));
+  };
+
   const canProceed = () => {
     if (variantItems?.length == 0) return true;
     if (!selectedVariant) return false;
 
     if (addOnPages && addOnPages.length > 0) {
       return addOnPages.every((page) => {
+        if (!isPageVisible(page)) return true;
         const groupId = page.selectedGroup;
         const currentSelection = selectedComplements[groupId] || [];
         const minComplements = page.minComplements || 0;
@@ -224,6 +237,9 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
 
     // Add complement prices
     Object.entries(selectedComplements).forEach(([groupId, itemIds]) => {
+      const page = addOnPages?.find((p) => p.selectedGroup === groupId);
+      if (page && !isPageVisible(page)) return;
+
       const group = groups?.find((g) => g.id === groupId);
       if (group) {
         itemIds.forEach((itemId) => {
@@ -265,6 +281,9 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
 
     const complements = Object.entries(selectedComplements).flatMap(
       ([groupId, itemIds]) => {
+        const page = addOnPages?.find((p) => p.selectedGroup === groupId);
+        if (page && !isPageVisible(page)) return [];
+
         const group = groups?.find((g) => g.id === groupId);
         if (!group) return [];
 
@@ -641,170 +660,175 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                 </h3>
               </div>
 
-              {addOnPages.map((page, index) => {
-                const group = groups.find((g) => g.id === page.selectedGroup);
-                if (!group) return null;
-                return (
-                  <div
-                    key={page.id || index}
-                    className="bg-gray-50 rounded-xl p-6 space-y-4"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-lg font-bold text-black flex items-center space-x-2">
-                        <span className="w-6 h-6 bg-gray-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                          {index + 1}
-                        </span>
-                        <span>{group.name}</span>
-                      </h4>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600">
-                          {t("orderTakingForm.selected")}:
-                        </span>
-                        <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-semibold">
-                          {selectedComplements[group.id]?.length || 0}
-                        </span>
+              {(() => {
+                let visiblePageIndex = 0;
+                return addOnPages.map((page, index) => {
+                  if (!isPageVisible(page)) return null;
+                  const group = groups.find((g) => g.id === page.selectedGroup);
+                  if (!group) return null;
+                  visiblePageIndex++;
+                  return (
+                    <div
+                      key={page.id || index}
+                      className="bg-gray-50 rounded-xl p-6 space-y-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-lg font-bold text-black flex items-center space-x-2">
+                          <span className="w-6 h-6 bg-gray-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                            {visiblePageIndex}
+                          </span>
+                          <span>{group.name}</span>
+                        </h4>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-gray-600">
+                            {t("orderTakingForm.selected")}:
+                          </span>
+                          <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-semibold">
+                            {selectedComplements[group.id]?.length || 0}
+                          </span>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Requirements */}
-                    <div className="flex flex-wrap gap-2">
-                      {page.minComplements > 0 && (
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${(selectedComplements[group.id]?.length || 0) >=
-                            page.minComplements
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                            }`}
-                        >
-                          <div
-                            className={`size-[14px] p-[2px] ${(selectedComplements[group.id]?.length || 0) >=
+                      {/* Requirements */}
+                      <div className="flex flex-wrap gap-2">
+                        {page.minComplements > 0 && (
+                          <span
+                            className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${(selectedComplements[group.id]?.length || 0) >=
                               page.minComplements
-                              ? "bg-green-600"
-                              : "bg-red-600"
-                              } flex items-center justify-center rounded-full`}
-                          >
-                            <CheckIcon className="size-2 text-white" />
-                          </div>
-                          <span>
-                            {t("orderTakingForm.min")}: {page.minComplements}
-                          </span>
-                        </span>
-                      )}
-                      {page.maxComplements > 0 && (
-                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex items-center space-x-1">
-                          <span className="bg-blue-600 h-[2px] w-2"></span>
-                          <span>
-                            {t("orderTakingForm.max")}: {page.maxComplements}
-                          </span>
-                        </span>
-                      )}
-                      {page.freeAddons > 0 && (
-                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center space-x-1">
-                          <div className="size-[14px] p-[2px] bg-green-600 flex items-center justify-center rounded-full">
-                            <CheckIcon className="size-2 text-white" />
-                          </div>
-                          <span>
-                            {t("orderTakingForm.free")}: {page.freeAddons}
-                          </span>
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                      {group.items?.map((item) => {
-                        const isSelected =
-                          selectedComplements[group.id]?.includes(item.id) ||
-                          false;
-                        return (
-                          <button
-                            key={item.id}
-                            onClick={() =>
-                              handleComplementToggle(group.id, item.id)
-                            }
-                            className={`group relative flex flex-col p-3 border-2 rounded-lg text-left transition-all duration-200 hover:shadow-md touch-manipulation ${isSelected
-                              ? "border-gray-500 bg-gray-50 shadow-md"
-                              : "border-gray-200 hover:border-gray-300 bg-white"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
                               }`}
                           >
-                            {/* Image Section */}
-                            <div className="relative mb-2">
-                              <div className="w-full h-20 rounded-md overflow-hidden bg-gray-100">
-                                {item.imgUrl ? (
-                                  <img
-                                    crossOrigin="anonymous"
-                                    src={item.imgUrl}
-                                    alt={item.name}
-                                    className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-                                    onError={(e) => {
-                                      console.error(
-                                        "Failed to load group item image:",
-                                        item.imgUrl,
-                                      );
-                                      const target =
-                                        e.target as HTMLImageElement;
-                                      target.style.display = "none";
-                                      target.nextElementSibling?.classList.remove(
-                                        "hidden",
-                                      );
-                                    }}
-                                    onLoad={() => {
-                                      console.log(
-                                        "Successfully loaded group item image:",
-                                        item.imgUrl,
-                                      );
-                                    }}
-                                  />
-                                ) : null}
-                                <div
-                                  className={`w-full h-full flex items-center justify-center ${item.imgUrl ? "hidden" : ""}`}
-                                >
-                                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                    <svg
-                                      className="w-4 h-4 text-gray-400"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                      />
-                                    </svg>
+                            <div
+                              className={`size-[14px] p-[2px] ${(selectedComplements[group.id]?.length || 0) >=
+                                page.minComplements
+                                ? "bg-green-600"
+                                : "bg-red-600"
+                                } flex items-center justify-center rounded-full`}
+                            >
+                              <CheckIcon className="size-2 text-white" />
+                            </div>
+                            <span>
+                              {t("orderTakingForm.min")}: {page.minComplements}
+                            </span>
+                          </span>
+                        )}
+                        {page.maxComplements > 0 && (
+                          <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex items-center space-x-1">
+                            <span className="bg-blue-600 h-[2px] w-2"></span>
+                            <span>
+                              {t("orderTakingForm.max")}: {page.maxComplements}
+                            </span>
+                          </span>
+                        )}
+                        {page.freeAddons > 0 && (
+                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center space-x-1">
+                            <div className="size-[14px] p-[2px] bg-green-600 flex items-center justify-center rounded-full">
+                              <CheckIcon className="size-2 text-white" />
+                            </div>
+                            <span>
+                              {t("orderTakingForm.free")}: {page.freeAddons}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                        {group.items?.map((item) => {
+                          const isSelected =
+                            selectedComplements[group.id]?.includes(item.id) ||
+                            false;
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() =>
+                                handleComplementToggle(group.id, item.id)
+                              }
+                              className={`group relative flex flex-col p-3 border-2 rounded-lg text-left transition-all duration-200 hover:shadow-md touch-manipulation ${isSelected
+                                ? "border-gray-500 bg-gray-50 shadow-md"
+                                : "border-gray-200 hover:border-gray-300 bg-white"
+                                }`}
+                            >
+                              {/* Image Section */}
+                              <div className="relative mb-2">
+                                <div className="w-full h-20 rounded-md overflow-hidden bg-gray-100">
+                                  {item.imgUrl ? (
+                                    <img
+                                      crossOrigin="anonymous"
+                                      src={item.imgUrl}
+                                      alt={item.name}
+                                      className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                                      onError={(e) => {
+                                        console.error(
+                                          "Failed to load group item image:",
+                                          item.imgUrl,
+                                        );
+                                        const target =
+                                          e.target as HTMLImageElement;
+                                        target.style.display = "none";
+                                        target.nextElementSibling?.classList.remove(
+                                          "hidden",
+                                        );
+                                      }}
+                                      onLoad={() => {
+                                        console.log(
+                                          "Successfully loaded group item image:",
+                                          item.imgUrl,
+                                        );
+                                      }}
+                                    />
+                                  ) : null}
+                                  <div
+                                    className={`w-full h-full flex items-center justify-center ${item.imgUrl ? "hidden" : ""}`}
+                                  >
+                                    <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                      <svg
+                                        className="w-4 h-4 text-gray-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                        />
+                                      </svg>
+                                    </div>
                                   </div>
+                                </div>
+
+                                {/* Selection Indicator */}
+                                <div
+                                  className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected
+                                    ? "border-gray-500 bg-gray-500"
+                                    : "border-gray-300 bg-white shadow-sm group-hover:border-gray-400"
+                                    }`}
+                                >
+                                  {isSelected && (
+                                    <CheckIcon className="size-3 text-white" />
+                                  )}
                                 </div>
                               </div>
 
-                              {/* Selection Indicator */}
-                              <div
-                                className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected
-                                  ? "border-gray-500 bg-gray-500"
-                                  : "border-gray-300 bg-white shadow-sm group-hover:border-gray-400"
-                                  }`}
-                              >
-                                {isSelected && (
-                                  <CheckIcon className="size-3 text-white" />
-                                )}
+                              {/* Content Section */}
+                              <div className="flex-1 flex items-center justify-between px-1">
+                                <div className="font-medium text-black text-xs truncate flex-1">
+                                  {item.name}
+                                </div>
+                                <div className="text-sm font-bold text-black ml-2">
+                                  €{item.price.toFixed(2)}
+                                </div>
                               </div>
-                            </div>
-
-                            {/* Content Section */}
-                            <div className="flex-1 flex items-center justify-between px-1">
-                              <div className="font-medium text-black text-xs truncate flex-1">
-                                {item.name}
-                              </div>
-                              <div className="text-sm font-bold text-black ml-2">
-                                €{item.price.toFixed(2)}
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                });
+              })()}
             </div>
           ) : (
             <div className="text-center text-yellow-700 text-2xl">

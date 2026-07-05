@@ -4,6 +4,9 @@ import { useConfirm } from "../hooks/useConfirm";
 import { useMarketPurchaseData } from "../hooks/useMarketPurchaseData";
 import { useAuth } from "../contexts/AuthContext";
 import { MarketPurchase } from "@/types/marketPurchases";
+import { useConfigurations } from "../contexts/configurationContext";
+import { generateMarketPurchaseInvoiceHTML } from "../utils/pdfService";
+import { toast } from "react-toastify";
 
 import CustomButton from "../components/ui/CustomButton";
 import CustomInput from "../components/shared/CustomInput";
@@ -19,6 +22,7 @@ export const MarketPurchaseManagement = () => {
   const { t } = useTranslation();
   const confirm = useConfirm();
   const { auth } = useAuth();
+  const { configurations } = useConfigurations();
   const {
     purchasesData,
     suppliers,
@@ -57,6 +61,8 @@ export const MarketPurchaseManagement = () => {
       page: 1,
     }));
   };
+
+  const [printingPurchaseId, setPrintingPurchaseId] = useState<string | null>(null);
 
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -99,8 +105,50 @@ export const MarketPurchaseManagement = () => {
         : await createPurchase(data);
     if (result) {
       handleClose();
+      if (modalState.type === "add") {
+        const supplierName = suppliers.find((s) => s.id === data.supplierId)?.name;
+        const itemsWithNames = data.items?.map(item => {
+          const expenseTypeName = item.expenseTypeName || expenseTypes.find(e => e.id === item.expenseTypeId)?.name;
+          return { ...item, expenseTypeName };
+        }) || [];
+        
+        handlePrintPurchase({
+          ...data,
+          supplierName,
+          items: itemsWithNames
+        });
+      }
     }
     return result;
+  };
+
+  const handlePrintPurchase = async (purchase: MarketPurchase) => {
+    if (!auth?.token) return;
+    try {
+      if (purchase.id) {
+        setPrintingPurchaseId(purchase.id);
+      }
+      const html = generateMarketPurchaseInvoiceHTML(purchase, configurations, t);
+      const defaultFileName = `purchase-invoice-${purchase.ticketNumber || "receipt"}-${dayjs(purchase.ticketDate).format("YYYY-MM-DD")}.pdf`;
+      const result = await (window as any).electronAPI.savePDFReport(
+        auth.token,
+        "marketPurchase",
+        html,
+        defaultFileName
+      );
+      if (result.status) {
+        toast.success(t("marketPurchaseManagement.invoiceReport.pdfSaved"));
+      } else {
+        if (result.error !== "Save cancelled") {
+          toast.error(t("marketPurchaseManagement.invoiceReport.pdfError"));
+        }
+      }
+    } catch (error) {
+      console.error("Error printing purchase invoice:", error);
+      toast.error(t("marketPurchaseManagement.invoiceReport.pdfError"));
+    } finally {
+      setPrintingPurchaseId(null);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -241,6 +289,8 @@ export const MarketPurchaseManagement = () => {
             purchases={purchasesData.data}
             onEdit={handleOpenEdit}
             onDelete={handleDelete}
+            onPrint={handlePrintPurchase}
+            printingPurchaseId={printingPurchaseId}
           />
         </div>
 

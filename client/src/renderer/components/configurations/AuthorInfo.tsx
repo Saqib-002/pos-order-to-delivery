@@ -110,7 +110,7 @@ const AuthorInfo = () => {
                                         <div>
                                             <p className="text-xs text-gray-500">{t("authorInfo.email")}</p>
                                             {configurations.authorEmail ? (
-                                                <a href={`mailto:${configurations.authorEmail}`} className="font-bold text-blue-600 hover:underline">
+                                                <a href={`mailto:${configurations.authorEmail}`} className="font-bold text-gray-900 hover:underline">
                                                     {configurations.authorEmail}
                                                 </a>
                                             ) : <p className="font-bold">{t("common.notAvailable")}</p>}
@@ -124,7 +124,7 @@ const AuthorInfo = () => {
                                         <div>
                                             <p className="text-xs text-gray-500">{t("authorInfo.website")}</p>
                                             {configurations.authorWebsite ? (
-                                                <a href={configurations.authorWebsite} target="_blank" rel="noopener noreferrer" className="font-bold text-blue-600 hover:underline">
+                                                <a href={configurations.authorWebsite} target="_blank" rel="noopener noreferrer" className="font-bold text-gray-900 hover:underline">
                                                     {configurations.authorWebsite}
                                                 </a>
                                             ) : <p className="font-bold">{t("common.notAvailable")}</p>}

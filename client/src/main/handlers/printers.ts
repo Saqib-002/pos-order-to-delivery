@@ -272,7 +272,7 @@ export const saveMaintenanceReportPDF = async (
 export const savePDFReport = async (
   event: IpcMainInvokeEvent,
   token: string,
-  reportType: "maintenance" | "salary",
+  reportType: "maintenance" | "salary" | "marketPurchase" | "orderAnalytics" | "financialAnalytics",
   html: string,
   defaultFileName: string
 ) => {
@@ -313,7 +313,19 @@ export const savePDFReport = async (
     pdfWindow.close();
 
     // Show save dialog
-    const title = reportType === "maintenance" ? "Save Maintenance Report" : "Save Salary Report";
+    let title = "Save Report";
+    if (reportType === "maintenance") {
+      title = "Save Maintenance Report";
+    } else if (reportType === "salary") {
+      title = "Save Salary Report";
+    } else if (reportType === "marketPurchase") {
+      title = "Save Market Purchase Invoice";
+    } else if (reportType === "orderAnalytics") {
+      title = "Save Order Analytics Report";
+    } else if (reportType === "financialAnalytics") {
+      title = "Save Financial Analytics Report";
+    }
+
     const result = await dialog.showSaveDialog({
       title,
       defaultPath: defaultFileName,

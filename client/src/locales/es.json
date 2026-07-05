@@ -27,7 +27,11 @@
       "partial": "PARCIAL",
       "pending": "PENDIENTE"
     },
-    "note": "Nota"
+    "note": "Nota",
+    "print": "Imprimir",
+    "export": "Exportar PDF",
+    "description": "Descripción",
+    "type": "Tipo"
   },
   "welcome": "Bienvenido a nuestro sitio web.",
   "configurations": {
@@ -88,6 +92,11 @@
       "noZonesConfigured": "Aún no hay zonas de entrega configuradas.",
       "drawFirstZoneHelp": "Haz clic en \"Gestionar Zonas de Entrega\" para dibujar tu primera zona en el mapa.",
       "minOrderShort": "Pedido mín.:",
+      "drawNewZone": "+ Dibujar Nueva Zona",
+      "drawingModeActive": "Modo de Dibujo Activo",
+      "drawingHelpText": "Haga clic en el mapa para definir las esquinas de su zona. Ha colocado {{count}} puntos.",
+      "finishDrawingButton": "Finalizar",
+      "cancelDrawingButton": "Cancelar",
       "validation": {
         "atLeastOneZone": "Por favor crea al menos una zona de entrega"
       },
@@ -119,7 +128,6 @@
     "noContacts": "No hay información de contacto disponible",
     "syncHelp": "Haga clic en 'Sincronizar Información' en la pestaña Autor para obtener detalles."
   },
-
   "printers": {
     "title": "Impresoras",
     "subtitle": "Administrar impresoras",
@@ -709,7 +717,10 @@
       "distributions": "Distribuciones",
       "total": "Ingresos",
       "netBalance": "Saldo Neto",
-      "cashOut": "Salida de Efectivo"
+      "cashIn": "Entrada de Efectivo",
+      "cashOut": "Salida de Efectivo",
+      "cashInOut": "Movimientos de Caja (Entradas / Salidas)",
+      "period": "Período"
     },
     "title": "Análisis e Informes",
     "subtitle": "Información completa sobre el rendimiento de pedidos y tendencias",
@@ -1218,6 +1229,7 @@
     "motorcycle": "Motocicleta",
     "car": "Coche",
     "scooter": "Patinete",
+    "van": "Furgoneta",
     "deliveryPersonnelTable": "Personal de Entrega ({{count}})",
     "getStartedMessage": "Comienza agregando tu primer repartidor.",
     "adjustFiltersMessage": "Intenta ajustar tu búsqueda o filtro de vehículo.",
@@ -1684,6 +1696,12 @@
         "freeAddons": "Número de complementos gratuitos",
         "addPluginGroup": "AGREGAR GRUPO DE PLUGIN PARA PÁGINA",
         "availableItems": "Elementos disponibles:",
+        "conditionalVisibility": "Mostrar esta página condicionalmente según otra selección",
+        "parentModifierPage": "Página de Modificador Padre",
+        "selectGroup": "Seleccionar un grupo...",
+        "parentPageLabel": "Página {{pageNo}}: {{groupName}}",
+        "showWhenSelected": "Mostrar cuando cualquiera de estos esté seleccionado:",
+        "noOptionsInParent": "No se encontraron opciones en el grupo padre",
         "printers": "Impresoras",
         "configurePrinters": "Configure la configuración de impresora aquí.",
         "cancel": "Cancelar",
@@ -2035,7 +2053,8 @@
         "total": "Total",
         "paymentStatus": "Estado de Pago"
       }
-    }
+    },
+    "paymentMethod": "Método de Pago"
   },
   "incomesManagement": {
     "title": "Otra Fuente de Ingresos",
@@ -2123,7 +2142,8 @@
       "paymentStatus": "Estado de Pago",
       "actions": "Acciones",
       "noPurchases": "No se encontraron compras",
-      "updating": "Actualizando..."
+      "updating": "Actualizando...",
+      "print": "Imprimir Factura"
     },
     "modal": {
       "addTitle": "Agregar Compra de Mercado",
@@ -2206,6 +2226,15 @@
         "title": "Eliminar Compra",
         "message": "¿Estás seguro de que deseas eliminar esta compra? Esta acción no se puede deshacer."
       }
+    },
+    "invoiceReport": {
+      "title": "Factura de Compra",
+      "companyName": "Nombre de la Empresa",
+      "buyerInfo": "Información del Comprador",
+      "supplierInfo": "Información del Proveedor",
+      "printDate": "Fecha de Impresión",
+      "pdfSaved": "Factura PDF guardada correctamente",
+      "pdfError": "Error al generar Factura PDF"
     }
   },
   "vehicleManagement": {
@@ -2224,8 +2253,11 @@
       "all": "Todos",
       "yes": "Sí",
       "no": "No",
-      "bike": "Moto",
+      "bike": "Bicicleta",
+      "motorcycle": "Motocicleta",
       "car": "Coche",
+      "scooter": "Patinete",
+      "van": "Furgoneta",
       "unassigned": "Sin Asignar",
       "hasAlerts": "Tiene Alertas",
       "expiringSoon": "Por Vencer",
@@ -2628,5 +2660,20 @@
     "message": "¿Desea imprimir el recibo del cliente para este pedido?",
     "yesPrint": "Imprimir Recibo",
     "noPrint": "No, gracias"
+  },
+  "company": {
+    "name": "Nombre de la Empresa"
+  },
+  "supplier": {
+    "name": "Nombre del Proveedor"
+  },
+  "worker": {
+    "name": "Nombre del Trabajador"
+  },
+  "vehicle": {
+    "name": "Nombre del Vehículo"
+  },
+  "product": {
+    "name": "Nombre del Producto"
   }
 }

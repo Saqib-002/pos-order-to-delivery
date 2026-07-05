@@ -456,7 +456,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("save-salary-report-pdf", token, html, defaultFileName),
   savePDFReport: (
     token: string,
-    reportType: "maintenance" | "salary",
+    reportType: "maintenance" | "salary" | "marketPurchase" | "orderAnalytics" | "financialAnalytics",
     html: string,
     defaultFileName: string
   ) =>

@@ -58,6 +58,30 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
         // Run migrations
         await db.migrate.latest();
         Logger.info("Database migrations completed");
+
+        // Check if there is no user, then add a default admin user
+        const usersCount = await db("users").count("id as count").first();
+        const count = usersCount ? parseInt(String((usersCount as any).count), 10) : 0;
+        if (count === 0) {
+            Logger.info("No users found. Creating a default admin user...");
+            const bcrypt = await import("bcrypt");
+            const hashedPassword = await bcrypt.hash("admin123", 10);
+            const now = new Date().toISOString();
+            const defaultAdmin = {
+                id: "users:admin",
+                username: "admin",
+                password: hashedPassword,
+                role: "admin",
+                name: "System Administrator",
+                email: "admin@restaurant.local",
+                modulePermissions: JSON.stringify([]),
+                functionPermissions: JSON.stringify([]),
+                createdAt: now,
+                updatedAt: now,
+            };
+            await db("users").insert(defaultAdmin);
+            Logger.info("Default admin user created successfully");
+        }
     } catch (error) {
         Logger.error("Database initialization error:", error);
         throw error;

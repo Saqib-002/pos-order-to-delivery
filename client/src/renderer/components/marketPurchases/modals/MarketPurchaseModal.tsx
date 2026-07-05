@@ -239,14 +239,6 @@ export const MarketPurchaseModal = ({
       return;
     }
     let itemToSave = { ...newProduct };
-    if (newProduct.isTaxIncluded) {
-      const taxRate = taxPercentage / 100;
-      const grossTotal = newProduct.unitPrice * newProduct.totalUnit;
-      const netTotal = grossTotal / (1 + taxRate);
-      const netUnitPrice = netTotal / newProduct.totalUnit;
-
-      itemToSave.unitPrice = netUnitPrice;
-    }
     const expenseType = expenseTypes.find(
       (e) => e.id === newProduct.expenseTypeId
     );
@@ -254,13 +246,13 @@ export const MarketPurchaseModal = ({
     if (editingIndex !== null) {
       // Update existing item
       const updatedItems = [...items];
-      updatedItems[editingIndex] = { ...newProduct };
+      updatedItems[editingIndex] = { ...itemToSave };
       setItems(updatedItems);
       setEditingIndex(null);
       toast.success(t("marketPurchaseManagement.modal.productUpdated"));
     } else {
       // Add new item
-      setItems([...items, { ...newProduct }]);
+      setItems([...items, { ...itemToSave }]);
       toast.success(t("marketPurchaseManagement.modal.productAdded"));
     }
 
@@ -285,63 +277,54 @@ export const MarketPurchaseModal = ({
 
   const handleEditItem = (index: number) => {
     const item = items[index];
-    let displayUnitPrice =
+    const boxNum =
+      typeof item.box === "string" ? parseFloat(item.box) : item.box || 0;
+    const unitNum =
+      typeof item.unit === "string" ? parseFloat(item.unit) : item.unit || 0;
+    const totalUnit = boxNum * unitNum;
+    const unitPriceNum =
       typeof item.unitPrice === "string"
         ? parseFloat(item.unitPrice)
         : item.unitPrice || 0;
-    const totalUnit =
-      typeof item.totalUnit === "string"
-        ? parseInt(item.totalUnit)
-        : item.totalUnit || 0;
     const taxAmount =
       typeof item.tax === "string" ? parseFloat(item.tax) : item.tax || 0;
     const totalAmount =
       typeof item.total === "string" ? parseFloat(item.total) : item.total || 0;
 
-    const netSubtotal = displayUnitPrice * totalUnit;
+    const subtotal = unitPriceNum * totalUnit;
     let taxPercent = 0;
-    if (netSubtotal > 0) {
-      taxPercent = item.isTaxIncluded
-        ? Number(((item.tax / (netSubtotal - item.tax)) * 100).toFixed(0))
-        : (taxAmount / netSubtotal) * 100;
-    } else if (item.isTaxIncluded && totalAmount > 0) {
-      const inferredNet = totalAmount - taxAmount;
-      if (inferredNet > 0) taxPercent = (taxAmount / inferredNet) * 100;
-    }
     if (item.isTaxIncluded) {
-      if (totalUnit > 0) {
-        displayUnitPrice = totalAmount / totalUnit;
+      const netSubtotal = subtotal - taxAmount;
+      if (netSubtotal > 0) {
+        taxPercent = (taxAmount / netSubtotal) * 100;
+      }
+    } else {
+      if (subtotal > 0) {
+        taxPercent = (taxAmount / subtotal) * 100;
       }
     }
+
+    const roundedTaxPercent = Number(taxPercent.toFixed(2));
+
     // Calculate tax percent based on stored values
     // Ensure all numeric values are numbers, not strings
     const editedProduct: MarketPurchaseItem = {
       ...item,
-      box: typeof item.box === "string" ? parseFloat(item.box) : item.box || 0,
-      unit:
-        typeof item.unit === "string" ? parseFloat(item.unit) : item.unit || 0,
-      totalUnit:
-        typeof item.totalUnit === "string"
-          ? parseFloat(item.totalUnit)
-          : item.totalUnit || 0,
-      unitPrice:
-        typeof item.unitPrice === "string"
-          ? parseFloat(item.unitPrice)
-          : item.unitPrice || 0,
-      tax: typeof item.tax === "string" ? parseFloat(item.tax) : item.tax || 0,
-      total:
-        typeof item.total === "string"
-          ? parseFloat(item.total)
-          : item.total || 0,
+      box: boxNum,
+      unit: unitNum,
+      totalUnit,
+      unitPrice: unitPriceNum,
+      tax: taxAmount,
+      total: totalAmount,
       expenseTypeId: item.expenseTypeId,
       isTaxIncluded: item.isTaxIncluded || false,
     };
     setNewProduct(editedProduct);
-    setTaxPercentage(taxPercent);
+    setTaxPercentage(roundedTaxPercent);
     setBoxRaw(editedProduct.box.toString());
     setUnitRaw(editedProduct.unit.toString());
-    setUnitPriceRaw(editedProduct.unitPrice.toString());
-    setTaxPercentageRaw(taxPercent.toString());
+    setUnitPriceRaw(unitPriceNum.toString());
+    setTaxPercentageRaw(roundedTaxPercent.toString());
     setEditingIndex(index);
     setTimeout(() => {
       document
@@ -584,11 +567,12 @@ export const MarketPurchaseModal = ({
           : item.total || 0;
 
       const subtotal = unitPrice * totalUnit;
-      totalBase += subtotal;
+      const netSubtotal = item.isTaxIncluded ? subtotal - tax : subtotal;
+      totalBase += netSubtotal;
       total += itemTotal;
 
-      if (tax > 0 && subtotal > 0) {
-        const taxPercent = ((tax / subtotal) * 100).toFixed(1);
+      if (tax > 0 && netSubtotal > 0) {
+        const taxPercent = ((tax / netSubtotal) * 100).toFixed(1);
         if (!taxGroups[taxPercent]) {
           taxGroups[taxPercent] = 0;
         }
@@ -889,7 +873,7 @@ export const MarketPurchaseModal = ({
                               : item.tax || 0;
                           const subtotal = unitPriceNum * item.totalUnit;
                           const taxPercent = item.isTaxIncluded
-                            ? subtotal > 0
+                            ? (subtotal - taxNum) > 0
                               ? (taxNum / (subtotal - taxNum)) * 100
                               : 0
                             : subtotal > 0

@@ -39,6 +39,7 @@ export const DeliveryPersonModal: React.FC<DeliveryPersonModalProps> = ({
     { value: "motorcycle", label: t("deliveryManagement.motorcycle") },
     { value: "car", label: t("deliveryManagement.car") },
     { value: "scooter", label: t("deliveryManagement.scooter") },
+    { value: "van", label: t("deliveryManagement.van") },
   ];
 
   if (!isOpen || !deliveryPerson) return null;

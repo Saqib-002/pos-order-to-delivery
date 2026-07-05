@@ -44,6 +44,13 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
     const polygonsRef = useRef<{ [key: string]: any }>({});
     const mapInstanceRef = useRef<any>(null);
 
+    const [isDrawing, setIsDrawing] = useState(false);
+    const [tempPoints, setTempPoints] = useState<any[]>([]);
+
+    const tempPolylineRef = useRef<any>(null);
+    const tempMarkersRef = useRef<any[]>([]);
+    const mapClickListenerRef = useRef<any>(null);
+
     // Sync zones state when modal opens
     useEffect(() => {
         if (isOpen) {
@@ -75,7 +82,7 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
 
         const script = document.createElement("script");
         script.id = scriptId;
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=geometry,drawing,places`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=geometry,places`;
         script.async = true;
         script.defer = true;
         script.onload = () => setIsLoaded(true);
@@ -94,6 +101,174 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
         setZones(prev => prev.map(z => z.id === zoneId ? { ...z, points } : z));
     }, []);
 
+    const tempPointsRef = useRef<any[]>([]);
+    const mapMousemoveListenerRef = useRef<any>(null);
+    const finishDrawingRef = useRef<any>(null);
+
+    const cleanupDrawingState = useCallback(() => {
+        if (mapClickListenerRef.current) {
+            window.google.maps.event.removeListener(mapClickListenerRef.current);
+            mapClickListenerRef.current = null;
+        }
+        if (mapMousemoveListenerRef.current) {
+            window.google.maps.event.removeListener(mapMousemoveListenerRef.current);
+            mapMousemoveListenerRef.current = null;
+        }
+        if (tempPolylineRef.current) {
+            tempPolylineRef.current.setMap(null);
+            tempPolylineRef.current = null;
+        }
+        tempMarkersRef.current.forEach(m => m.setMap(null));
+        tempMarkersRef.current = [];
+
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.setOptions({ draggableCursor: null });
+        }
+    }, []);
+
+    const startDrawing = () => {
+        if (!mapInstanceRef.current || !window.google) return;
+        cleanupDrawingState();
+        setIsDrawing(true);
+        setTempPoints([]);
+        tempPointsRef.current = [];
+
+        mapInstanceRef.current.setOptions({ draggableCursor: "crosshair" });
+
+        tempPolylineRef.current = new window.google.maps.Polyline({
+            strokeColor: "#10B981",
+            strokeOpacity: 0.8,
+            strokeWeight: 3,
+            map: mapInstanceRef.current,
+            clickable: false, // Prevents intercepting map clicks!
+        });
+
+        // Click listener on map to add points
+        mapClickListenerRef.current = mapInstanceRef.current.addListener("click", (e: any) => {
+            const newPoint = e.latLng;
+            if (!newPoint) return;
+
+            const prevPoints = tempPointsRef.current;
+            const updated = [...prevPoints, newPoint];
+            tempPointsRef.current = updated;
+
+            if (tempPolylineRef.current) {
+                tempPolylineRef.current.setPath(updated);
+            }
+
+            const isFirstPoint = prevPoints.length === 0;
+            const marker = new window.google.maps.Marker({
+                position: newPoint,
+                map: mapInstanceRef.current,
+                cursor: "crosshair", // Shows cross cursor when hovering over the dot
+                icon: {
+                    path: window.google.maps.SymbolPath.CIRCLE,
+                    scale: isFirstPoint ? 8 : 5,
+                    fillColor: isFirstPoint ? "#059669" : "#10B981",
+                    fillOpacity: 1,
+                    strokeColor: "#ffffff",
+                    strokeWeight: 2,
+                },
+            });
+
+            marker.addListener("click", (evt: any) => {
+                if (evt && evt.stop) evt.stop();
+
+                if (isFirstPoint) {
+                    // Click first point -> Connect/Close polygon
+                    finishDrawingRef.current?.();
+                } else {
+                    // Click other points -> Remove this point!
+                    const pos = marker.getPosition();
+                    if (!pos) return;
+
+                    const currentPoints = tempPointsRef.current;
+                    const filtered = currentPoints.filter(p => 
+                        !(p.lat() === pos.lat() && p.lng() === pos.lng())
+                    );
+                    tempPointsRef.current = filtered;
+
+                    if (tempPolylineRef.current) {
+                        tempPolylineRef.current.setPath(filtered);
+                    }
+
+                    marker.setMap(null);
+                    tempMarkersRef.current = tempMarkersRef.current.filter(m => m !== marker);
+
+                    setTempPoints(filtered);
+                }
+            });
+
+            tempMarkersRef.current.push(marker);
+            setTempPoints(updated);
+        });
+
+        // Mousemove listener for rubber-band stretching line
+        mapMousemoveListenerRef.current = mapInstanceRef.current.addListener("mousemove", (e: any) => {
+            const mouseLatLng = e.latLng;
+            if (!mouseLatLng || tempPointsRef.current.length === 0) return;
+
+            // Draw line from last point to current mouse position
+            tempPolylineRef.current.setPath([...tempPointsRef.current, mouseLatLng]);
+        });
+    };
+
+    const finishDrawing = () => {
+        const currentPoints = tempPointsRef.current;
+        if (currentPoints.length < 3) return;
+
+        cleanupDrawingState();
+
+        const polygon = new window.google.maps.Polygon({
+            paths: currentPoints,
+            fillColor: "#10B981",
+            fillOpacity: 0.3,
+            strokeWeight: 2,
+            strokeColor: "#059669",
+            map: mapInstanceRef.current,
+            editable: true,
+            clickable: true,
+        });
+
+        const zoneId = Math.random().toString(36).substring(2, 11);
+
+        setZones((prev) => {
+            const newZone: DeliveryZone = {
+                id: zoneId,
+                name: `${t("configurations.deliveryZones.zoneNamePlaceholder")} ${prev.length + 1}`,
+                points: currentPoints.map(p => ({ lat: p.lat(), lng: p.lng() })),
+                minOrderAmount: 0,
+            };
+            return [...prev, newZone];
+        });
+
+        setSelectedZoneId(zoneId);
+        polygonsRef.current[zoneId] = polygon;
+
+        window.google.maps.event.addListener(polygon, 'click', () => {
+            setSelectedZoneId(zoneId);
+        });
+
+        const path = polygon.getPath();
+        const updateEvents = ['set_at', 'insert_at', 'remove_at'];
+        updateEvents.forEach(eventName => {
+            window.google.maps.event.addListener(path, eventName, () => updateZonePoints(zoneId, polygon));
+        });
+
+        setIsDrawing(false);
+    };
+
+    const cancelDrawing = () => {
+        cleanupDrawingState();
+        setIsDrawing(false);
+        setTempPoints([]);
+        tempPointsRef.current = [];
+    };
+
+    useEffect(() => {
+        finishDrawingRef.current = finishDrawing;
+    });
+
     useEffect(() => {
         if (!isLoaded || !isOpen || !mapRef.current || !window.google?.maps?.importLibrary) return;
 
@@ -102,9 +277,8 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
         const initMap = async () => {
             try {
                 // Ensure core namespaces exist
-                const [mapsLib, drawingLib, geocodingLib, markerLib] = await Promise.all([
+                const [mapsLib, geocodingLib, markerLib] = await Promise.all([
                     window.google.maps.importLibrary("maps"),
-                    window.google.maps.importLibrary("drawing"),
                     window.google.maps.importLibrary("geocoding"),
                     window.google.maps.importLibrary("marker"),
                 ]);
@@ -113,14 +287,12 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
 
                 const { Map } = mapsLib;
                 const { Geocoder } = geocodingLib;
-                const { DrawingManager } = drawingLib;
 
                 // Safe access to constants which are global after importLibrary
                 const ControlPosition = window.google.maps.ControlPosition;
-                const OverlayType = window.google.maps.drawing.OverlayType;
 
-                if (!Map || !Geocoder || !DrawingManager || !ControlPosition || !OverlayType) {
-                    console.error("Missing Google Maps components:", { Map, Geocoder, DrawingManager, ControlPosition, OverlayType });
+                if (!Map || !Geocoder || !ControlPosition) {
+                    console.error("Missing Google Maps components:", { Map, Geocoder, ControlPosition });
                     setError(t("configurations.deliveryZones.errors.mapInitError"));
                     return;
                 }
@@ -140,6 +312,7 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
                             mapTypeControl: true,
                             streetViewControl: true,
                             fullscreenControl: true,
+                            clickableIcons: false,
                         });
 
                         mapInstanceRef.current = newMap;
@@ -160,60 +333,6 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
                                 zIndex: 1000,
                             });
                         }
-
-                        const dm = new DrawingManager({
-                            drawingMode: null,
-                            drawingControl: true,
-                            drawingControlOptions: {
-                                position: ControlPosition.TOP_CENTER,
-                                drawingModes: [OverlayType.POLYGON],
-                            },
-                            polygonOptions: {
-                                fillColor: "#10B981",
-                                fillOpacity: 0.3,
-                                strokeWeight: 2,
-                                strokeColor: "#059669",
-                                clickable: true,
-                                editable: true,
-                                zIndex: 1,
-                            },
-                        });
-
-                        dm.setMap(newMap);
-
-                        window.google.maps.event.addListener(dm, 'polygoncomplete', (polygon: any) => {
-                            const path = polygon.getPath();
-                            const points: { lat: number; lng: number }[] = [];
-                            for (let i = 0; i < path.getLength(); i++) {
-                                points.push({ lat: path.getAt(i).lat(), lng: path.getAt(i).lng() });
-                            }
-
-                            const zoneId = Math.random().toString(36).substring(2, 11);
-
-                            setZones(prev => {
-                                const newZone: DeliveryZone = {
-                                    id: zoneId,
-                                    name: `${t("configurations.deliveryZones.zoneNamePlaceholder")} ${prev.length + 1}`,
-                                    points: points,
-                                    minOrderAmount: 0,
-                                };
-                                return [...prev, newZone];
-                            });
-
-                            setSelectedZoneId(zoneId);
-                            polygonsRef.current[zoneId] = polygon;
-
-                            dm.setDrawingMode(null);
-
-                            window.google.maps.event.addListener(polygon, 'click', () => {
-                                setSelectedZoneId(zoneId);
-                            });
-
-                            const updateEvents = ['set_at', 'insert_at', 'remove_at'];
-                            updateEvents.forEach(eventName => {
-                                window.google.maps.event.addListener(path, eventName, () => updateZonePoints(zoneId, polygon));
-                            });
-                        });
 
                         // Render Initial Zones
                         initialZones.forEach(zone => {
@@ -257,11 +376,12 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
 
         return () => {
             active = false;
+            cleanupDrawingState();
             Object.values(polygonsRef.current).forEach(p => p.setMap(null));
             polygonsRef.current = {};
             mapInstanceRef.current = null;
         };
-    }, [isLoaded, isOpen, restaurantAddress, t, updateZonePoints]);
+    }, [isLoaded, isOpen, restaurantAddress, t, updateZonePoints, cleanupDrawingState]);
 
     const handleDeleteZone = (zoneId: string) => {
         if (polygonsRef.current[zoneId]) {
@@ -314,8 +434,48 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
                                     polygonsRef.current = {};
                                     setZones([]);
                                     setSelectedZoneId(null);
+                                    cancelDrawing();
                                 }}
                             />
+                        </div>
+
+                        {/* Drawing Actions */}
+                        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3 shadow-sm">
+                            {!isDrawing ? (
+                                <CustomButton
+                                    label={t("configurations.deliveryZones.drawNewZone")}
+                                    onClick={startDrawing}
+                                    className="w-full bg-emerald-600 hover:bg-emerald-700 hover:scale-[1.02] text-white text-xs font-bold py-2 px-4 rounded-xl flex items-center justify-center transition-all"
+                                    type="button"
+                                />
+                            ) : (
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping" />
+                                        <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">
+                                            {t("configurations.deliveryZones.drawingModeActive")}
+                                        </p>
+                                    </div>
+                                    <p className="text-xs text-gray-500 leading-relaxed">
+                                        {t("configurations.deliveryZones.drawingHelpText", { count: tempPoints.length })}
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <CustomButton
+                                            label={t("configurations.deliveryZones.finishDrawingButton")}
+                                            onClick={finishDrawing}
+                                            disabled={tempPoints.length < 3}
+                                            className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:hover:bg-emerald-600 text-white text-xs font-bold py-1.5 px-3 rounded-lg transition-colors"
+                                            type="button"
+                                        />
+                                        <CustomButton
+                                            label={t("configurations.deliveryZones.cancelDrawingButton")}
+                                            onClick={cancelDrawing}
+                                            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-1.5 px-3 rounded-lg transition-colors"
+                                            type="button"
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {zones.length === 0 ? (

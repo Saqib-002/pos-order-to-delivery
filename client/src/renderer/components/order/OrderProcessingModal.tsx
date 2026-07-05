@@ -758,7 +758,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     <>
                       <div className="mb-3 flex justify-center">
                         <img
-                          src="./images/delivery-truck.png"
+                          src="./images/delivery-bike.png"
                           alt="Delivery"
                           className="w-12 h-12 object-contain"
                         />

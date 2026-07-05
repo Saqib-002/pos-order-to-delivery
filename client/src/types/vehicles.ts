@@ -4,7 +4,7 @@ export interface Vehicle {
   licensePlate: string;
   color: string;
   hasGps: boolean;
-  type: "bike" | "car";
+  type: "bike" | "motorcycle" | "car" | "scooter" | "van";
   driverId?: string;
   driverName?: string;
   itvDate: string;
@@ -43,7 +43,7 @@ export interface PaginatedResult<T> {
 
 export interface VehicleFilters {
   search?: string;
-  type?: "bike" | "car" | "all";
+  type?: "bike" | "motorcycle" | "car" | "scooter" | "van" | "all";
   hasGps?: boolean | null;
   driverId?: string;
   alertStatus?: "all" | "has_alerts" | "expired" | "expiring_soon";

@@ -707,7 +707,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                     <div className="w-48">
                       <CustomSelect
                         options={paymentStatusOptions}
-                        value={filters.paymentStatus}
+                        value={filters.paymentStatus || "all"}
                         onChange={(val) =>
                           handleFilterChange("paymentStatus", val as any)
                         }

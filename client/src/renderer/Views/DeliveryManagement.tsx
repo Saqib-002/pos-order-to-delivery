@@ -311,6 +311,8 @@ export const DeliveryManagement = () => {
         return "bg-green-100 text-green-800";
       case "scooter":
         return "bg-purple-100 text-purple-800";
+      case "van":
+        return "bg-pink-100 text-pink-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -488,7 +490,7 @@ export const DeliveryManagement = () => {
             otherClasses="flex-1"
           />
           <div className="flex gap-2">
-            {["all", "bike", "motorcycle", "car", "scooter"].map(
+            {["all", "bike", "motorcycle", "car", "scooter", "van"].map(
               (vehicleType) => (
                 <CustomButton
                   key={vehicleType}

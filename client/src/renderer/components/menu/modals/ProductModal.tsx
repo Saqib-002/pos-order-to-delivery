@@ -62,6 +62,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
       freeAddons: number;
       pageNo: number;
       selectedGroup: string;
+      dependsOnGroupId?: string;
+      dependsOnItemIds?: string[];
     }>
   >([
     {
@@ -71,6 +73,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
       freeAddons: 0,
       pageNo: 1,
       selectedGroup: "",
+      dependsOnGroupId: "",
+      dependsOnItemIds: [],
     },
   ]);
   const [validationErrors, setValidationErrors] = useState<
@@ -200,6 +204,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
               freeAddons: page.freeAddons,
               selectedGroup: page.selectedGroup,
               pageNo: page.pageNo,
+              dependsOnGroupId: page.dependsOnGroupId || "",
+              dependsOnItemIds: page.dependsOnItemIds ? JSON.parse(page.dependsOnItemIds) : [],
             };
           })
         );
@@ -367,6 +373,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
         freeAddons: 0,
         pageNo: newPageNo,
         selectedGroup: "",
+        dependsOnGroupId: "",
+        dependsOnItemIds: [],
       },
     ]);
     setSelectedAddonPage(newPageNo);
@@ -477,6 +485,19 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
       return updatedPages;
     });
+  };
+
+  // Handle addon page conditional changes
+  const handlePageConditionalChange = (
+    pageNo: number,
+    field: "dependsOnGroupId" | "dependsOnItemIds",
+    value: any
+  ) => {
+    setAddonPages((prev) =>
+      prev.map((page) =>
+        page.pageNo === pageNo ? { ...page, [field]: value } : page
+      )
+    );
   };
 
   // Get current page data
@@ -1382,6 +1403,112 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           otherClasses="w-full"
                         />
                       </div> */}
+                    </div>
+
+                    {/* Conditional visibility setup */}
+                    <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-4">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="isConditionalPage"
+                          className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black cursor-pointer"
+                          checked={!!getCurrentPageData()?.dependsOnGroupId}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              const otherPages = addonPages.filter(p => p.pageNo !== selectedAddonPage && p.selectedGroup);
+                              const firstParentId = otherPages[0]?.selectedGroup || "";
+                              handlePageConditionalChange(selectedAddonPage, "dependsOnGroupId", firstParentId);
+                              handlePageConditionalChange(selectedAddonPage, "dependsOnItemIds", []);
+                            } else {
+                              handlePageConditionalChange(selectedAddonPage, "dependsOnGroupId", "");
+                              handlePageConditionalChange(selectedAddonPage, "dependsOnItemIds", []);
+                            }
+                          }}
+                        />
+                        <label htmlFor="isConditionalPage" className="text-sm font-medium text-gray-700 cursor-pointer">
+                          {t("menuComponents.modals.productModal.conditionalVisibility")}
+                        </label>
+                      </div>
+
+                      {!!getCurrentPageData()?.dependsOnGroupId && (
+                        <div className="space-y-3 pl-6">
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                              {t("menuComponents.modals.productModal.parentModifierPage")}
+                            </label>
+                            <select
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+                              value={getCurrentPageData()?.dependsOnGroupId || ""}
+                              onChange={(e) => {
+                                handlePageConditionalChange(selectedAddonPage, "dependsOnGroupId", e.target.value);
+                                handlePageConditionalChange(selectedAddonPage, "dependsOnItemIds", []);
+                              }}
+                            >
+                              <option value="">{t("menuComponents.modals.productModal.selectGroup")}</option>
+                              {addonPages
+                                .filter(p => p.pageNo !== selectedAddonPage && p.selectedGroup)
+                                .map((page) => {
+                                  const group = groups.find(g => g.id === page.selectedGroup);
+                                  return (
+                                    <option key={page.id} value={page.selectedGroup}>
+                                      {t("menuComponents.modals.productModal.parentPageLabel", {
+                                        pageNo: page.pageNo,
+                                        groupName: group?.name || page.selectedGroup
+                                      })}
+                                    </option>
+                                  );
+                                })}
+                            </select>
+                          </div>
+
+                          {getCurrentPageData()?.dependsOnGroupId && (
+                            <div>
+                              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                {t("menuComponents.modals.productModal.showWhenSelected")}
+                              </label>
+                              <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded p-2 bg-white">
+                                {(() => {
+                                  const parentGroupId = getCurrentPageData()?.dependsOnGroupId;
+                                  const parentGroup = groups.find(g => g.id === parentGroupId);
+                                  const parentItems = parentGroup ? parentGroup.items : [];
+                                  
+                                  if (parentItems.length === 0) {
+                                    return <p className="col-span-2 text-xs text-gray-400 italic">{t("menuComponents.modals.productModal.noOptionsInParent")}</p>;
+                                  }
+
+                                  const selectedItems = getCurrentPageData()?.dependsOnItemIds || [];
+
+                                  return parentItems.map((item) => (
+                                    <label key={item.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black cursor-pointer"
+                                        checked={selectedItems.includes(item.id)}
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            handlePageConditionalChange(
+                                              selectedAddonPage,
+                                              "dependsOnItemIds",
+                                              [...selectedItems, item.id]
+                                            );
+                                          } else {
+                                            handlePageConditionalChange(
+                                              selectedAddonPage,
+                                              "dependsOnItemIds",
+                                              selectedItems.filter(id => id !== item.id)
+                                            );
+                                          }
+                                        }}
+                                      />
+                                      <span>{item.name}</span>
+                                    </label>
+                                  ));
+                                })()}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

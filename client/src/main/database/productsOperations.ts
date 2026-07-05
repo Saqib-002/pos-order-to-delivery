@@ -49,6 +49,8 @@ export class ProductsDatabaseOperations {
                     maxComplements: addonPage.maxComplements,
                     freeAddons: addonPage.freeAddons,
                     groupId: addonPage.selectedGroup,
+                    dependsOnGroupId: addonPage.dependsOnGroupId || null,
+                    dependsOnItemIds: addonPage.dependsOnItemIds && addonPage.dependsOnItemIds.length > 0 ? JSON.stringify(addonPage.dependsOnItemIds) : null,
                     createdAt: now,
                     updatedAt: now,
                 });
@@ -197,6 +199,8 @@ export class ProductsDatabaseOperations {
                     freeAddons: addonPage.freeAddons,
                     pageNo: addonPage.pageNo,
                     groupId: addonPage.selectedGroup,
+                    dependsOnGroupId: addonPage.dependsOnGroupId || null,
+                    dependsOnItemIds: addonPage.dependsOnItemIds && addonPage.dependsOnItemIds.length > 0 ? JSON.stringify(addonPage.dependsOnItemIds) : null,
                     createdAt: now,
                     updatedAt: now,
                 });
@@ -276,7 +280,9 @@ export class ProductsDatabaseOperations {
                     "products_groups.pageNo",
                     "products_groups.maxComplements",
                     "products_groups.minComplements",
-                    "products_groups.groupId as selectedGroup"
+                    "products_groups.groupId as selectedGroup",
+                    "products_groups.dependsOnGroupId as dependsOnGroupId",
+                    "products_groups.dependsOnItemIds as dependsOnItemIds"
                 )
                 .orderBy("products_groups.pageNo", "asc");
             return addOnPages;

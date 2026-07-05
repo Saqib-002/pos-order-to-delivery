@@ -32,18 +32,21 @@ interface FinancialReportProps {
   selectedDate: string;
   startDateRange: Date | null;
   endDateRange: Date | null;
+  configurations: any;
 }
 
 const DistributionItem: React.FC<{
   label: string;
-  value: number;
+  value: number | string;
   percentage: number;
   color: string;
 }> = ({ label, value, percentage, color }) => (
   <div className="flex flex-col gap-1">
     <div className="flex justify-between text-sm">
       <span className="text-gray-600 truncate max-w-[250px]" title={label}>{label}</span>
-      <span className="font-semibold text-gray-900">{Number(value || 0).toFixed(2)}€</span>
+      <span className="font-semibold text-gray-900">
+        {typeof value === "string" ? value : `${Number(value || 0).toFixed(2)}€`}
+      </span>
     </div>
     <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
       <div
@@ -77,7 +80,14 @@ const SectionSummary: React.FC<{
   </div>
 );
 
-export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
+export const FinancialReport: React.FC<FinancialReportProps> = ({ 
+  data, 
+  dateRange, 
+  selectedDate, 
+  startDateRange, 
+  endDateRange, 
+  configurations 
+}) => {
   const { t } = useTranslation();
   const [modalData, setModalData] = useState<{
     title: string;
@@ -297,48 +307,63 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
 
       {/* Grid for categorized distributions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {/* Cash Out Transactions */}
+        {/* Cash In / Out Transactions */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
                 <WalletIcon className="w-4 h-4 text-emerald-500" />
-                {t("reports.financial.cashOut")}
+                {t("reports.financial.cashInOut")}
               </h3>
-              {((data.breakdowns as any)?.cashOuts || []).length > 5 && (
-                <button
+              {((data.breakdowns as any)?.cashOuts || []).length > 0 && (
+                <button 
                   onClick={() => setModalData({
-                    title: t("reports.financial.cashOut"),
+                    title: t("reports.financial.cashInOut"),
                     items: (data.breakdowns as any)?.cashOuts || [],
-                    type: 'income', 
-                    totalReference: (data.summary as any).breakdown.cashOutTotal || 1
+                    type: 'income',
+                    totalReference: (((data.summary as any).breakdown.cashOutTotal || 0) + ((data.summary as any).breakdown.cashInTotal || 0)) || 1
                   })}
-                  className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
+                  className="text-xs text-green-600 hover:text-green-800 font-semibold flex items-center gap-1"
                 >
+                  <EyeIcon className="w-4 h-4" />
                   {t("common.seeAll")}
                 </button>
               )}
             </div>
             <div className="space-y-4">
               {((data.breakdowns as any)?.cashOuts || []).length > 0 ? (
-                ((data.breakdowns as any).cashOuts || []).slice(0, 5).map((item: any, idx: number) => (
-                  <DistributionItem
-                    key={idx}
-                    label={item.name}
-                    value={item.total}
-                    percentage={calculatePercentage(item.total, (data.summary as any).breakdown.cashOutTotal || 1)}
-                    color="#10b981"
-                  />
-                ))
+                ((data.breakdowns as any).cashOuts || []).slice(0, 5).map((item: any, idx: number) => {
+                  const isInflow = item.transactionType === "in";
+                  const totalMovements = ((data.summary as any).breakdown.cashOutTotal || 0) + ((data.summary as any).breakdown.cashInTotal || 0);
+                  return (
+                    <DistributionItem
+                      key={idx}
+                      label={item.name}
+                      value={`${isInflow ? "+" : "-"}${Number(item.total).toFixed(2)}€`}
+                      percentage={calculatePercentage(item.total, totalMovements || 1)}
+                      color={isInflow ? "#10b981" : "#ef4444"}
+                    />
+                  );
+                })
               ) : (
                 <p className="text-sm text-gray-400 text-center py-4">{t("common.noData")}</p>
               )}
             </div>
           </div>
-          <SectionSummary 
-            total={(data.summary as any).breakdown.cashOutTotal || 0}
-            t={t} 
-          />
+          <div className="mt-3 pt-2 border-t border-gray-50 flex justify-between items-end">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">
+                {t("reports.financial.cashIn")}
+              </span>
+              <span className="text-sm font-bold text-emerald-600">+{((data.summary as any).breakdown.cashInTotal || 0).toFixed(2)}€</span>
+            </div>
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">
+                {t("reports.financial.cashOut")}
+              </span>
+              <span className="text-sm font-bold text-rose-600">-{((data.summary as any).breakdown.cashOutTotal || 0).toFixed(2)}€</span>
+            </div>
+          </div>
         </div>
 
         {/* Income Sources */}
@@ -349,7 +374,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
                 <WalletIcon className="w-4 h-4 text-emerald-500" />
                 {t("reports.financial.incomeBySource")}
               </h3>
-              {(data.breakdowns?.otherIncomeBySource || []).length > 5 && (
+              {(data.breakdowns?.otherIncomeBySource || []).length > 0 && (
                 <button 
                   onClick={() => setModalData({
                     title: t("reports.financial.incomeBySource"),
@@ -424,7 +449,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
                 <ShoppingCartIcon className="w-4 h-4 text-[#008080]" />
                 {t("reports.financial.expensesByCategory")}
               </h3>
-              {(data.breakdowns?.marketPurchasesByType || []).length > 5 && (
+              {(data.breakdowns?.marketPurchasesByType || []).length > 0 && (
                 <button 
                   onClick={() => setModalData({
                     title: t("reports.financial.expensesByCategory"),
@@ -499,7 +524,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
                 <ShoppingCartIcon className="w-4 h-4 text-blue-500" />
                 {t("reports.financial.topSuppliers")}
               </h3>
-              {(data.breakdowns?.marketPurchasesBySupplier || []).length > 5 && (
+              {(data.breakdowns?.marketPurchasesBySupplier || []).length > 0 && (
                 <button 
                   onClick={() => setModalData({
                     title: t("reports.financial.topSuppliers"),
@@ -574,7 +599,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
                 <UsersIcon className="w-4 h-4 text-rose-500" />
                 {t("reports.financial.topWorkers")}
               </h3>
-              {(data.breakdowns?.salariesByWorker || []).length > 5 && (
+              {(data.breakdowns?.salariesByWorker || []).length > 0 && (
                 <button 
                   onClick={() => setModalData({
                     title: t("reports.financial.topWorkers"),
@@ -649,7 +674,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
                 <TruckIcon className="w-4 h-4 text-sky-500" />
                 {t("reports.financial.maintenanceByVehicle")}
               </h3>
-              {(data.breakdowns?.maintenanceByVehicle || []).length > 5 && (
+              {(data.breakdowns?.maintenanceByVehicle || []).length > 0 && (
                 <button 
                   onClick={() => setModalData({
                     title: t("reports.financial.maintenanceByVehicle"),
@@ -724,7 +749,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
                 <ShoppingCartIcon className="w-4 h-4 text-purple-500" />
                 {t("reports.financial.purchasesByProduct")}
               </h3>
-              {(data.breakdowns?.purchasesByProduct || []).length > 5 && (
+              {(data.breakdowns?.purchasesByProduct || []).length > 0 && (
                 <button 
                   onClick={() => setModalData({
                     title: t("reports.financial.purchasesByProduct"),
@@ -809,6 +834,23 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
                   )
                 ))}
               </div>
+              {/* Cash In Transactions */}
+              {Object.keys((data.breakdowns?.paymentMethods as any)?.cashIns || {}).length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t("reports.financial.cashIn")}</span>
+                  {Object.entries((data.breakdowns?.paymentMethods as any)?.cashIns || {}).map(([method, amount], idx) => (
+                    (amount as number) > 0 && (
+                      <DistributionItem
+                        key={idx}
+                        label={method.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                        value={amount as number}
+                        percentage={calculatePercentage(amount as number, (data.summary as any).breakdown.cashInTotal || 1)}
+                        color="#10b981"
+                      />
+                    )
+                  ))}
+                </div>
+              )}
               {/* Cash Out Transactions */}
               {Object.keys((data.breakdowns?.paymentMethods as any)?.cashOuts || {}).length > 0 && (
                 <div className="space-y-2">
@@ -819,7 +861,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
                         key={idx}
                         label={method.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                         value={amount as number}
-                        percentage={calculatePercentage(amount as number, (data.summary as any).cashOutTotal || 1)}
+                        percentage={calculatePercentage(amount as number, (data.summary as any).breakdown.cashOutTotal || 1)}
                         color="#f59e0b"
                       />
                     )
@@ -896,6 +938,11 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({ data }) => {
           items={modalData.items}
           type={modalData.type}
           totalReference={modalData.totalReference}
+          dateRange={dateRange}
+          selectedDate={selectedDate}
+          startDateRange={startDateRange}
+          endDateRange={endDateRange}
+          configurations={configurations}
         />
       )}
     </div>

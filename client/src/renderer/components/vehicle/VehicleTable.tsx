@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Vehicle } from "@/types/vehicles";
 import CustomButton from "../ui/CustomButton";
-import { Car, Bike, LocateFixed, Toolbox } from "lucide-react";
+import { Car, Bike, LocateFixed, Toolbox, Truck } from "lucide-react";
 import {
   ExclamationIcon,
   EditIcon,
@@ -23,6 +23,23 @@ const formatDate = (dateString: string | Date | undefined) => {
   return dayjs(new Date(dateString).toLocaleDateString()).format("DD/MM/YYYY");
 };
 
+const getVehicleIcon = (type: string) => {
+  switch (type) {
+    case "bike":
+      return <Bike className="size-6 text-blue-600" />;
+    case "motorcycle":
+      return <MotorcycleIcon className="size-6 text-orange-600" />;
+    case "car":
+      return <Car className="size-6 text-green-600" />;
+    case "scooter":
+      return <Bike className="size-6 text-purple-600" />;
+    case "van":
+      return <Truck className="size-6 text-pink-600" />;
+    default:
+      return <Car className="size-6 text-gray-600" />;
+  }
+};
+
 export const VehicleTable: React.FC<VehicleTableProps> = ({
   vehicles,
   onEdit,
@@ -39,33 +56,33 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
           {t("vehicleManagement.table.noVehiclesFound")}
         </h3>
         <p className="mt-1 text-sm text-gray-500">
-          {t("vehicleManagement.table.getStartedMessage")}
+          {t("vehicleManagement.table.addVehicleMessage")}
         </p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-xs bg-white">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-              {t("vehicleManagement.table.vehicle")}
+            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+              {t("vehicleManagement.table.modelLicense")}
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
               {t("vehicleManagement.table.gpsColor")}
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
               {t("vehicleManagement.table.status")}
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-              {t("vehicleManagement.table.itvDate")}
+            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+              {t("vehicleManagement.table.dates")}
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
               {t("vehicleManagement.table.insurance")}
             </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+            <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
               {t("vehicleManagement.table.actions")}
             </th>
           </tr>
@@ -76,11 +93,7 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
               <td className="px-6 py-4">
                 <div className="flex items-center">
                   <div className="shrink-0 h-12 w-12 bg-linear-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center shadow-sm">
-                    {vehicle.type === "bike" ? (
-                      <MotorcycleIcon className="size-6 text-blue-600" />
-                    ) : (
-                      <Car className="size-6 text-green-600" />
-                    )}
+                    {getVehicleIcon(vehicle.type)}
                   </div>
                   <div className="ml-4">
                     <div className="text-sm font-semibold text-black">

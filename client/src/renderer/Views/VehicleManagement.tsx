@@ -91,7 +91,10 @@ export const VehicleManagement = () => {
   const typeOptions = [
     { value: "all", label: t("vehicleManagement.filters.allTypes") },
     { value: "bike", label: t("vehicleManagement.filters.bike") },
+    { value: "motorcycle", label: t("vehicleManagement.filters.motorcycle") },
     { value: "car", label: t("vehicleManagement.filters.car") },
+    { value: "scooter", label: t("vehicleManagement.filters.scooter") },
+    { value: "van", label: t("vehicleManagement.filters.van") },
   ];
 
   const alertOptions = [

@@ -6,14 +6,17 @@ import {
   getPaymentStatusStyle,
 } from "@/renderer/utils/paymentStatus";
 import dayjs from "dayjs";
+import { Printer } from "lucide-react";
 
 interface Props {
   purchases: MarketPurchase[];
   onEdit: (purchase: MarketPurchase) => void;
   onDelete: (id: string) => void;
+  onPrint: (purchase: MarketPurchase) => void;
+  printingPurchaseId?: string | null;
 }
 
-export const MarketPurchaseTable = ({ purchases, onEdit, onDelete }: Props) => {
+export const MarketPurchaseTable = ({ purchases, onEdit, onDelete, onPrint, printingPurchaseId }: Props) => {
   const { t } = useTranslation();
 
   const formatDate = (dateString: string) => {
@@ -114,6 +117,18 @@ export const MarketPurchaseTable = ({ purchases, onEdit, onDelete }: Props) => {
                   })()}
                 </td>
                 <td className="px-6 py-4 text-right flex justify-end gap-2">
+                  <button
+                    onClick={() => onPrint(purchase)}
+                    className="p-2 hover:bg-green-100 rounded-full text-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={t("marketPurchaseManagement.table.print")}
+                    disabled={printingPurchaseId === purchase.id}
+                  >
+                    {printingPurchaseId === purchase.id ? (
+                      <div className="size-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <Printer className="size-5" />
+                    )}
+                  </button>
                   <button
                     onClick={() => onEdit(purchase)}
                     className="p-2 hover:bg-gray-200 rounded-full text-gray-600"

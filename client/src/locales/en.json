@@ -27,7 +27,11 @@
       "partial": "PARTIAL",
       "pending": "PENDING"
     },
-    "note": "Note"
+    "note": "Note",
+    "print": "Print",
+    "export": "Export PDF",
+    "description": "Description",
+    "type": "Type"
   },
   "welcome": "Welcome to our website.",
   "configurations": {
@@ -88,6 +92,11 @@
       "noZonesConfigured": "No delivery zones configured yet.",
       "drawFirstZoneHelp": "Click \"Manage Delivery Zones\" to draw your first zone on the map.",
       "minOrderShort": "Min. order:",
+      "drawNewZone": "+ Draw New Zone",
+      "drawingModeActive": "Drawing Mode Active",
+      "drawingHelpText": "Click on the map to define the corners of your zone. You have placed {{count}} points.",
+      "finishDrawingButton": "Finish",
+      "cancelDrawingButton": "Cancel",
       "validation": {
         "atLeastOneZone": "Please create at least one delivery zone"
       },
@@ -708,7 +717,10 @@
       "distributions": "Distributions",
       "total": "Total",
       "netBalance": "Net Balance",
-      "cashOut": "Cash Out"
+      "cashIn": "Cash In",
+      "cashOut": "Cash Out",
+      "cashInOut": "Cash In / Out",
+      "period": "Period"
     },
     "title": "Analytics & Reports",
     "subtitle": "Comprehensive insights into order performance and trends",
@@ -1211,6 +1223,7 @@
     "motorcycles": "Motorcycles",
     "cars": "Cars",
     "scooters": "Scooters",
+    "van": "Van",
     "searchDeliveryPersonnel": "Search delivery personnel...",
     "all": "All",
     "bike": "Bike",
@@ -1683,6 +1696,12 @@
         "freeAddons": "Number of free add-ons",
         "addPluginGroup": "ADD PLUGIN GROUP FOR PAGE",
         "availableItems": "Available items:",
+        "conditionalVisibility": "Show this page conditionally based on another selection",
+        "parentModifierPage": "Parent Modifier Page",
+        "selectGroup": "Select a group...",
+        "parentPageLabel": "Page {{pageNo}}: {{groupName}}",
+        "showWhenSelected": "Show when any of these are selected:",
+        "noOptionsInParent": "No options found in parent group",
         "printers": "Printers",
         "configurePrinters": "Configure printer settings here.",
         "cancel": "Cancel",
@@ -2034,7 +2053,8 @@
         "total": "Total",
         "paymentStatus": "Payment Status"
       }
-    }
+    },
+    "paymentMethod": "Payment Method"
   },
   "incomesManagement": {
     "title": "Other Source of Income",
@@ -2122,7 +2142,8 @@
       "paymentStatus": "Payment Status",
       "actions": "Actions",
       "noPurchases": "No purchases found",
-      "updating": "Updating..."
+      "updating": "Updating...",
+      "print": "Print Invoice"
     },
     "modal": {
       "addTitle": "Add Market Purchase",
@@ -2205,6 +2226,15 @@
         "title": "Delete Purchase",
         "message": "Are you sure you want to delete this purchase? This action cannot be undone."
       }
+    },
+    "invoiceReport": {
+      "title": "Purchase Invoice",
+      "companyName": "Company Name",
+      "buyerInfo": "Buyer Information",
+      "supplierInfo": "Supplier Information",
+      "printDate": "Print Date",
+      "pdfSaved": "Invoice PDF saved successfully",
+      "pdfError": "Error generating Invoice PDF"
     }
   },
   "vehicleManagement": {
@@ -2224,7 +2254,10 @@
       "yes": "Yes",
       "no": "No",
       "bike": "Motorcycle",
+      "motorcycle": "Motorcycle",
       "car": "Car",
+      "scooter": "Scooter",
+      "van": "Van",
       "unassigned": "Unassigned",
       "hasAlerts": "Has Alerts",
       "expiringSoon": "Expiring Soon",
@@ -2627,5 +2660,20 @@
     "message": "Would you like to print the customer receipt for this order?",
     "yesPrint": "Print Receipt",
     "noPrint": "No, thanks"
+  },
+  "company": {
+    "name": "Company Name"
+  },
+  "supplier": {
+    "name": "Supplier Name"
+  },
+  "worker": {
+    "name": "Worker Name"
+  },
+  "vehicle": {
+    "name": "Vehicle Name"
+  },
+  "product": {
+    "name": "Product Name"
   }
 }

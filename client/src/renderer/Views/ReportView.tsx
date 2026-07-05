@@ -27,6 +27,12 @@ import { DEFAULT_PAGE_LIMIT } from "@/constants";
 import Pagination from "../components/shared/Pagination";
 import dayjs from "dayjs";
 import { FinancialReport } from "../components/report/FinancialReport";
+import CustomButton from "../components/ui/CustomButton";
+import { Printer } from "lucide-react";
+import {
+  generateOrderAnalyticsReportHTML,
+  generateFinancialAnalyticsReportHTML,
+} from "../utils/pdfService";
 
 export const ReportView = () => {
   const { t } = useTranslation();
@@ -48,6 +54,7 @@ export const ReportView = () => {
   const [analytics, setAnalytics] = useState<AnalyticsType | null>(null);
   const [financialAnalytics, setFinancialAnalytics] =
     useState<FinancialAnalyticsType | null>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   const {
     auth: { token },
@@ -132,6 +139,69 @@ export const ReportView = () => {
     activeTab,
   ]);
 
+  const handlePrintReport = async () => {
+    if (!token) return;
+    try {
+      setIsPrinting(true);
+      if (activeTab === "orders") {
+        if (!analytics) {
+          toast.warn(t("common.noData"));
+          return;
+        }
+        const html = generateOrderAnalyticsReportHTML(
+          analytics,
+          { dateRange, selectedDate, startDateRange, endDateRange, orderTypeFilter },
+          configurations,
+          t
+        );
+        const defaultFileName = `order-analytics-${dateRange}-${dayjs().format("YYYY-MM-DD")}.pdf`;
+        const result = await (window as any).electronAPI.savePDFReport(
+          token,
+          "orderAnalytics",
+          html,
+          defaultFileName
+        );
+        if (result.status) {
+          toast.success(t("marketPurchaseManagement.invoiceReport.pdfSaved"));
+        } else {
+          if (result.error !== "Save cancelled") {
+            toast.error(t("marketPurchaseManagement.invoiceReport.pdfError"));
+          }
+        }
+      } else {
+        if (!financialAnalytics) {
+          toast.warn(t("common.noData"));
+          return;
+        }
+        const html = generateFinancialAnalyticsReportHTML(
+          financialAnalytics,
+          { dateRange, selectedDate, startDateRange, endDateRange },
+          configurations,
+          t
+        );
+        const defaultFileName = `financial-analytics-${dateRange}-${dayjs().format("YYYY-MM-DD")}.pdf`;
+        const result = await (window as any).electronAPI.savePDFReport(
+          token,
+          "financialAnalytics",
+          html,
+          defaultFileName
+        );
+        if (result.status) {
+          toast.success(t("marketPurchaseManagement.invoiceReport.pdfSaved"));
+        } else {
+          if (result.error !== "Save cancelled") {
+            toast.error(t("marketPurchaseManagement.invoiceReport.pdfError"));
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error generating report PDF:", error);
+      toast.error(t("marketPurchaseManagement.invoiceReport.pdfError") || "Error generating PDF");
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
   const renderOrderRow = (order: any) => (
     <tr
       key={order.orderId}
@@ -185,28 +255,39 @@ export const ReportView = () => {
         iconbgClasses="bg-purple-100"
       />
 
-      {/* TABS */}
-      <div className="flex border-b border-gray-200 mb-6">
-        <button
-          className={`px-6 py-3 font-medium text-sm transition-colors duration-200 border-b-2 ${
-            activeTab === "orders"
-              ? "border-black text-black"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("orders")}
-        >
-          {t("reports.tabs.orders")}
-        </button>
-        <button
-          className={`px-6 py-3 font-medium text-sm transition-colors duration-200 border-b-2 ${
-            activeTab === "financial"
-              ? "border-black text-black"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("financial")}
-        >
-          {t("reports.tabs.financial")}
-        </button>
+      {/* TABS & PRINT ACTION */}
+      <div className="flex justify-between items-center border-b border-gray-200 mb-6">
+        <div className="flex">
+          <button
+            className={`px-6 py-3 font-medium text-sm transition-colors duration-200 border-b-2 ${
+              activeTab === "orders"
+                ? "border-black text-black"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("orders")}
+          >
+            {t("reports.tabs.orders")}
+          </button>
+          <button
+            className={`px-6 py-3 font-medium text-sm transition-colors duration-200 border-b-2 ${
+              activeTab === "financial"
+                ? "border-black text-black"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("financial")}
+          >
+            {t("reports.tabs.financial")}
+          </button>
+        </div>
+        <CustomButton
+          onClick={handlePrintReport}
+          label={t("common.print") || "Print"}
+          Icon={<Printer className="size-4" />}
+          isLoading={isPrinting}
+          variant="primary"
+          className="mb-2"
+          type="button"
+        />
       </div>
 
       <DateRangeSelector
@@ -319,6 +400,7 @@ export const ReportView = () => {
             selectedDate={selectedDate}
             startDateRange={startDateRange}
             endDateRange={endDateRange}
+            configurations={configurations}
           />
         )}
       </div>
