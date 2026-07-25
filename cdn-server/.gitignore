@@ -3,3 +3,4 @@ uploads
 dist
 .env
 temp_backups
+/logs
