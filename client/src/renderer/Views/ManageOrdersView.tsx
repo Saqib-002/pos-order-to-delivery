@@ -554,8 +554,9 @@ export const ManageOrdersView = () => {
                 orderTotal,
               );
 
+              const statusLower = order.status?.toLowerCase();
               const isPaymentAllowed =
-                order.status === "complete" || order.status === "delivered";
+                statusLower === "complete" || statusLower === "delivered";
               const hasUnpaidAmount =
                 (paymentStatus.status === "UNPAID" ||
                   paymentStatus.status === "PARTIAL") &&
@@ -577,8 +578,8 @@ export const ManageOrdersView = () => {
 
             {/* Cancel Order Button - Only show if user has permission and order is not already cancelled/delivered */}
             {hasCancelOrderPermission() &&
-              order.status !== "cancelled" &&
-              order.status !== "delivered" && (
+              order.status?.toLowerCase() !== "cancelled" &&
+              order.status?.toLowerCase() !== "delivered" && (
                 <button
                   onClick={() => handleCancelOrderClick(order)}
                   className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 cursor-pointer"
@@ -593,7 +594,9 @@ export const ManageOrdersView = () => {
             {/* Change Delivery Person Button - Show for all delivery orders that are not cancelled and already have a delivery person assigned */}
             {(order.orderType === "delivery" || order.orderType?.toLowerCase().includes("platform:delivery")) &&
               (order.deliveryPerson?.id || order.deliveryPerson?.name) &&
-              order.status !== "cancelled" && order.status !== "sentToKitchen" && (
+              order.status?.toLowerCase() !== "cancelled" &&
+              order.status?.toLowerCase() !== "delivered" &&
+              order.status?.toLowerCase() !== "senttokitchen" && (
                 <button
                   onClick={() => handleChangeDeliveryClick(order)}
                   className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 cursor-pointer"

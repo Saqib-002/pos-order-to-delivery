@@ -1255,6 +1255,9 @@
       "enterName": "Please enter a name",
       "enterLicenseNumber": "Please enter a license number",
       "emailRequired": "Email is required",
+      "usernameRequired": "Username is required",
+      "usernameTooShort": "Username must be at least 3 characters long",
+      "usernameExists": "Username already exists",
       "validEmail": "Please enter a valid email address",
       "phoneRequired": "Phone number is required",
       "validPhone": "Please enter a valid phone number",
@@ -1267,7 +1270,9 @@
       "deleteConfirmTitle": "Delete Delivery Person",
       "fetchStatsFailed": "Failed to fetch delivery person stats",
       "cannotDeleteWithOrders": "Cannot delete delivery person with {{count}} assigned orders",
-      "deleteFailed": "Failed to delete delivery person"
+      "deleteFailed": "Failed to delete delivery person",
+      "enterPassword": "Please enter a password",
+      "passwordTooShort": "Password must be at least 6 characters long"
     },
     "success": {
       "updated": "Delivery person updated successfully",
@@ -1282,8 +1287,13 @@
     "fullNamePlaceholder": "Enter full name",
     "email": "Email *",
     "emailPlaceholder": "Enter email address",
+    "username": "Username *",
+    "usernamePlaceholder": "Enter username",
     "phoneNumber": "Phone Number",
     "phoneNumberPlaceholder": "Enter phone number",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password (min 6 characters)",
+    "passwordHelpText": "Leave blank to keep current password",
     "licenseNumber": "License Number *",
     "licenseNumberPlaceholder": "Enter license number",
     "vehicleType": "Vehicle Type",
@@ -2653,6 +2663,14 @@
     "errors": {
       "routeNotFound": "Could not find a route between these addresses.",
       "loadFailed": "Failed to load Google Maps"
+    },
+    "chat": {
+      "closeChat": "Close Chat",
+      "chatWithDriver": "Chat with Driver",
+      "noMessagesYet": "No messages yet.",
+      "sendFirstMessage": "Send a message to start chatting!",
+      "typeMessagePlaceholder": "Type a message...",
+      "sendButton": "Send"
     }
   },
   "printConfirmationModal": {

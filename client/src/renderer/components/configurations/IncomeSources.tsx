@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AddIcon, DeleteIcon, EditIcon, EyeIcon } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
+import Pagination from "../shared/Pagination";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { toast } from "react-toastify";
 import { IncomeSourceModal } from "./Modals/IncomeSourceModal";
@@ -90,6 +91,15 @@ const IncomeSources = () => {
     setMode("add");
   };
 
+  const [currentPage, setCurrentPage] = useState(0);
+  const ITEMS_PER_PAGE = 15;
+
+  const totalPages = Math.ceil(incomeSources.length / ITEMS_PER_PAGE);
+  const paginatedIncomeSources = incomeSources.slice(
+    currentPage * ITEMS_PER_PAGE,
+    (currentPage + 1) * ITEMS_PER_PAGE
+  );
+
   return (
     <div className="relative">
       {showIncomeSourceModal && (
@@ -138,68 +148,75 @@ const IncomeSources = () => {
               {t("incomeSources.noIncomeSources")}
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("incomeSources.table.incomeSourceName")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("incomeSources.table.description")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("incomeSources.table.createdAt")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("incomeSources.table.actions")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {incomeSources.map((incomeSource: any) => (
-                    <tr key={incomeSource.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {incomeSource.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {incomeSource.description || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {dayjs(
-                          new Date(incomeSource.created_at).toLocaleDateString()
-                        ).format("DD/MM/YYYY")}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
-                        <CustomButton
-                          type="button"
-                          onClick={() => handleView(incomeSource)}
-                          Icon={<EyeIcon className="size-5" />}
-                          variant="transparent"
-                          className="p-0!"
-                        />
-                        <CustomButton
-                          type="button"
-                          onClick={() => handleEdit(incomeSource)}
-                          Icon={<EditIcon className="size-5" />}
-                          variant="transparent"
-                          className="p-0! text-blue-500! hover:text-blue-700!"
-                        />
-                        <CustomButton
-                          type="button"
-                          onClick={() =>
-                            handleDelete(incomeSource.id, incomeSource.name)
-                          }
-                          Icon={<DeleteIcon className="size-5" />}
-                          variant="transparent"
-                          className="p-0! text-red-500! hover:text-red-700!"
-                        />
-                      </td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("incomeSources.table.incomeSourceName")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("incomeSources.table.description")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("incomeSources.table.createdAt")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("incomeSources.table.actions")}
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {paginatedIncomeSources.map((incomeSource: any) => (
+                      <tr key={incomeSource.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                          {incomeSource.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                          {incomeSource.description || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                          {dayjs(
+                            new Date(incomeSource.created_at).toLocaleDateString()
+                          ).format("DD/MM/YYYY")}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
+                          <CustomButton
+                            type="button"
+                            onClick={() => handleView(incomeSource)}
+                            Icon={<EyeIcon className="size-5" />}
+                            variant="transparent"
+                            className="p-0!"
+                          />
+                          <CustomButton
+                            type="button"
+                            onClick={() => handleEdit(incomeSource)}
+                            Icon={<EditIcon className="size-5" />}
+                            variant="transparent"
+                            className="p-0! text-blue-500! hover:text-blue-700!"
+                          />
+                          <CustomButton
+                            type="button"
+                            onClick={() =>
+                              handleDelete(incomeSource.id, incomeSource.name)
+                            }
+                            Icon={<DeleteIcon className="size-5" />}
+                            variant="transparent"
+                            className="p-0! text-red-500! hover:text-red-700!"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </>
           )}
         </div>
       </div>

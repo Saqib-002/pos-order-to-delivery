@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AddIcon, DeleteIcon, EditIcon, EyeIcon } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
 import CustomInput from "../shared/CustomInput";
+import Pagination from "../shared/Pagination";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { toast } from "react-toastify";
 import { InventoryProductModal } from "./Modals/InventoryProductModal";
@@ -95,6 +96,13 @@ const Inventory = () => {
     setMode("add");
   };
 
+  const [currentPage, setCurrentPage] = useState(0);
+  const ITEMS_PER_PAGE = 15;
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [searchTerm]);
+
   const filteredProducts = inventoryProducts.filter((product: any) => {
     const searchLower = searchTerm.toLowerCase();
     const matchesName = product.name.toLowerCase().includes(searchLower);
@@ -103,6 +111,12 @@ const Inventory = () => {
       .includes(searchLower);
     return matchesName || matchesExpenseType;
   });
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const paginatedProducts = filteredProducts.slice(
+    currentPage * ITEMS_PER_PAGE,
+    (currentPage + 1) * ITEMS_PER_PAGE
+  );
 
   return (
     <div className="relative">
@@ -166,66 +180,73 @@ const Inventory = () => {
           ) : filteredProducts.length === 0 ? (
             <p className="text-gray-500">{t("inventory.noResultsFound")}</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("inventory.table.productName")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("inventory.table.expenseType")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("inventory.table.createdAt")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("inventory.table.actions")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredProducts.map((product: any) => (
-                    <tr key={product.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {product.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {product.expenseType ? product.expenseType.name : "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {dayjs(
-                          new Date(product.createdAt).toLocaleDateString()
-                        ).format("DD/MM/YYYY")}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
-                        <CustomButton
-                          type="button"
-                          onClick={() => handleView(product)}
-                          Icon={<EyeIcon className="size-5" />}
-                          variant="transparent"
-                          className="p-0!"
-                        />
-                        <CustomButton
-                          type="button"
-                          onClick={() => handleEdit(product)}
-                          Icon={<EditIcon className="size-5" />}
-                          variant="transparent"
-                          className="p-0! text-blue-500! hover:text-blue-700!"
-                        />
-                        <CustomButton
-                          type="button"
-                          onClick={() => handleDelete(product.id, product.name)}
-                          Icon={<DeleteIcon className="size-5" />}
-                          variant="transparent"
-                          className="p-0! text-red-500! hover:text-red-700!"
-                        />
-                      </td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("inventory.table.productName")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("inventory.table.expenseType")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("inventory.table.createdAt")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("inventory.table.actions")}
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {paginatedProducts.map((product: any) => (
+                      <tr key={product.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                          {product.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                          {product.expenseType ? product.expenseType.name : "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                          {dayjs(
+                            new Date(product.createdAt).toLocaleDateString()
+                          ).format("DD/MM/YYYY")}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
+                          <CustomButton
+                            type="button"
+                            onClick={() => handleView(product)}
+                            Icon={<EyeIcon className="size-5" />}
+                            variant="transparent"
+                            className="p-0!"
+                          />
+                          <CustomButton
+                            type="button"
+                            onClick={() => handleEdit(product)}
+                            Icon={<EditIcon className="size-5" />}
+                            variant="transparent"
+                            className="p-0! text-blue-500! hover:text-blue-700!"
+                          />
+                          <CustomButton
+                            type="button"
+                            onClick={() => handleDelete(product.id, product.name)}
+                            Icon={<DeleteIcon className="size-5" />}
+                            variant="transparent"
+                            className="p-0! text-red-500! hover:text-red-700!"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </>
           )}
         </div>
       </div>

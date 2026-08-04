@@ -54,6 +54,10 @@ const useOrderManagementInternal = (auth: AuthState) => {
   useEffect(() => {
     if (!auth.token) return;
     refreshOrdersCallback();
+    const interval = setInterval(() => {
+      refreshOrdersCallback();
+    }, 5000);
+    return () => clearInterval(interval);
   }, [auth.token, filter]);
 
   return {

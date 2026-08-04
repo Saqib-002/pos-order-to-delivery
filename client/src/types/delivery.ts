@@ -2,7 +2,9 @@ export interface DeliveryPerson {
   id: string;
   name: string;
   email?: string;
+  username?: string;
   phone: string;
+  password?: string;
   vehicleType: "bike" | "motorcycle" | "car" | "scooter" | "van";
   licenseNo?: string;
   isActive?: boolean;

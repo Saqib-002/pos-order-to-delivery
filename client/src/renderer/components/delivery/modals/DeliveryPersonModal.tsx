@@ -14,9 +14,9 @@ interface DeliveryPersonModalProps {
   setDeliveryPerson: React.Dispatch<
     React.SetStateAction<DeliveryPerson | null>
   >;
-  emailError: string;
+  usernameError: string;
   phoneError: string;
-  handleEmailChange: (value: string) => void;
+  handleUsernameChange: (value: string) => void;
   handlePhoneChange: (value: string) => void;
   isEditing: boolean;
 }
@@ -27,9 +27,9 @@ export const DeliveryPersonModal: React.FC<DeliveryPersonModalProps> = ({
   onSubmit,
   deliveryPerson,
   setDeliveryPerson,
-  emailError,
+  usernameError,
   phoneError,
-  handleEmailChange,
+  handleUsernameChange,
   handlePhoneChange,
   isEditing,
 }) => {
@@ -77,14 +77,14 @@ export const DeliveryPersonModal: React.FC<DeliveryPersonModalProps> = ({
               inputClasses="py-3 px-4"
             />
             <CustomInput
-              label={t("deliveryPersonModal.email")}
-              name="email"
+              label={t("deliveryPersonModal.username")}
+              name="username"
               type="text"
-              placeholder={t("deliveryPersonModal.emailPlaceholder")}
-              value={deliveryPerson.email || ""}
-              onChange={(e) => handleEmailChange(e.target.value)}
-              inputClasses={`py-3 px-4 ${emailError ? "border-red-300 focus:!ring-1 focus:ring-red-600 focus:border-red-600" : "border-gray-300 focus:ring-black focus:border-black"}`}
-              error={emailError}
+              placeholder={t("deliveryPersonModal.usernamePlaceholder")}
+              value={(deliveryPerson as any).username || ""}
+              onChange={(e) => handleUsernameChange(e.target.value)}
+              inputClasses={`py-3 px-4 ${usernameError ? "border-red-300 focus:!ring-1 focus:ring-red-600 focus:border-red-600" : "border-gray-300 focus:ring-black focus:border-black"}`}
+              error={usernameError}
             />
             <CustomInput
               label={t("deliveryPersonModal.phoneNumber")}
@@ -110,6 +110,27 @@ export const DeliveryPersonModal: React.FC<DeliveryPersonModalProps> = ({
               }
               inputClasses="py-3 px-4"
             />
+            <div className="md:col-span-2">
+              <CustomInput
+                label={`${t("deliveryPersonModal.password")}${!isEditing ? " *" : ""}`}
+                name="password"
+                type="password"
+                placeholder={t("deliveryPersonModal.passwordPlaceholder")}
+                value={(deliveryPerson as any).password || ""}
+                onChange={(e) =>
+                  setDeliveryPerson({
+                    ...deliveryPerson,
+                    password: e.target.value,
+                  } as any)
+                }
+                inputClasses="py-3 px-4 border-gray-300 focus:ring-black focus:border-black"
+              />
+              {isEditing && (
+                <p className="mt-1 text-xs text-gray-500">
+                  {t("deliveryPersonModal.passwordHelpText")}
+                </p>
+              )}
+            </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t("deliveryPersonModal.vehicleType")}

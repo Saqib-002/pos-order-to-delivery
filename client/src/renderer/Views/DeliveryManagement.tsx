@@ -34,6 +34,7 @@ export const DeliveryManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedVehicleType, setSelectedVehicleType] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [usernameError, setUsernameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const {
@@ -44,14 +45,13 @@ export const DeliveryManagement = () => {
     fetchDeliveryPersons();
   }, [token]);
 
-  // Email validation function
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (email.trim() === "") {
-      return "";
+  // Username validation function
+  const validateUsername = (username: string) => {
+    if (!username || username.trim() === "") {
+      return t("deliveryManagement.errors.usernameRequired");
     }
-    if (!emailRegex.test(email)) {
-      return t("deliveryManagement.errors.validEmail");
+    if (username.length < 3) {
+      return t("deliveryManagement.errors.usernameTooShort");
     }
     return "";
   };
@@ -75,12 +75,12 @@ export const DeliveryManagement = () => {
     return "";
   };
 
-  // Handle email change
-  const handleEmailChange = (value: string) => {
+  // Handle username change
+  const handleUsernameChange = (value: string) => {
     if (currentDeliveryPerson) {
-      setCurrentDeliveryPerson({ ...currentDeliveryPerson, email: value });
-      if (emailError) {
-        setEmailError("");
+      setCurrentDeliveryPerson({ ...currentDeliveryPerson, username: value } as any);
+      if (usernameError) {
+        setUsernameError("");
       }
     }
   };
@@ -130,13 +130,12 @@ export const DeliveryManagement = () => {
       return;
     }
 
-    // Validate email
-    const emailValidationError = validateEmail(
-      currentDeliveryPerson.email || ""
-    );
-    if (emailValidationError) {
-      setEmailError(emailValidationError);
-      toast.error(emailValidationError);
+    // Validate username
+    const username = (currentDeliveryPerson as any).username || "";
+    const usernameValidationError = validateUsername(username);
+    if (usernameValidationError) {
+      setUsernameError(usernameValidationError);
+      toast.error(usernameValidationError);
       return;
     }
 
@@ -151,6 +150,17 @@ export const DeliveryManagement = () => {
       }
     }
 
+    // Validate password
+    const pwd = (currentDeliveryPerson as any).password || "";
+    if (!isEditing && !pwd.trim()) {
+      toast.error(t("deliveryManagement.errors.enterPassword"));
+      return;
+    }
+    if (pwd.trim() && pwd.length < 6) {
+      toast.error(t("deliveryManagement.errors.passwordTooShort"));
+      return;
+    }
+
     try {
       let res;
       if (isEditing) {
@@ -159,8 +169,9 @@ export const DeliveryManagement = () => {
           currentDeliveryPerson.id,
           {
             name: currentDeliveryPerson.name,
-            email: currentDeliveryPerson.email,
+            username: (currentDeliveryPerson as any).username,
             phone: (currentDeliveryPerson as any).phone,
+            password: (currentDeliveryPerson as any).password,
             vehicleType: (currentDeliveryPerson as any).vehicleType,
             licenseNo: (currentDeliveryPerson as any).licenseNo,
             isActive: (currentDeliveryPerson as any).isActive !== false,
@@ -169,8 +180,9 @@ export const DeliveryManagement = () => {
       } else {
         res = await (window as any).electronAPI.createDeliveryPerson(token, {
           name: currentDeliveryPerson.name,
-          email: currentDeliveryPerson.email,
+          username: (currentDeliveryPerson as any).username,
           phone: (currentDeliveryPerson as any).phone,
+          password: (currentDeliveryPerson as any).password,
           vehicleType: (currentDeliveryPerson as any).vehicleType || "bike",
           licenseNo: (currentDeliveryPerson as any).licenseNo,
           isActive: (currentDeliveryPerson as any).isActive !== false,
@@ -179,8 +191,8 @@ export const DeliveryManagement = () => {
 
       if (!res.status) {
         toast.error(
-          res.error.includes("UNIQUE constraint failed: delivery_persons.email")
-            ? t("deliveryManagement.errors.emailExists")
+          res.error.includes("UNIQUE constraint failed: delivery_persons.username")
+            ? t("deliveryManagement.errors.usernameExists")
             : t(
               isEditing
                 ? "deliveryManagement.errors.updateFailed"
@@ -194,7 +206,7 @@ export const DeliveryManagement = () => {
       setCurrentDeliveryPerson(null);
       setIsModalOpen(false);
       setIsEditing(false);
-      setEmailError("");
+      setUsernameError("");
       setPhoneError("");
       toast.success(
         t(
@@ -258,6 +270,7 @@ export const DeliveryManagement = () => {
       name: "",
       email: "",
       phone: "",
+      password: "",
       vehicleType: "bike",
       licenseNo: "",
       isActive: true,
@@ -561,9 +574,9 @@ export const DeliveryManagement = () => {
         onSubmit={handleSubmitDeliveryPerson}
         deliveryPerson={currentDeliveryPerson}
         setDeliveryPerson={setCurrentDeliveryPerson}
-        emailError={emailError}
+        usernameError={usernameError}
         phoneError={phoneError}
-        handleEmailChange={handleEmailChange}
+        handleUsernameChange={handleUsernameChange}
         handlePhoneChange={handlePhoneChange}
         isEditing={isEditing}
       />

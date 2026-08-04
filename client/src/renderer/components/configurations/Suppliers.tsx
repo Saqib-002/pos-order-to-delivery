@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AddIcon, DeleteIcon, EditIcon, EyeIcon } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
 import CustomInput from "../shared/CustomInput";
+import Pagination from "../shared/Pagination";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { toast } from "react-toastify";
 import { SupplierModal } from "./Modals/SupplierModal";
@@ -89,8 +90,21 @@ const Suppliers = () => {
     setMode("add");
   };
 
+  const [currentPage, setCurrentPage] = useState(0);
+  const ITEMS_PER_PAGE = 15;
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [searchTerm]);
+
   const filteredSuppliers = suppliers.filter((supplier: any) =>
     supplier.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredSuppliers.length / ITEMS_PER_PAGE);
+  const paginatedSuppliers = filteredSuppliers.slice(
+    currentPage * ITEMS_PER_PAGE,
+    (currentPage + 1) * ITEMS_PER_PAGE
   );
 
   return (
@@ -151,60 +165,67 @@ const Suppliers = () => {
           ) : filteredSuppliers.length === 0 ? (
             <p className="text-gray-500">{t("suppliers.noResultsFound")}</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("suppliers.table.supplierName")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("suppliers.table.createdAt")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("suppliers.table.actions")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredSuppliers.map((supplier: any) => (
-                    <tr key={supplier.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {supplier.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {dayjs(new Date(supplier.createdAt).toLocaleDateString()).format("DD/MM/YYYY")}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
-                        <CustomButton
-                          type="button"
-                          onClick={() => handleView(supplier)}
-                          Icon={<EyeIcon className="size-5" />}
-                          variant="transparent"
-                          className="p-0!"
-                        />
-                        <CustomButton
-                          type="button"
-                          onClick={() => handleEdit(supplier)}
-                          Icon={<EditIcon className="size-5" />}
-                          variant="transparent"
-                          className="p-0! text-blue-500! hover:text-blue-700!"
-                        />
-                        <CustomButton
-                          type="button"
-                          onClick={() =>
-                            handleDelete(supplier.id, supplier.name)
-                          }
-                          Icon={<DeleteIcon className="size-5" />}
-                          variant="transparent"
-                          className="p-0! text-red-500! hover:text-red-700!"
-                        />
-                      </td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("suppliers.table.supplierName")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("suppliers.table.createdAt")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("suppliers.table.actions")}
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {paginatedSuppliers.map((supplier: any) => (
+                      <tr key={supplier.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                          {supplier.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                          {dayjs(new Date(supplier.createdAt).toLocaleDateString()).format("DD/MM/YYYY")}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
+                          <CustomButton
+                            type="button"
+                            onClick={() => handleView(supplier)}
+                            Icon={<EyeIcon className="size-5" />}
+                            variant="transparent"
+                            className="p-0!"
+                          />
+                          <CustomButton
+                            type="button"
+                            onClick={() => handleEdit(supplier)}
+                            Icon={<EditIcon className="size-5" />}
+                            variant="transparent"
+                            className="p-0! text-blue-500! hover:text-blue-700!"
+                          />
+                          <CustomButton
+                            type="button"
+                            onClick={() =>
+                              handleDelete(supplier.id, supplier.name)
+                            }
+                            Icon={<DeleteIcon className="size-5" />}
+                            variant="transparent"
+                            className="p-0! text-red-500! hover:text-red-700!"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </>
           )}
         </div>
       </div>

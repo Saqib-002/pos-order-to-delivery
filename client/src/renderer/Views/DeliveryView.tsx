@@ -698,6 +698,7 @@ export const DeliveryView = () => {
         origin={configurations.address}
         destination={formatAddress(selectedOrderForRoute?.customer?.address || "")}
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
+        orderId={selectedOrderForRoute?.id}
       />
     </div>
   );

@@ -82,6 +82,14 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
             await db("users").insert(defaultAdmin);
             Logger.info("Default admin user created successfully");
         }
+
+        // Start background sync with VPS whiteboard
+        try {
+            const { startBackgroundSync } = await import("../utils/syncManager.js");
+            startBackgroundSync();
+        } catch (syncErr) {
+            Logger.error("Failed to start background sync manager:", syncErr);
+        }
     } catch (error) {
         Logger.error("Database initialization error:", error);
         throw error;

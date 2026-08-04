@@ -10,6 +10,7 @@ export default defineConfig({
       },
     }),],
   root: 'src/renderer',
+  envDir: path.resolve(__dirname, '.'),
   base: './',
   build: {
     outDir: '../../dist',

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CrossIcon, CarIcon, BikeIcon, LocationIcon } from "@/renderer/public/Svg";
+import { MessageSquare, ChevronDown } from "lucide-react";
 import CustomButton from "../../ui/CustomButton";
 import { useConfigurations } from "../../../contexts/configurationContext";
 
@@ -10,6 +11,7 @@ interface DeliveryRouteModalProps {
     origin: string;
     destination: string;
     googleMapsApiKey: string;
+    orderId?: string;
 }
 
 const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
@@ -18,6 +20,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     origin,
     destination,
     googleMapsApiKey,
+    orderId,
 }) => {
     const { t } = useTranslation();
     const { configurations } = useConfigurations();
@@ -27,6 +30,45 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     const [routes, setRoutes] = useState<any[]>([]);
     const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
     const [travelMode, setTravelMode] = useState<"DRIVE" | "BICYCLE">("DRIVE");
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [chatMessages, setChatMessages] = useState<any[]>([]);
+    const [newMessageText, setNewMessageText] = useState("");
+    const [unreadCount, setUnreadCount] = useState(0);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const messageListRef = useRef<HTMLDivElement>(null);
+    const [showScrollDownBtn, setShowScrollDownBtn] = useState(false);
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const target = e.currentTarget;
+        const isNearBottom = target.scrollHeight - target.scrollTop - target.clientHeight < 80;
+        setShowScrollDownBtn(!isNearBottom);
+    };
+
+    const scrollToBottom = () => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    };
+
+    // Keep a ref of isChatOpen so socket handler doesn't read stale state
+    const isChatOpenRef = useRef(isChatOpen);
+    useEffect(() => {
+        isChatOpenRef.current = isChatOpen;
+        if (isChatOpen) {
+            setUnreadCount(0);
+            if (orderId) {
+                const apiUrl = (import.meta as any).env.VITE_DRIVER_API_URL || "http://localhost:3002/api";
+                fetch(`${apiUrl}/pos/orders/${orderId}/messages/read`, { method: "POST" })
+                    .catch(err => console.error("Error marking messages as read on POS:", err));
+            }
+            setTimeout(() => {
+                if (messagesEndRef.current) {
+                    messagesEndRef.current.scrollIntoView({ behavior: "auto" });
+                }
+            }, 100);
+        }
+    }, [isChatOpen, orderId]);
 
     // Toggles for visibility
     const [showTraffic, setShowTraffic] = useState(false);
@@ -36,6 +78,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     const polylinesRef = useRef<any[]>([]);
     const markersRef = useRef<any[]>([]);
     const zonePolygonsRef = useRef<any[]>([]);
+    const driverMarkerRef = useRef<any>(null);
 
     const formatDuration = (durationStr: string) => {
         if (!durationStr) return "";
@@ -45,6 +88,89 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
         const hours = Math.floor(minutes / 60);
         const remainingMinutes = minutes % 60;
         return `${hours} ${t("deliveryRouteModal.estimation.hours")} ${remainingMinutes} ${t("deliveryRouteModal.estimation.minutes")}`;
+    };
+
+    const animateMarker = (marker: any, startLat: number, startLng: number, endLat: number, endLng: number) => {
+        const startTime = Date.now();
+        const duration = 2800;  
+
+        const step = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            const currentLat = startLat + (endLat - startLat) * progress;
+            const currentLng = startLng + (endLng - startLng) * progress;
+
+            marker.setPosition({ lat: currentLat, lng: currentLng });
+
+            if (progress < 1) {
+                requestAnimationFrame(step);
+            }
+        };
+
+        requestAnimationFrame(step);
+    };
+
+    const fetchChatMessages = async () => {
+        if (!orderId) return;
+        try {
+            const apiUrl = (import.meta as any).env.VITE_DRIVER_API_URL || "http://localhost:3002/api";
+            const response = await fetch(`${apiUrl}/driver/orders/${orderId}/messages`);
+            if (response.ok) {
+                const data = await response.json();
+                setChatMessages(data);
+                // Calculate unread count on load if the chat drawer is closed
+                if (!isChatOpenRef.current) {
+                    const unread = data.filter((m: any) => m.sender === "driver" && !m.read).length;
+                    setUnreadCount(unread);
+                }
+            }
+        } catch (err) {
+            console.error("Error loading chat messages:", err);
+        }
+    };
+
+    useEffect(() => {
+        if (isOpen && orderId) {
+            fetchChatMessages();
+        }
+    }, [isOpen, orderId]);
+
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [chatMessages]);
+
+    const handleSendMessage = async () => {
+        if (!newMessageText.trim() || !orderId) return;
+        const text = newMessageText.trim();
+        setNewMessageText("");
+
+        try {
+            const apiUrl = (import.meta as any).env.VITE_DRIVER_API_URL || "http://localhost:3002/api";
+            const response = await fetch(`${apiUrl}/driver/orders/${orderId}/messages`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    sender: "pos",
+                    senderName: "POS Manager",
+                    message: text,
+                }),
+            });
+
+            if (response.ok) {
+                const savedMsg = await response.json();
+                setChatMessages((prev) => {
+                    if (prev.some((m) => m.id === savedMsg.id)) return prev;
+                    return [...prev, savedMsg];
+                });
+            }
+        } catch (err) {
+            console.error("Error sending chat message:", err);
+        }
     };
 
     // Load Google Maps Core
@@ -78,28 +204,16 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
 
         if (!mapInstanceRef.current || !window.google) return;
 
-        // Custom SVG for Restaurant (Origin)
+        // Custom PNG for Restaurant (Origin)
         const restaurantIcon = {
-            url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40">
-                    <path fill="#10B981" d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/>
-                    <circle fill="#FFFFFF" cx="12" cy="9" r="5"/>
-                    <circle fill="#10B981" cx="12" cy="9" r="3"/>
-                </svg>
-            `)}`,
+            url: "./images/restaurant.png",
             scaledSize: new window.google.maps.Size(40, 40),
             anchor: new window.google.maps.Point(20, 40),
         };
 
-        // Custom SVG for Customer (Destination)
+        // Custom PNG for Customer (Destination)
         const customerIcon = {
-            url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40">
-                    <path fill="#EF4444" d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/>
-                    <circle fill="#FFFFFF" cx="12" cy="9" r="5"/>
-                    <circle fill="#EF4444" cx="12" cy="9" r="3"/>
-                </svg>
-            `)}`,
+            url: "./images/cutlery.png",
             scaledSize: new window.google.maps.Size(40, 40),
             anchor: new window.google.maps.Point(20, 40),
         };
@@ -263,6 +377,100 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
         updateZones();
     }, [showZones, isLoaded]);
 
+    useEffect(() => {
+        if (!isOpen || !orderId) {
+            if (driverMarkerRef.current) {
+                driverMarkerRef.current.setMap(null);
+                driverMarkerRef.current = null;
+            }
+            return;
+        }
+
+        const wsUrl = (import.meta as any).env.VITE_DRIVER_WS_URL || "ws://localhost:3002";
+        const socket = new WebSocket(wsUrl);
+        
+        socket.onopen = () => {
+            console.log("POS Map WebSocket connected");
+        };
+
+        socket.onmessage = (event) => {
+            try {
+                const message = JSON.parse(event.data);
+                
+                // Handle initial locations download
+                if (message.type === "init_locations") {
+                    const matched = message.locations.find((l: any) => l.orderId === orderId);
+                    if (matched && mapInstanceRef.current && window.google) {
+                        updateDriverMarker(matched.latitude, matched.longitude, matched.driverName);
+                    }
+                }
+                
+                // Handle real-time updates
+                if (message.type === "location_update" && message.data && message.data.orderId === orderId) {
+                    const { latitude, longitude, driverName } = message.data;
+                    if (mapInstanceRef.current && window.google) {
+                        updateDriverMarker(latitude, longitude, driverName);
+                    }
+                }
+
+                // Handle real-time chat messages
+                if (message.type === "chat_message" && message.data && message.data.orderId === orderId) {
+                    setChatMessages((prev) => {
+                        if (prev.some((m) => m.id === message.data.id)) return prev;
+                        return [...prev, message.data];
+                    });
+
+                    if (!isChatOpenRef.current && message.data.sender === "driver") {
+                        setUnreadCount((prev) => prev + 1);
+                        try {
+                            const audio = new Audio("./notification.wav");
+                            audio.volume = 0.5;
+                            audio.play().catch((playErr) => console.log("Sound play error:", playErr));
+                        } catch (soundErr) {
+                            console.log("Error playing alert chime:", soundErr);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("POS WebSocket message error:", err);
+            }
+        };
+
+        const updateDriverMarker = (lat: number, lng: number, driverName: string) => {
+            if (!mapInstanceRef.current || !window.google) return;
+
+            const bikeIcon = {
+                url: "./images/delivery.png",
+                scaledSize: new window.google.maps.Size(40, 40),
+                anchor: new window.google.maps.Point(20, 20),
+            };
+
+            if (!driverMarkerRef.current) {
+                driverMarkerRef.current = new window.google.maps.Marker({
+                    position: { lat, lng },
+                    map: mapInstanceRef.current,
+                    title: `${driverName} (Driver)`,
+                    icon: bikeIcon
+                });
+            } else {
+                const oldPos = driverMarkerRef.current.getPosition();
+                if (oldPos) {
+                    animateMarker(driverMarkerRef.current, oldPos.lat(), oldPos.lng(), lat, lng);
+                } else {
+                    driverMarkerRef.current.setPosition({ lat, lng });
+                }
+            }
+        };
+
+        return () => {
+            socket.close();
+            if (driverMarkerRef.current) {
+                driverMarkerRef.current.setMap(null);
+                driverMarkerRef.current = null;
+            }
+        };
+    }, [isOpen, orderId, isLoaded]);
+
     if (!isOpen) return null;
 
     const selectedRoute = routes[selectedRouteIndex];
@@ -367,11 +575,25 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
                                     {t("deliveryRouteModal.modes.bike")}
                                 </button>
                             </div>
+
+                            {/* Chat Button */}
+                            <button
+                                onClick={() => setIsChatOpen(!isChatOpen)}
+                                className={`relative w-full py-3 rounded-xl text-xs font-black transition-all border mt-2 flex items-center justify-center gap-2 ${isChatOpen ? "bg-emerald-500 border-emerald-500 text-white shadow-xl scale-[1.02]" : "bg-white border-gray-200 text-gray-800 hover:bg-gray-50 hover:border-gray-300"}`}
+                            >
+                                <MessageSquare className="size-4" />
+                                {isChatOpen ? t("deliveryRouteModal.chat.closeChat") : t("deliveryRouteModal.chat.chatWithDriver")}
+                                {unreadCount > 0 && !isChatOpen && (
+                                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full text-[10px] size-5 flex items-center justify-center font-bold animate-bounce shadow-md">
+                                        {unreadCount}
+                                    </span>
+                                )}
+                            </button>
                         </div>
                     </div>
 
                     {/* Map Area */}
-                    <div className="flex-1 relative">
+                    <div className="flex-1 relative flex overflow-hidden">
                         {/* Info Overlay */}
                         {selectedRoute && (
                             <div className="absolute top-4 left-4 z-10 bg-black/90 text-white px-5 py-3 rounded-2xl flex items-center gap-4 text-sm font-black backdrop-blur-xl shadow-2xl border border-white/10">
@@ -391,7 +613,83 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
                             </div>
                         )}
 
-                        <div ref={mapRef} className="w-full h-full" />
+                        <div ref={mapRef} className="flex-1 h-full" />
+
+                        {/* Chat Panel side drawer */}
+                        <div className={`border-l border-gray-200 bg-white flex flex-col h-full shadow-2xl relative z-10 transition-all duration-300 ease-in-out ${isChatOpen ? "w-80 opacity-100" : "w-0 opacity-0 overflow-hidden pointer-events-none border-l-0"}`}>
+                            {/* Chat Header */}
+                            <div className="p-4 border-b border-gray-200 bg-black text-white flex items-center justify-between flex-shrink-0 min-w-[320px]">
+                                <span className="font-bold text-sm">{t("deliveryRouteModal.chat.chatWithDriver")}</span>
+                                <button 
+                                    onClick={() => setIsChatOpen(false)} 
+                                    className="text-gray-400 hover:text-white text-xs font-bold cursor-pointer"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                             {/* Message List */}
+                            <div className="flex-1 relative flex flex-col min-h-0 bg-gray-50 min-w-[320px]">
+                                <div 
+                                    ref={messageListRef}
+                                    onScroll={handleScroll}
+                                    className="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col"
+                                >
+                                    {chatMessages.length === 0 ? (
+                                        <div className="flex-grow flex flex-col items-center justify-center text-center text-gray-400 text-xs">
+                                            <span>{t("deliveryRouteModal.chat.noMessagesYet")}</span>
+                                            <span>{t("deliveryRouteModal.chat.sendFirstMessage")}</span>
+                                        </div>
+                                    ) : (
+                                        chatMessages.map((msg, index) => {
+                                            const isPOS = msg.sender === "pos";
+                                            return (
+                                                <div key={msg.id || index} className={`flex flex-col ${isPOS ? "items-end text-right" : "items-start text-left"}`}>
+                                                    <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${isPOS ? "bg-black text-white rounded-br-none" : "bg-white border border-gray-200 text-gray-800 rounded-bl-none"}`}>
+                                                        {!isPOS && <div className="font-black text-[9px] text-emerald-500 mb-1">{msg.senderName}</div>}
+                                                        <div className="break-all whitespace-pre-wrap">{msg.message}</div>
+                                                        <div className="text-[8px] mt-1 text-gray-400">
+                                                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                    <div ref={messagesEndRef} />
+                                </div>
+
+                                {/* Floating Scroll Down Button */}
+                                {showScrollDownBtn && (
+                                    <button
+                                        type="button"
+                                        onClick={scrollToBottom}
+                                        className="absolute bottom-4 right-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full p-2 shadow-lg transition-all hover:scale-110 flex items-center justify-center cursor-pointer animate-bounce z-10"
+                                    >
+                                        <ChevronDown className="size-4" />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Chat Input */}
+                            <form 
+                                onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+                                className="p-3 border-t border-gray-200 flex gap-2 items-center bg-white flex-shrink-0 min-w-[320px]"
+                            >
+                                <input 
+                                    type="text"
+                                    placeholder={t("deliveryRouteModal.chat.typeMessagePlaceholder")}
+                                    value={newMessageText}
+                                    onChange={(e) => setNewMessageText(e.target.value)}
+                                    className="flex-1 bg-gray-100 border border-transparent focus:border-gray-200 focus:bg-white text-xs rounded-xl px-3 py-2 outline-none text-gray-800 transition-all"
+                                />
+                                <button 
+                                    type="submit"
+                                    className="bg-black text-white hover:bg-neutral-800 px-3 py-2 rounded-xl text-xs font-bold transition-colors"
+                                >
+                                    {t("deliveryRouteModal.chat.sendButton")}
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

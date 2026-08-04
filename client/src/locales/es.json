@@ -1255,6 +1255,9 @@
       "enterName": "Por favor ingresa un nombre",
       "enterLicenseNumber": "Por favor ingresa un número de licencia",
       "emailRequired": "El email es requerido",
+      "usernameRequired": "El usuario es requerido",
+      "usernameTooShort": "El usuario debe tener al menos 3 caracteres",
+      "usernameExists": "El usuario ya existe",
       "validEmail": "Por favor ingresa una dirección de email válida",
       "phoneRequired": "El número de teléfono es requerido",
       "validPhone": "Por favor ingresa un número de teléfono válido",
@@ -1267,7 +1270,9 @@
       "deleteConfirmTitle": "Eliminar persona de entrega",
       "fetchStatsFailed": "Error al obtener estadísticas del repartidor",
       "cannotDeleteWithOrders": "No se puede eliminar repartidor con {{count}} pedidos asignados",
-      "deleteFailed": "Error al eliminar repartidor"
+      "deleteFailed": "Error al eliminar repartidor",
+      "enterPassword": "Por favor ingresa una contraseña",
+      "passwordTooShort": "La contraseña debe tener al menos 6 caracteres"
     },
     "success": {
       "updated": "Repartidor actualizado exitosamente",
@@ -1282,8 +1287,13 @@
     "fullNamePlaceholder": "Ingresa nombre completo",
     "email": "Email *",
     "emailPlaceholder": "Ingresa dirección de email",
+    "username": "Usuario *",
+    "usernamePlaceholder": "Ingresa el nombre de usuario",
     "phoneNumber": "Número de Teléfono",
     "phoneNumberPlaceholder": "Ingresa número de teléfono",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Ingresa contraseña (mín 6 caracteres)",
+    "passwordHelpText": "Deja en blanco para conservar la contraseña actual",
     "licenseNumber": "Número de Licencia *",
     "licenseNumberPlaceholder": "Ingresa número de licencia",
     "vehicleType": "Tipo de Vehículo",
@@ -2653,6 +2663,14 @@
     "errors": {
       "routeNotFound": "No se pudo encontrar una ruta entre estas direcciones.",
       "loadFailed": "Error al cargar Google Maps"
+    },
+    "chat": {
+      "closeChat": "Cerrar Chat",
+      "chatWithDriver": "Chatear con Repartidor",
+      "noMessagesYet": "No hay mensajes todavía.",
+      "sendFirstMessage": "¡Envía un mensaje para empezar a chatear!",
+      "typeMessagePlaceholder": "Escribe un mensaje...",
+      "sendButton": "Enviar"
     }
   },
   "printConfirmationModal": {

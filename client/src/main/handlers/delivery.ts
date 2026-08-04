@@ -3,6 +3,7 @@ import { DeliveryDatabaseOperations } from "../database/deliveryoperations.js";
 import { DeliveryPerson } from "@/types/delivery.js";
 import Logger from "electron-log";
 import { verifyToken } from "./auth.js";
+import { syncDriverToVPS, syncOrderToVPS } from "../utils/syncManager.js";
 
 // Create delivery person
 export const createDeliveryPerson = async (
@@ -13,6 +14,7 @@ export const createDeliveryPerson = async (
   try {
     await verifyToken(event, token);
     const result = await DeliveryDatabaseOperations.createDeliveryPerson(deliveryPersonData);
+    syncDriverToVPS(result).catch(err => Logger.error("SyncManager: error syncing new driver:", err));
     return {
       status: true,
       data: result,
@@ -78,6 +80,7 @@ export const updateDeliveryPerson = async (
   try {
     await verifyToken(event, token);
     const result = await DeliveryDatabaseOperations.updateDeliveryPerson(id, updates);
+    syncDriverToVPS(result).catch(err => Logger.error("SyncManager: error syncing updated driver:", err));
     return {
       status: true,
       data: result,
@@ -127,6 +130,7 @@ export const assignDeliveryPersonToOrder = async (
     await verifyToken(event, token);
     await DeliveryDatabaseOperations.assignDeliveryPerson(orderId, deliveryPersonId);
     Logger.info(`Delivery person ${deliveryPersonId} assigned to order ${orderId}`);
+    syncOrderToVPS(orderId).catch(err => Logger.error("SyncManager: error syncing assigned order:", err));
     return {
       status: true,
       data: {

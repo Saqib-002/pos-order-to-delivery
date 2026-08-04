@@ -13,15 +13,25 @@ export class DeliveryDatabaseOperations {
         try {
             const now = new Date().toISOString();
             const id = randomUUID();
+            const bcrypt = await import("bcrypt");
+
+            let hashedPassword = null;
+            if (deliveryPersonData.password) {
+                hashedPassword = await bcrypt.hash(deliveryPersonData.password, 10);
+            }
 
             const newDeliveryPerson = {
                 id,
                 ...deliveryPersonData,
+                password: hashedPassword,
                 createdAt: now,
                 updatedAt: now,
             };
             await db("delivery_persons").insert(newDeliveryPerson);
-            return newDeliveryPerson;
+            return {
+                ...newDeliveryPerson,
+                password: "",
+            };
         } catch (error) {
             throw error;
         }
@@ -86,13 +96,21 @@ export class DeliveryDatabaseOperations {
     ): Promise<DeliveryPerson> {
         try {
             const now = new Date().toISOString();
+            const updateData: any = {
+                ...updates,
+                updatedAt: now,
+            };
+
+            if (updates.password) {
+                const bcrypt = await import("bcrypt");
+                updateData.password = await bcrypt.hash(updates.password, 10);
+            } else if (updates.password === "") {
+                delete updateData.password;
+            }
 
             await db("delivery_persons")
                 .where("id", id)
-                .update({
-                    ...updates,
-                    updatedAt: now,
-                });
+                .update(updateData);
 
             const updatedPerson = await db("delivery_persons")
                 .where("id", id)
@@ -103,7 +121,10 @@ export class DeliveryDatabaseOperations {
             }
 
             Logger.info(`Delivery person updated: ${id}`);
-            return updatedPerson;
+            return {
+                ...updatedPerson,
+                password: "",
+            };
         } catch (error) {
             throw error;
         }

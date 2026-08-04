@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AddIcon, DeleteIcon, EditIcon, EyeIcon } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
 import CustomInput from "../shared/CustomInput";
+import Pagination from "../shared/Pagination";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { toast } from "react-toastify";
 import { ExpenseTypeModal } from "./Modals/ExpenseTypeModal";
@@ -91,8 +92,21 @@ const ExpenseTypes = () => {
     setCurrentExpenseType(null);
     setMode("add");
   };
+  const [currentPage, setCurrentPage] = useState(0);
+  const ITEMS_PER_PAGE = 15;
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [searchTerm]);
+
   const filteredExpenseTypes = expenseTypes.filter((expenseType: any) =>
     expenseType.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredExpenseTypes.length / ITEMS_PER_PAGE);
+  const paginatedExpenseTypes = filteredExpenseTypes.slice(
+    currentPage * ITEMS_PER_PAGE,
+    (currentPage + 1) * ITEMS_PER_PAGE
   );
 
   return (
@@ -155,60 +169,67 @@ const ExpenseTypes = () => {
           ) : filteredExpenseTypes.length === 0 ? (
             <p className="text-gray-500">{t("expenseTypes.noResultsFound")}</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("expenseTypes.table.expenseTypeName")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("expenseTypes.table.createdAt")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t("expenseTypes.table.actions")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredExpenseTypes.map((expenseType: any) => (
-                    <tr key={expenseType.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {expenseType.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {dayjs(new Date(expenseType.createdAt).toLocaleDateString()).format("DD/MM/YYYY")}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
-                        <CustomButton
-                          type="button"
-                          onClick={() => handleView(expenseType)}
-                          Icon={<EyeIcon className="size-5" />}
-                          variant="transparent"
-                          className="p-0!"
-                        />
-                        <CustomButton
-                          type="button"
-                          onClick={() => handleEdit(expenseType)}
-                          Icon={<EditIcon className="size-5" />}
-                          variant="transparent"
-                          className="p-0! text-blue-500! hover:text-blue-700!"
-                        />
-                        <CustomButton
-                          type="button"
-                          onClick={() =>
-                            handleDelete(expenseType.id, expenseType.name)
-                          }
-                          Icon={<DeleteIcon className="size-5" />}
-                          variant="transparent"
-                          className="p-0! text-red-500! hover:text-red-700!"
-                        />
-                      </td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("expenseTypes.table.expenseTypeName")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("expenseTypes.table.createdAt")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("expenseTypes.table.actions")}
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {paginatedExpenseTypes.map((expenseType: any) => (
+                      <tr key={expenseType.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                          {expenseType.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                          {dayjs(new Date(expenseType.createdAt).toLocaleDateString()).format("DD/MM/YYYY")}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center gap-2">
+                          <CustomButton
+                            type="button"
+                            onClick={() => handleView(expenseType)}
+                            Icon={<EyeIcon className="size-5" />}
+                            variant="transparent"
+                            className="p-0!"
+                          />
+                          <CustomButton
+                            type="button"
+                            onClick={() => handleEdit(expenseType)}
+                            Icon={<EditIcon className="size-5" />}
+                            variant="transparent"
+                            className="p-0! text-blue-500! hover:text-blue-700!"
+                          />
+                          <CustomButton
+                            type="button"
+                            onClick={() =>
+                              handleDelete(expenseType.id, expenseType.name)
+                            }
+                            Icon={<DeleteIcon className="size-5" />}
+                            variant="transparent"
+                            className="p-0! text-red-500! hover:text-red-700!"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </>
           )}
         </div>
       </div>

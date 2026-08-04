@@ -200,6 +200,12 @@ export const updateOrder = async (
       orderId,
       orderData
     );
+
+    if ((orderData as any).deliveryPersonId && orderData.status?.toLowerCase() === "out for delivery") {
+      const { syncOrderToVPS } = await import("../utils/syncManager.js");
+      syncOrderToVPS(orderId).catch(err => Logger.error("SyncManager: error syncing assigned order:", err));
+    }
+
     return {
       status: true,
       data: result,

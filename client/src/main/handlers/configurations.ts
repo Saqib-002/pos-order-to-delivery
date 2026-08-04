@@ -2,6 +2,7 @@ import { IpcMainInvokeEvent } from "electron";
 import { verifyToken } from "./auth.js";
 import { ConfigurationsDatabaseOperations } from "../database/configurationsOperations.js";
 import { uploadImg } from "../utils/utils.js";
+import { syncConfigToVPS } from "../utils/syncManager.js";
 
 export const createConfigurations = async (
     event: IpcMainInvokeEvent,
@@ -19,6 +20,7 @@ export const createConfigurations = async (
             await ConfigurationsDatabaseOperations.createConfigurations(
                 configData
             );
+        syncConfigToVPS(result.id).catch(err => console.error("SyncManager: error syncing configurations on create:", err));
         return {
             status: true,
             data: result,
@@ -69,6 +71,7 @@ export const updateConfigurations = async (
                 id,
                 updates
             );
+        syncConfigToVPS(id).catch(err => console.error("SyncManager: error syncing configurations on update:", err));
         return {
             status: true,
             data: result,
