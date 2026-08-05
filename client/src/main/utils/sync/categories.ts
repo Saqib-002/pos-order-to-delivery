@@ -11,7 +11,10 @@ export async function syncCategoryToVPS(categoryId: string) {
         if (!category) return;
         const response = await fetch(`${vpsUrl}/api/v1/menu/categories/sync`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.DRIVER_SYNC_SECRET || ""}`,
+            },
             body: JSON.stringify({
                 id: category.id,
                 categoryName: category.categoryName,
@@ -41,6 +44,9 @@ export async function deleteCategoryFromVPS(categoryId: string) {
     try {
         const response = await fetch(`${vpsUrl}/api/v1/menu/categories/${categoryId}`, {
             method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${process.env.DRIVER_SYNC_SECRET || ""}`,
+            },
         });
 
         if (!response.ok) {
