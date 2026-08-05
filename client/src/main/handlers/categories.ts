@@ -19,9 +19,7 @@ export const createCategory = async (
   try {
     await verifyToken(event, token);
     const result = await CategoryDatabaseOperations.createCategory(category);
-    syncCategoryToVPS(result.newCategory.id).catch((err) =>
-      Logger.error("SyncManager: error syncing new category:", err)
-    );
+    syncCategoryToVPS(result.newCategory.id);
     return {
       status: true,
       data: result,
@@ -61,9 +59,7 @@ export const deleteCategory = async (
   try {
     await verifyToken(event, token);
     // Fire VPS delete first while id is still known
-    deleteCategoryFromVPS(id).catch((err) =>
-      Logger.error("SyncManager: error deleting category from VPS:", err)
-    );
+    deleteCategoryFromVPS(id);
     const result = await CategoryDatabaseOperations.deleteCategory(id);
     return {
       status: true,
@@ -86,9 +82,7 @@ export const updateCategory = async (
   try {
     await verifyToken(event, token);
     const result = await CategoryDatabaseOperations.updateCategory(id, updates);
-    syncCategoryToVPS(id).catch((err) =>
-      Logger.error("SyncManager: error syncing updated category:", err)
-    );
+    syncCategoryToVPS(id);
     return {
       status: true,
       data: result,
@@ -109,9 +103,7 @@ export const createSubCategory = async (
   try {
     await verifyToken(event, token);
     const result = await SubCategoriesOperations.createSubCategory(subCategory);
-    syncSubCategoryToVPS(result.id).catch((err) =>
-      Logger.error("SyncManager: error syncing new sub-category:", err)
-    );
+    syncSubCategoryToVPS(result.id);
     return {
       status: true,
       data: result,
@@ -172,9 +164,7 @@ export const deleteSubCategory = async (
   try {
     await verifyToken(event, token);
     // Fire VPS delete first while id is still known
-    deleteSubCategoryFromVPS(id).catch((err) =>
-      Logger.error("SyncManager: error deleting sub-category from VPS:", err)
-    );
+    deleteSubCategoryFromVPS(id);
     const result = await SubCategoriesOperations.deleteSubCategory(id);
     return {
       status: true,
@@ -197,9 +187,7 @@ export const updateSubCategory = async (
   try {
     await verifyToken(event, token);
     const result = await SubCategoriesOperations.updateSubCategory(id, updates);
-    syncSubCategoryToVPS(id).catch((err) =>
-      Logger.error("SyncManager: error syncing updated sub-category:", err)
-    );
+    syncSubCategoryToVPS(id);
     return {
       status: true,
       data: result,

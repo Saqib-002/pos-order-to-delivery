@@ -90,6 +90,14 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
         } catch (syncErr) {
             Logger.error("Failed to start background sync manager:", syncErr);
         }
+
+        // Start offline queue processor (retries failed category/subcategory syncs)
+        try {
+            const { startQueueProcessor } = await import("../utils/sync/index.js");
+            startQueueProcessor();
+        } catch (queueErr) {
+            Logger.error("Failed to start sync queue processor:", queueErr);
+        }
     } catch (error) {
         Logger.error("Database initialization error:", error);
         throw error;
