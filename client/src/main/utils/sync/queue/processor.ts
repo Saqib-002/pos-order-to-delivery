@@ -53,6 +53,139 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             break;
 
+        case "product":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/products/sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            if (job.operation === "delete") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/products/${payload.id}`,
+                    init: { method: "DELETE", headers: authHeader },
+                };
+            }
+            break;
+
+        case "variant":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/variants/sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            if (job.operation === "delete") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/variants/${payload.id}`,
+                    init: { method: "DELETE", headers: authHeader },
+                };
+            }
+            break;
+
+        case "variantitem":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/variants/items/sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            if (job.operation === "delete") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/variants/items/${payload.id}`,
+                    init: { method: "DELETE", headers: authHeader },
+                };
+            }
+            break;
+
+        case "productvariant":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/variants/products-associations/sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            if (job.operation === "delete") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/variants/products-associations/${payload.id}`,
+                    init: { method: "DELETE", headers: authHeader },
+                };
+            }
+            break;
+
+        case "group":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/groups/sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            if (job.operation === "delete") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/groups/${payload.id}`,
+                    init: { method: "DELETE", headers: authHeader },
+                };
+            }
+            break;
+
+        case "groupitem":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/groups/items/sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            if (job.operation === "delete") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/groups/items/${payload.id}`,
+                    init: { method: "DELETE", headers: authHeader },
+                };
+            }
+            break;
+
+        case "productgroup":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/groups/products-associations/sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            if (job.operation === "delete") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/groups/products-associations/${payload.id}`,
+                    init: { method: "DELETE", headers: authHeader },
+                };
+            }
+            break;
+
         // ── Add more entities here in the future ──────────────────────────
     }
 

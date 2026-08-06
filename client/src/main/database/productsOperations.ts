@@ -70,6 +70,7 @@ export class ProductsDatabaseOperations {
                 );
             }
             await trx.commit();
+            return newProduct;
         } catch (error) {
             await trx.rollback();
             throw error;

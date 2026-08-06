@@ -2,6 +2,12 @@ import { IpcMainInvokeEvent } from "electron";
 import { ProductsDatabaseOperations } from "../database/productsOperations.js";
 import Logger from "electron-log";
 import { verifyToken } from "./auth.js";
+import {
+    syncProductToVPS,
+    deleteProductFromVPS,
+    deleteProductAssociationsFromVPS,
+    syncProductAssociationsToVPS,
+} from "../utils/sync/index.js";
 
 export const createProduct = async (
     event: IpcMainInvokeEvent,
@@ -19,6 +25,10 @@ export const createProduct = async (
             addonPages,
             printerIds
         );
+        if (result && result.id) {
+            syncProductToVPS(result.id);
+            syncProductAssociationsToVPS(result.id);
+        }
         return {
             status: true,
             data: result,
@@ -82,12 +92,19 @@ export const updateProduct = async (
 ) => {
     try {
         await verifyToken(event, token);
+        if (productData && productData.id) {
+            await deleteProductAssociationsFromVPS(productData.id);
+        }
         const result = await ProductsDatabaseOperations.updateProduct(
             productData,
             variantPrices,
             addonPages,
             printerIds
         );
+        if (productData && productData.id) {
+            syncProductToVPS(productData.id);
+            syncProductAssociationsToVPS(productData.id);
+        }
         return {
             status: true,
             data: result,
@@ -107,6 +124,8 @@ export const deleteProduct = async (
 ) => {
     try {
         await verifyToken(event, token);
+        await deleteProductAssociationsFromVPS(id);
+        deleteProductFromVPS(id);
         const result = await ProductsDatabaseOperations.deleteProduct(id);
         return {
             status: true,
