@@ -21,3 +21,13 @@ export {
   deleteGroupItemFromVPS,
   syncGroupItemsForGroup,
 } from "./groups.js";
+export {
+  syncMenuToVPS,
+  deleteMenuFromVPS,
+  syncMenuPageToVPS,
+  deleteMenuPageFromVPS,
+  syncMenuPageProductsToVPS,
+  syncMenuAssociationsToVPS,
+  deleteMenuAssociationsFromVPS,
+  deleteMenuPageProductsFromVPS,
+} from "./menus.js";

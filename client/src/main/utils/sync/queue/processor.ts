@@ -186,6 +186,82 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             break;
 
+        case "menu":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/menus/sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            if (job.operation === "delete") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/menus/${payload.id}`,
+                    init: { method: "DELETE", headers: authHeader },
+                };
+            }
+            break;
+
+        case "menupage":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/menus/pages/sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            if (job.operation === "delete") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/menus/pages/${payload.id}`,
+                    init: { method: "DELETE", headers: authHeader },
+                };
+            }
+            break;
+
+        case "menupageproduct":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/menus/page-products/sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            if (job.operation === "delete") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/menus/page-products/${payload.id}`,
+                    init: { method: "DELETE", headers: authHeader },
+                };
+            }
+            break;
+
+        case "menupageassociation":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/menus/page-associations/sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            if (job.operation === "delete") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/menus/page-associations/${payload.id}`,
+                    init: { method: "DELETE", headers: authHeader },
+                };
+            }
+            break;
+
         // ── Add more entities here in the future ──────────────────────────
     }
 

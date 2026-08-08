@@ -3,6 +3,12 @@ import { MenuPagesOperations } from "../database/menuPagesOperations.js";
 import Logger from "electron-log";
 import { verifyToken } from "./auth.js";
 import { MenuPage, MenuPageProduct } from "@/types/menuPages.js";
+import {
+  syncMenuPageToVPS,
+  deleteMenuPageFromVPS,
+  syncMenuPageProductsToVPS,
+  deleteMenuPageProductsFromVPS,
+} from "../utils/sync/index.js";
 
 export const createMenuPage = async (
     event: IpcMainInvokeEvent,
@@ -16,6 +22,10 @@ export const createMenuPage = async (
             menuPage,
             products
         );
+        if (result && result.id) {
+            syncMenuPageToVPS(result.id);
+            syncMenuPageProductsToVPS(result.id);
+        }
         return {
             status: true,
             data: result,
@@ -54,11 +64,16 @@ export const updateMenuPage = async (
 ) => {
     try {
         await verifyToken(event, token);
+        await deleteMenuPageProductsFromVPS(id);
         const result = await MenuPagesOperations.updateMenuPage(
             id,
             menuPage,
             products
         );
+        if (result && result.id) {
+            syncMenuPageToVPS(result.id);
+            syncMenuPageProductsToVPS(result.id);
+        }
         return {
             status: true,
             data: result,
@@ -77,6 +92,8 @@ export const deleteMenuPage = async (
 ) => {
     try {
         await verifyToken(event, token);
+        await deleteMenuPageProductsFromVPS(id);
+        deleteMenuPageFromVPS(id);
         await MenuPagesOperations.deleteMenuPage(id);
         return {
             status: true,

@@ -3,6 +3,13 @@ import { MenusOperations } from "../database/menusOperations.js";
 import Logger from "electron-log";
 import { verifyToken } from "./auth.js";
 import { Menu, MenuPageAssociation } from "@/types/menuPages.js";
+import {
+  syncMenuToVPS,
+  deleteMenuFromVPS,
+  syncMenuAssociationsToVPS,
+  deleteMenuAssociationsFromVPS,
+} from "../utils/sync/index.js";
+
 export const getMenus = async (event: IpcMainInvokeEvent, token: string) => {
     try {
         await verifyToken(event, token);
@@ -63,6 +70,10 @@ export const createMenu = async (
             menu,
             MenuPageAssociations
         );
+        if (res && res.id) {
+            syncMenuToVPS(res.id);
+            syncMenuAssociationsToVPS(res.id);
+        }
         return { status: true, data: res };
     } catch (error) {
         return {
@@ -80,7 +91,12 @@ export const updateMenu = async (
 ) => {
     try {
         await verifyToken(event, token);
+        await deleteMenuAssociationsFromVPS(id);
         const res = await MenusOperations.updateMenu(id, updates, MenuPageAssociations);
+        if (res && res.id) {
+            syncMenuToVPS(res.id);
+            syncMenuAssociationsToVPS(res.id);
+        }
         return { status: true, data: res };
     } catch (error) {
         return {
@@ -96,6 +112,8 @@ export const deleteMenu = async (
 ) => {
     try {
         await verifyToken(event, token);
+        await deleteMenuAssociationsFromVPS(id);
+        deleteMenuFromVPS(id);
         const res = await MenusOperations.deleteMenu(id);
         return { status: true, data: res };
     } catch (error) {
@@ -113,6 +131,9 @@ export const updateMenuPriorities = async (
     try {
         await verifyToken(event, token);
         await MenusOperations.updateMenuPriorities(menus);
+        for (const m of menus) {
+            syncMenuToVPS(m.id);
+        }
         return { status: true };
     } catch (error) {
         return {
