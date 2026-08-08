@@ -98,6 +98,14 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
         } catch (queueErr) {
             Logger.error("Failed to start sync queue processor:", queueErr);
         }
+
+        // Start dedicated web-customer sync (polls VPS every 30s — separate from order poll)
+        try {
+            const { startWebCustomerSync } = await import("../utils/webCustomerSync.js");
+            startWebCustomerSync();
+        } catch (webCustomerSyncErr) {
+            Logger.error("Failed to start web customer sync:", webCustomerSyncErr);
+        }
     } catch (error) {
         Logger.error("Database initialization error:", error);
         throw error;
