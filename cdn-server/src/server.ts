@@ -176,15 +176,15 @@ async function runImagesBackupIfMissedToday() {
 //  DB:     every 30 minutes  →  "*/30 * * * *"
 //  Images: every day at 02:00 → "0 2 * * *"
 // ─────────────────────────────────────────────
-// cron.schedule("*/2 * * * *", () => {
-cron.schedule("*/30 * * * *", () => {
+cron.schedule("*/2 * * * *", () => {
+// cron.schedule("*/30 * * * *", () => {
   runDbBackup().catch((err) => {
     dbBackupLogger.error(`Scheduled DB backup job failed: ${err.message}`);
   });
 });
 
-// cron.schedule("*/2 * * * *", () => {
-cron.schedule("0 2 * * *", () => {
+cron.schedule("*/2 * * * *", () => {
+// cron.schedule("0 2 * * *", () => {
   runImagesBackupIfMissedToday().catch((err) => {
     imgBackupLogger.error(`Scheduled images backup job failed: ${err.message}`);
   });

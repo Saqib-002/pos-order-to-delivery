@@ -6,9 +6,11 @@ import winston from "winston";
  * Prunes a backup directory using a two-tier retention policy:
  *
  *  Tier 1 – recent window  : keep the `keep` most-recent files created today.
- *  Tier 2 – previous days  : for each of the `prevDays` calendar days before
- *                            today, keep the single most-recent file from that
- *                            day (regardless of what time it was created).
+ *  Tier 2 – previous days  : find all distinct calendar days (before today)
+ *                            that have at least one backup, then keep the
+ *                            single most-recent file from each of the `prevDays`
+ *                            most-recent such days. The days do not need to be
+ *                            consecutive or immediately before today.
  *
  * Everything else is deleted.
  *
@@ -47,24 +49,36 @@ export async function pruneOldBackups(
     const todayFiles = withStats.filter((f) => f.mtime >= todayStart);
     const recentSet = new Set(todayFiles.slice(0, keep).map((f) => f.fullPath));
 
-    // ── Tier 2: one file per previous calendar day ────────────────────────────
+    // ── Tier 2: one file per previous calendar day (any N distinct past days) ──
+    // Instead of only looking at the N days immediately before today, we find
+    // all distinct calendar days that have backups (excluding today), then keep
+    // the most-recent file from each of the N most-recent such days.
     const dailySet = new Set<string>();
 
     if (prevDays > 0) {
-      for (let d = 1; d <= prevDays; d++) {
-        const dayStart = new Date(todayStart.getTime() - d * 24 * 60 * 60 * 1000);
-        const dayEnd = new Date(todayStart.getTime() - (d - 1) * 24 * 60 * 60 * 1000 - 1);
+      // Group files by calendar-day string (YYYY-MM-DD), excluding today's files
+      const byDay = new Map<string, typeof withStats[number]>();
 
-        // withStats is sorted newest → oldest, so the first match is the
-        // most-recent backup created on that calendar day.
-        const latest = withStats.find(
-          (f) => f.mtime >= dayStart && f.mtime <= dayEnd
-        );
+      for (const f of withStats) {
+        if (f.mtime >= todayStart) continue; // skip today's files
 
-        if (latest) {
-          dailySet.add(latest.fullPath);
-          logger.info(`Retaining previous-day backup (day -${d}): ${latest.name}`);
+        const dayKey = f.mtime.toISOString().slice(0, 10); // "YYYY-MM-DD"
+
+        // withStats is sorted newest → oldest, so the first entry for a given
+        // day is already the most-recent backup from that day.
+        if (!byDay.has(dayKey)) {
+          byDay.set(dayKey, f);
         }
+      }
+
+      // Sort the distinct past days newest → oldest and take the N most recent
+      const sortedDays = [...byDay.keys()].sort((a, b) => (a > b ? -1 : 1));
+      const daysToKeep = sortedDays.slice(0, prevDays);
+
+      for (const day of daysToKeep) {
+        const latest = byDay.get(day)!;
+        dailySet.add(latest.fullPath);
+        logger.info(`Retaining previous-day backup (${day}): ${latest.name}`);
       }
     }
 
