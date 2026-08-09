@@ -31,3 +31,4 @@ export {
   deleteMenuAssociationsFromVPS,
   deleteMenuPageProductsFromVPS,
 } from "./menus.js";
+export { startWebCustomerSync } from "./webCustomer.js";

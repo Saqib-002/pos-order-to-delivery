@@ -9,9 +9,8 @@ import fs from "fs";
 import { exec } from "child_process";
 import cron from "node-cron";
 import archiver from "archiver";
-import { networkInterfaces } from "os";
 import dotenv from "dotenv";
-import winston from "winston";
+import { pad, buildTimestamp, getLocalNetworkIp, makeLogger, pruneOldBackups, triggerImageSync } from "./utils";
 
 dotenv.config();
 
@@ -24,7 +23,6 @@ const BACKUP_BASE_DIR = "C:\\backups";
 const DB_BACKUP_DIR = path.join(BACKUP_BASE_DIR, "db");       // plain .sql files
 const IMG_BACKUP_DIR = path.join(BACKUP_BASE_DIR, "images");  // zipped image snapshots
 const LOG_DIR = path.join(__dirname, "../logs");
-
 const DB_USER = process.env.DB_USER || "your_postgres_user";
 const DB_PASSWORD = process.env.DB_PASSWORD || "your_postgres_password";
 const DB_NAME = process.env.DB_NAME || "your_database_name";
@@ -33,7 +31,6 @@ const DB_HOST = process.env.DB_HOST || "localhost";
 // How many old backups to retain in each directory
 const MAX_DB_BACKUPS_TO_KEEP = 8;    // 8 × 30 min = last 4 h
 const MAX_IMG_BACKUPS_TO_KEEP = 1;   // last 1 daily zips
-
 // Also keep the single most-recent DB backup from each of the previous N calendar days
 const DB_PREV_DAYS_TO_KEEP = 2;
 const IMG_PREV_DAYS_TO_KEEP = 2;
@@ -47,157 +44,12 @@ for (const dir of [UPLOAD_DIR, DB_BACKUP_DIR, IMG_BACKUP_DIR, LOG_DIR]) {
   }
 }
 
-// ─────────────────────────────────────────────
-//  Loggers
-// ─────────────────────────────────────────────
-function makeLogger(filename: string) {
-  return winston.createLogger({
-    level: "info",
-    format: winston.format.combine(
-      winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-      winston.format.printf(({ timestamp, level, message }) =>
-        `[${timestamp}] [${level.toUpperCase()}] ${message}`
-      )
-    ),
-    transports: [
-      new winston.transports.File({
-        filename: path.join(LOG_DIR, filename),
-        maxsize: 1 * 1024 * 1024,  // 5 MB per file
-        maxFiles: 2,                // keep up to 5 rotated files
-        tailable: true,
-      }),
-      new winston.transports.Console({
-        format: winston.format.combine(
-          winston.format.colorize(),
-          winston.format.printf(({ level, message }) =>
-            `[${filename.replace(".log", "")}] [${level}] ${message}`
-          )
-        ),
-      }),
-    ],
-  });
-}
-
 /** Logs for DB backup jobs */
-const dbBackupLogger = makeLogger("db-backup.log");
-
+const dbBackupLogger = makeLogger("db-backup.log", LOG_DIR);
 /** Logs for image backup jobs */
-const imgBackupLogger = makeLogger("images-backup.log");
-
+const imgBackupLogger = makeLogger("images-backup.log", LOG_DIR);
 /** General server logs (requests, startup, errors, etc.) */
-const serverLogger = makeLogger("server.log");
-
-// ─────────────────────────────────────────────
-//  Helpers
-// ─────────────────────────────────────────────
-function pad(num: number) {
-  return num.toString().padStart(2, "0");
-}
-
-function buildTimestamp(date: Date = new Date()) {
-  const y = date.getFullYear();
-  const mo = pad(date.getMonth() + 1);
-  const d = pad(date.getDate());
-  const h = pad(date.getHours());
-  const mi = pad(date.getMinutes());
-  const s = pad(date.getSeconds());
-  return `${y}-${mo}-${d}T${h}-${mi}-${s}`;
-}
-
-function getLocalNetworkIp() {
-  const nets = networkInterfaces();
-  for (const name of Object.keys(nets)) {
-    for (const net of nets[name]!) {
-      if (net.family === "IPv4" && !net.internal) {
-        return net.address;
-      }
-    }
-  }
-  return "localhost";
-}
-
-/**
- * Prune a backup directory using a two-tier retention policy:
- *
- *  Tier 1 – recent window  : keep the `keep` most-recent files (e.g. last 4 h)
- *  Tier 2 – previous days  : for each of the `prevDays` calendar days before
- *                            today, keep the single most-recent file from that
- *                            day (regardless of what time it was created).
- *
- * Everything else is deleted.
- *
- * @param prevDays  Number of previous calendar days to retain one backup for.
- *                  Pass 0 (default) to use the original count-only behaviour.
- */
-async function pruneOldBackups(
-  dir: string,
-  prefix: string,
-  keep: number,
-  logger: winston.Logger,
-  prevDays: number = 0
-) {
-  try {
-    const files = await fs.promises.readdir(dir);
-    const matching = files.filter((f) => f.startsWith(prefix));
-
-    const withStats = await Promise.all(
-      matching.map(async (f) => {
-        const fullPath = path.join(dir, f);
-        const stat = await fs.promises.stat(fullPath);
-        return { name: f, fullPath, mtime: stat.mtime };
-      })
-    );
-
-    // Sort newest → oldest
-    withStats.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
-
-    // ── Tier 1: the N most-recent files from today only ───────────────────────
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayFiles = withStats.filter((f) => f.mtime >= todayStart);
-    const recentSet = new Set(todayFiles.slice(0, keep).map((f) => f.fullPath));
-
-    // ── Tier 2: one file per previous calendar day ────────────────────────────
-    const dailySet = new Set<string>();
-
-    if (prevDays > 0) {
-      const today = todayStart;
-
-      for (let d = 1; d <= prevDays; d++) {
-        const dayStart = new Date(today.getTime() - d * 24 * 60 * 60 * 1000);
-        const dayEnd = new Date(today.getTime() - (d - 1) * 24 * 60 * 60 * 1000 - 1);
-
-        // withStats is already sorted newest → oldest, so the first match is
-        // the most-recent backup that was created on that calendar day.
-        const latest = withStats.find(
-          (f) => f.mtime >= dayStart && f.mtime <= dayEnd
-        );
-
-        if (latest) {
-          dailySet.add(latest.fullPath);
-          logger.info(`Retaining previous-day backup (day -${d}): ${latest.name}`);
-        }
-      }
-    }
-
-    // ── Delete anything not in either tier ────────────────────────────────────
-    const toDelete = withStats.filter(
-      (f) => !recentSet.has(f.fullPath) && !dailySet.has(f.fullPath)
-    );
-
-    if (toDelete.length === 0) {
-      logger.info(`No old backups to prune in ${dir}`);
-      return;
-    }
-
-    for (const f of toDelete) {
-      await fs.promises.unlink(f.fullPath);
-      logger.info(`Pruned old backup: ${f.name}`);
-    }
-  } catch (err) {
-    logger.error(`Error pruning backups in ${dir}: ${(err as Error).message}`);
-  }
-}
+const serverLogger = makeLogger("server.log", LOG_DIR);
 
 // ─────────────────────────────────────────────
 //  DB backup  (runs every 30 minutes)
@@ -324,12 +176,14 @@ async function runImagesBackupIfMissedToday() {
 //  DB:     every 30 minutes  →  "*/30 * * * *"
 //  Images: every day at 02:00 → "0 2 * * *"
 // ─────────────────────────────────────────────
+// cron.schedule("*/2 * * * *", () => {
 cron.schedule("*/30 * * * *", () => {
   runDbBackup().catch((err) => {
     dbBackupLogger.error(`Scheduled DB backup job failed: ${err.message}`);
   });
 });
 
+// cron.schedule("*/2 * * * *", () => {
 cron.schedule("0 2 * * *", () => {
   runImagesBackupIfMissedToday().catch((err) => {
     imgBackupLogger.error(`Scheduled images backup job failed: ${err.message}`);
@@ -406,6 +260,9 @@ app.post("/upload", upload.single("file"), (req, res) => {
   }
   serverLogger.info(`File uploaded: ${req.file.filename}`);
   res.json({ url: req.file.filename });
+
+  // Fire-and-forget sync to VPS
+  triggerImageSync(serverLogger);
 });
 
 app.delete("/delete/:filename", (req, res) => {
@@ -432,6 +289,7 @@ app.delete("/delete/:filename", (req, res) => {
       serverLogger.error(`Error deleting file ${filename}: ${err.message}`);
       return res.status(500).json({ error: "Error deleting file" });
     }
+    triggerImageSync(serverLogger);
     serverLogger.info(`File deleted: ${filename}`);
     res.json({ status: "OK", message: "File deleted successfully" });
   });
