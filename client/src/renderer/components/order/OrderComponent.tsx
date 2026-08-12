@@ -262,7 +262,7 @@ const OrderComponent = () => {
             receiptHTML = generateReceiptHTML(
               orderItems,
               configs,
-              orderData.orderType?.toLowerCase()?.includes("platform")
+              (orderData.orderType?.toLowerCase()?.includes("platform") || orderData.orderType?.toLowerCase()?.includes("web"))
                 ? order!.ticketNumber || order!.orderId
                 : order!.orderId,
               orderData.orderType,
@@ -276,6 +276,7 @@ const OrderComponent = () => {
               user!.name,
               orderData.notes,
               paymentStatus.totalPaid,
+              orderData.paymentType,
             );
           }
         } else {
@@ -462,9 +463,9 @@ const OrderComponent = () => {
                         {/* Order Number and Total*/}
                         <div className="flex items-center justify-between gap-3 w-full">
                           <div className="flex gap-2">
-                            <h3 className="font-semibold text-black text-3xl">
-                              {order.orderType?.includes("platform") ? (
-                                order.ticketNumber || order.orderId
+                            <h3 className="font-semibold text-black text-3xl flex items-center gap-2.5">
+                              {order.ticketNumber ? (
+                                order.ticketNumber
                               ) : (
                                 <>
                                   {configurations.orderPrefix || "K"}

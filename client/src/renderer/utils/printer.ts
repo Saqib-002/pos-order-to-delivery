@@ -70,7 +70,8 @@ export const generateReceiptHTML = (
   customerName: string | undefined,
   userName?: string,
   notes?: string,
-  amountPaid?: number
+  amountPaid?: number,
+  paymentType?: string
 ): string => {
   const { nonMenuItems, groups, orderTotal } = calculateOrderTotal(items);
 
@@ -118,9 +119,11 @@ export const generateReceiptHTML = (
   let orderTypeLabel = orderType?.toUpperCase() || "";
   switch (orderType?.toUpperCase()) {
     case "DELIVERY":
+    case "WEB:DELIVERY":
       orderTypeLabel = t("receipt.orderType.delivery");
       break;
     case "PICKUP":
+    case "WEB:PICKUP":
       orderTypeLabel = t("receipt.orderType.pickup");
       break;
     case "DINE-IN":
@@ -220,7 +223,7 @@ export const generateReceiptHTML = (
             <div class="center">
                 <div class="bold large order-type-header">${orderTypeLabel}</div>
                 <div class="bold">${t("receipt.date")}: ${dateTimeStr}</div>
-                <div class="bold extra-large" style="margin: 15px 0;">${originalOrderType === "PLATFORM" ? orderId : `${configurations.orderPrefix}${orderId}`}</div>
+                <div class="bold extra-large" style="margin: 15px 0;">${(originalOrderType === "PLATFORM" || originalOrderType?.startsWith("WEB")) ? orderId : `${configurations.orderPrefix}${orderId}`}</div>
             </div>
 
             <div class="dashed-line"></div>
@@ -460,10 +463,25 @@ export const generateReceiptHTML = (
                     <span>${orderTotal.toFixed(2)}</span>
                 </div>
                 <div class="total-row">
-                    <span>${t("receipt.payment")}:</span>
+                    <span>${(() => {
+                        let paymentMethodLabel = t("receipt.payment");
+                        if (paymentType) {
+                          const cleanPaymentType = paymentType.split(":")[0].toLowerCase();
+                          if (cleanPaymentType === "cash") {
+                            paymentMethodLabel = t("paymentOptions.cash") || "Efectivo";
+                          } else if (cleanPaymentType === "card") {
+                            paymentMethodLabel = t("paymentOptions.card") || "Tarjeta";
+                          } else if (cleanPaymentType === "online") {
+                            paymentMethodLabel = t("paymentOptions.online") || "Online";
+                          } else {
+                            paymentMethodLabel = cleanPaymentType.charAt(0).toUpperCase() + cleanPaymentType.slice(1);
+                          }
+                        }
+                        return paymentMethodLabel;
+                      })()}:</span>
                     <span>${displayPaid.toFixed(2)}</span>
                 </div>
-                ${rawStatus === "PARTIAL" ? `
+                ${(orderTotal - displayPaid) > 0.005 ? `
                 <div class="total-row">
                     <span>${t("receipt.remaining")}:</span>
                     <span>${(orderTotal - displayPaid).toFixed(2)}</span>
@@ -548,9 +566,11 @@ export const generateItemsReceiptHTML = (
   let orderTypeDisplay = order.orderType || "";
   switch (orderTypeDisplay?.toUpperCase()) {
     case "DELIVERY":
+    case "WEB:DELIVERY":
       orderTypeDisplay = t("receipt.orderType.delivery");
       break;
     case "PICKUP":
+    case "WEB:PICKUP":
       orderTypeDisplay = t("receipt.orderType.pickup");
       break;
     case "DINE-IN":
@@ -606,7 +626,7 @@ export const generateItemsReceiptHTML = (
         </head>
         <body>
         <div class="order-info center">
-            <h1 class="bold" style="font-size: 24px;">${order.orderType?.toLowerCase().startsWith("platform") && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`}</h1>
+            <h1 class="bold" style="font-size: 24px;">${(order.orderType?.toLowerCase().startsWith("platform") || order.orderType?.toLowerCase().startsWith("web")) && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`}</h1>
             <h1 class="bold" style="font-size: 16px;">${orderTypeDisplay.toUpperCase()}</h1>
             <p class="bold" style="font-size: 14px;">${dateTimeStr}</p>
             <p class="bold" style="font-size: 14px;">${status}</p>
@@ -753,7 +773,7 @@ export const generateItemsReceiptHTML = (
         </div>
         <div class="line"></div>
         <div class="bold">
-            ${t("receipt.order")} ${order.orderType?.toLowerCase().startsWith("platform") && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`} - ${dateTimeStr}
+            ${t("receipt.order")} ${(order.orderType?.toLowerCase().startsWith("platform") || order.orderType?.toLowerCase().startsWith("web")) && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`} - ${dateTimeStr}
         </div>
         ${order.notes ? `<div class="bold">${t("receipt.notes")}: ${order.notes}</div>` : ""}
         <div class="center bold">

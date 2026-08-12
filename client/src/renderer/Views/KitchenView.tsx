@@ -75,7 +75,8 @@ export const KitchenView = () => {
         };
         if (
           order.orderType === "delivery" ||
-          order.orderType === "platform:delivery"
+          order.orderType === "platform:delivery" ||
+          order.orderType === "web:delivery"
         ) {
           updates = {
             status: "ready for delivery",
@@ -158,14 +159,14 @@ export const KitchenView = () => {
     const typeStats = [
       {
         title: t("kitchenView.stats.delivery"),
-        value: orders.filter((o) => o.orderType === "delivery").length,
+        value: orders.filter((o) => o.orderType === "delivery" || o.orderType === "web:delivery").length,
         icon: <DeliveredIcon className="size-6 text-orange-600" />,
         bgColor: "bg-orange-100",
         textColor: "text-orange-600",
       },
       {
         title: t("kitchenView.stats.pickup"),
-        value: orders.filter((o) => o.orderType === "pickup").length,
+        value: orders.filter((o) => o.orderType === "pickup" || o.orderType === "web:pickup").length,
         icon: <CarIcon className="size-6 text-blue-600" />,
         bgColor: "bg-blue-100",
         textColor: "text-blue-600",

@@ -67,6 +67,54 @@ const OrderCart: React.FC<OrderCartProps> = ({
   const {
     auth: { user, token },
   } = useAuth();
+
+  const [productsWithVariants, setProductsWithVariants] = React.useState<Record<string, boolean>>({});
+
+  React.useEffect(() => {
+    const checkVariants = async () => {
+      const uniqueProductIds = Array.from(new Set(orderItems.map(item => item.productId).filter(Boolean)));
+      const newMap = { ...productsWithVariants };
+      
+      let changed = false;
+      for (const prodId of uniqueProductIds) {
+        if (newMap[prodId] === undefined) {
+          newMap[prodId] = true;
+          changed = true;
+        }
+      }
+      if (changed) {
+        setProductsWithVariants({ ...newMap });
+      }
+
+      for (const prodId of uniqueProductIds) {
+        try {
+          const variantRes = await (window as any).electronAPI.getVariantsByProductId(
+            token,
+            prodId,
+          );
+          const hasVariants = !!(variantRes.status && variantRes.data && variantRes.data.length > 0);
+          if (newMap[prodId] !== hasVariants) {
+            newMap[prodId] = hasVariants;
+            changed = true;
+          }
+        } catch (e) {
+          if (newMap[prodId] !== false) {
+            newMap[prodId] = false;
+            changed = true;
+          }
+        }
+      }
+      
+      if (changed) {
+        setProductsWithVariants({ ...newMap });
+      }
+    };
+
+    if (orderItems.length > 0 && token) {
+      checkVariants();
+    }
+  }, [orderItems, token]);
+
   const handlePrint = async () => {
     const printerGroups = groupItemsByPrinter(orderItems, order?.orderType);
     if (!Object.keys(printerGroups).length) {
@@ -142,7 +190,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
           receiptHTML = generateReceiptHTML(
             orderItems,
             configurations,
-            order?.orderType?.toLowerCase().includes("platform")
+            (order?.orderType?.toLowerCase().includes("platform") || order?.orderType?.toLowerCase().includes("web"))
               ? order.ticketNumber || order.orderId
               : order!.orderId,
             order?.orderType,
@@ -156,6 +204,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
             user!.name,
             order?.notes,
             paymentStatus.totalPaid,
+            order?.paymentType,
           );
         }
       } else {
@@ -229,6 +278,19 @@ const OrderCart: React.FC<OrderCartProps> = ({
     onRemoveItem(itemId);
   };
   const handleEditItem = async (item: any) => {
+    const variantRes = await (window as any).electronAPI.getVariantsByProductId(
+      token,
+      item.productId,
+    );
+    if (!variantRes.status) {
+      toast.error(t("orderCart.errors.errorGettingProduct"));
+      return;
+    }
+    if (!variantRes.data || variantRes.data.length === 0) {
+      // Do not open edit modal if there is no variant group/variants for this item
+      return;
+    }
+
     const res = await (window as any).electronAPI.getProductById(
       token,
       item.productId,
@@ -381,15 +443,20 @@ const OrderCart: React.FC<OrderCartProps> = ({
     return (
       <div className="text-center text-gray-500 py-8 p-4 h-[calc(100vh-9rem)]">
         <div className="text-4xl mb-2">🛒</div>
-        <p className="text-lg font-medium">
+        <p className="text-lg font-medium flex items-center justify-center gap-2 flex-wrap">
           {t("orderCart.yourOrder")}{" "}
-          {order?.orderType?.toLowerCase().includes("platform") ? (
-            order.ticketNumber || order.orderId
+          {order?.ticketNumber ? (
+            order.ticketNumber
           ) : (
             <>
               {configurations?.orderPrefix || "K"}
               {order?.orderId}
             </>
+          )}
+          {order?.orderType?.startsWith("web:") && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30">
+              {t("orderTypes.web")}
+            </span>
           )}
         </p>
         <p className="text-sm">{t("orderCart.selectItemsFromMenu")}</p>
@@ -411,15 +478,20 @@ const OrderCart: React.FC<OrderCartProps> = ({
             className="p-0! m-0!"
             variant="transparent"
           />
-          <h2 className="text-lg font-semibold text-gray-800">
+          <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
             {t("orderCart.yourOrder")}{" "}
-            {order?.orderType?.toLowerCase().includes("platform") ? (
-              order.ticketNumber || order.orderId
+            {order?.ticketNumber ? (
+              order.ticketNumber
             ) : (
               <>
                 {configurations?.orderPrefix || "K"}
                 {order?.orderId}
               </>
+            )}
+            {order?.orderType?.startsWith("web:") && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30">
+                {t("orderTypes.web")}
+              </span>
             )}
           </h2>
         </span>
@@ -504,13 +576,15 @@ const OrderCart: React.FC<OrderCartProps> = ({
                 )}
               </div>
               <div className="ml-2 flex gap-2 absolute top-2 right-4">
-                <CustomButton
-                  type="button"
-                  onClick={() => handleEditItem(item)}
-                  variant="transparent"
-                  Icon={<EditIcon className="size-4" />}
-                  className="p-0!"
-                />
+                {productsWithVariants[item.productId || ""] !== false && (
+                  <CustomButton
+                    type="button"
+                    onClick={() => handleEditItem(item)}
+                    variant="transparent"
+                    Icon={<EditIcon className="size-4" />}
+                    className="p-0!"
+                  />
+                )}
                 <CustomButton
                   type="button"
                   onClick={() =>

@@ -53,12 +53,16 @@ export async function deleteProductAssociationsFromVPS(productId: string): Promi
     try {
         const oldVariants = await db("products_variants").where({ productId }).select("id");
         const oldGroups = await db("products_groups").where({ productId }).select("id");
+        const oldPrinters = await db("printers_products").where({ productId }).select("id");
 
         for (const row of oldVariants) {
             enqueue("productvariant", "delete", { id: row.id });
         }
         for (const row of oldGroups) {
             enqueue("productgroup", "delete", { id: row.id });
+        }
+        for (const row of oldPrinters) {
+            enqueue("printerproduct", "delete", { id: row.id });
         }
     } catch (err) {
         Logger.error(`SyncManager [products]: error queuing association deletes for product ${productId}:`, err);
@@ -73,6 +77,7 @@ export async function syncProductAssociationsToVPS(productId: string): Promise<v
     try {
         const variants = await db("products_variants").where({ productId });
         const groups = await db("products_groups").where({ productId });
+        const printers = await db("printers_products").where({ productId });
 
         for (const row of variants) {
             enqueue("productvariant", "upsert", {
@@ -93,6 +98,15 @@ export async function syncProductAssociationsToVPS(productId: string): Promise<v
                 productId: row.productId,
                 dependsOnGroupId: row.dependsOnGroupId || null,
                 dependsOnItemIds: row.dependsOnItemIds || null,
+            });
+        }
+        for (const row of printers) {
+            enqueue("printerproduct", "upsert", {
+                id: row.id,
+                printerId: row.printerId,
+                productId: row.productId,
+                createdAt: row.createdAt,
+                updatedAt: row.updatedAt,
             });
         }
     } catch (err) {

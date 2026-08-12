@@ -296,7 +296,7 @@ export const ManageOrdersView = () => {
           const receiptHTML = generateReceiptHTML(
             order.items || [],
             configs,
-            order.orderType?.toLowerCase().includes("platform")
+            (order.orderType?.toLowerCase().includes("platform") || order.orderType?.toLowerCase().includes("web"))
               ? order.ticketNumber || order.orderId
               : order.orderId,
             order.orderType,
@@ -310,6 +310,7 @@ export const ManageOrdersView = () => {
             user?.name,
             order.notes,
             paymentStatus.totalPaid,
+            order.paymentType,
           );
 
           if (!receiptHTML) {

@@ -31,3 +31,5 @@ export {
   deleteMenuAssociationsFromVPS,
   deleteMenuPageProductsFromVPS,
 } from "./menus.js";
+export { syncWebOrderToVPS } from "./Orders.js";
+

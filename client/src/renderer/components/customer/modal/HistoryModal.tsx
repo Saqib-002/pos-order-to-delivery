@@ -171,7 +171,9 @@ const HistoryModal = ({ customer, onClose }: HistoryModalProps) => {
           const receiptHTML = generateReceiptHTML(
             convertedItems, 
             configs,
-            order.orderId,
+            (order.orderType?.toLowerCase().includes("platform") || order.orderType?.toLowerCase().includes("web"))
+              ? order.ticketNumber || order.orderId
+              : order.orderId,
             order.orderType,
             user?.role || "",
             paymentStatus.status,
@@ -182,7 +184,8 @@ const HistoryModal = ({ customer, onClose }: HistoryModalProps) => {
             customerName,
             user?.name,
             order.notes,
-            paymentStatus.totalPaid
+            paymentStatus.totalPaid,
+            order.paymentType
           );
 
           if (!receiptHTML) {

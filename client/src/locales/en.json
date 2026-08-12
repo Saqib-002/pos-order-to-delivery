@@ -1,4 +1,9 @@
 {
+  "paymentOptions": {
+    "cash": "Cash",
+    "card": "Card",
+    "online": "Online"
+  },
   "common": {
     "loading": "Loading...",
     "edit": "Edit",
@@ -1126,6 +1131,7 @@
     "assignedAt": "Assigned At",
     "deliveredAt": "Delivered At",
     "orderItems": "Order Items",
+    "orderItemsForTicket": "Order items for #{{ticketNumber}}",
     "addOns": "Add-ons:",
     "each": "each",
     "noItemsFound": "No items found",
@@ -2617,7 +2623,10 @@
     "dineIn": "Dine In",
     "platform": "Platform",
     "platformDelivery": "Platform (Delivery)",
-    "platformPickup": "Platform (Takeaway)"
+    "platformPickup": "Platform (Takeaway)",
+    "web": "Web",
+    "webDelivery": "Web (Delivery)",
+    "webPickup": "Web (Takeaway)"
   },
   "orderComponent": {
     "partialPayment": "Paid: €{{paid}} / €{{total}}",

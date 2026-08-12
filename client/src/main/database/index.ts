@@ -106,6 +106,14 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
         } catch (webCustomerSyncErr) {
             Logger.error("Failed to start web customer sync:", webCustomerSyncErr);
         }
+
+        // Start dedicated web-order sync (polls VPS every 10s)
+        try {
+            const { startWebOrderSync } = await import("../utils/webOrderSync.js");
+            startWebOrderSync();
+        } catch (webOrderSyncErr) {
+            Logger.error("Failed to start web order sync:", webOrderSyncErr);
+        }
     } catch (error) {
         Logger.error("Database initialization error:", error);
         throw error;

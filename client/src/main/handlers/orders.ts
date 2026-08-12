@@ -201,9 +201,17 @@ export const updateOrder = async (
       orderData
     );
 
-    if ((orderData as any).deliveryPersonId && orderData.status?.toLowerCase() === "out for delivery") {
-      const { syncOrderToVPS } = await import("../utils/syncManager.js");
-      syncOrderToVPS(orderId).catch(err => Logger.error("SyncManager: error syncing assigned order:", err));
+    const { db } = await import("../database/index.js");
+    const updatedOrder = await db("orders").where({ id: orderId }).first();
+    if (updatedOrder) {
+      if (updatedOrder.orderType?.toLowerCase()?.includes("web")) {
+        const { syncWebOrderToVPS } = await import("../utils/sync/Orders.js");
+        syncWebOrderToVPS(orderId).catch(err => Logger.error("WebOrderSync: error syncing updated web order:", err));
+      }
+      if (updatedOrder.deliveryPersonId) {
+        const { syncOrderToVPS } = await import("../utils/syncManager.js");
+        syncOrderToVPS(orderId).catch(err => Logger.error("SyncManager: error syncing driver-assigned order:", err));
+      }
     }
 
     return {

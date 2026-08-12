@@ -943,7 +943,13 @@ export class OrderDatabaseOperations {
 
       const counts: Record<string, number> = {};
       results.forEach((row: any) => {
-        counts[row.orderType || "unknown"] = parseInt(
+        let type = (row.orderType || "unknown").toLowerCase();
+        if (type === "web:delivery") {
+          type = "delivery";
+        } else if (type === "web:pickup") {
+          type = "pickup";
+        }
+        counts[type] = (counts[type] || 0) + parseInt(
           row.count?.toString() || "0"
         );
       });
@@ -964,6 +970,10 @@ export class OrderDatabaseOperations {
       if (filter.selectedOrderType) {
         if (filter.selectedOrderType?.toLowerCase().startsWith("platform")) {
           query.where("orderType", "like", "platform%");
+        } else if (filter.selectedOrderType?.toLowerCase() === "delivery") {
+          query.whereIn("orderType", ["delivery", "web:delivery"]);
+        } else if (filter.selectedOrderType?.toLowerCase() === "pickup") {
+          query.whereIn("orderType", ["pickup", "web:pickup"]);
         } else {
           const normalizedOrderType = filter.selectedOrderType
             .toLowerCase()
@@ -1268,6 +1278,110 @@ export class OrderDatabaseOperations {
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
     } catch (error) {
+      throw error;
+    }
+  }
+
+  static async saveWebOrder(orderData: any, items: any[]): Promise<any> {
+    const trx = await db.transaction();
+    try {
+      const nowObj = new Date();
+      const startOfDay = new Date(nowObj);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(nowObj);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const countResult = await trx("orders")
+        .whereBetween("createdAt", [
+          startOfDay.toISOString(),
+          endOfDay.toISOString(),
+        ])
+        .count("* as count")
+        .first();
+      const newDailyOrderId = (Number((countResult as any).count) || 0) + 1;
+
+      const newOrder = {
+        id: orderData.id || randomUUID(),
+        orderId: newDailyOrderId,
+        customerId: orderData.customerId || null,
+        customerName: orderData.customerName || "",
+        customerPhone: orderData.customerPhone || "",
+        customerCIF: orderData.customerCIF || "",
+        customerEmail: orderData.customerEmail || "",
+        customerAddress: orderData.customerAddress || "",
+        customerComments: orderData.customerComments || "",
+        notes: orderData.notes || "",
+        orderType: orderData.orderType || "web:delivery",
+        isPaid: orderData.isPaid === true || orderData.isPaid === 1,
+        paymentType: orderData.paymentType || "online",
+        status: "pending",
+        ticketNumber: orderData.ticketNumber || null,
+        pickupTime: orderData.pickupTime || null,
+        platformId: orderData.platformId || null,
+        receivingTime: orderData.receivingTime || null,
+        createdAt: orderData.createdAt || nowObj,
+        updatedAt: nowObj,
+      };
+
+      await trx("orders").insert(newOrder);
+
+      if (items && Array.isArray(items)) {
+        for (const item of items) {
+          let itemPrinters = item.printers || "";
+          if (!itemPrinters && item.productId) {
+            const prodPrinters = await trx("printers_products")
+              .join("printers", "printers_products.printerId", "=", "printers.id")
+              .where("printers_products.productId", item.productId)
+              .select("printers.id", "printers.name", "printers.isMain");
+            if (prodPrinters && prodPrinters.length > 0) {
+              itemPrinters = prodPrinters
+                .map((p: any) => `${p.id}|${p.name}|${p.isMain === 1 || p.isMain === true || p.isMain === "true" ? "true" : "false"}`)
+                .join("=");
+            }
+          }
+
+          const orderItem = {
+            id: item.id || randomUUID(),
+            orderId: newOrder.id,
+            productId: item.productId || "",
+            productName: item.productName || "",
+            productDescription: item.productDescription || "",
+            productPrice: parseFloat(item.productPrice || "0"),
+            productDiscount: parseFloat(item.productDiscount || "0"),
+            productPriority: parseInt(item.productPriority || "0", 10),
+            productTax: parseFloat(item.productTax || "0"),
+            quantity: parseInt(item.quantity || "1", 10),
+            totalPrice: parseFloat(item.totalPrice || "0"),
+            complements: item.complements || "",
+            variantId: item.variantId || "",
+            variantName: item.variantName || "",
+            variantPrice: parseFloat(item.variantPrice || "0"),
+            menuId: item.menuId || "",
+            menuSecondaryId: item.menuSecondaryId ? parseInt(item.menuSecondaryId, 10) : null,
+            menuName: item.menuName || "",
+            menuDescription: item.menuDescription || "",
+            menuDiscount: parseFloat(item.menuDiscount || "0"),
+            menuTax: parseFloat(item.menuTax || "0"),
+            menuPrice: parseFloat(item.menuPrice || "0"),
+            supplement: parseFloat(item.supplement || "0"),
+            productNote: item.productNote || "",
+            printers: itemPrinters,
+            menuPageId: item.menuPageId || null,
+            menuPageName: item.menuPageName || null,
+            subCategoryName: item.subCategoryName || "",
+            subCategoryPriority: item.subCategoryPriority ? parseInt(item.subCategoryPriority, 10) : 0,
+            isKitchenPrinted: item.isKitchenPrinted === 1 || item.isKitchenPrinted === true,
+            createdAt: item.createdAt || nowObj,
+            updatedAt: nowObj,
+          };
+          await trx("order_items").insert(orderItem);
+        }
+      }
+
+      await trx.commit();
+      return { orderId: newOrder.id };
+    } catch (error) {
+      await trx.rollback();
       throw error;
     }
   }

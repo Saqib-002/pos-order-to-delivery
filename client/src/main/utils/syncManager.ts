@@ -27,7 +27,7 @@ export async function syncDriverToVPS(driver: any) {
     }
 }
 
-// Push an assigned order to the VPS whiteboard
+// Push updated order status & delivery assignment to VPS v1 API
 export async function syncOrderToVPS(orderId: string) {
     const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
     try {

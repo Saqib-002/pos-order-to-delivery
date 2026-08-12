@@ -1,4 +1,9 @@
 {
+  "paymentOptions": {
+    "cash": "Efectivo",
+    "card": "Tarjeta",
+    "online": "Online"
+  },
   "common": {
     "loading": "Cargando...",
     "edit": "Editar",
@@ -1126,6 +1131,7 @@
     "assignedAt": "Asignado el",
     "deliveredAt": "Entregado el",
     "orderItems": "Artículos del Pedido",
+    "orderItemsForTicket": "Artículos del pedido para #{{ticketNumber}}",
     "addOns": "Complementos:",
     "each": "cada uno",
     "noItemsFound": "No se encontraron artículos",
@@ -2617,7 +2623,10 @@
     "dineIn": "Consumo en local",
     "platform": "Plataforma",
     "platformDelivery": "Plataforma (Envío)",
-    "platformPickup": "Plataforma (Recogida)"
+    "platformPickup": "Plataforma (Recogida)",
+    "web": "Web",
+    "webDelivery": "Web (Envío)",
+    "webPickup": "Web (Recogida)"
   },
   "orderComponent": {
     "partialPayment": "Pagado: €{{paid}} / €{{total}}",

@@ -96,8 +96,16 @@ export const translateOrderType = (orderType: string): string => {
 
   let translationKey = "";
 
+  // Check for web variations
+  if (normalized === "web:pickup") {
+    translationKey = "orderTypes.webPickup";
+  } else if (normalized === "web:delivery") {
+    translationKey = "orderTypes.webDelivery";
+  } else if (normalized?.startsWith("web")) {
+    translationKey = "orderTypes.web";
+  }
   // Check for pickup variations
-  if (
+  else if (
     normalized === "pickup" ||
     normalized === "recoger" ||
     normalized.includes("recoger")
@@ -142,6 +150,10 @@ export const getOrderTypeStyle = (orderType: string) => {
   
   if (normalized?.startsWith("platform")) {
     return "bg-pink-100 text-pink-800 border-pink-200";
+  }
+  
+  if (normalized?.startsWith("web")) {
+    return "bg-amber-100 text-amber-800 border-amber-200";
   }
   
   if (normalized === "pickup") {

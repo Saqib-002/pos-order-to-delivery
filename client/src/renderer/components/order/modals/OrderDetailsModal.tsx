@@ -108,7 +108,11 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         style={{ fontFamily: "'Courier New', monospace" }}
       >
         <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
-          {t("orderDetailsModal.orderItems")}
+          {order.ticketNumber ? (
+            t("orderDetailsModal.orderItemsForTicket", { ticketNumber: order.ticketNumber })
+          ) : (
+            t("orderDetailsModal.orderItems")
+          )}
         </h3>
 
         {/* Receipt Table */}
@@ -421,7 +425,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-black">
-                {order.orderType?.toLowerCase().includes("platform") && order.ticketNumber ? (
+                {order.ticketNumber ? (
                   <>#{order.ticketNumber}</>
                 ) : (
                   t("orderDetailsModal.title", { orderId: order.orderId })
