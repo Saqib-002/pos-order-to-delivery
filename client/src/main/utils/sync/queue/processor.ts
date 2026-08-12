@@ -281,6 +281,19 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             break;
 
+        case "orderstatus":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/orders/${payload.id}/status`,
+                    init: {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            break;
+
         // ── Add more entities here in the future ──────────────────────────
     }
 
