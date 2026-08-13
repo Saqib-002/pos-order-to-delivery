@@ -108,28 +108,6 @@ export async function syncOrderToVPS(orderId: string) {
     }
 }
 
-// Push configurations to the VPS
-export async function syncConfigToVPS(configId: string) {
-    const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
-    try {
-        const config = await db("configurations").where({ id: configId }).first();
-        if (!config) return;
-
-        const response = await fetch(`${vpsUrl}/api/pos/sync-config`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(config)
-        });
-        if (!response.ok) {
-            console.error(`SyncManager: Failed to sync configurations: ${response.statusText}`);
-        } else {
-            console.log(`SyncManager: Successfully synced configurations ${configId} to VPS`);
-        }
-    } catch (err) {
-        console.error("SyncManager: Error syncing configurations:", err);
-    }
-}
-
 // Clear orders from VPS whiteboard once processed locally
 async function clearWhiteboardOrders(ids: string[]) {
     const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
@@ -169,14 +147,14 @@ export function startBackgroundSync() {
                             deliveredAt: update.deliveredAt || new Date().toISOString(),
                             updatedAt: new Date().toISOString()
                         });
-                        console.log(`SyncManager: Locally marked order ${update.id} as Delivered`);
+                        // console.log(`SyncManager: Locally marked order ${update.id} as Delivered`);
                     } else if (update.status.toLowerCase() === "cancelled") {
                         await db("orders").where({ id: update.id }).update({
                             status: "Cancelled",
                             notes: update.notes,
                             updatedAt: new Date().toISOString()
                         });
-                        console.log(`SyncManager: Locally marked order ${update.id} as Cancelled`);
+                        // console.log(`SyncManager: Locally marked order ${update.id} as Cancelled`);
                     }
                     processedIds.push(update.id);
                 } catch (dbErr) {

@@ -2,7 +2,7 @@ import { IpcMainInvokeEvent } from "electron";
 import { verifyToken } from "./auth.js";
 import { ConfigurationsDatabaseOperations } from "../database/configurationsOperations.js";
 import { uploadImg } from "../utils/utils.js";
-import { syncConfigToVPS } from "../utils/syncManager.js";
+import { syncConfigToVPS } from "../utils/sync/configurations.js";
 
 export const createConfigurations = async (
     event: IpcMainInvokeEvent,
