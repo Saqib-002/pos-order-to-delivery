@@ -114,6 +114,14 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
         } catch (webOrderSyncErr) {
             Logger.error("Failed to start web order sync:", webOrderSyncErr);
         }
+
+        // Start kitchen status push (posts current "sent to kitchen" count every 20s)
+        try {
+            const { startKitchenStatusSync } = await import("../utils/kitchenStatusSync.js");
+            startKitchenStatusSync();
+        } catch (kitchenSyncErr) {
+            Logger.error("Failed to start kitchen status sync:", kitchenSyncErr);
+        }
     } catch (error) {
         Logger.error("Database initialization error:", error);
         throw error;
