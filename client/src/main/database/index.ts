@@ -101,7 +101,7 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
 
         // Start dedicated web-customer sync (polls VPS every 30s — separate from order poll)
         try {
-            const { startWebCustomerSync } = await import("../utils/webCustomerSync.js");
+            const { startWebCustomerSync } = await import("../utils/sync/webCustomer.js");
             startWebCustomerSync();
         } catch (webCustomerSyncErr) {
             Logger.error("Failed to start web customer sync:", webCustomerSyncErr);

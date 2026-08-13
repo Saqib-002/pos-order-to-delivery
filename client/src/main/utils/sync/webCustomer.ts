@@ -1,9 +1,29 @@
-import { WebCustomerDatabaseOperations, WebCustomer } from "../database/webCustomerOperations.js";
+import { WebCustomerDatabaseOperations, WebCustomer } from "../../database/webCustomerOperations.js";
 import Logger from "electron-log";
+import Store from "electron-store";
 
-// Persists the last-synced timestamp in memory between ticks.
-// On restart it falls back to null and does a full pull (safe — upsert handles duplicates).
-let lastSyncedAt: string | null = null;
+interface SyncCursorSchema {
+  webCustomerSyncCursor: string | null;
+}
+
+/**
+ * Dedicated store for persisting the web-customer sync cursor across restarts.
+ * Stored separately from the main app store to keep concerns isolated.
+ */
+const syncCursorStore = new Store<SyncCursorSchema>({
+  name: "sync-cursors",
+  defaults: {
+    webCustomerSyncCursor: null,
+  },
+});
+
+function getLastSyncedAt(): string | null {
+  return (syncCursorStore as any).get("webCustomerSyncCursor") ?? null;
+}
+
+function setLastSyncedAt(value: string | null): void {
+  (syncCursorStore as any).set("webCustomerSyncCursor", value);
+}
 
 /**
  * One sync tick: fetch web customers updated since lastSyncedAt from the VPS,
@@ -11,6 +31,7 @@ let lastSyncedAt: string | null = null;
  */
 async function syncWebCustomers(): Promise<void> {
   const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
+  const lastSyncedAt = getLastSyncedAt();
 
   try {
     const qs = lastSyncedAt
@@ -49,8 +70,8 @@ async function syncWebCustomers(): Promise<void> {
     }
 
     // Advance cursor only after the entire batch is saved successfully
-    lastSyncedAt = latestUpdatedAt;
-    Logger.info(`WebCustomerSync: synced ${customers.length} web customer(s). Cursor → ${lastSyncedAt}`);
+    setLastSyncedAt(latestUpdatedAt);
+    Logger.info(`WebCustomerSync: synced ${customers.length} web customer(s). Cursor → ${latestUpdatedAt}`);
   } catch (err) {
     Logger.error("WebCustomerSync: network error during poll:", err);
   }
@@ -72,5 +93,5 @@ export function startWebCustomerSync(): void {
     syncWebCustomers().catch((err) =>
       Logger.error("WebCustomerSync: sync tick error:", err)
     );
-  }, 30_000);
+  }, 120_000);
 }
