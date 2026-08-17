@@ -38,7 +38,13 @@ async function syncWebCustomers(): Promise<void> {
       ? `?since=${encodeURIComponent(lastSyncedAt)}`
       : "";
 
-    const response = await fetch(`${vpsUrl}/api/v1/customers/poll${qs}`);
+    const syncSecret = process.env.DRIVER_SYNC_SECRET || "";
+    const headers: Record<string, string> = {};
+    if (syncSecret) headers["x-sync-secret"] = syncSecret;
+
+    const response = await fetch(`${vpsUrl}/api/v1/customers/poll${qs}`, {
+      headers,
+    });
 
     if (!response.ok) {
       Logger.warn(`WebCustomerSync: poll request failed — ${response.status} ${response.statusText}`);
