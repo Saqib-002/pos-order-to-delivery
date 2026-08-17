@@ -2626,7 +2626,10 @@
     "platformPickup": "Platform (Takeaway)",
     "web": "Web",
     "webDelivery": "Web (Delivery)",
-    "webPickup": "Web (Takeaway)"
+    "webPickup": "Web (Takeaway)",
+    "app": "App",
+    "appDelivery": "App (Delivery)",
+    "appPickup": "App (Takeaway)"
   },
   "orderComponent": {
     "partialPayment": "Paid: €{{paid}} / €{{total}}",

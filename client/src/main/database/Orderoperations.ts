@@ -944,9 +944,9 @@ export class OrderDatabaseOperations {
       const counts: Record<string, number> = {};
       results.forEach((row: any) => {
         let type = (row.orderType || "unknown").toLowerCase();
-        if (type === "web:delivery") {
+        if (type === "web:delivery" || type === "app:delivery") {
           type = "delivery";
-        } else if (type === "web:pickup") {
+        } else if (type === "web:pickup" || type === "app:pickup") {
           type = "pickup";
         }
         counts[type] = (counts[type] || 0) + parseInt(
@@ -971,9 +971,9 @@ export class OrderDatabaseOperations {
         if (filter.selectedOrderType?.toLowerCase().startsWith("platform")) {
           query.where("orderType", "like", "platform%");
         } else if (filter.selectedOrderType?.toLowerCase() === "delivery") {
-          query.whereIn("orderType", ["delivery", "web:delivery"]);
+          query.whereIn("orderType", ["delivery", "web:delivery", "app:delivery"]);
         } else if (filter.selectedOrderType?.toLowerCase() === "pickup") {
-          query.whereIn("orderType", ["pickup", "web:pickup"]);
+          query.whereIn("orderType", ["pickup", "web:pickup", "app:pickup"]);
         } else {
           const normalizedOrderType = filter.selectedOrderType
             .toLowerCase()

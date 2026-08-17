@@ -626,7 +626,7 @@ export const generateItemsReceiptHTML = (
         </head>
         <body>
         <div class="order-info center">
-            <h1 class="bold" style="font-size: 24px;">${(order.orderType?.toLowerCase().startsWith("platform") || order.orderType?.toLowerCase().startsWith("web")) && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`}</h1>
+            <h1 class="bold" style="font-size: 24px;">${(order.orderType?.toLowerCase().startsWith("platform") || order.orderType?.toLowerCase().startsWith("web") || order.orderType?.toLowerCase().startsWith("app")) && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`}</h1>
             <h1 class="bold" style="font-size: 16px;">${orderTypeDisplay.toUpperCase()}</h1>
             <p class="bold" style="font-size: 14px;">${dateTimeStr}</p>
             <p class="bold" style="font-size: 14px;">${status}</p>
@@ -773,7 +773,7 @@ export const generateItemsReceiptHTML = (
         </div>
         <div class="line"></div>
         <div class="bold">
-            ${t("receipt.order")} ${(order.orderType?.toLowerCase().startsWith("platform") || order.orderType?.toLowerCase().startsWith("web")) && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`} - ${dateTimeStr}
+            ${t("receipt.order")} ${(order.orderType?.toLowerCase().startsWith("platform") || order.orderType?.toLowerCase().startsWith("web") || order.orderType?.toLowerCase().startsWith("app")) && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`} - ${dateTimeStr}
         </div>
         ${order.notes ? `<div class="bold">${t("receipt.notes")}: ${order.notes}</div>` : ""}
         <div class="center bold">
