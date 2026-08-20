@@ -1,9 +1,9 @@
 import { colorOptions } from "@/renderer/utils/utils";
-import React, { useState, useEffect, useRef } from "react"; // Import useRef
+import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
-import { CrossIcon, ImgIcon } from "@/renderer/public/Svg"; // Import icons
+import { CrossIcon, ImgIcon } from "@/renderer/public/Svg";
 import { useTranslation } from "react-i18next";
 
 interface Category {
@@ -12,7 +12,9 @@ interface Category {
   itemCount?: number;
   color: string;
   type: "category" | "subcategory";
-  imgUrl?: string; // Add this
+  imgUrl?: string;
+  bannerImgUrl?: string;
+  priority?: number;
 }
 
 interface CategoryModalProps {
@@ -34,14 +36,16 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   const [formData, setFormData] = useState({
     name: "",
     color: "red",
-    imgUrl: "", // Add this
+    imgUrl: "",
+    bannerImgUrl: "",
+    priority: 0,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null); // Add ref for file input
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const bannerFileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Get color classes for selection ring
   const getColorClasses = (color: string, isSelected: boolean) => {
-    // ... (no change in this function)
     if (!isSelected) {
       return "border-gray-200 hover:border-gray-300";
     }
@@ -62,39 +66,64 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       colorMap[color] || "border-gray-500 ring-2 ring-gray-500 ring-opacity-50"
     );
   };
+
   useEffect(() => {
     if (editingCategory) {
       setFormData({
         name: editingCategory.name,
         color: editingCategory.color,
-        imgUrl: editingCategory.imgUrl || "", // Set imgUrl
+        imgUrl: editingCategory.imgUrl || "",
+        bannerImgUrl: (editingCategory as any).bannerImgUrl || "",
+        priority: (editingCategory as any).priority || 0,
       });
     } else {
       setFormData({
         name: "",
         color: "red",
-        imgUrl: "", // Reset imgUrl
+        imgUrl: "",
+        bannerImgUrl: "",
+        priority: 0,
       });
     }
   }, [editingCategory, isOpen]);
 
-  // Add image handlers
+  // Icon image handler
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64 = reader.result as string;
-        setFormData({ ...formData, imgUrl: base64 });
+        setFormData((prev) => ({ ...prev, imgUrl: base64 }));
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleRemoveImage = () => {
-    setFormData({ ...formData, imgUrl: "" });
+    setFormData((prev) => ({ ...prev, imgUrl: "" }));
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  // Mobile banner image handler
+  const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setFormData((prev) => ({ ...prev, bannerImgUrl: base64 }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveBannerImage = () => {
+    setFormData((prev) => ({ ...prev, bannerImgUrl: "" }));
+    if (bannerFileInputRef.current) {
+      bannerFileInputRef.current.value = "";
     }
   };
 
@@ -110,23 +139,22 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
     try {
       let res;
-      // Pass imgUrl to the API calls
+      const payload = {
+        categoryName: formData.name,
+        color: formData.color,
+        imgUrl: formData.imgUrl,
+        bannerImgUrl: formData.bannerImgUrl,
+        priority: Number(formData.priority) || 0,
+      };
+
       if (editingCategory) {
         res = await (window as any).electronAPI.updateCategory(
           token,
           editingCategory.id,
-          {
-            categoryName: formData.name,
-            color: formData.color,
-            imgUrl: formData.imgUrl,
-          }
+          payload
         );
       } else {
-        res = await (window as any).electronAPI.createCategory(token, {
-          categoryName: formData.name,
-          color: formData.color,
-          imgUrl: formData.imgUrl,
-        });
+        res = await (window as any).electronAPI.createCategory(token, payload);
       }
       if (!res.status) {
         toast.error(
@@ -153,7 +181,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-xl w-full mx-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-black">
             {editingCategory
@@ -163,13 +191,13 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
-          {/* Wrap name and image in a flex container */}
+          {/* Wrap name and icon image in a flex container */}
           <div className="flex items-start gap-4 mb-4">
             <CustomInput
               label={t("menuComponents.modals.categoryModal.categoryName")}
               name="categoryName"
               type="text"
-              value={formData.name} // Add value prop
+              value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
@@ -177,15 +205,15 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               placeholder={t(
                 "menuComponents.modals.categoryModal.enterCategoryName"
               )}
-              otherClasses="flex-1" // Use flex-1
+              otherClasses="flex-1"
             />
 
-            {/* Image Upload */}
-            <div className="w-32 flex-shrink-0">
+            {/* Icon Image Upload */}
+            <div className="w-28 flex-shrink-0">
               <label className="block text-xs font-medium text-gray-700 mb-2">
                 {t("menuComponents.modals.categoryModal.image")}
               </label>
-              <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-1 hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100  flex items-center justify-center touch-manipulation">
+              <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-1 hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 flex items-center justify-center touch-manipulation">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -199,13 +227,13 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                       <img
                         crossOrigin="anonymous"
                         src={formData.imgUrl}
-                        alt="Category Preview"
+                        alt="Category Icon Preview"
                         className="size-9 object-cover rounded shadow-md"
                       />
                       <button
                         type="button"
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent triggering file input
+                          e.stopPropagation();
                           handleRemoveImage();
                         }}
                         className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-md hover:bg-gray-100 transition-colors"
@@ -223,8 +251,62 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
             </div>
           </div>
 
+          {/* Priority & Mobile Banner Image */}
+          <div className="mb-4">
+            <CustomInput
+              label={t("menuComponents.modals.categoryModal.priority", "Prioridad (Orden)")}
+              name="priority"
+              type="number"
+              value={formData.priority}
+              onChange={(e) =>
+                setFormData({ ...formData, priority: parseInt(e.target.value) || 0 })
+              }
+              placeholder={t("menuComponents.modals.categoryModal.enterPriority", "Ingrese prioridad")}
+            />
+          </div>
+
+          {/* Mobile Banner Image Upload */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t("menuComponents.modals.categoryModal.bannerImage", "IMAGEN DE BANNER (MÓVIL)")}
+            </label>
+            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-2 hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 flex items-center justify-center min-h-[90px] touch-manipulation">
+              <input
+                ref={bannerFileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleBannerImageChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              {formData.bannerImgUrl ? (
+                <div className="relative w-full flex items-center justify-center">
+                  <img
+                    crossOrigin="anonymous"
+                    src={formData.bannerImgUrl}
+                    alt="Category Banner Preview"
+                    className="w-full h-24 object-cover rounded shadow-md"
+                  />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveBannerImage();
+                    }}
+                    className="absolute top-1 right-1 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors"
+                  >
+                    <CrossIcon className="size-4 text-gray-600 hover:text-gray-800" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center text-gray-500 text-xs py-2">
+                  <ImgIcon className="size-8 mb-1" />
+                  <span>{t("menuComponents.modals.categoryModal.uploadBanner", "Subir banner para la app móvil (Recomendado: horizontal)")}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="mb-6">
-            {/* ... (color picker code remains the same) ... */}
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t("menuComponents.modals.categoryModal.color")}
             </label>
@@ -244,14 +326,12 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                   <div
                     className={`w-12 h-12 rounded-full ${option.color}`}
                   ></div>
-                  {/* <span className="text-xs text-gray-700">{option.label}</span> */}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="flex justify-end gap-3">
-            {/* ... (buttons remain the same) ... */}
             <CustomButton
               type="button"
               onClick={onClose}

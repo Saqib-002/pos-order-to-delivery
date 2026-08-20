@@ -17,6 +17,8 @@ export async function syncCategoryToVPS(categoryId: string): Promise<void> {
             categoryName: category.categoryName,
             color: category.color || "green",
             imgUrl: category.imgUrl || "",
+            bannerImgUrl: category.bannerImgUrl || "",
+            priority: category.priority ?? 0,
         });
     } catch (err) {
         Logger.error(`SyncManager [categories]: error queuing upsert for ${categoryId}:`, err);

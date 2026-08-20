@@ -17,9 +17,13 @@ export class CategoryDatabaseOperations {
             if (category.imgUrl && !category.imgUrl.startsWith("http")) {
                 category.imgUrl = await uploadImg(category.imgUrl, false);
             }
+            if (category.bannerImgUrl && !category.bannerImgUrl.startsWith("http")) {
+                category.bannerImgUrl = await uploadImg(category.bannerImgUrl, false);
+            }
             const newCategory = {
                 id,
                 ...category,
+                priority: category.priority ?? 0,
                 createdAt: now,
                 updatedAt: now,
             };
@@ -29,6 +33,7 @@ export class CategoryDatabaseOperations {
             return {
                 newCategory,
                 imgUrl: `${category.imgUrl ? `${uploadUrl}/uploads/${category.imgUrl}` : ""}`,
+                bannerImgUrl: `${category.bannerImgUrl ? `${uploadUrl}/uploads/${category.bannerImgUrl}` : ""}`,
             };
         } catch (error) {
             throw error;
@@ -43,11 +48,13 @@ export class CategoryDatabaseOperations {
                         '(SELECT COUNT(*) FROM sub_categories WHERE "categoryId" = categories.id) as "itemCount"'
                     )
                 )
+                .orderBy("categories.priority", "asc")
                 .orderBy("categories.categoryName", "asc");
             const categories = await query;
             return categories.map((c) => ({
                 ...c,
                 imgUrl: `${c.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${c.imgUrl}` : ""}`,
+                bannerImgUrl: `${c.bannerImgUrl ? `${(store as any).get("cdnUrl")}/uploads/${c.bannerImgUrl}` : ""}`,
             }));
         } catch (error) {
             throw error;
@@ -60,6 +67,10 @@ export class CategoryDatabaseOperations {
                 const res=await deleteImg(category.imgUrl);
                 if(!res) throw new Error("Failed to delete image");
             }
+            if (category && category.bannerImgUrl) {
+                const res=await deleteImg(category.bannerImgUrl);
+                if(!res) throw new Error("Failed to delete banner image");
+            }
             await db("categories").where("id", id).delete();
         } catch (error) {
             throw error;
@@ -69,19 +80,41 @@ export class CategoryDatabaseOperations {
         try {
             const now = new Date().toISOString();
             const category = await db("categories").where("id", id).first();
-            let updateUrl=updates.imgUrl;
-            if(updateUrl){
-                updateUrl=updateUrl.split("/").at(-1);
+
+            // Handle icon imgUrl
+            let updateUrl = updates.imgUrl;
+            if (updateUrl) {
+                updateUrl = updateUrl.split("/").at(-1);
             }
             if (category && category.imgUrl && category.imgUrl !== updateUrl) {
-                const res=await deleteImg(category.imgUrl);
-                if(!res) throw new Error("Failed to delete image");
+                const res = await deleteImg(category.imgUrl);
+                if (!res) throw new Error("Failed to delete image");
             }
             if (updates.imgUrl && !updates.imgUrl.startsWith("http")) {
                 updates.imgUrl = await uploadImg(updates.imgUrl, false);
             } else if (updates.imgUrl) {
                 updates.imgUrl = updates.imgUrl?.split("/").at(-1);
             }
+
+            // Handle bannerImgUrl
+            let updateBannerUrl = updates.bannerImgUrl;
+            if (updateBannerUrl) {
+                updateBannerUrl = updateBannerUrl.split("/").at(-1);
+            }
+            if (category && category.bannerImgUrl && category.bannerImgUrl !== updateBannerUrl) {
+                const res = await deleteImg(category.bannerImgUrl);
+                if (!res) throw new Error("Failed to delete banner image");
+            }
+            if (updates.bannerImgUrl && !updates.bannerImgUrl.startsWith("http")) {
+                updates.bannerImgUrl = await uploadImg(updates.bannerImgUrl, false);
+            } else if (updates.bannerImgUrl) {
+                updates.bannerImgUrl = updates.bannerImgUrl?.split("/").at(-1);
+            }
+
+            if (updates.priority !== undefined) {
+                updates.priority = Number(updates.priority) || 0;
+            }
+
             const updatedCategory = await db("categories")
                 .where("id", id)
                 .update({

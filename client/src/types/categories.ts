@@ -5,6 +5,8 @@ export interface Category{
     itemCount?: number;
     createdAt: string;
     imgUrl?: string;
+    bannerImgUrl?: string;
+    priority?: number;
     updatedAt: string;
     isDeleted: boolean;
 }

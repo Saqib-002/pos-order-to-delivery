@@ -17,6 +17,9 @@ export interface BaseMenuEntity {
 export interface Category extends BaseMenuEntity {
   itemCount?: number;
   type: "category";
+  imgUrl?: string;
+  bannerImgUrl?: string;
+  priority?: number;
 }
 
 export interface Subcategory extends BaseMenuEntity {
