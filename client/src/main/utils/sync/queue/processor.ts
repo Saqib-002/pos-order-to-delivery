@@ -307,6 +307,19 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             break;
 
+        case "site_content":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/content/sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            break;
+
         // ── Add more entities here in the future ──────────────────────────
     }
 

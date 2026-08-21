@@ -27,6 +27,7 @@ import { WorkerManagement } from "./Views/WorkerManagement";
 import { MarketPurchaseManagement } from "./Views/MarketPurchaseManagement";
 import { IncomesManagement } from "./Views/IncomesManagement";
 import { CashOutManagement } from "./Views/CashOutManagement";
+import { WebAdminView } from "./Views/WebAdminView";
 
 interface ViewConfig {
   component: JSX.Element;
@@ -35,6 +36,7 @@ interface ViewConfig {
 
 const App: React.FC = () => {
   const [view, setView] = useState<string>(VIEWS.LOGIN);
+  const [webAdminTab, setWebAdminTab] = useState<string>("hero");
   const { auth, logout, setAuth } = useAuth();
   const { setLanguage } = useConfigurations();
   const [isDbConnected, setIsDbConnected] = useState(false);
@@ -153,6 +155,15 @@ const App: React.FC = () => {
     [VIEWS.CONFIGURATIONS]: {
       component: <Configurations />,
     },
+    [VIEWS.WEB_ADMIN]: {
+      component: (
+        <WebAdminView
+          activeTab={webAdminTab}
+          onTabChange={setWebAdminTab}
+        />
+      ),
+      roles: ["admin"],
+    },
     [VIEWS.VEHICLES]: {
       component: <VehicleManagement />,
       roles: ["admin"],
@@ -208,6 +219,8 @@ const App: React.FC = () => {
         userRole={auth.user?.role}
         userModulePermissions={auth.user?.modulePermissions}
         onLogout={handleLogout}
+        webAdminTab={webAdminTab}
+        setWebAdminTab={setWebAdminTab}
       />
       <div className="ml-16 h-screen overflow-y-auto">
         <OrderManagementProvider auth={auth}>

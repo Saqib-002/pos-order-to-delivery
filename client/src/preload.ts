@@ -33,9 +33,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getDbCredentials: () => ipcRenderer.invoke("get-db-credentials"),
   saveAndInitDb: (credentials: any) =>
     ipcRenderer.invoke("save-and-init-db", credentials),
-  // CDN URL
+  // CDN & Driver URL
   getCdnUrl: () => ipcRenderer.invoke("get-cdn-url"),
   saveCdnUrl: (url: string) => ipcRenderer.invoke("save-cdn-url", url),
+  getDriverApiUrl: () => ipcRenderer.invoke("get-driver-api-url"),
   // Language handlers
   getLanguage: () => ipcRenderer.invoke("get-language"),
   saveLanguage: (language: string) => ipcRenderer.invoke("save-language", language),
@@ -653,4 +654,36 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("delete-cash-out", token, id),
   getCashBalance: (token: string) =>
     ipcRenderer.invoke("get-cash-balance", token),
+
+  // site content operations (Web & App Admin)
+  getSiteContent: (token: string, key?: string) =>
+    ipcRenderer.invoke("get-site-content", token, key),
+  saveSiteContent: (token: string, key: string, value: any) =>
+    ipcRenderer.invoke("save-site-content", token, key, value),
+  fetchRemoteSiteContent: (token: string) =>
+    ipcRenderer.invoke("fetch-remote-site-content", token),
+
+  // web customer operations (Web & App Admin)
+  getWebCustomers: (token: string, params?: any) =>
+    ipcRenderer.invoke("get-web-customers", token, params),
+  getWebCustomerById: (token: string, id: string) =>
+    ipcRenderer.invoke("get-web-customer-by-id", token, id),
+  updateWebCustomer: (token: string, id: string, data: any) =>
+    ipcRenderer.invoke("update-web-customer", token, id, data),
+  deleteWebCustomer: (token: string, id: string) =>
+    ipcRenderer.invoke("delete-web-customer", token, id),
+  restoreWebCustomer: (token: string, id: string) =>
+    ipcRenderer.invoke("restore-web-customer", token, id),
+
+  // support operations (Web & App Admin)
+  getSupportConversations: (token: string, params?: any) =>
+    ipcRenderer.invoke("get-support-conversations", token, params),
+  getSupportMessages: (token: string, conversationId: string) =>
+    ipcRenderer.invoke("get-support-messages", token, conversationId),
+  sendSupportReply: (token: string, conversationId: string, body: string) =>
+    ipcRenderer.invoke("send-support-reply", token, conversationId, body),
+  updateSupportStatus: (token: string, conversationId: string, status: string) =>
+    ipcRenderer.invoke("update-support-status", token, conversationId, status),
+  deleteSupportConversation: (token: string, conversationId: string) =>
+    ipcRenderer.invoke("delete-support-conversation", token, conversationId),
 });

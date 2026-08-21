@@ -1,5 +1,20 @@
 import { ipcMain } from "electron";
 import {
+  getSiteContent,
+  saveSiteContent,
+  fetchRemoteSiteContent,
+  getWebCustomers,
+  getWebCustomerById,
+  updateWebCustomer,
+  deleteWebCustomer,
+  restoreWebCustomer,
+  getSupportConversations,
+  getSupportMessages,
+  sendSupportReply,
+  updateSupportStatus,
+  deleteSupportConversation,
+} from "./handlers/siteContent.js";
+import {
   addItemToOrder,
   deleteOrder,
   getOrderAnalytics,
@@ -248,6 +263,12 @@ export function registerIpcHandlers() {
   ipcMain.handle("save-cdn-url", async (event, url: string) => {
     (store as any).set("cdnUrl", url);
     return true;
+  });
+  ipcMain.handle("get-driver-api-url", async () => {
+    return (
+      process.env.DRIVER_API_URL ||
+      "https://api.bbven.es"
+    );
   });
 
   // language handlers
@@ -507,4 +528,23 @@ export function registerIpcHandlers() {
   ipcMain.handle("update-cash-out", updateCashOut);
   ipcMain.handle("delete-cash-out", deleteCashOut);
   ipcMain.handle("get-cash-balance", getCashBalance);
+
+  // site content (Web & App Admin)
+  ipcMain.handle("get-site-content", getSiteContent);
+  ipcMain.handle("save-site-content", saveSiteContent);
+  ipcMain.handle("fetch-remote-site-content", fetchRemoteSiteContent);
+
+  // Web Customers (Web & App Admin)
+  ipcMain.handle("get-web-customers", getWebCustomers);
+  ipcMain.handle("get-web-customer-by-id", getWebCustomerById);
+  ipcMain.handle("update-web-customer", updateWebCustomer);
+  ipcMain.handle("delete-web-customer", deleteWebCustomer);
+  ipcMain.handle("restore-web-customer", restoreWebCustomer);
+
+  // Support (Web & App Admin)
+  ipcMain.handle("get-support-conversations", getSupportConversations);
+  ipcMain.handle("get-support-messages", getSupportMessages);
+  ipcMain.handle("send-support-reply", sendSupportReply);
+  ipcMain.handle("update-support-status", updateSupportStatus);
+  ipcMain.handle("delete-support-conversation", deleteSupportConversation);
 }

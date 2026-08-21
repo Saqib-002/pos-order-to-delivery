@@ -23,18 +23,31 @@ export const QUEUE_KEY = "syncQueue";
  * We keep it separate from every other Store instance so the queue
  * key never collides with app settings (cdnUrl, language, etc.).
  */
-export const queueStore = new Store({ name: "sync-queue" }) as any;
+export const queueStore = new Store({
+  name: "sync-queue",
+  defaults: {
+    [QUEUE_KEY]: [],
+  },
+}) as any;
 
 /**
  * Return all pending jobs from the store.
  */
 export function readQueue(): SyncJob[] {
-    return queueStore.get(QUEUE_KEY, []) as SyncJob[];
+  try {
+    return (queueStore.get(QUEUE_KEY, []) as SyncJob[]) || [];
+  } catch {
+    return [];
+  }
 }
 
 /**
  * Persist the full queue array back to the store.
  */
 export function writeQueue(jobs: SyncJob[]): void {
-    queueStore.set(QUEUE_KEY, jobs);
+  try {
+    queueStore.set(QUEUE_KEY, jobs || []);
+  } catch {
+    // ignore
+  }
 }

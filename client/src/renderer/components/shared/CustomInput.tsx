@@ -1,6 +1,7 @@
 interface CustomInputProps {
     otherClasses?: string;
     label?: string;
+    labelAction?: React.ReactNode;
     preLabel?: string | React.ReactElement;
     postLabel?: string | React.ReactElement;
     name: string;
@@ -18,6 +19,7 @@ interface CustomInputProps {
 const CustomInput = ({
     otherClasses,
     label,
+    labelAction,
     preLabel,
     postLabel,
     name,
@@ -34,12 +36,19 @@ const CustomInput = ({
 }: CustomInputProps) => {
     return (
         <div className={otherClasses}>
-            {label && <label
-                htmlFor={name}
-                className={`block text-sm font-medium text-gray-700 mb-2 ${labelClasses}`}
-            >
-                {label}
-            </label>}
+            {(label || labelAction) && (
+                <div className="flex items-center justify-between gap-2 mb-2">
+                    {label && (
+                        <label
+                            htmlFor={name}
+                            className={`block text-sm font-medium text-gray-700 ${labelClasses}`}
+                        >
+                            {label}
+                        </label>
+                    )}
+                    {labelAction && <span>{labelAction}</span>}
+                </div>
+            )}
             <div className="relative">
                 {preLabel && <span className={`absolute left-3 top-2 text-gray-500 ${secLabelClasses}`}>{preLabel} </span>}
                 <input
