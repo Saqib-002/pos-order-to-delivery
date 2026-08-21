@@ -504,7 +504,8 @@
         "workers": "Gestión de Trabajadores",
         "market-purchases": "Gestión de Compras de Mercado",
         "expenses": "Otra Fuente de Ingresos",
-        "cash-out": "Salida de Efectivo"
+        "cash-out": "Salida de Efectivo",
+        "web-admin": "Panel de administración web"
       },
       "username": "Nombre de usuario",
       "password": "Contraseña",

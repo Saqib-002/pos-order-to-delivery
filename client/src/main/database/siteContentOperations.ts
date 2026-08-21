@@ -1,6 +1,6 @@
 import Store from "electron-store";
 import { syncSiteContentToVPS } from "../utils/sync/siteContent.js";
-import { uploadImg } from "../utils/utils.js";
+import { uploadImgToServer } from "../utils/utils.js";
 import Logger from "electron-log";
 
 const siteContentStore = new Store({ name: "site-content" });
@@ -32,13 +32,13 @@ export class SiteContentOperations {
       if (key === "hero" && Array.isArray(processedValue.slides)) {
         for (const slide of processedValue.slides) {
           if (slide.image && typeof slide.image === "string" && slide.image.startsWith("data:")) {
-            slide.image = await uploadImg(slide.image, false);
+            slide.image = await uploadImgToServer(slide.image, false);
           }
         }
       } else if (key === "about" && processedValue.imageUrl && typeof processedValue.imageUrl === "string" && processedValue.imageUrl.startsWith("data:")) {
-        processedValue.imageUrl = await uploadImg(processedValue.imageUrl, false);
+        processedValue.imageUrl = await uploadImgToServer(processedValue.imageUrl, false);
       } else if (key === "branding" && processedValue.logoUrl && typeof processedValue.logoUrl === "string" && processedValue.logoUrl.startsWith("data:")) {
-        processedValue.logoUrl = await uploadImg(processedValue.logoUrl, false);
+        processedValue.logoUrl = await uploadImgToServer(processedValue.logoUrl, false);
       }
 
       (siteContentStore as any).set(key, processedValue);

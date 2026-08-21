@@ -180,7 +180,8 @@
         "workers": "Worker Management",
         "market-purchases": "Market Purchase Management",
         "expenses": "Other Source of Income",
-        "cash-out": "Cash Out"
+        "cash-out": "Cash Out",
+        "web-admin": "Web Admin Panel"
       },
       "username": "Username",
       "password": "Password",
