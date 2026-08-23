@@ -63,7 +63,7 @@ export const HeroTab: React.FC<HeroTabProps> = ({
   const [saving, setSaving] = useState(false);
   const envBaseUrl =
     (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
-    "https://api.bbven.es";
+    "https://api.alikebabrivas.es";
   const [driverApiUrl, setDriverApiUrl] = useState<string>(envBaseUrl);
 
   // Modal for add / edit slide

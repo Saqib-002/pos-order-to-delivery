@@ -22,7 +22,7 @@ export function formatImageUrl(
   const envUrl =
     (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
     (import.meta as any).env?.DRIVER_API_URL ||
-    "https://api.bbven.es";
+    "https://api.alikebabrivas.es";
 
   const base = (baseUrl || envUrl).replace(/\/+$/, "");
   const cleanPath = trimmed.replace(/^\/+/, "");

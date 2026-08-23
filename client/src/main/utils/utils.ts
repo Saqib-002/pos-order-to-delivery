@@ -63,7 +63,7 @@ export const uploadImgToServer = async (
     const formData = new FormData();
     formData.append("file", blob, `${isLogo ? "logo" : "image"}.${ext}`);
 
-    const vpsUrl = process.env.DRIVER_API_URL || "https://api.bbven.es";
+    const vpsUrl = process.env.DRIVER_API_URL || "https://api.alikebabrivas.es";
     const secret = process.env.DRIVER_SYNC_SECRET || "";
 
     // Build URL — pass ?type=logo so the server uses a stable "logo.<ext>" filename

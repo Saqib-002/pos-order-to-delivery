@@ -51,7 +51,7 @@ export const AboutTab: React.FC<AboutTabProps> = ({
   const [saving, setSaving] = useState(false);
   const envBaseUrl =
     (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
-    "https://api.bbven.es";
+    "https://api.alikebabrivas.es";
   const [driverApiUrl, setDriverApiUrl] = useState<string>(envBaseUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
