@@ -524,6 +524,22 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getExpenseTypeById: (token: string, expenseTypeId: string) =>
     ipcRenderer.invoke("get-expense-type-by-id", token, expenseTypeId),
 
+  // allergens
+  createAllergen: (token: string, allergenData: any) =>
+    ipcRenderer.invoke("create-allergen", token, allergenData),
+  updateAllergen: (token: string, allergenId: string, allergenData: any) =>
+    ipcRenderer.invoke("update-allergen", token, allergenId, allergenData),
+  deleteAllergen: (token: string, allergenId: string) =>
+    ipcRenderer.invoke("delete-allergen", token, allergenId),
+  getAllAllergens: (token: string) =>
+    ipcRenderer.invoke("get-all-allergens", token),
+  getAllergenById: (token: string, allergenId: string) =>
+    ipcRenderer.invoke("get-allergen-by-id", token, allergenId),
+  getProductAllergensByProductId: (token: string, productId: string) =>
+    ipcRenderer.invoke("get-product-allergens-by-product-id", token, productId),
+  updateProductAllergens: (token: string, productId: string, allergens: any[]) =>
+    ipcRenderer.invoke("update-product-allergens", token, productId, allergens),
+
   // income sources
   createIncomeSource: (token: string, incomeSourceData: any) =>
     ipcRenderer.invoke("create-income-source", token, incomeSourceData),

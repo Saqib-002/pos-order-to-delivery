@@ -35,7 +35,7 @@ interface AddonPage {
 }
 
 const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     orderItems,
     addToOrder,
@@ -55,6 +55,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
   const [variantItems, setVariantItems] = useState<any[] | null>(null);
   const [addOnPages, setAddonPages] = useState<AddonPage[] | null>(null);
   const [groups, setGroups] = useState<Group[] | null>(null);
+  const [productAllergens, setProductAllergens] = useState<any[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
   const [selectedComplements, setSelectedComplements] = useState<{
     [groupId: string]: string[];
@@ -78,6 +79,25 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
         return;
       }
       setVariantItems(res.data);
+
+      // Get product allergens
+      if (selectedProduct?.id && token) {
+        try {
+          const allergensRes = await (
+            window as any
+          ).electronAPI.getProductAllergensByProductId(token, selectedProduct.id);
+          if (allergensRes && allergensRes.status && Array.isArray(allergensRes.data)) {
+            setProductAllergens(allergensRes.data);
+          } else {
+            setProductAllergens([]);
+          }
+        } catch (err) {
+          console.error("Error loading product allergens:", err);
+          setProductAllergens([]);
+        }
+      } else {
+        setProductAllergens([]);
+      }
 
       // Get addon pages
       const groupRes = await (
@@ -504,8 +524,11 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
       </div>
     );
   }
+  const containsAllergens = productAllergens.filter((a) => a.type === "contains");
+  const tracesAllergens = productAllergens.filter((a) => a.type === "traces");
+
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 font-sans">
       <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col">
         {/* Modern Header */}
         <div className="relative bg-gradient-to-r from-black to-gray-800 text-white p-6 flex items-center justify-between">
@@ -835,6 +858,95 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
               {/* {t("orderTakingForm.complementsDetached")} */}
             </div>
           )}
+
+          {/* Allergens Section */}
+          {productAllergens.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                  <span className="text-amber-700 font-bold text-base">⚠️</span>
+                </div>
+                <h3 className="text-xl font-bold text-black">
+                  {t("orderTakingForm.allergens", "Información de Alérgenos")}
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-10">
+                {/* Contiene (Contains) */}
+                {containsAllergens.length > 0 && (
+                  <div className="bg-red-50/80 border border-red-200 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-red-600"></span>
+                      <h4 className="font-bold text-red-800 text-sm uppercase tracking-wide">
+                        {t("orderTakingForm.containsAllergens", "Contiene")}
+                      </h4>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {containsAllergens.map((item: any) => (
+                        <div
+                          key={item.allergenId || item.id}
+                          className="flex items-center space-x-2 bg-white border border-red-200 text-red-900 px-3 py-1.5 rounded-lg text-sm font-medium shadow-xs"
+                        >
+                          {item.icon ? (
+                            <img
+                              crossOrigin="anonymous"
+                              src={item.icon}
+                              alt={i18n.language === "en" ? (item.nameEn || item.nameEs) : item.nameEs}
+                              className="w-5 h-5 object-contain flex-shrink-0 filter invert brightness-200"
+                            />
+                          ) : (
+                            <span className="w-5 h-5 rounded bg-red-100 text-red-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                              {(item.nameEs || item.nameEn || "?").charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                          <span>
+                            {i18n.language === "en" ? (item.nameEn || item.nameEs) : item.nameEs}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Trazas (Traces) */}
+                {tracesAllergens.length > 0 && (
+                  <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                      <h4 className="font-bold text-amber-800 text-sm uppercase tracking-wide">
+                        {t("orderTakingForm.tracesAllergens", "Trazas (Puede contener)")}
+                      </h4>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {tracesAllergens.map((item: any) => (
+                        <div
+                          key={item.allergenId || item.id}
+                          className="flex items-center space-x-2 bg-white border border-amber-200 text-amber-900 px-3 py-1.5 rounded-lg text-sm font-medium shadow-xs"
+                        >
+                          {item.icon ? (
+                            <img
+                              crossOrigin="anonymous"
+                              src={item.icon}
+                              alt={i18n.language === "en" ? (item.nameEn || item.nameEs) : item.nameEs}
+                              className="w-5 h-5 object-contain flex-shrink-0 filter invert brightness-200"
+                            />
+                          ) : (
+                            <span className="w-5 h-5 rounded bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                              {(item.nameEs || item.nameEn || "?").charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                          <span>
+                            {i18n.language === "en" ? (item.nameEn || item.nameEs) : item.nameEs}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {mode === "product" && (
             <div className="bg-gray-50 rounded-xl p-6">
               <div className="flex items-center space-x-2 mb-4">

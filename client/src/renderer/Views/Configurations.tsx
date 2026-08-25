@@ -7,6 +7,7 @@ import ExpenseTypes from "../components/configurations/ExpenseTypes";
 import IncomeSources from "../components/configurations/IncomeSources";
 import Inventory from "../components/configurations/Inventory";
 import AuthorInfo from "../components/configurations/AuthorInfo";
+import Allergens from "../components/configurations/Allergens";
 import { useTranslation } from "react-i18next";
 
 const Configurations = () => {
@@ -27,6 +28,8 @@ const Configurations = () => {
         return <IncomeSources />;
       case "inventory":
         return <Inventory />;
+      case "allergens":
+        return <Allergens />;
       case "config":
         return <ConfigurationsTab />;
       case "authorInfo":
@@ -38,7 +41,7 @@ const Configurations = () => {
 
   return (
     <div className="p-4 flex flex-col">
-      <div className="flex border-b border-gray-200 mb-4">
+      <div className="flex border-b border-gray-200 mb-4 overflow-x-auto">
         <button
           onClick={() => setCurrentSubview("printers")}
           className={`px-5 py-3 ${currentSubview === "printers" ? "border-b-2 border-black " : " text-gray-700 hover:bg-gray-200 cursor-pointer"} touch-manipulation transition-colors duration-300`}
@@ -74,6 +77,12 @@ const Configurations = () => {
           className={`px-5 py-3 ${currentSubview === "inventory" ? "border-b-2 border-black " : " text-gray-700 hover:bg-gray-200 cursor-pointer"} touch-manipulation transition-colors duration-300`}
         >
           {t("inventory.title")}
+        </button>
+        <button
+          onClick={() => setCurrentSubview("allergens")}
+          className={`px-5 py-3 ${currentSubview === "allergens" ? "border-b-2 border-black " : " text-gray-700 hover:bg-gray-200 cursor-pointer"} touch-manipulation transition-colors duration-300`}
+        >
+          {t("allergens.tabTitle", "Alérgenos")}
         </button>
         <button
           onClick={() => setCurrentSubview("config")}

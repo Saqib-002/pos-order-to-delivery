@@ -504,6 +504,64 @@
     "deletedError": "An error occurred while deleting the expense type",
     "fetchError": "Error fetching expense types"
   },
+  "allergens": {
+    "tabTitle": "Allergens",
+    "title": "Allergens Management",
+    "subtitle": "Register and manage allergens for restaurant products",
+    "addAllergen": "Add Allergen",
+    "searchPlaceholder": "Search allergens by name...",
+    "noAllergens": "No allergens registered yet. Add one using the button above.",
+    "noResultsFound": "No allergens found matching the search.",
+    "totalCount": "Total: {{count}} allergen(s)",
+    "table": {
+      "icon": "Icon",
+      "nameEs": "Name (ES)",
+      "nameEn": "Name (EN)",
+      "createdAt": "Registered Date",
+      "actions": "Actions"
+    },
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteTitle": "Delete Allergen",
+    "deleteMessage": "Are you sure you want to delete this allergen?",
+    "deleteConfirm": "Delete",
+    "deleteCancel": "Cancel",
+    "deletedSuccess": "Allergen deleted successfully",
+    "deletedFailed": "Failed to delete allergen",
+    "deletedError": "An error occurred while deleting allergen",
+    "fetchError": "Error fetching allergen list"
+  },
+  "allergensModal": {
+    "addTitle": "Register New Allergen",
+    "editTitle": "Edit Allergen",
+    "viewTitle": "View Allergen",
+    "iconLabel": "Allergen Icon",
+    "uploadIcon": "Upload Icon",
+    "changeIcon": "Change Icon",
+    "removeIcon": "Remove Icon",
+    "nameEsLabel": "Spanish Name *",
+    "nameEsPlaceholder": "E.g. Gluten, Eggs, Milk, Tree nuts...",
+    "nameEnLabel": "English Name",
+    "nameEnPlaceholder": "E.g. Gluten, Eggs, Milk, Tree nuts...",
+    "cancel": "Cancel",
+    "close": "Close",
+    "register": "Register Allergen",
+    "saveChanges": "Save Changes",
+    "errors": {
+      "pleaseEnterNameEs": "Please enter the Spanish name",
+      "unableToAddAllergen": "Could not add allergen",
+      "unableToUpdateAllergen": "Could not update allergen",
+      "anErrorOccurred": "An unexpected error occurred"
+    },
+    "warnings": {
+      "allergenAlreadyAdded": "An allergen with this name already exists"
+    },
+    "messages": {
+      "allergenAddedSuccessfully": "Allergen registered successfully",
+      "allergenUpdatedSuccessfully": "Allergen updated successfully"
+    }
+  },
   "expenseTypeModal": {
     "viewExpenseType": "View Expense Type",
     "editExpenseType": "Edit Expense Type",
@@ -867,7 +925,10 @@
       "orderAssignedToDeliveryPerson": "This order is assigned to a delivery person and cannot be edited.",
       "itemAddedToOrder": "Item added to order!",
       "quantityUpdated": "Quantity updated! Total: {{newQuantity}}"
-    }
+    },
+    "allergens": "Allergen Information",
+    "containsAllergens": "Contains",
+    "tracesAllergens": "Traces (May contain)"
   },
   "orderCart": {
     "yourOrder": "Your Order",
@@ -1671,8 +1732,16 @@
         "tabs": {
           "general": "GENERAL",
           "variants": "VARIANTS AND ADD-ONS",
-          "printers": "PRINTERS"
+          "printers": "PRINTERS",
+          "allergens": "ALLERGENS"
         },
+        "allergensTitle": "Allergen Information",
+        "allergensSubtitle": "Select allergen presence for this product (None, Contains, or Traces).",
+        "searchAllergen": "Search allergen...",
+        "noAllergensConfigured": "No allergens configured in the system.",
+        "allergenNone": "None",
+        "allergenContains": "Contains",
+        "allergenTraces": "Traces",
         "productStatus": "Product Status",
         "activated": "Activated",
         "outOfStock": "Product out of stock",

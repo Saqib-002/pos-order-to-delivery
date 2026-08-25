@@ -39,9 +39,16 @@ const ProductModal: React.FC<ProductModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<
-    "general" | "variants" | "printers"
+    "general" | "variants" | "printers" | "allergens"
   >("general");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Allergens state
+  const [allergensList, setAllergensList] = useState<any[]>([]);
+  const [allergenSelections, setAllergenSelections] = useState<
+    Record<string, "none" | "contains" | "traces">
+  >({});
+  const [allergenSearchQuery, setAllergenSearchQuery] = useState("");
 
   // Variants and Add-ons state
   const [selectedVariant, setSelectedVariant] = useState<string>("");
@@ -120,7 +127,19 @@ const ProductModal: React.FC<ProductModalProps> = ({
       )
     );
     fetchPrinters(token, setPrinters);
-  }, []);
+    const fetchAllergensList = async () => {
+      try {
+        const res = await (window as any).electronAPI.getAllAllergens(token);
+        if (res?.status && Array.isArray(res.data)) {
+          setAllergensList(res.data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch allergens:", e);
+      }
+    };
+    fetchAllergensList();
+  }, [isOpen]);
+
   useEffect(() => {
     if (product) {
       setFormData({
@@ -229,6 +248,25 @@ const ProductModal: React.FC<ProductModalProps> = ({
         }
       };
       getPrinters();
+
+      const getProductAllergens = async () => {
+        try {
+          const res = await (
+            window as any
+          ).electronAPI.getProductAllergensByProductId(token, product.id);
+          if (res.status && Array.isArray(res.data)) {
+            const map: Record<string, "none" | "contains" | "traces"> = {};
+            res.data.forEach((item: any) => {
+              map[item.allergenId] =
+                item.type === "traces" ? "traces" : "contains";
+            });
+            setAllergenSelections(map);
+          }
+        } catch (e) {
+          console.error("Failed to fetch product allergens:", e);
+        }
+      };
+      getProductAllergens();
     } else {
       setFormData({
         name: "",
@@ -271,6 +309,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setValidationErrors({});
       setSelectedPrinterIds([]);
       setImagePreview(null);
+      setAllergenSelections({});
+      setAllergenSearchQuery("");
     }
   }, [product, isOpen]);
   // Get category options for CustomSelect
@@ -686,6 +726,20 @@ const ProductModal: React.FC<ProductModalProps> = ({
         );
         return;
       }
+
+      const targetProductId = product ? product.id : (res.data?.id || res.data);
+      if (targetProductId) {
+        const allergenPayload = Object.entries(allergenSelections)
+          .filter(([_, type]) => type === "contains" || type === "traces")
+          .map(([allergenId, type]) => ({ allergenId, type }));
+
+        await (window as any).electronAPI.updateProductAllergens(
+          token,
+          targetProductId,
+          allergenPayload
+        );
+      }
+
       toast.success(
         `Product "${formData.name}" ${product ? t("menuComponents.modals.productModal.success.updated") : t("menuComponents.modals.productModal.success.created")}`
       );
@@ -758,6 +812,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
               {
                 id: "printers",
                 label: t("menuComponents.modals.productModal.tabs.printers"),
+              },
+              {
+                id: "allergens",
+                label: t("menuComponents.modals.productModal.tabs.allergens", "Alérgenos"),
               },
             ].map((tab) => (
               <button
@@ -1598,6 +1656,163 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {activeTab === "allergens" && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-black">
+                    {t(
+                      "menuComponents.modals.productModal.allergensTitle",
+                      "Información de Alérgenos"
+                    )}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {t(
+                      "menuComponents.modals.productModal.allergensSubtitle",
+                      "Selecciona la presencia de alérgenos en este producto (Ninguno, Contiene o Trazas)."
+                    )}
+                  </p>
+                </div>
+                <div className="w-full sm:w-64">
+                  <CustomInput
+                    name="allergenSearch"
+                    type="text"
+                    placeholder={t(
+                      "menuComponents.modals.productModal.searchAllergen",
+                      "Buscar alérgeno..."
+                    )}
+                    value={allergenSearchQuery}
+                    onChange={(e) => setAllergenSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {allergensList.length === 0 ? (
+                <div className="p-8 text-center bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                  <p className="text-gray-500 text-sm">
+                    {t(
+                      "menuComponents.modals.productModal.noAllergensConfigured",
+                      "No hay alérgenos configurados en el sistema."
+                    )}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1">
+                  {allergensList
+                    .filter((allergen) => {
+                      if (!allergenSearchQuery) return true;
+                      const query = allergenSearchQuery.toLowerCase();
+                      return (
+                        (allergen.nameEs &&
+                          allergen.nameEs.toLowerCase().includes(query)) ||
+                        (allergen.nameEn &&
+                          allergen.nameEn.toLowerCase().includes(query))
+                      );
+                    })
+                    .map((allergen) => {
+                      const currentStatus =
+                        allergenSelections[allergen.id] || "none";
+
+                      return (
+                        <div
+                          key={allergen.id}
+                          className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl shadow-xs hover:border-gray-300 transition-all duration-200"
+                        >
+                          <div className="flex items-center space-x-3 min-w-0 pr-2 ">
+                            <div className="rounded-lg border border-gray-200 bg-gray-50 p-1">
+                              {allergen.icon ? (
+                                <img
+                                  crossOrigin="anonymous"
+                                  src={allergen.icon}
+                                  alt={allergen.nameEs}
+                                  className="w-8 h-8 object-contain rounded-md p-1 flex-shrink-0 filter invert brightness-200"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded-md bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xs flex-shrink-0 border border-amber-200/60">
+                                  {allergen.nameEs.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+                            <div className="truncate">
+                              <p className="text-sm font-semibold text-gray-900 truncate">
+                                {allergen.nameEs}
+                              </p>
+                              {allergen.nameEn && (
+                                <p className="text-xs text-gray-400 truncate">
+                                  {allergen.nameEn}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 3-Option Segmented Control */}
+                          <div className="inline-flex p-1 bg-gray-100 rounded-lg border border-gray-200/80 text-xs font-medium flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setAllergenSelections((prev) => ({
+                                  ...prev,
+                                  [allergen.id]: "none",
+                                }))
+                              }
+                              className={`px-2.5 py-1 rounded-md transition-all duration-150 cursor-pointer ${
+                                currentStatus === "none"
+                                  ? "bg-white text-gray-900 shadow-xs font-bold border border-gray-200"
+                                  : "text-gray-500 hover:text-gray-800"
+                              }`}
+                            >
+                              {t(
+                                "menuComponents.modals.productModal.allergenNone",
+                                "Ninguno"
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setAllergenSelections((prev) => ({
+                                  ...prev,
+                                  [allergen.id]: "contains",
+                                }))
+                              }
+                              className={`px-2.5 py-1 rounded-md transition-all duration-150 cursor-pointer ${
+                                currentStatus === "contains"
+                                  ? "bg-red-500 text-white shadow-xs font-bold"
+                                  : "text-gray-500 hover:text-red-600"
+                              }`}
+                            >
+                              {t(
+                                "menuComponents.modals.productModal.allergenContains",
+                                "Contiene"
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setAllergenSelections((prev) => ({
+                                  ...prev,
+                                  [allergen.id]: "traces",
+                                }))
+                              }
+                              className={`px-2.5 py-1 rounded-md transition-all duration-150 cursor-pointer ${
+                                currentStatus === "traces"
+                                  ? "bg-amber-500 text-white shadow-xs font-bold"
+                                  : "text-gray-500 hover:text-amber-600"
+                              }`}
+                            >
+                              {t(
+                                "menuComponents.modals.productModal.allergenTraces",
+                                "Trazas"
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
             </div>
           )}
 

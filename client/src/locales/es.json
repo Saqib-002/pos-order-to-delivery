@@ -268,6 +268,64 @@
     "deletedError": "Ocurrió un error al eliminar el tipo de gasto",
     "fetchError": "Error al obtener los tipos de gasto"
   },
+  "allergens": {
+    "tabTitle": "Alérgenos",
+    "title": "Gestión de Alérgenos",
+    "subtitle": "Registra y gestiona los alérgenos de los productos del restaurante",
+    "addAllergen": "Agregar Alérgeno",
+    "searchPlaceholder": "Buscar alérgenos por nombre...",
+    "noAllergens": "No hay alérgenos registrados todavía. Agrega uno usando el botón superior.",
+    "noResultsFound": "No se encontraron alérgenos que coincidan con la búsqueda.",
+    "totalCount": "Total: {{count}} alérgeno(s)",
+    "table": {
+      "icon": "Icono",
+      "nameEs": "Nombre (ES)",
+      "nameEn": "Nombre (EN)",
+      "createdAt": "Fecha Registro",
+      "actions": "Acciones"
+    },
+    "view": "Ver",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleteTitle": "Eliminar Alérgeno",
+    "deleteMessage": "¿Estás seguro de que deseas eliminar este alérgeno?",
+    "deleteConfirm": "Eliminar",
+    "deleteCancel": "Cancelar",
+    "deletedSuccess": "Alérgeno eliminado exitosamente",
+    "deletedFailed": "No se pudo eliminar el alérgeno",
+    "deletedError": "Ocurrió un error al eliminar el alérgeno",
+    "fetchError": "Error al obtener la lista de alérgenos"
+  },
+  "allergensModal": {
+    "addTitle": "Registrar Nuevo Alérgeno",
+    "editTitle": "Editar Alérgeno",
+    "viewTitle": "Ver Alérgeno",
+    "iconLabel": "Icono del Alérgeno",
+    "uploadIcon": "Subir Icono",
+    "changeIcon": "Cambiar Icono",
+    "removeIcon": "Quitar Icono",
+    "nameEsLabel": "Nombre en Español *",
+    "nameEsPlaceholder": "Ej: Gluten, Huevos, Lactosa, Frutos secos...",
+    "nameEnLabel": "Nombre en Inglés",
+    "nameEnPlaceholder": "Ej: Gluten, Eggs, Milk, Nuts...",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "register": "Registrar Alérgeno",
+    "saveChanges": "Guardar Cambios",
+    "errors": {
+      "pleaseEnterNameEs": "Por favor ingresa el nombre en español",
+      "unableToAddAllergen": "No se pudo agregar el alérgeno",
+      "unableToUpdateAllergen": "No se pudo actualizar el alérgeno",
+      "anErrorOccurred": "Ocurrió un error inesperado"
+    },
+    "warnings": {
+      "allergenAlreadyAdded": "Un alérgeno con este nombre ya existe"
+    },
+    "messages": {
+      "allergenAddedSuccessfully": "Alérgeno registrado exitosamente",
+      "allergenUpdatedSuccessfully": "Alérgeno actualizado exitosamente"
+    }
+  },
   "expenseTypeModal": {
     "viewExpenseType": "Ver Tipo de Gasto",
     "editExpenseType": "Editar Tipo de Gasto",
@@ -867,7 +925,10 @@
       "orderAssignedToDeliveryPerson": "Este pedido está asignado a un repartidor y no se puede editar.",
       "itemAddedToOrder": "¡Artículo agregado al pedido!",
       "quantityUpdated": "¡Cantidad actualizada! Total: {{newQuantity}}"
-    }
+    },
+    "allergens": "Información de Alérgenos",
+    "containsAllergens": "Contiene",
+    "tracesAllergens": "Trazas (Puede contener)"
   },
   "orderCart": {
     "yourOrder": "Tu Pedido",
@@ -1671,8 +1732,16 @@
         "tabs": {
           "general": "GENERAL",
           "variants": "VARIANTES Y COMPLEMENTOS",
-          "printers": "IMPRESORAS"
+          "printers": "IMPRESORAS",
+          "allergens": "ALÉRGENOS"
         },
+        "allergensTitle": "Información de Alérgenos",
+        "allergensSubtitle": "Selecciona la presencia de alérgenos en este producto (Ninguno, Contiene o Trazas).",
+        "searchAllergen": "Buscar alérgeno...",
+        "noAllergensConfigured": "No hay alérgenos configurados en el sistema.",
+        "allergenNone": "Ninguno",
+        "allergenContains": "Contiene",
+        "allergenTraces": "Trazas",
         "productStatus": "Estado del Producto",
         "activated": "Activado",
         "outOfStock": "Producto agotado",

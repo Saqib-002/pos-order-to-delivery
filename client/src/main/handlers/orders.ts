@@ -204,9 +204,10 @@ export const updateOrder = async (
     const { db } = await import("../database/index.js");
     const updatedOrder = await db("orders").where({ id: orderId }).first();
     if (updatedOrder) {
-      if (updatedOrder.orderType?.toLowerCase()?.includes("web")) {
+      const orderType = updatedOrder.orderType?.toLowerCase() || "";
+      if (orderType.includes("web") || orderType.includes("app")) {
         const { syncWebOrderToVPS } = await import("../utils/sync/Orders.js");
-        syncWebOrderToVPS(orderId).catch(err => Logger.error("WebOrderSync: error syncing updated web order:", err));
+        syncWebOrderToVPS(orderId).catch(err => Logger.error("WebOrderSync: error syncing updated order:", err));
       }
       if (updatedOrder.deliveryPersonId) {
         const { syncOrderToVPS } = await import("../utils/syncManager.js");

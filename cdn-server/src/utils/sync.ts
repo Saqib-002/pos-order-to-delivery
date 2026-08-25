@@ -1,7 +1,7 @@
 import { spawn } from "child_process";
 import winston from "winston";
 
-const SYNC_SCRIPT = "D:\\work\\freelance\\arsalan\\pos\\sync-images.ps1";
+const SYNC_SCRIPT = "C:\\sync-images.ps1";
 
 /**
  * Fires a PowerShell image-sync script as a fire-and-forget process.

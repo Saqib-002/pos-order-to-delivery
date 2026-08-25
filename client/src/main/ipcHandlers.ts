@@ -215,6 +215,15 @@ import {
   updateOtherIncome,
 } from "./handlers/OtherIncome.js";
 import {
+  createAllergen,
+  updateAllergen,
+  deleteAllergen,
+  getAllAllergens,
+  getAllergenById,
+  getProductAllergensByProductId,
+  updateProductAllergens,
+} from "./handlers/allergens.js";
+import {
   createCashOut,
   getCashOuts,
   updateCashOut,
@@ -490,6 +499,15 @@ export function registerIpcHandlers() {
   ipcMain.handle("delete-expense-type", deleteExpenseType);
   ipcMain.handle("get-all-expense-types", getAllExpenseTypes);
   ipcMain.handle("get-expense-type-by-id", getExpenseTypeById);
+
+  // allergens
+  ipcMain.handle("create-allergen", createAllergen);
+  ipcMain.handle("update-allergen", updateAllergen);
+  ipcMain.handle("delete-allergen", deleteAllergen);
+  ipcMain.handle("get-all-allergens", getAllAllergens);
+  ipcMain.handle("get-allergen-by-id", getAllergenById);
+  ipcMain.handle("get-product-allergens-by-product-id", getProductAllergensByProductId);
+  ipcMain.handle("update-product-allergens", updateProductAllergens);
 
   // income sources
   ipcMain.handle("create-income-source", createIncomeSource);

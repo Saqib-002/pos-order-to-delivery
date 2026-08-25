@@ -1318,6 +1318,7 @@ export class OrderDatabaseOperations {
         ticketNumber: orderData.ticketNumber || null,
         pickupTime: orderData.pickupTime || null,
         platformId: orderData.platformId || null,
+        pushToken: orderData.pushToken || null,
         receivingTime: orderData.receivingTime || null,
         createdAt: orderData.createdAt || nowObj,
         updatedAt: nowObj,

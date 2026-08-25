@@ -17,8 +17,9 @@ export async function syncWebOrderToVPS(orderId: string): Promise<void> {
     const order = await db("orders").where({ id: orderId }).first();
     if (!order) return;
 
-    // Only sync web orders
-    if (!order.orderType?.toLowerCase()?.includes("web")) return;
+    // Only sync web and mobile app orders
+    const orderType = order.orderType?.toLowerCase() || "";
+    if (!orderType.includes("web") && !orderType.includes("app")) return;
 
     enqueue("orderstatus", "upsert", {
       id: orderId,

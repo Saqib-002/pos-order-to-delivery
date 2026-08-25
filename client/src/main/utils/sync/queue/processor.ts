@@ -320,6 +320,38 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             break;
 
+        case "allergen":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/allergens/sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            if (job.operation === "delete") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/allergens/${payload.id}`,
+                    init: { method: "DELETE", headers: authHeader },
+                };
+            }
+            break;
+
+        case "product_allergen":
+            if (job.operation === "upsert") {
+                return {
+                    url: `${vpsUrl}/api/v1/menu/allergens/product-sync`,
+                    init: {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", ...authHeader },
+                        body: JSON.stringify(payload),
+                    },
+                };
+            }
+            break;
+
         // ── Add more entities here in the future ──────────────────────────
     }
 

@@ -3,9 +3,9 @@
  * @returns { Promise<void> }
  */
 export async function up(knex) {
-  const hasColumn = await knex.schema.hasColumn("web_customers", "pushToken");
+  const hasColumn = await knex.schema.hasColumn("orders", "pushToken");
   if (!hasColumn) {
-    await knex.schema.alterTable("web_customers", (table) => {
+    await knex.schema.alterTable("orders", (table) => {
       table.string("pushToken").nullable();
     });
   }
@@ -16,9 +16,9 @@ export async function up(knex) {
  * @returns { Promise<void> }
  */
 export async function down(knex) {
-  const hasColumn = await knex.schema.hasColumn("web_customers", "pushToken");
+  const hasColumn = await knex.schema.hasColumn("orders", "pushToken");
   if (hasColumn) {
-    await knex.schema.alterTable("web_customers", (table) => {
+    await knex.schema.alterTable("orders", (table) => {
       table.dropColumn("pushToken");
     });
   }
