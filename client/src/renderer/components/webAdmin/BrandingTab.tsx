@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { formatImageUrl } from "../../utils/imageUrl";
 import { LocalisedString } from "./HeroTab";
-import { ImageIcon, Upload, X, Megaphone, Clock } from "lucide-react";
+import { ImageIcon, Upload, X, Clock, Palette } from "lucide-react";
 
 export interface BrandingData {
   logoUrl: string;
@@ -39,15 +39,6 @@ const EMPTY_BRANDING: BrandingData = {
   openingHours: { en: "", es: "" },
 };
 
-const EMPTY_ANNOUNCEMENT: AnnouncementData = {
-  enabled: false,
-  text: { en: "", es: "" },
-};
-
-const EMPTY_SYSTEM: SystemData = {
-  responseTime: { en: "", es: "" },
-};
-
 interface BrandingTabProps {
   initialContent?: any;
   onSaveSuccess?: () => void;
@@ -60,8 +51,6 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
   const { t } = useTranslation();
   const { auth: { token } } = useAuth();
   const [branding, setBranding] = useState<BrandingData>(EMPTY_BRANDING);
-  const [announcement, setAnnouncement] = useState<AnnouncementData>(EMPTY_ANNOUNCEMENT);
-  const [system, setSystem] = useState<SystemData>(EMPTY_SYSTEM);
   const [saving, setSaving] = useState(false);
   const envBaseUrl =
     (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
@@ -84,8 +73,8 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
 
   useEffect(() => {
     if (initialContent) {
-      if (initialContent.branding || initialContent.brandName !== undefined) {
-        const b = initialContent.branding || initialContent;
+      const b = initialContent.branding || initialContent;
+      if (b.brandName !== undefined || b.logoUrl !== undefined) {
         setBranding({
           logoUrl: b.logoUrl || "",
           brandName: b.brandName || "",
@@ -93,23 +82,6 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
           openingHours: {
             en: b.openingHours?.en || "",
             es: b.openingHours?.es || "",
-          },
-        });
-      }
-      if (initialContent.announcement) {
-        setAnnouncement({
-          enabled: !!initialContent.announcement.enabled,
-          text: {
-            en: initialContent.announcement.text?.en || "",
-            es: initialContent.announcement.text?.es || "",
-          },
-        });
-      }
-      if (initialContent.system) {
-        setSystem({
-          responseTime: {
-            en: initialContent.system.responseTime?.en || "",
-            es: initialContent.system.responseTime?.es || "",
           },
         });
       }
@@ -138,28 +110,16 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
     setSaving(true);
     try {
       if ((window as any).electronAPI?.saveSiteContent) {
-        // Save branding, announcement, and system
-        const resBranding = await (window as any).electronAPI.saveSiteContent(
+        const res = await (window as any).electronAPI.saveSiteContent(
           token,
           "branding",
           branding
         );
-        await (window as any).electronAPI.saveSiteContent(
-          token,
-          "announcement",
-          announcement
-        );
-        await (window as any).electronAPI.saveSiteContent(
-          token,
-          "system",
-          system
-        );
-
-        if (resBranding?.status) {
+        if (res?.status) {
           toast.success(t("webAdmin.messages.saveSuccess"));
           onSaveSuccess?.();
         } else {
-          toast.error(resBranding?.message || t("webAdmin.messages.saveError"));
+          toast.error(res?.message || t("webAdmin.messages.saveError"));
         }
       }
     } catch {
@@ -175,18 +135,21 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6 max-w-full">
       {/* ── Brand Identity Card ── */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm space-y-5">
-        <div className="border-b border-gray-100 pb-3">
-          <h2 className="text-base font-bold text-gray-800">
-            {t("webAdmin.branding.title")}
-          </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            {t("webAdmin.branding.subtitle")}
-          </p>
+        <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
+          <Palette className="w-4 h-4 text-gray-500" />
+          <div>
+            <h2 className="text-base font-bold text-gray-800">
+              {t("webAdmin.branding.title")}
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {t("webAdmin.branding.subtitle")}
+            </p>
+          </div>
         </div>
 
         {/* Logo Section */}
         <div className="flex flex-col sm:flex-row items-start gap-4">
-          <div className="w-28 h-28 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-28 h-28 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
             {displayLogoSrc ? (
               <img
                 src={displayLogoSrc}
@@ -226,6 +189,11 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
                 </button>
               )}
             </div>
+            {!branding.logoUrl && (
+              <p className="text-[11px] text-gray-400 italic">
+                {t("webAdmin.branding.noLogo")}
+              </p>
+            )}
           </div>
         </div>
 
@@ -340,154 +308,6 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
             }
             hint={t("webAdmin.branding.hoursHint")}
             minHeight="140px"
-          />
-        </div>
-      </div>
-
-      {/* ── Announcement Bar Card ── */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-          <div className="flex items-center gap-2">
-            <Megaphone className="w-4 h-4 text-gray-500" />
-            <div>
-              <h2 className="text-base font-bold text-gray-800">
-                {t("webAdmin.branding.announcementTitle")}
-              </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {t("webAdmin.branding.announcementSubtitle")}
-              </p>
-            </div>
-          </div>
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={announcement.enabled}
-              onChange={(e) =>
-                setAnnouncement({ ...announcement, enabled: e.target.checked })
-              }
-              className="w-4 h-4 rounded text-black focus:ring-black border-gray-300"
-            />
-            <span className="text-xs font-semibold text-gray-800">
-              {t("webAdmin.branding.announcementActive")}
-            </span>
-          </label>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CustomInput
-            type="text"
-            name="announcementTextEn"
-            label={`${t("webAdmin.branding.announcementText")} (EN)`}
-            labelAction={
-              <TranslateButton
-                value={announcement.text.en}
-                direction="en→es"
-                onTranslated={(v) =>
-                  setAnnouncement({
-                    ...announcement,
-                    text: { ...announcement.text, es: v },
-                  })
-                }
-              />
-            }
-            value={announcement.text.en}
-            placeholder={t("webAdmin.branding.announcementPlaceholderEn")}
-            onChange={(e) =>
-              setAnnouncement({
-                ...announcement,
-                text: { ...announcement.text, en: e.target.value },
-              })
-            }
-          />
-          <CustomInput
-            type="text"
-            name="announcementTextEs"
-            label={`${t("webAdmin.branding.announcementText")} (ES)`}
-            labelAction={
-              <TranslateButton
-                value={announcement.text.es}
-                direction="es→en"
-                onTranslated={(v) =>
-                  setAnnouncement({
-                    ...announcement,
-                    text: { ...announcement.text, en: v },
-                  })
-                }
-              />
-            }
-            value={announcement.text.es}
-            placeholder={t("webAdmin.branding.announcementPlaceholderEs")}
-            onChange={(e) =>
-              setAnnouncement({
-                ...announcement,
-                text: { ...announcement.text, es: e.target.value },
-              })
-            }
-          />
-        </div>
-      </div>
-
-      {/* ── System Response Time Card ── */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm space-y-4">
-        <div className="border-b border-gray-100 pb-3">
-          <h2 className="text-base font-bold text-gray-800">
-            {t("webAdmin.branding.systemTitle")}
-          </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            {t("webAdmin.branding.systemSubtitle")}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CustomInput
-            type="text"
-            name="responseTimeEn"
-            label={`${t("webAdmin.branding.responseTime")} (EN)`}
-            labelAction={
-              <TranslateButton
-                value={system.responseTime.en}
-                direction="en→es"
-                onTranslated={(v) =>
-                  setSystem({
-                    ...system,
-                    responseTime: { ...system.responseTime, es: v },
-                  })
-                }
-              />
-            }
-            value={system.responseTime.en}
-            placeholder={t("webAdmin.branding.responseTimePlaceholderEn")}
-            onChange={(e) =>
-              setSystem({
-                ...system,
-                responseTime: { ...system.responseTime, en: e.target.value },
-              })
-            }
-          />
-          <CustomInput
-            type="text"
-            name="responseTimeEs"
-            label={`${t("webAdmin.branding.responseTime")} (ES)`}
-            labelAction={
-              <TranslateButton
-                value={system.responseTime.es}
-                direction="es→en"
-                onTranslated={(v) =>
-                  setSystem({
-                    ...system,
-                    responseTime: { ...system.responseTime, en: v },
-                  })
-                }
-              />
-            }
-            value={system.responseTime.es}
-            placeholder={t("webAdmin.branding.responseTimePlaceholderEs")}
-            onChange={(e) =>
-              setSystem({
-                ...system,
-                responseTime: { ...system.responseTime, es: e.target.value },
-              })
-            }
           />
         </div>
       </div>

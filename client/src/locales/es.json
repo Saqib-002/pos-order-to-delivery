@@ -2964,7 +2964,7 @@
       "sectionBody": "Descripción e Ingredientes Asociados"
     },
     "branding": {
-      "title": "Marca y Configuración Web",
+      "title": "Branding",
       "subtitle": "Logo, nombre de la marca, eslogan, horarios de apertura y anuncios destacados.",
       "logoTitle": "Logo de la Marca",
       "logoSubtitle": "PNG, JPG o WEBP · máx. 10 MB",
@@ -2989,6 +2989,16 @@
       "responseTime": "Tiempo de Respuesta",
       "responseTimePlaceholderEn": "e.g. Usually replies within 15 minutes",
       "responseTimePlaceholderEs": "ej. Solemos responder en menos de 15 minutos"
+    },
+    "notifications": {
+      "title": "Notificaciones y Enlaces",
+      "subtitle": "Barra de anuncio, tiempo de respuesta y enlaces a la app móvil.",
+      "appLinksTitle": "Enlaces a la App Móvil",
+      "appLinksSubtitle": "Enlaces para descargar la app en el App Store y Google Play.",
+      "appStoreLabel": "URL App Store (iOS)",
+      "appStorePlaceholder": "https://apps.apple.com/app/your-app-id",
+      "playStoreLabel": "URL Play Store (Android)",
+      "playStorePlaceholder": "https://play.google.com/store/apps/details?id=your.app"
     },
     "customers": {
       "title": "Clientes Web y App",

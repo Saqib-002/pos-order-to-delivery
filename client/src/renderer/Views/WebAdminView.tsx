@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import HeroTab from "../components/webAdmin/HeroTab";
 import BrandingTab from "../components/webAdmin/BrandingTab";
+import NotificationsTab from "../components/webAdmin/NotificationsTab";
 import FooterTab from "../components/webAdmin/FooterTab";
 import TermsTab from "../components/webAdmin/TermsTab";
 import PrivacyTab from "../components/webAdmin/PrivacyTab";
@@ -18,6 +19,7 @@ import { RefreshCw, Sparkles } from "lucide-react";
 export type TabKey =
   | "hero"
   | "branding"
+  | "notifications"
   | "footer"
   | "about"
   | "contact"
@@ -82,6 +84,7 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
   const tabIcons: Record<TabKey, string> = {
     hero: "./images/slider.png",
     branding: "./images/branding.png",
+    notifications: "./images/notification.png",
     footer: "./images/footer.png",
     about: "./images/about-us.png",
     contact: "./images/contact.png",
@@ -101,6 +104,10 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
     branding: {
       title: t("webAdmin.branding.title", "Marca y Configuración Web"),
       subtitle: t("webAdmin.branding.subtitle"),
+    },
+    notifications: {
+      title: t("webAdmin.notifications.title", "Notificaciones y Enlaces"),
+      subtitle: t("webAdmin.notifications.subtitle"),
     },
     footer: {
       title: t("webAdmin.tabs.footer"),
@@ -157,8 +164,17 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
           <BrandingTab
             initialContent={{
               branding: siteData.branding,
+            }}
+            onSaveSuccess={loadLocalContent}
+          />
+        );
+      case "notifications":
+        return (
+          <NotificationsTab
+            initialContent={{
               announcement: siteData.announcement,
               system: siteData.system,
+              "app-links": siteData["app-links"],
             }}
             onSaveSuccess={loadLocalContent}
           />

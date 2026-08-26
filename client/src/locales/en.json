@@ -2964,7 +2964,7 @@
       "sectionBody": "Description & Associated Ingredients"
     },
     "branding": {
-      "title": "Branding & Web Settings",
+      "title": "Branding",
       "subtitle": "Logo, restaurant name, tagline, opening hours and announcement banner.",
       "logoTitle": "Brand Logo",
       "logoSubtitle": "PNG, JPG or WEBP · max 10 MB",
@@ -2989,6 +2989,16 @@
       "responseTime": "Response Time",
       "responseTimePlaceholderEn": "e.g. Usually replies within 15 minutes",
       "responseTimePlaceholderEs": "ej. Solemos responder en menos de 15 minutos"
+    },
+    "notifications": {
+      "title": "Notifications & Links",
+      "subtitle": "Announcement bar, response time and mobile app store links.",
+      "appLinksTitle": "Mobile App Links",
+      "appLinksSubtitle": "Links to download the app from the App Store and Google Play.",
+      "appStoreLabel": "App Store URL (iOS)",
+      "appStorePlaceholder": "https://apps.apple.com/app/your-app-id",
+      "playStoreLabel": "Play Store URL (Android)",
+      "playStorePlaceholder": "https://play.google.com/store/apps/details?id=your.app"
     },
     "customers": {
       "title": "Web & App Customers",

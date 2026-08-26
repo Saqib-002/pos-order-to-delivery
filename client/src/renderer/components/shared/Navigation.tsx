@@ -47,6 +47,7 @@ export const Navigation = ({
   const webAdminItems = [
     { key: "hero", label: t("webAdmin.tabs.hero"), icon: "./images/slider.png" },
     { key: "branding", label: t("webAdmin.branding.title", "Marca y Ajustes"), icon: "./images/branding.png" },
+    { key: "notifications", label: t("webAdmin.notifications.title", "Notificaciones y Enlaces"), icon: "./images/notification.png" },
     { key: "footer", label: t("webAdmin.tabs.footer"), icon: "./images/footer.png" },
     { key: "about", label: t("webAdmin.tabs.about"), icon: "./images/about-us.png" },
     { key: "contact", label: t("webAdmin.tabs.contact"), icon: "./images/contact.png" },
