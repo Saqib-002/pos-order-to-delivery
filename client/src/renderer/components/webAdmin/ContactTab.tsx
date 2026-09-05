@@ -11,6 +11,7 @@ import { Phone, Mail, MapPin, Compass, FileText } from "lucide-react";
 export interface ContactContent {
   title: LocalisedString;
   phone: string;
+  phone2?: string;
   email: string;
   address: string;
   mapEmbedUrl: string;
@@ -22,6 +23,7 @@ const EMPTY_CONTACT: ContactContent = {
     es: "",
   },
   phone: "",
+  phone2: "",
   email: "",
   address: "",
   mapEmbedUrl: "",
@@ -169,8 +171,8 @@ export const ContactTab: React.FC<ContactTabProps> = ({
         />
       </div>
 
-      {/* Phone & Email */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Phone 1, Phone 2 & Email */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <CustomInput
           type="text"
           name="contactPhone"
@@ -181,6 +183,18 @@ export const ContactTab: React.FC<ContactTabProps> = ({
           placeholder={t("webAdmin.contact.phonePlaceholder")}
           onChange={(e) =>
             setContent({ ...content, phone: e.target.value })
+          }
+        />
+        <CustomInput
+          type="text"
+          name="contactPhone2"
+          label={t("webAdmin.contact.phone2", "Teléfono Secundario (Opcional)")}
+          preLabel={<Phone className="size-4 text-gray-500 mt-1" />}
+          inputClasses="pl-9"
+          value={content.phone2 || ""}
+          placeholder={t("webAdmin.contact.phonePlaceholder", "+34 912 345 678")}
+          onChange={(e) =>
+            setContent({ ...content, phone2: e.target.value })
           }
         />
         <CustomInput

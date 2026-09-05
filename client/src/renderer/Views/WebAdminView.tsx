@@ -14,6 +14,7 @@ import ContactTab from "../components/webAdmin/ContactTab";
 import AllergensTab from "../components/webAdmin/AllergensTab";
 import WebCustomersTab from "../components/webAdmin/WebCustomersTab";
 import SupportTab from "../components/webAdmin/SupportTab";
+import MaintenanceTab from "../components/webAdmin/MaintenanceTab";
 import { RefreshCw, Sparkles } from "lucide-react";
 
 export type TabKey =
@@ -27,6 +28,7 @@ export type TabKey =
   | "allergens"
   | "terms"
   | "privacy"
+  | "maintenance"
   | "customers"
   | "support";
 
@@ -92,6 +94,7 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
     allergens: "./images/allergen.png",
     terms: "./images/terms-and-conditions.png",
     privacy: "./images/privacy-policy.png",
+    maintenance: "./images/car-maintainence.png",
     customers: "./images/web-customers.png",
     support: "./images/support.png",
   };
@@ -136,6 +139,10 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
     privacy: {
       title: t("webAdmin.tabs.privacy"),
       subtitle: t("webAdmin.privacy.subtitle"),
+    },
+    maintenance: {
+      title: t("webAdmin.tabs.maintenance", "Modo Mantenimiento"),
+      subtitle: t("webAdmin.maintenance.subtitle", "Configuración del modo mantenimiento y acceso del personal"),
     },
     customers: {
       title: t("webAdmin.customers.title", "Clientes Web y App"),
@@ -225,6 +232,13 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
         return (
           <PrivacyTab
             initialContent={siteData.privacy}
+            onSaveSuccess={loadLocalContent}
+          />
+        );
+      case "maintenance":
+        return (
+          <MaintenanceTab
+            initialContent={siteData.maintenance}
             onSaveSuccess={loadLocalContent}
           />
         );

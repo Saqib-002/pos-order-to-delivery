@@ -2793,7 +2793,8 @@
       "faq": "Preguntas Frecuentes (FAQ)",
       "about": "Nosotros",
       "contact": "Contacto",
-      "allergens": "Alérgenos"
+      "allergens": "Alérgenos",
+      "maintenance": "Modo Mantenimiento"
     },
     "actions": {
       "refreshCloud": "Actualizar desde la Nube",
@@ -2942,6 +2943,7 @@
       "pageTitlePlaceholderEn": "Contact Us",
       "pageTitlePlaceholderEs": "Contacto",
       "phone": "Teléfono de Contacto",
+      "phone2": "Teléfono Secundario (Opcional)",
       "phonePlaceholder": "+34 912 345 678",
       "email": "Correo Electrónico",
       "emailPlaceholder": "contacto@restaurant.com",
@@ -2949,6 +2951,25 @@
       "addressPlaceholder": "Calle Principal 123, Madrid",
       "mapEmbed": "URL de Inserción de Google Maps (iframe src)",
       "mapEmbedPlaceholder": "https://www.google.com/maps/embed?pb=..."
+    },
+    "maintenance": {
+      "title": "Configuración del Modo Mantenimiento",
+      "subtitle": "Activa o desactiva el modo mantenimiento de la web y la app, configura la contraseña de acceso del personal y la hora estimada de regreso.",
+      "toggleLabel": "Estado del Modo Mantenimiento",
+      "toggleSub": "Al activarse, los visitantes verán la pantalla de mantenimiento en lugar del menú de pedidos online.",
+      "activeNotice": "El modo mantenimiento está actualmente ACTIVO para todos los visitantes web.",
+      "inactiveNotice": "El modo mantenimiento está actualmente INACTIVO. Tu tienda online está disponible.",
+      "passwordLabel": "Contraseña de Acceso del Personal",
+      "passwordSub": "Introduce la contraseña que usará el personal para acceder durante el mantenimiento.",
+      "passwordPlaceholder": "Introduce la contraseña del personal",
+      "estimatedReturnLabel": "Hora Estimada de Regreso",
+      "estimatedReturnSub": "Fecha u hora objetivo mostrada a los clientes.",
+      "headlineLabel": "Título de la Pantalla de Mantenimiento",
+      "headlinePlaceholderEn": "We'll Be Back Soon!",
+      "headlinePlaceholderEs": "¡Volveremos Pronto!",
+      "messageLabel": "Mensaje de Mantenimiento",
+      "messagePlaceholderEn": "We are performing scheduled maintenance to improve your experience...",
+      "messagePlaceholderEs": "Estamos realizando tareas de mantenimiento programadas para mejorar tu experiencia..."
     },
     "allergens": {
       "title": "Declaración y Tabla de Alérgenos",

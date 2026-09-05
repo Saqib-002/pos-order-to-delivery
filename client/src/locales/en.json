@@ -2793,7 +2793,8 @@
       "faq": "FAQ",
       "about": "About Us",
       "contact": "Contact",
-      "allergens": "Allergens"
+      "allergens": "Allergens",
+      "maintenance": "Maintenance Mode"
     },
     "actions": {
       "refreshCloud": "Refresh from Cloud",
@@ -2942,6 +2943,7 @@
       "pageTitlePlaceholderEn": "Contact Us",
       "pageTitlePlaceholderEs": "Contacto",
       "phone": "Phone Number",
+      "phone2": "Phone Number 2 (Optional)",
       "phonePlaceholder": "+34 912 345 678",
       "email": "Email Address",
       "emailPlaceholder": "contacto@restaurant.com",
@@ -2949,6 +2951,25 @@
       "addressPlaceholder": "Calle Principal 123, Madrid",
       "mapEmbed": "Google Maps Embed URL (iframe src)",
       "mapEmbedPlaceholder": "https://www.google.com/maps/embed?pb=..."
+    },
+    "maintenance": {
+      "title": "Maintenance Mode Settings",
+      "subtitle": "Enable or disable web & app maintenance mode, configure staff bypass password and estimated return time.",
+      "toggleLabel": "Maintenance Mode Status",
+      "toggleSub": "When enabled, visitors will see the maintenance screen instead of the online ordering interface.",
+      "activeNotice": "Maintenance mode is currently ACTIVE for all web visitors.",
+      "inactiveNotice": "Maintenance mode is currently INACTIVE. Your online store is live.",
+      "passwordLabel": "Staff Bypass Password",
+      "passwordSub": "Enter a password that staff can use to bypass the maintenance guard.",
+      "passwordPlaceholder": "Enter staff bypass password",
+      "estimatedReturnLabel": "Estimated Return Time",
+      "estimatedReturnSub": "Optional target completion time shown to customers.",
+      "headlineLabel": "Maintenance Screen Title",
+      "headlinePlaceholderEn": "We'll Be Back Soon!",
+      "headlinePlaceholderEs": "¡Volveremos Pronto!",
+      "messageLabel": "Maintenance Message",
+      "messagePlaceholderEn": "We are performing scheduled maintenance to improve your experience...",
+      "messagePlaceholderEs": "Estamos realizando tareas de mantenimiento programadas para mejorar tu experiencia..."
     },
     "allergens": {
       "title": "Allergen Table & Declaration",

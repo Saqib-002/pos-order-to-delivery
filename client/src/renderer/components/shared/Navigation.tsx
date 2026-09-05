@@ -55,6 +55,7 @@ export const Navigation = ({
     { key: "allergens", label: t("webAdmin.tabs.allergens"), icon: "./images/allergen.png" },
     { key: "terms", label: t("webAdmin.tabs.terms"), icon: "./images/terms-and-conditions.png" },
     { key: "privacy", label: t("webAdmin.tabs.privacy"), icon: "./images/privacy-policy.png" },
+    { key: "maintenance", label: t("webAdmin.tabs.maintenance", "Modo Mantenimiento"), icon: "./images/car-maintainence.png" },
     { key: "customers", label: t("webAdmin.customers.title", "Clientes Web"), icon: "./images/web-customers.png" },
     { key: "support", label: t("webAdmin.support.title", "Soporte y Mensajes"), icon: "./images/support.png" },
   ];
