@@ -6,6 +6,8 @@ import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { CrossIcon, ImgIcon } from "@/renderer/public/Svg"; // Import icons
 import { useTranslation } from "react-i18next";
+import { compressImageFile, fileToBase64, type CompressInfo } from "@/renderer/utils/imageCompression";
+import { ImageAspectHint } from "../../shared/ImageAspectHint";
 
 interface Category {
   id: string;
@@ -50,6 +52,8 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
     priority: 0,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [compressing, setCompressing] = useState(false);
+  const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Get color classes for selection ring
@@ -90,6 +94,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
   };
 
   useEffect(() => {
+    setCompressInfo(null);
     if (editingSubcategory) {
       setFormData({
         name: editingSubcategory.name,
@@ -110,20 +115,24 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
   }, [editingSubcategory, categories, isOpen]);
 
   // Add image handlers
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setFormData({ ...formData, imgUrl: base64 });
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    setCompressing(true);
+    setCompressInfo(null);
+    setFormData({ ...formData, imgUrl: "" });
+    const { outputFile, previewUrl, compressInfo: info } = await compressImageFile(file);
+    const base64 = await fileToBase64(outputFile);
+    setCompressInfo(info);
+    setFormData((prev) => ({ ...prev, imgUrl: base64 }));
+    URL.revokeObjectURL(previewUrl);
+    setCompressing(false);
   };
 
   const handleRemoveImage = () => {
     setFormData({ ...formData, imgUrl: "" });
+    setCompressInfo(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -190,7 +199,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-xl w-full mx-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-black">
             {editingSubcategory
@@ -201,7 +210,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-6">
           {/* Wrap name and image in a flex container */}
-          <div className="flex items-start gap-4 mb-4">
+          <div className="flex flex-col items-start gap-4 mb-4">
             <CustomInput
               label={t(
                 "menuComponents.modals.subcategoryModal.subcategoryName"
@@ -216,11 +225,11 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              otherClasses="flex-1" // Use flex-1
+              otherClasses="w-full"
             />
-
+            
             {/* Image Upload */}
-            <div className="w-32 flex-shrink-0">
+            <div className="w-full">
               <label className="block text-xs font-medium text-gray-700 mb-2">
                 {t("menuComponents.modals.subcategoryModal.image")}
               </label>
@@ -231,8 +240,17 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                   accept="image/*"
                   onChange={handleImageChange}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={compressing}
                 />
-                {formData.imgUrl ? (
+                {compressing ? (
+                  <div className="flex flex-col items-center text-gray-400 text-xs py-2">
+                    <svg className="animate-spin size-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                    </svg>
+                    <span>{t("common.compressing")}</span>
+                  </div>
+                ) : formData.imgUrl ? (
                   <div className="flex flex-col items-center">
                     <div className="relative">
                       <img
@@ -259,6 +277,20 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                   </div>
                 )}
               </div>
+              <ImageAspectHint ratio="1:1" width={400} height={400} className="mt-1" />
+              {compressInfo && (
+                <p className="text-xs text-amber-600 font-medium mt-1 flex flex-wrap gap-1">
+                  <span>{(compressInfo.original / 1024).toFixed(0)} KB → {(compressInfo.compressed / 1024).toFixed(0)} KB</span>
+                  <span className="text-gray-400 font-normal">
+                    ({t("common.compressedBy").replace("{percent}", String(Math.round((1 - compressInfo.compressed / compressInfo.original) * 100)))})
+                  </span>
+                  {compressInfo.width && compressInfo.height && (
+                    <span className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono text-gray-500 border border-gray-200">
+                      {compressInfo.width} × {compressInfo.height}
+                    </span>
+                  )}
+                </p>
+              )}
             </div>
           </div>
 

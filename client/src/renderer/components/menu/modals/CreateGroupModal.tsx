@@ -12,6 +12,8 @@ import {
 } from "@/renderer/public/Svg";
 import { useConfirm } from "@/renderer/hooks/useConfirm";
 import { useTranslation } from "react-i18next";
+import { compressImageFile, fileToBase64, type CompressInfo } from "@/renderer/utils/imageCompression";
+import { ImageAspectHint } from "../../shared/ImageAspectHint";
 
 interface Group {
   id: string;
@@ -69,6 +71,8 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     AssociatedProduct[] | null
   >(null);
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const [compressInfoMap, setCompressInfoMap] = useState<Record<string, CompressInfo | null>>({});
+  const [compressingMap, setCompressingMap] = useState<Record<string, boolean>>({});
   const confirm = useConfirm();
 
   const fetchAssociatedProducts = async () => {
@@ -113,6 +117,8 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   };
 
   useEffect(() => {
+    setCompressInfoMap({});
+    setCompressingMap({});
     if (editingGroup) {
       if (isOpen) {
         fetchAssociatedProducts();
@@ -260,23 +266,29 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         onSuccess();
       });
   };
-  const handleComplementImageChange = (
+  const handleComplementImageChange = async (
     complementId: string,
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        updateComplement(complementId, "imgUrl", base64);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    if (fileInputRefs.current[complementId]) {
+      fileInputRefs.current[complementId]!.value = "";
     }
+    setCompressingMap((prev) => ({ ...prev, [complementId]: true }));
+    setCompressInfoMap((prev) => ({ ...prev, [complementId]: null }));
+    updateComplement(complementId, "imgUrl", "");
+    const { outputFile, previewUrl, compressInfo: info } = await compressImageFile(file);
+    const base64 = await fileToBase64(outputFile);
+    updateComplement(complementId, "imgUrl", base64);
+    URL.revokeObjectURL(previewUrl);
+    setCompressInfoMap((prev) => ({ ...prev, [complementId]: info }));
+    setCompressingMap((prev) => ({ ...prev, [complementId]: false }));
   };
 
   const handleRemoveComplementImage = (complementId: string) => {
     updateComplement(complementId, "imgUrl", "");
+    setCompressInfoMap((prev) => ({ ...prev, [complementId]: null }));
     if (fileInputRefs.current[complementId]) {
       fileInputRefs.current[complementId]!.value = "";
     }
@@ -531,8 +543,17 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                                 handleComplementImageChange(complement.id, e)
                               }
                               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              disabled={!!compressingMap[complement.id]}
                             />
-                            {complement.imgUrl ? (
+                            {compressingMap[complement.id] ? (
+                              <div className="flex flex-col items-center text-gray-400 text-xs py-2">
+                                <svg className="animate-spin size-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                </svg>
+                                <span>{t("common.compressing")}</span>
+                              </div>
+                            ) : complement.imgUrl ? (
                               <div className="flex flex-col items-center">
                                 <div className="relative">
                                   <img
@@ -544,10 +565,8 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                                   <button
                                     type="button"
                                     onClick={(e) => {
-                                      e.stopPropagation(); // Prevent triggering file input
-                                      handleRemoveComplementImage(
-                                        complement.id
-                                      );
+                                      e.stopPropagation();
+                                      handleRemoveComplementImage(complement.id);
                                     }}
                                     className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-md hover:bg-gray-100 transition-colors"
                                   >
@@ -561,6 +580,20 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                               </div>
                             )}
                           </div>
+                          <ImageAspectHint ratio="1:1" width={400} height={400} className="mt-1" />
+                          {compressInfoMap[complement.id] && (
+                            <p className="text-xs text-amber-600 font-medium mt-1 flex flex-wrap gap-1 w-32">
+                              <span>{(compressInfoMap[complement.id]!.original / 1024).toFixed(0)} KB → {(compressInfoMap[complement.id]!.compressed / 1024).toFixed(0)} KB</span>
+                              <span className="text-gray-400 font-normal">
+                                ({t("common.compressedBy").replace("{percent}", String(Math.round((1 - compressInfoMap[complement.id]!.compressed / compressInfoMap[complement.id]!.original) * 100)))})
+                              </span>
+                              {compressInfoMap[complement.id]!.width && compressInfoMap[complement.id]!.height && (
+                                <span className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono text-gray-500 border border-gray-200">
+                                  {compressInfoMap[complement.id]!.width} × {compressInfoMap[complement.id]!.height}
+                                </span>
+                              )}
+                            </p>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button

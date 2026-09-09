@@ -6,6 +6,8 @@ import CustomInput from "../../shared/CustomInput";
 import { CrossIcon, DeleteIcon, ImgIcon } from "@/renderer/public/Svg";
 import { Menu, MenuPage, MenuPageAssociation } from "@/types/menuPages";
 import { useTranslation } from "react-i18next";
+import { compressImageFile, fileToBase64, type CompressInfo } from "@/renderer/utils/imageCompression";
+import { ImageAspectHint } from "../../shared/ImageAspectHint";
 
 interface MenuModalProps {
   isOpen: boolean;
@@ -59,6 +61,8 @@ export const MenuModal: React.FC<MenuModalProps> = ({
     maximum?: string;
   }>({});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [compressing, setCompressing] = useState(false);
+  const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Multiple options
@@ -187,6 +191,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
       });
       // Fetch existing menu page associations from database
       fetchMenuPageAssociations(editingMenu.id);
+      setCompressInfo(null);
       if (editingMenu.imgUrl) {
         setImagePreview(editingMenu.imgUrl);
       }
@@ -204,6 +209,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
       });
       setMenuPageAssociations([]);
       setImagePreview(null);
+      setCompressInfo(null);
     }
     setNewPageAssociation({
       menuPageId: "",
@@ -485,23 +491,27 @@ export const MenuModal: React.FC<MenuModalProps> = ({
       }
     }
   };
-  const handleMenuImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMenuImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setFormData({ ...formData, imgUrl: base64 });
-        setImagePreview(base64);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    setCompressing(true);
+    setCompressInfo(null);
+    setFormData((prev) => ({ ...prev, imgUrl: "" }));
+    setImagePreview(null);
+    const { outputFile, previewUrl, compressInfo: info } = await compressImageFile(file);
+    const base64 = await fileToBase64(outputFile);
+    setFormData((prev) => ({ ...prev, imgUrl: base64 }));
+    setImagePreview(base64);
+    URL.revokeObjectURL(previewUrl);
+    setCompressInfo(info);
+    setCompressing(false);
   };
 
   const handleRemoveMenuImage = () => {
-    setFormData({ ...formData, imgUrl: "" });
+    setFormData((prev) => ({ ...prev, imgUrl: "" }));
     setImagePreview(null);
-    // Reset the file input to allow re-selection
+    setCompressInfo(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -585,7 +595,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
               </div>
             </div>
             {/* Menu Image Upload */}
-            <div className="mt-4">
+            <div className="mt-4 mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t("menuComponents.modals.menuModal.image")}
               </label>
@@ -596,8 +606,17 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   accept="image/*"
                   onChange={handleMenuImageChange}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={compressing}
                 />
-                {imagePreview ? (
+                {compressing ? (
+                  <div className="flex flex-col items-center text-gray-400 text-sm">
+                    <svg className="animate-spin size-8 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                    </svg>
+                    <span>{t("common.compressing")}</span>
+                  </div>
+                ) : imagePreview ? (
                   <div className="flex flex-col items-center">
                     <div className="relative mb-2">
                       <img
@@ -609,7 +628,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                       <button
                         type="button"
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent triggering file input
+                          e.stopPropagation();
                           handleRemoveMenuImage();
                         }}
                         className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors"
@@ -631,6 +650,20 @@ export const MenuModal: React.FC<MenuModalProps> = ({
                   </div>
                 )}
               </div>
+              <ImageAspectHint ratio="4:3" width={800} height={600} className="mt-1" />
+              {compressInfo && (
+                <p className="text-xs text-amber-600 font-medium mt-1 flex flex-wrap gap-1">
+                  <span>{(compressInfo.original / 1024).toFixed(0)} KB → {(compressInfo.compressed / 1024).toFixed(0)} KB</span>
+                  <span className="text-gray-400 font-normal">
+                    ({t("common.compressedBy").replace("{percent}", String(Math.round((1 - compressInfo.compressed / compressInfo.original) * 100)))})
+                  </span>
+                  {compressInfo.width && compressInfo.height && (
+                    <span className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono text-gray-500 border border-gray-200">
+                      {compressInfo.width} × {compressInfo.height}
+                    </span>
+                  )}
+                </p>
+              )}
             </div>
             {/* Financial Details Section */}
             <div className="mb-6">

@@ -25,6 +25,9 @@
     "errorSaving": "Error while saving",
     "error": "Error",
     "seeAll": "See All",
+    "imageAspectHint": "Recommended {ratio} aspect ratio (e.g. {width} × {height})",
+    "compressing": "Compressing…",
+    "compressedBy": "{percent}% smaller",
     "paySelected": "Pay",
     "paymentStatus": {
       "paid": "PAID",

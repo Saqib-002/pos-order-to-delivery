@@ -13,6 +13,8 @@ import { Product } from "@/types/Menu";
 import { fetchPrinters } from "@/renderer/utils/printer";
 import { AddIcon, CheckIcon, CrossIcon, ImgIcon } from "@/renderer/public/Svg";
 import { useTranslation } from "react-i18next";
+import { compressImageFile, fileToBase64, type CompressInfo } from "@/renderer/utils/imageCompression";
+import { ImageAspectHint } from "../../shared/ImageAspectHint";
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -116,6 +118,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
     Record<string, string>
   >({});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [compressing, setCompressing] = useState(false);
+  const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     getVariants(token, setVariants);
@@ -142,6 +146,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
   useEffect(() => {
     if (product) {
+      setCompressInfo(null);
       setFormData({
         name: product.name || "",
         description: product.description || "",
@@ -309,6 +314,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setValidationErrors({});
       setSelectedPrinterIds([]);
       setImagePreview(null);
+      setCompressInfo(null);
       setAllergenSelections({});
       setAllergenSearchQuery("");
     }
@@ -756,22 +762,27 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setIsSubmitting(false);
     }
   };
-  const handleProductImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProductImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setFormData({ ...formData, imgUrl: base64 });
-        setImagePreview(base64);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    setCompressing(true);
+    setCompressInfo(null);
+    setFormData((prev) => ({ ...prev, imgUrl: "" }));
+    setImagePreview(null);
+    const { outputFile, previewUrl, compressInfo: info } = await compressImageFile(file);
+    const base64 = await fileToBase64(outputFile);
+    setCompressInfo(info);
+    setFormData((prev) => ({ ...prev, imgUrl: base64 }));
+    setImagePreview(base64);
+    URL.revokeObjectURL(previewUrl);
+    setCompressing(false);
   };
 
   const handleRemoveProductImage = () => {
     setFormData({ ...formData, imgUrl: "" });
     setImagePreview(null);
+    setCompressInfo(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -979,8 +990,17 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       accept="image/*"
                       onChange={handleProductImageChange}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      disabled={compressing}
                     />
-                    {imagePreview ? (
+                    {compressing ? (
+                      <div className="flex flex-col items-center text-gray-400">
+                        <svg className="animate-spin size-10 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                        <p className="text-sm font-medium">{t("common.compressing")}</p>
+                      </div>
+                    ) : imagePreview ? (
                       <div className="flex flex-col items-center">
                         <div className="relative mb-2">
                           <img
@@ -1018,6 +1038,20 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       </div>
                     )}
                   </div>
+                  <ImageAspectHint ratio="4:3" width={800} height={600} className="mt-1" />
+                  {compressInfo && (
+                    <p className="text-xs text-amber-600 font-medium mt-1 flex flex-wrap gap-1.5">
+                      <span>{(compressInfo.original / 1024).toFixed(0)} KB → {(compressInfo.compressed / 1024).toFixed(0)} KB</span>
+                      <span className="text-gray-400 font-normal">
+                        ({t("common.compressedBy").replace("{percent}", String(Math.round((1 - compressInfo.compressed / compressInfo.original) * 100)))})
+                      </span>
+                      {compressInfo.width && compressInfo.height && (
+                        <span className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono text-gray-500 border border-gray-200">
+                          {compressInfo.width} × {compressInfo.height} px
+                        </span>
+                      )}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

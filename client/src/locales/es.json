@@ -25,6 +25,9 @@
     "errorSaving": "Error al guardar",
     "error": "Error",
     "seeAll": "Ver Todo",
+    "imageAspectHint": "Relación de aspecto recomendada {ratio} (p. ej. {width} × {height})",
+    "compressing": "Comprimiendo…",
+    "compressedBy": "{percent}% más pequeño",
     "paySelected": "Pagar",
     "paymentStatus": {
       "paid": "PAGADO",

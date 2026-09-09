@@ -5,6 +5,8 @@ import CustomInput from "../../shared/CustomInput";
 import CustomButton from "../../ui/CustomButton";
 import { CrossIcon, ImgIcon } from "@/renderer/public/Svg";
 import { useTranslation } from "react-i18next";
+import { compressImageFile, fileToBase64, type CompressInfo } from "@/renderer/utils/imageCompression";
+import { ImageAspectHint } from "../../shared/ImageAspectHint";
 
 interface Category {
   id: string;
@@ -41,6 +43,10 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     priority: 0,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [compressing, setCompressing] = useState(false);
+  const [bannerCompressing, setBannerCompressing] = useState(false);
+  const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
+  const [bannerCompressInfo, setBannerCompressInfo] = useState<CompressInfo | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const bannerFileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -68,6 +74,8 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   };
 
   useEffect(() => {
+    setCompressInfo(null);
+    setBannerCompressInfo(null);
     if (editingCategory) {
       setFormData({
         name: editingCategory.name,
@@ -88,40 +96,48 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   }, [editingCategory, isOpen]);
 
   // Icon image handler
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setFormData((prev) => ({ ...prev, imgUrl: base64 }));
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    setCompressing(true);
+    setCompressInfo(null);
+    setFormData((prev) => ({ ...prev, imgUrl: "" }));
+    const { outputFile, previewUrl, compressInfo: info } = await compressImageFile(file);
+    const base64 = await fileToBase64(outputFile);
+    setCompressInfo(info);
+    setFormData((prev) => ({ ...prev, imgUrl: base64 }));
+    URL.revokeObjectURL(previewUrl);
+    setCompressing(false);
   };
 
   const handleRemoveImage = () => {
     setFormData((prev) => ({ ...prev, imgUrl: "" }));
+    setCompressInfo(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
   // Mobile banner image handler
-  const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBannerImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setFormData((prev) => ({ ...prev, bannerImgUrl: base64 }));
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    if (bannerFileInputRef.current) bannerFileInputRef.current.value = "";
+    setBannerCompressing(true);
+    setBannerCompressInfo(null);
+    setFormData((prev) => ({ ...prev, bannerImgUrl: "" }));
+    const { outputFile, previewUrl, compressInfo: info } = await compressImageFile(file);
+    const base64 = await fileToBase64(outputFile);
+    setBannerCompressInfo(info);
+    setFormData((prev) => ({ ...prev, bannerImgUrl: base64 }));
+    URL.revokeObjectURL(previewUrl);
+    setBannerCompressing(false);
   };
 
   const handleRemoveBannerImage = () => {
     setFormData((prev) => ({ ...prev, bannerImgUrl: "" }));
+    setBannerCompressInfo(null);
     if (bannerFileInputRef.current) {
       bannerFileInputRef.current.value = "";
     }
@@ -192,7 +208,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-6">
           {/* Wrap name and icon image in a flex container */}
-          <div className="flex items-start gap-4 mb-4">
+          <div className="flex flex-col items-start gap-4 mb-4">
             <CustomInput
               label={t("menuComponents.modals.categoryModal.categoryName")}
               name="categoryName"
@@ -205,11 +221,11 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               placeholder={t(
                 "menuComponents.modals.categoryModal.enterCategoryName"
               )}
-              otherClasses="flex-1"
+              otherClasses="w-full"
             />
 
             {/* Icon Image Upload */}
-            <div className="w-28 flex-shrink-0">
+            <div className="w-full">
               <label className="block text-xs font-medium text-gray-700 mb-2">
                 {t("menuComponents.modals.categoryModal.image")}
               </label>
@@ -220,8 +236,17 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                   accept="image/*"
                   onChange={handleImageChange}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={compressing}
                 />
-                {formData.imgUrl ? (
+                {compressing ? (
+                  <div className="flex flex-col items-center text-gray-400 text-xs py-2">
+                    <svg className="animate-spin size-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                    </svg>
+                    <span>{t("common.compressing")}</span>
+                  </div>
+                ) : formData.imgUrl ? (
                   <div className="flex flex-col items-center">
                     <div className="relative">
                       <img
@@ -248,6 +273,20 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                   </div>
                 )}
               </div>
+              <ImageAspectHint ratio="1:1" width={400} height={400} className="mt-1" />
+              {compressInfo && (
+                <p className="text-xs text-amber-600 font-medium mt-1 flex flex-wrap gap-1">
+                  <span>{(compressInfo.original / 1024).toFixed(0)} KB → {(compressInfo.compressed / 1024).toFixed(0)} KB</span>
+                  <span className="text-gray-400 font-normal">
+                    ({t("common.compressedBy").replace("{percent}", String(Math.round((1 - compressInfo.compressed / compressInfo.original) * 100)))})
+                  </span>
+                  {compressInfo.width && compressInfo.height && (
+                    <span className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono text-gray-500 border border-gray-200">
+                      {compressInfo.width} × {compressInfo.height}
+                    </span>
+                  )}
+                </p>
+              )}
             </div>
           </div>
 
@@ -277,8 +316,17 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                 accept="image/*"
                 onChange={handleBannerImageChange}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={bannerCompressing}
               />
-              {formData.bannerImgUrl ? (
+              {bannerCompressing ? (
+                <div className="flex flex-col items-center text-gray-400 text-xs py-2">
+                  <svg className="animate-spin size-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  <span>{t("common.compressing")}</span>
+                </div>
+              ) : formData.bannerImgUrl ? (
                 <div className="relative w-full flex items-center justify-center">
                   <img
                     crossOrigin="anonymous"
@@ -304,6 +352,20 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                 </div>
               )}
             </div>
+            <ImageAspectHint ratio="16:9" width={1280} height={720} className="mt-1" />
+            {bannerCompressInfo && (
+              <p className="text-xs text-amber-600 font-medium mt-1 flex flex-wrap gap-1">
+                <span>{(bannerCompressInfo.original / 1024).toFixed(0)} KB → {(bannerCompressInfo.compressed / 1024).toFixed(0)} KB</span>
+                <span className="text-gray-400 font-normal">
+                  ({t("common.compressedBy").replace("{percent}", String(Math.round((1 - bannerCompressInfo.compressed / bannerCompressInfo.original) * 100)))})
+                </span>
+                {bannerCompressInfo.width && bannerCompressInfo.height && (
+                  <span className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono text-gray-500 border border-gray-200">
+                    {bannerCompressInfo.width} × {bannerCompressInfo.height}
+                  </span>
+                )}
+              </p>
+            )}
           </div>
 
           <div className="mb-6">
