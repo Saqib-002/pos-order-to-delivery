@@ -103,7 +103,7 @@ export const createSubCategory = async (
   try {
     await verifyToken(event, token);
     const result = await SubCategoriesOperations.createSubCategory(subCategory);
-    syncSubCategoryToVPS(result.id);
+    syncSubCategoryToVPS(result.newSubcategory.id);
     return {
       status: true,
       data: result,

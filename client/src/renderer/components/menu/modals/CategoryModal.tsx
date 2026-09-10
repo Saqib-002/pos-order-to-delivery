@@ -15,7 +15,6 @@ interface Category {
   color: string;
   type: "category" | "subcategory";
   imgUrl?: string;
-  bannerImgUrl?: string;
   priority?: number;
 }
 
@@ -39,16 +38,12 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     name: "",
     color: "red",
     imgUrl: "",
-    bannerImgUrl: "",
     priority: 0,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [compressing, setCompressing] = useState(false);
-  const [bannerCompressing, setBannerCompressing] = useState(false);
   const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
-  const [bannerCompressInfo, setBannerCompressInfo] = useState<CompressInfo | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const bannerFileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Get color classes for selection ring
   const getColorClasses = (color: string, isSelected: boolean) => {
@@ -75,13 +70,11 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
   useEffect(() => {
     setCompressInfo(null);
-    setBannerCompressInfo(null);
     if (editingCategory) {
       setFormData({
         name: editingCategory.name,
         color: editingCategory.color,
         imgUrl: editingCategory.imgUrl || "",
-        bannerImgUrl: (editingCategory as any).bannerImgUrl || "",
         priority: (editingCategory as any).priority || 0,
       });
     } else {
@@ -89,7 +82,6 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         name: "",
         color: "red",
         imgUrl: "",
-        bannerImgUrl: "",
         priority: 0,
       });
     }
@@ -119,30 +111,6 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     }
   };
 
-  // Mobile banner image handler
-  const handleBannerImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (bannerFileInputRef.current) bannerFileInputRef.current.value = "";
-    setBannerCompressing(true);
-    setBannerCompressInfo(null);
-    setFormData((prev) => ({ ...prev, bannerImgUrl: "" }));
-    const { outputFile, previewUrl, compressInfo: info } = await compressImageFile(file);
-    const base64 = await fileToBase64(outputFile);
-    setBannerCompressInfo(info);
-    setFormData((prev) => ({ ...prev, bannerImgUrl: base64 }));
-    URL.revokeObjectURL(previewUrl);
-    setBannerCompressing(false);
-  };
-
-  const handleRemoveBannerImage = () => {
-    setFormData((prev) => ({ ...prev, bannerImgUrl: "" }));
-    setBannerCompressInfo(null);
-    if (bannerFileInputRef.current) {
-      bannerFileInputRef.current.value = "";
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -159,7 +127,6 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         categoryName: formData.name,
         color: formData.color,
         imgUrl: formData.imgUrl,
-        bannerImgUrl: formData.bannerImgUrl,
         priority: Number(formData.priority) || 0,
       };
 
@@ -302,70 +269,6 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               }
               placeholder={t("menuComponents.modals.categoryModal.enterPriority", "Ingrese prioridad")}
             />
-          </div>
-
-          {/* Mobile Banner Image Upload */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("menuComponents.modals.categoryModal.bannerImage", "IMAGEN DE BANNER (MÓVIL)")}
-            </label>
-            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-2 hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 flex items-center justify-center min-h-[90px] touch-manipulation">
-              <input
-                ref={bannerFileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleBannerImageChange}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                disabled={bannerCompressing}
-              />
-              {bannerCompressing ? (
-                <div className="flex flex-col items-center text-gray-400 text-xs py-2">
-                  <svg className="animate-spin size-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                  </svg>
-                  <span>{t("common.compressing")}</span>
-                </div>
-              ) : formData.bannerImgUrl ? (
-                <div className="relative w-full flex items-center justify-center">
-                  <img
-                    crossOrigin="anonymous"
-                    src={formData.bannerImgUrl}
-                    alt="Category Banner Preview"
-                    className="w-full h-24 object-cover rounded shadow-md"
-                  />
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveBannerImage();
-                    }}
-                    className="absolute top-1 right-1 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors"
-                  >
-                    <CrossIcon className="size-4 text-gray-600 hover:text-gray-800" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center text-gray-500 text-xs py-2">
-                  <ImgIcon className="size-8 mb-1" />
-                  <span>{t("menuComponents.modals.categoryModal.uploadBanner", "Subir banner para la app móvil (Recomendado: horizontal)")}</span>
-                </div>
-              )}
-            </div>
-            <ImageAspectHint ratio="16:9" width={1280} height={720} className="mt-1" />
-            {bannerCompressInfo && (
-              <p className="text-xs text-amber-600 font-medium mt-1 flex flex-wrap gap-1">
-                <span>{(bannerCompressInfo.original / 1024).toFixed(0)} KB → {(bannerCompressInfo.compressed / 1024).toFixed(0)} KB</span>
-                <span className="text-gray-400 font-normal">
-                  ({t("common.compressedBy").replace("{percent}", String(Math.round((1 - bannerCompressInfo.compressed / bannerCompressInfo.original) * 100)))})
-                </span>
-                {bannerCompressInfo.width && bannerCompressInfo.height && (
-                  <span className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono text-gray-500 border border-gray-200">
-                    {bannerCompressInfo.width} × {bannerCompressInfo.height}
-                  </span>
-                )}
-              </p>
-            )}
           </div>
 
           <div className="mb-6">

@@ -18,6 +18,7 @@ export async function syncSubCategoryToVPS(subCategoryId: string): Promise<void>
             color: sub.color || "green",
             categoryId: sub.categoryId,
             imgUrl: sub.imgUrl || "",
+            bannerImgUrl: sub.bannerImgUrl || "",
             priority: sub.priority ?? 0,
         });
     } catch (err) {

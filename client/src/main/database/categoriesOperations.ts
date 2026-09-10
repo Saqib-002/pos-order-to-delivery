@@ -17,9 +17,6 @@ export class CategoryDatabaseOperations {
             if (category.imgUrl && !category.imgUrl.startsWith("http")) {
                 category.imgUrl = await uploadImg(category.imgUrl, false);
             }
-            if (category.bannerImgUrl && !category.bannerImgUrl.startsWith("http")) {
-                category.bannerImgUrl = await uploadImg(category.bannerImgUrl, false);
-            }
             const newCategory = {
                 id,
                 ...category,
@@ -33,7 +30,6 @@ export class CategoryDatabaseOperations {
             return {
                 newCategory,
                 imgUrl: `${category.imgUrl ? `${uploadUrl}/uploads/${category.imgUrl}` : ""}`,
-                bannerImgUrl: `${category.bannerImgUrl ? `${uploadUrl}/uploads/${category.bannerImgUrl}` : ""}`,
             };
         } catch (error) {
             throw error;
@@ -54,7 +50,6 @@ export class CategoryDatabaseOperations {
             return categories.map((c) => ({
                 ...c,
                 imgUrl: `${c.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${c.imgUrl}` : ""}`,
-                bannerImgUrl: `${c.bannerImgUrl ? `${(store as any).get("cdnUrl")}/uploads/${c.bannerImgUrl}` : ""}`,
             }));
         } catch (error) {
             throw error;
@@ -66,10 +61,6 @@ export class CategoryDatabaseOperations {
             if (category && category.imgUrl) {
                 const res=await deleteImg(category.imgUrl);
                 if(!res) throw new Error("Failed to delete image");
-            }
-            if (category && category.bannerImgUrl) {
-                const res=await deleteImg(category.bannerImgUrl);
-                if(!res) throw new Error("Failed to delete banner image");
             }
             await db("categories").where("id", id).delete();
         } catch (error) {
@@ -94,21 +85,6 @@ export class CategoryDatabaseOperations {
                 updates.imgUrl = await uploadImg(updates.imgUrl, false);
             } else if (updates.imgUrl) {
                 updates.imgUrl = updates.imgUrl?.split("/").at(-1);
-            }
-
-            // Handle bannerImgUrl
-            let updateBannerUrl = updates.bannerImgUrl;
-            if (updateBannerUrl) {
-                updateBannerUrl = updateBannerUrl.split("/").at(-1);
-            }
-            if (category && category.bannerImgUrl && category.bannerImgUrl !== updateBannerUrl) {
-                const res = await deleteImg(category.bannerImgUrl);
-                if (!res) throw new Error("Failed to delete banner image");
-            }
-            if (updates.bannerImgUrl && !updates.bannerImgUrl.startsWith("http")) {
-                updates.bannerImgUrl = await uploadImg(updates.bannerImgUrl, false);
-            } else if (updates.bannerImgUrl) {
-                updates.bannerImgUrl = updates.bannerImgUrl?.split("/").at(-1);
             }
 
             if (updates.priority !== undefined) {
@@ -140,6 +116,9 @@ export class SubCategoriesOperations {
             if (subcategory.imgUrl && !subcategory.imgUrl.startsWith("http")) {
                 subcategory.imgUrl = await uploadImg(subcategory.imgUrl, false);
             }
+            if (subcategory.bannerImgUrl && !subcategory.bannerImgUrl.startsWith("http")) {
+                subcategory.bannerImgUrl = await uploadImg(subcategory.bannerImgUrl, false);
+            }
             const newSubcategory = {
                 id,
                 ...subcategory,
@@ -147,7 +126,12 @@ export class SubCategoriesOperations {
                 updatedAt: now,
             };
             await db("sub_categories").insert(newSubcategory);
-            return newSubcategory;
+            const uploadUrl = (store as any).get("cdnUrl");
+            return {
+                newSubcategory,
+                imgUrl: `${subcategory.imgUrl ? `${uploadUrl}/uploads/${subcategory.imgUrl}` : ""}`,
+                bannerImgUrl: `${subcategory.bannerImgUrl ? `${uploadUrl}/uploads/${subcategory.bannerImgUrl}` : ""}`,
+            };
         } catch (error) {
             throw error;
         }
@@ -175,6 +159,7 @@ export class SubCategoriesOperations {
                 return {
                     ...s,
                     imgUrl: `${s.imgUrl ? `${uploadUrl}/uploads/${s.imgUrl}` : ""}`,
+                    bannerImgUrl: `${s.bannerImgUrl ? `${uploadUrl}/uploads/${s.bannerImgUrl}` : ""}`,
                 };
             });
         } catch (error) {
@@ -190,6 +175,7 @@ export class SubCategoriesOperations {
                 return {
                     ...s,
                     imgUrl: `${s.imgUrl ? `${uploadUrl}/uploads/${s.imgUrl}` : ""}`,
+                    bannerImgUrl: `${s.bannerImgUrl ? `${uploadUrl}/uploads/${s.bannerImgUrl}` : ""}`,
                 };
             });
         } catch (error) {
@@ -205,6 +191,10 @@ export class SubCategoriesOperations {
                 const res=await deleteImg(subcategory.imgUrl);
                 if(!res) throw new Error("Failed to delete image");
             }
+            if (subcategory && subcategory.bannerImgUrl) {
+                const res=await deleteImg(subcategory.bannerImgUrl);
+                if(!res) throw new Error("Failed to delete banner image");
+            }
             await db("sub_categories").where("id", id).delete();
         } catch (error) {
             throw error;
@@ -216,6 +206,8 @@ export class SubCategoriesOperations {
             const subcategory = await db("sub_categories")
                 .where("id", id)
                 .first();
+
+            // Handle icon imgUrl
             let updateUrl=updates.imgUrl;
             if(updateUrl){
                 updateUrl=updateUrl.split("/").at(-1);
@@ -229,6 +221,22 @@ export class SubCategoriesOperations {
             } else if (updates.imgUrl) {
                 updates.imgUrl = updates.imgUrl?.split("/").at(-1);
             }
+
+            // Handle bannerImgUrl
+            let updateBannerUrl = updates.bannerImgUrl;
+            if (updateBannerUrl) {
+                updateBannerUrl = updateBannerUrl.split("/").at(-1);
+            }
+            if (subcategory && subcategory.bannerImgUrl && subcategory.bannerImgUrl !== updateBannerUrl) {
+                const res = await deleteImg(subcategory.bannerImgUrl);
+                if (!res) throw new Error("Failed to delete banner image");
+            }
+            if (updates.bannerImgUrl && !updates.bannerImgUrl.startsWith("http")) {
+                updates.bannerImgUrl = await uploadImg(updates.bannerImgUrl, false);
+            } else if (updates.bannerImgUrl) {
+                updates.bannerImgUrl = updates.bannerImgUrl?.split("/").at(-1);
+            }
+
             const updatedSubCategory = await db("sub_categories")
                 .where("id", id)
                 .update({
