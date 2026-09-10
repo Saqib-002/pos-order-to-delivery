@@ -7,8 +7,10 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { formatImageUrl } from "../../utils/imageUrl";
+import { compressImageFile, fileToBase64, type CompressInfo } from "../../utils/imageCompression";
+import { ImageAspectHint } from "../shared/ImageAspectHint";
 import { LocalisedString } from "./HeroTab";
-import { Trash2, ImageIcon, Upload, X, Calendar } from "lucide-react";
+import { Trash2, ImageIcon, Upload, X, Calendar, Loader2 } from "lucide-react";
 
 export interface AboutMilestone {
   id: string;
@@ -49,6 +51,8 @@ export const AboutTab: React.FC<AboutTabProps> = ({
   const { auth: { token } } = useAuth();
   const [content, setContent] = useState<AboutContent>(EMPTY_ABOUT);
   const [saving, setSaving] = useState(false);
+  const [compressing, setCompressing] = useState(false);
+  const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
   const envBaseUrl =
     (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
     "https://api.alikebabrivas.es";
@@ -104,20 +108,35 @@ export const AboutTab: React.FC<AboutTabProps> = ({
     }
   }, [initialContent]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
+    setCompressing(true);
+    setCompressInfo(null);
+    setContent((prev) => ({ ...prev, imageUrl: "" }));
+
+    try {
+      const { outputFile, compressInfo: info } = await compressImageFile(file);
+      const base64 = await fileToBase64(outputFile);
+      setContent((prev) => ({ ...prev, imageUrl: base64 }));
+      setCompressInfo(info);
+    } catch {
+      // Fallback: raw file as base64
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setContent((prev) => ({ ...prev, imageUrl: base64 }));
+        setContent((prev) => ({ ...prev, imageUrl: reader.result as string }));
       };
       reader.readAsDataURL(file);
+    } finally {
+      setCompressing(false);
     }
   };
 
   const handleRemoveImage = () => {
     setContent((prev) => ({ ...prev, imageUrl: "" }));
+    setCompressInfo(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -276,7 +295,9 @@ export const AboutTab: React.FC<AboutTabProps> = ({
 
         <div className="flex flex-col sm:flex-row items-start gap-4">
           <div className="flex-shrink-0 w-36 h-28 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
-            {displayImageSrc ? (
+            {compressing ? (
+              <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+            ) : displayImageSrc ? (
               <img
                 src={displayImageSrc}
                 alt="About featured"
@@ -291,12 +312,19 @@ export const AboutTab: React.FC<AboutTabProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
+                disabled={compressing}
+                className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Upload className="w-3.5 h-3.5" />
-                <span>{t("webAdmin.about.uploadImage")}</span>
+                {compressing
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  : <Upload className="w-3.5 h-3.5" />}
+                <span>
+                  {compressing
+                    ? t("common.compressing", "Comprimiendo…")
+                    : t("webAdmin.about.uploadImage")}
+                </span>
               </button>
-              {content.imageUrl && (
+              {content.imageUrl && !compressing && (
                 <button
                   type="button"
                   onClick={handleRemoveImage}
@@ -308,6 +336,22 @@ export const AboutTab: React.FC<AboutTabProps> = ({
               )}
             </div>
             <p className="text-xs text-gray-500">{t("webAdmin.about.imageHint")}</p>
+            <ImageAspectHint ratio="3:2" width={1536} height={1024} />
+            {compressInfo && (
+              <p className="text-[11px] text-amber-600 font-medium flex items-center gap-1.5 flex-wrap">
+                <span>
+                  {(compressInfo.original / 1024).toFixed(0)} KB → {(compressInfo.compressed / 1024).toFixed(0)} KB
+                </span>
+                <span className="text-gray-400 font-normal">
+                  ({Math.round((1 - compressInfo.compressed / compressInfo.original) * 100)}% {t("common.compressed", "comprimido")})
+                </span>
+                {compressInfo.width && compressInfo.height && (
+                  <span className="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-600 border border-gray-200">
+                    {compressInfo.width} × {compressInfo.height} px
+                  </span>
+                )}
+              </p>
+            )}
           </div>
         </div>
 
@@ -501,6 +545,7 @@ export const AboutTab: React.FC<AboutTabProps> = ({
           type="submit"
           variant="primary"
           isLoading={saving}
+          disabled={compressing}
           label={
             saving ? t("webAdmin.actions.saving") : t("webAdmin.actions.save")
           }

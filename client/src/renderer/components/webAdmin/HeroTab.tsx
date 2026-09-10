@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { formatImageUrl } from "../../utils/imageUrl";
+import { compressImageFile, fileToBase64, type CompressInfo } from "../../utils/imageCompression";
+import { ImageAspectHint } from "../shared/ImageAspectHint";
 import {
   Trash2,
   Edit2,
@@ -14,6 +16,7 @@ import {
   Image as ImageIcon,
   Upload,
   X,
+  Loader2,
 } from "lucide-react";
 
 export interface LocalisedString {
@@ -77,6 +80,8 @@ export const HeroTab: React.FC<HeroTabProps> = ({
     image: "",
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [compressing, setCompressing] = useState(false);
+  const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -129,29 +134,46 @@ export const HeroTab: React.FC<HeroTabProps> = ({
   const openAddSlide = () => {
     setEditingSlideId(null);
     setSlideForm({ name: { en: "", es: "" }, image: "" });
+    setCompressInfo(null);
     setModalOpen(true);
   };
 
   const openEditSlide = (slide: HeroSlide) => {
     setEditingSlideId(slide.id);
     setSlideForm({ name: { ...slide.name }, image: slide.image });
+    setCompressInfo(null);
     setModalOpen(true);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
+    setCompressing(true);
+    setCompressInfo(null);
+    setSlideForm((prev) => ({ ...prev, image: "" }));
+
+    try {
+      const { outputFile, compressInfo: info } = await compressImageFile(file);
+      const base64 = await fileToBase64(outputFile);
+      setSlideForm((prev) => ({ ...prev, image: base64 }));
+      setCompressInfo(info);
+    } catch {
+      // Fallback: raw file as base64
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setSlideForm((prev) => ({ ...prev, image: base64 }));
+        setSlideForm((prev) => ({ ...prev, image: reader.result as string }));
       };
       reader.readAsDataURL(file);
+    } finally {
+      setCompressing(false);
     }
   };
 
   const handleRemoveModalImage = () => {
     setSlideForm((prev) => ({ ...prev, image: "" }));
+    setCompressInfo(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -206,7 +228,7 @@ export const HeroTab: React.FC<HeroTabProps> = ({
     <div className="space-y-6 max-w-full">
       {/* ── Headlines & Copy Section ── */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm space-y-5">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+        {/* <div className="flex items-center justify-between border-b border-gray-100 pb-3">
           <div>
             <h2 className="text-base font-bold text-gray-800">
               {t("webAdmin.hero.title")}
@@ -225,7 +247,6 @@ export const HeroTab: React.FC<HeroTabProps> = ({
           </div>
         </div>
 
-        {/* Heading Line 1 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <CustomInput
             type="text"
@@ -279,7 +300,6 @@ export const HeroTab: React.FC<HeroTabProps> = ({
           />
         </div>
 
-        {/* Heading Line 2 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <CustomInput
             type="text"
@@ -333,7 +353,6 @@ export const HeroTab: React.FC<HeroTabProps> = ({
           />
         </div>
 
-        {/* Subheading */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -393,7 +412,7 @@ export const HeroTab: React.FC<HeroTabProps> = ({
               className="w-full touch-manipulation px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black bg-white resize-none text-sm text-gray-800"
             />
           </div>
-        </div>
+        </div> */}
 
         {/* CTA Label & Link */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -651,7 +670,9 @@ export const HeroTab: React.FC<HeroTabProps> = ({
                 </label>
                 <div className="flex items-center gap-4">
                   <div className="w-24 h-20 rounded-lg border border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {slideForm.image ? (
+                    {compressing ? (
+                      <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+                    ) : slideForm.image ? (
                       <img
                         src={formatImageUrl(slideForm.image, driverApiUrl)}
                         alt="Slide preview"
@@ -666,12 +687,19 @@ export const HeroTab: React.FC<HeroTabProps> = ({
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
+                        disabled={compressing}
+                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>{t("webAdmin.about.uploadImage", "Subir Imagen")}</span>
+                        {compressing
+                          ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          : <Upload className="w-3.5 h-3.5" />}
+                        <span>
+                          {compressing
+                            ? t("common.compressing", "Comprimiendo…")
+                            : t("webAdmin.about.uploadImage", "Subir Imagen")}
+                        </span>
                       </button>
-                      {slideForm.image && (
+                      {slideForm.image && !compressing && (
                         <button
                           type="button"
                           onClick={handleRemoveModalImage}
@@ -685,6 +713,22 @@ export const HeroTab: React.FC<HeroTabProps> = ({
                     <p className="text-[11px] text-gray-500">
                       {t("webAdmin.about.imageHint", "PNG, JPG, WEBP")}
                     </p>
+                    <ImageAspectHint ratio="2.1:1" width={1512} height={720} />
+                    {compressInfo && (
+                      <p className="text-[11px] text-amber-600 font-medium flex items-center gap-1.5 flex-wrap">
+                        <span>
+                          {(compressInfo.original / 1024).toFixed(0)} KB → {(compressInfo.compressed / 1024).toFixed(0)} KB
+                        </span>
+                        <span className="text-gray-400 font-normal">
+                          ({Math.round((1 - compressInfo.compressed / compressInfo.original) * 100)}% {t("common.compressed", "comprimido")})
+                        </span>
+                        {compressInfo.width && compressInfo.height && (
+                          <span className="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-600 border border-gray-200">
+                            {compressInfo.width} × {compressInfo.height} px
+                          </span>
+                        )}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <input
@@ -700,7 +744,7 @@ export const HeroTab: React.FC<HeroTabProps> = ({
             <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
               <button
                 type="button"
-                onClick={() => setModalOpen(false)}
+                onClick={() => { setModalOpen(false); setCompressInfo(null); }}
                 className="px-4 py-2 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
               >
                 {t("webAdmin.common.cancel")}
@@ -709,6 +753,7 @@ export const HeroTab: React.FC<HeroTabProps> = ({
                 type="button"
                 variant="primary"
                 onClick={handleSaveSlideModal}
+                disabled={compressing}
                 label={t("webAdmin.common.save")}
               />
             </div>
