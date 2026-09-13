@@ -2,22 +2,29 @@ import React, { useState, useEffect, useRef } from "react";
 import CustomInput from "../shared/CustomInput";
 import CustomButton from "../ui/CustomButton";
 import TranslateButton from "./TranslateButton";
+import SortableSlideCard from "./SortableSlideCard";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { formatImageUrl } from "../../utils/imageUrl";
 import { compressImageFile, fileToBase64, type CompressInfo } from "../../utils/imageCompression";
 import { ImageAspectHint } from "../shared/ImageAspectHint";
+import ImagePreviewModal from "../shared/ImagePreviewModal";
+import { Image as ImageIcon, Upload, X, Loader2, Fullscreen } from "lucide-react";
 import {
-  Trash2,
-  Edit2,
-  Eye,
-  EyeOff,
-  Image as ImageIcon,
-  Upload,
-  X,
-  Loader2,
-} from "lucide-react";
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
 
 export interface LocalisedString {
   en: string;
@@ -55,6 +62,10 @@ interface HeroTabProps {
   onSaveSuccess?: () => void;
 }
 
+/** Reassign the `number` field to match each slide's new position in the array */
+const reassignNumbers = (slides: HeroSlide[]): HeroSlide[] =>
+  slides.map((s, i) => ({ ...s, number: String(i + 1).padStart(2, "0") }));
+
 export const HeroTab: React.FC<HeroTabProps> = ({
   initialContent,
   onSaveSuccess,
@@ -64,25 +75,30 @@ export const HeroTab: React.FC<HeroTabProps> = ({
   const [content, setContent] = useState<HeroContent>(EMPTY_HERO);
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [saving, setSaving] = useState(false);
+
   const envBaseUrl =
-    (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
-    "";
+    (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") || "";
   const [driverApiUrl, setDriverApiUrl] = useState<string>(envBaseUrl);
 
-  // Modal for add / edit slide
+  // ── Modal state ──────────────────────────────────────────────────────────
   const [modalOpen, setModalOpen] = useState(false);
   const [editingSlideId, setEditingSlideId] = useState<string | null>(null);
-  const [slideForm, setSlideForm] = useState<{
-    name: LocalisedString;
-    image: string;
-  }>({
+  const [slideForm, setSlideForm] = useState<{ name: LocalisedString; image: string }>({
     name: { en: "", es: "" },
     image: "",
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [compressing, setCompressing] = useState(false);
   const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
+  const [modalPreviewOpen, setModalPreviewOpen] = useState(false);
 
+  // ── dnd-kit sensors ──────────────────────────────────────────────────────
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor, { activationConstraint: { distance: 8 } })
+  );
+
+  // ── Effects ──────────────────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
@@ -104,19 +120,26 @@ export const HeroTab: React.FC<HeroTabProps> = ({
     }
   }, [initialContent]);
 
+  // ── Drag end ─────────────────────────────────────────────────────────────
+  const handleSlideDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setSlides((current) => {
+      const oldIndex = current.findIndex((s) => s.id === active.id);
+      const newIndex = current.findIndex((s) => s.id === over.id);
+      // Reassign `number` to keep schema consistent with new positions
+      return reassignNumbers(arrayMove(current, oldIndex, newIndex));
+    });
+  };
+
+  // ── Save ─────────────────────────────────────────────────────────────────
   const handleSaveAll = async () => {
     setSaving(true);
     try {
       if ((window as any).electronAPI?.saveSiteContent) {
-        const payload = {
-          ...content,
-          slides,
-        };
-        const res = await (window as any).electronAPI.saveSiteContent(
-          token,
-          "hero",
-          payload
-        );
+        const payload: HeroContent = { ...content, slides };
+        const res = await (window as any).electronAPI.saveSiteContent(token, "hero", payload);
         if (res?.status) {
           toast.success(t("webAdmin.messages.saveSuccess"));
           onSaveSuccess?.();
@@ -131,6 +154,7 @@ export const HeroTab: React.FC<HeroTabProps> = ({
     }
   };
 
+  // ── Slide CRUD ───────────────────────────────────────────────────────────
   const openAddSlide = () => {
     setEditingSlideId(null);
     setSlideForm({ name: { en: "", es: "" }, image: "" });
@@ -145,6 +169,49 @@ export const HeroTab: React.FC<HeroTabProps> = ({
     setModalOpen(true);
   };
 
+  const handleDeleteSlide = (id: string) => {
+    setSlides((current) => reassignNumbers(current.filter((s) => s.id !== id)));
+  };
+
+  const handleToggleVisible = (id: string) => {
+    setSlides((current) =>
+      current.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s))
+    );
+  };
+
+  const handleSaveSlideModal = () => {
+    if (editingSlideId) {
+      setSlides((current) =>
+        current.map((s) =>
+          s.id === editingSlideId
+            ? {
+                ...s,
+                name: {
+                  en: slideForm.name.en || slideForm.name.es,
+                  es: slideForm.name.es || slideForm.name.en,
+                },
+                image: slideForm.image,
+              }
+            : s
+        )
+      );
+    } else {
+      const newSlide: HeroSlide = {
+        id: `slide-${Date.now()}`,
+        number: String(slides.length + 1).padStart(2, "0"),
+        name: {
+          en: slideForm.name.en || slideForm.name.es,
+          es: slideForm.name.es || slideForm.name.en,
+        },
+        image: slideForm.image,
+        visible: true,
+      };
+      setSlides((current) => [...current, newSlide]);
+    }
+    setModalOpen(false);
+  };
+
+  // ── Image upload ─────────────────────────────────────────────────────────
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -160,11 +227,9 @@ export const HeroTab: React.FC<HeroTabProps> = ({
       setSlideForm((prev) => ({ ...prev, image: base64 }));
       setCompressInfo(info);
     } catch {
-      // Fallback: raw file as base64
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = () =>
         setSlideForm((prev) => ({ ...prev, image: reader.result as string }));
-      };
       reader.readAsDataURL(file);
     } finally {
       setCompressing(false);
@@ -177,244 +242,11 @@ export const HeroTab: React.FC<HeroTabProps> = ({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleSaveSlideModal = () => {
-    if (!slideForm.name.en.trim() && !slideForm.name.es.trim()) {
-      toast.error(t("webAdmin.hero.dishNameEn") + " required");
-      return;
-    }
-
-    if (editingSlideId) {
-      setSlides(
-        slides.map((s) =>
-          s.id === editingSlideId
-            ? {
-              ...s,
-              name: {
-                en: slideForm.name.en || slideForm.name.es,
-                es: slideForm.name.es || slideForm.name.en,
-              },
-              image: slideForm.image,
-            }
-            : s
-        )
-      );
-    } else {
-      const newSlide: HeroSlide = {
-        id: `slide-${Date.now()}`,
-        number: String(slides.length + 1).padStart(2, "0"),
-        name: {
-          en: slideForm.name.en || slideForm.name.es,
-          es: slideForm.name.es || slideForm.name.en,
-        },
-        image: slideForm.image,
-        visible: true,
-      };
-      setSlides([...slides, newSlide]);
-    }
-    setModalOpen(false);
-  };
-
-  const handleDeleteSlide = (id: string) => {
-    setSlides(slides.filter((s) => s.id !== id));
-  };
-
-  const handleToggleVisible = (id: string) => {
-    setSlides(
-      slides.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s))
-    );
-  };
-
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6 max-w-full">
-      {/* ── Headlines & Copy Section ── */}
+      {/* ── CTA Section ── */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm space-y-5">
-        {/* <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-          <div>
-            <h2 className="text-base font-bold text-gray-800">
-              {t("webAdmin.hero.title")}
-            </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {t("webAdmin.hero.subtitle")}
-            </p>
-          </div>
-          <div className="flex gap-4">
-            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-              {t("webAdmin.common.english")}
-            </span>
-            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-              {t("webAdmin.common.espanol")}
-            </span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CustomInput
-            type="text"
-            name="headingLine1En"
-            label={`${t("webAdmin.hero.headingLine1")} (EN)`}
-            labelAction={
-              <TranslateButton
-                value={content.headingLine1.en}
-                direction="en→es"
-                onTranslated={(v) =>
-                  setContent({
-                    ...content,
-                    headingLine1: { ...content.headingLine1, es: v },
-                  })
-                }
-              />
-            }
-            value={content.headingLine1.en}
-            placeholder={t("webAdmin.hero.headingLine1PlaceholderEn")}
-            onChange={(e) =>
-              setContent({
-                ...content,
-                headingLine1: { ...content.headingLine1, en: e.target.value },
-              })
-            }
-          />
-          <CustomInput
-            type="text"
-            name="headingLine1Es"
-            label={`${t("webAdmin.hero.headingLine1")} (ES)`}
-            labelAction={
-              <TranslateButton
-                value={content.headingLine1.es}
-                direction="es→en"
-                onTranslated={(v) =>
-                  setContent({
-                    ...content,
-                    headingLine1: { ...content.headingLine1, en: v },
-                  })
-                }
-              />
-            }
-            value={content.headingLine1.es}
-            placeholder={t("webAdmin.hero.headingLine1PlaceholderEs")}
-            onChange={(e) =>
-              setContent({
-                ...content,
-                headingLine1: { ...content.headingLine1, es: e.target.value },
-              })
-            }
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CustomInput
-            type="text"
-            name="headingLine2En"
-            label={`${t("webAdmin.hero.headingLine2")} (EN)`}
-            labelAction={
-              <TranslateButton
-                value={content.headingLine2.en}
-                direction="en→es"
-                onTranslated={(v) =>
-                  setContent({
-                    ...content,
-                    headingLine2: { ...content.headingLine2, es: v },
-                  })
-                }
-              />
-            }
-            value={content.headingLine2.en}
-            placeholder={t("webAdmin.hero.headingLine2PlaceholderEn", "TASTE.")}
-            onChange={(e) =>
-              setContent({
-                ...content,
-                headingLine2: { ...content.headingLine2, en: e.target.value },
-              })
-            }
-          />
-          <CustomInput
-            type="text"
-            name="headingLine2Es"
-            label={`${t("webAdmin.hero.headingLine2")} (ES)`}
-            labelAction={
-              <TranslateButton
-                value={content.headingLine2.es}
-                direction="es→en"
-                onTranslated={(v) =>
-                  setContent({
-                    ...content,
-                    headingLine2: { ...content.headingLine2, en: v },
-                  })
-                }
-              />
-            }
-            value={content.headingLine2.es}
-            placeholder={t("webAdmin.hero.headingLine2PlaceholderEs", "DISTINGUIDO.")}
-            onChange={(e) =>
-              setContent({
-                ...content,
-                headingLine2: { ...content.headingLine2, es: e.target.value },
-              })
-            }
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700">
-                {t("webAdmin.hero.subheading")} (EN)
-              </label>
-              <TranslateButton
-                value={content.subheading.en}
-                direction="en→es"
-                onTranslated={(v) =>
-                  setContent({
-                    ...content,
-                    subheading: { ...content.subheading, es: v },
-                  })
-                }
-              />
-            </div>
-            <textarea
-              rows={3}
-              value={content.subheading.en}
-              onChange={(e) =>
-                setContent({
-                  ...content,
-                  subheading: { ...content.subheading, en: e.target.value },
-                })
-              }
-              placeholder={t("webAdmin.hero.subheadingPlaceholderEn")}
-              className="w-full touch-manipulation px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black bg-white resize-none text-sm text-gray-800"
-            />
-          </div>
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700">
-                {t("webAdmin.hero.subheading")} (ES)
-              </label>
-              <TranslateButton
-                value={content.subheading.es}
-                direction="es→en"
-                onTranslated={(v) =>
-                  setContent({
-                    ...content,
-                    subheading: { ...content.subheading, en: v },
-                  })
-                }
-              />
-            </div>
-            <textarea
-              rows={3}
-              value={content.subheading.es}
-              onChange={(e) =>
-                setContent({
-                  ...content,
-                  subheading: { ...content.subheading, es: e.target.value },
-                })
-              }
-              placeholder={t("webAdmin.hero.subheadingPlaceholderEs")}
-              className="w-full touch-manipulation px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black bg-white resize-none text-sm text-gray-800"
-            />
-          </div>
-        </div> */}
-
-        {/* CTA Label & Link */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <CustomInput
             type="text"
@@ -425,20 +257,14 @@ export const HeroTab: React.FC<HeroTabProps> = ({
                 value={content.ctaLabel.en}
                 direction="en→es"
                 onTranslated={(v) =>
-                  setContent({
-                    ...content,
-                    ctaLabel: { ...content.ctaLabel, es: v },
-                  })
+                  setContent({ ...content, ctaLabel: { ...content.ctaLabel, es: v } })
                 }
               />
             }
             value={content.ctaLabel.en}
             placeholder={t("webAdmin.hero.ctaLabelPlaceholderEn")}
             onChange={(e) =>
-              setContent({
-                ...content,
-                ctaLabel: { ...content.ctaLabel, en: e.target.value },
-              })
+              setContent({ ...content, ctaLabel: { ...content.ctaLabel, en: e.target.value } })
             }
           />
           <CustomInput
@@ -450,20 +276,14 @@ export const HeroTab: React.FC<HeroTabProps> = ({
                 value={content.ctaLabel.es}
                 direction="es→en"
                 onTranslated={(v) =>
-                  setContent({
-                    ...content,
-                    ctaLabel: { ...content.ctaLabel, en: v },
-                  })
+                  setContent({ ...content, ctaLabel: { ...content.ctaLabel, en: v } })
                 }
               />
             }
             value={content.ctaLabel.es}
             placeholder={t("webAdmin.hero.ctaLabelPlaceholderEs")}
             onChange={(e) =>
-              setContent({
-                ...content,
-                ctaLabel: { ...content.ctaLabel, es: e.target.value },
-              })
+              setContent({ ...content, ctaLabel: { ...content.ctaLabel, es: e.target.value } })
             }
           />
           <CustomInput
@@ -472,14 +292,12 @@ export const HeroTab: React.FC<HeroTabProps> = ({
             label={t("webAdmin.hero.ctaHref")}
             value={content.ctaHref}
             placeholder={t("webAdmin.hero.ctaHrefPlaceholder")}
-            onChange={(e) =>
-              setContent({ ...content, ctaHref: e.target.value })
-            }
+            onChange={(e) => setContent({ ...content, ctaHref: e.target.value })}
           />
         </div>
       </div>
 
-      {/* ── Featured Slides Section ── */}
+      {/* ── Slides Section ── */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 pb-3 gap-2">
           <div>
@@ -511,96 +329,45 @@ export const HeroTab: React.FC<HeroTabProps> = ({
             />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {slides.map((slide, idx) => {
-              const displaySrc = formatImageUrl(slide.image, driverApiUrl);
-              return (
-                <div
-                  key={slide.id}
-                  className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex flex-col justify-between gap-3"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-14 h-14 rounded-lg bg-gray-200 border border-gray-300 overflow-hidden flex items-center justify-center flex-shrink-0">
-                        {displaySrc ? (
-                          <img
-                            src={displaySrc}
-                            alt={slide.name.en || "Slide"}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <ImageIcon className="w-6 h-6 text-gray-400" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-bold text-gray-500">
-                            #{idx + 1}
-                          </span>
-                          <h4 className="text-xs font-bold text-gray-900">
-                            {slide.name.es || slide.name.en}
-                          </h4>
-                        </div>
-                        <p className="text-[11px] text-gray-500">
-                          {slide.name.en}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleVisible(slide.id)}
-                        className={`p-1 rounded text-xs transition-colors cursor-pointer ${slide.visible
-                          ? "text-emerald-600 hover:bg-emerald-50"
-                          : "text-gray-400 hover:bg-gray-200"
-                          }`}
-                        title={slide.visible ? t("webAdmin.hero.visible") : t("webAdmin.hero.hidden")}
-                      >
-                        {slide.visible ? (
-                          <Eye className="w-4 h-4" />
-                        ) : (
-                          <EyeOff className="w-4 h-4" />
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openEditSlide(slide)}
-                        className="p-1 text-gray-600 hover:bg-gray-200 rounded text-xs transition-colors cursor-pointer"
-                        title={t("webAdmin.common.edit")}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteSlide(slide.id)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded text-xs transition-colors cursor-pointer"
-                        title={t("webAdmin.common.delete")}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleSlideDragEnd}
+          >
+            <SortableContext
+              items={slides.map((s) => s.id)}
+              strategy={rectSortingStrategy}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {slides.map((slide, idx) => (
+                  <SortableSlideCard
+                    key={slide.id}
+                    slide={slide}
+                    idx={idx}
+                    driverApiUrl={driverApiUrl}
+                    onToggleVisible={handleToggleVisible}
+                    onEdit={openEditSlide}
+                    onDelete={handleDeleteSlide}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 
-      {/* Save Button */}
+      {/* ── Save Button ── */}
       <div className="flex justify-end pt-2">
         <CustomButton
           type="button"
           variant="primary"
           onClick={handleSaveAll}
           isLoading={saving}
-          label={
-            saving ? t("webAdmin.actions.saving") : t("webAdmin.actions.save")
-          }
+          label={saving ? t("webAdmin.actions.saving") : t("webAdmin.actions.save")}
         />
       </div>
 
-      {/* Add / Edit Slide Modal */}
+      {/* ── Add / Edit Slide Modal ── */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 space-y-4">
@@ -611,73 +378,31 @@ export const HeroTab: React.FC<HeroTabProps> = ({
             </h3>
 
             <div className="space-y-4">
-              <CustomInput
-                type="text"
-                name="slideNameEn"
-                label={t("webAdmin.hero.dishNameEn")}
-                labelAction={
-                  <TranslateButton
-                    value={slideForm.name.en}
-                    direction="en→es"
-                    onTranslated={(v) =>
-                      setSlideForm({
-                        ...slideForm,
-                        name: { ...slideForm.name, es: v },
-                      })
-                    }
-                  />
-                }
-                value={slideForm.name.en}
-                placeholder={t("webAdmin.hero.dishNamePlaceholderEn")}
-                onChange={(e) =>
-                  setSlideForm({
-                    ...slideForm,
-                    name: { ...slideForm.name, en: e.target.value },
-                  })
-                }
-              />
-
-              <CustomInput
-                type="text"
-                name="slideNameEs"
-                label={t("webAdmin.hero.dishNameEs")}
-                labelAction={
-                  <TranslateButton
-                    value={slideForm.name.es}
-                    direction="es→en"
-                    onTranslated={(v) =>
-                      setSlideForm({
-                        ...slideForm,
-                        name: { ...slideForm.name, en: v },
-                      })
-                    }
-                  />
-                }
-                value={slideForm.name.es}
-                placeholder={t("webAdmin.hero.dishNamePlaceholderEs")}
-                onChange={(e) =>
-                  setSlideForm({
-                    ...slideForm,
-                    name: { ...slideForm.name, es: e.target.value },
-                  })
-                }
-              />
-
-              {/* Image Upload Section */}
+              {/* Image Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {t("webAdmin.hero.imagePath", "Imagen")}
                 </label>
                 <div className="flex items-center gap-4">
-                  <div className="w-24 h-20 rounded-lg border border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {/* Thumbnail — click to preview if image exists */}
+                  <div
+                    className={`w-24 h-20 rounded-lg border border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0 ${slideForm.image && !compressing ? "cursor-pointer group relative" : ""}`}
+                    onClick={() => slideForm.image && !compressing && setModalPreviewOpen(true)}
+                    title={slideForm.image && !compressing ? "Click to preview" : undefined}
+                  >
                     {compressing ? (
                       <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
                     ) : slideForm.image ? (
-                      <img
-                        src={formatImageUrl(slideForm.image, driverApiUrl)}
-                        alt="Slide preview"
-                        className="w-full h-full object-cover"
-                      />
+                      <>
+                        <img
+                          src={formatImageUrl(slideForm.image, driverApiUrl)}
+                          alt="Slide preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
+                          <Fullscreen className="w-5 h-5 text-white" />
+                        </div>
+                      </>
                     ) : (
                       <ImageIcon className="w-7 h-7 text-gray-400" />
                     )}
@@ -690,9 +415,11 @@ export const HeroTab: React.FC<HeroTabProps> = ({
                         disabled={compressing}
                         className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {compressing
-                          ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          : <Upload className="w-3.5 h-3.5" />}
+                        {compressing ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="w-3.5 h-3.5" />
+                        )}
                         <span>
                           {compressing
                             ? t("common.compressing", "Comprimiendo…")
@@ -700,14 +427,23 @@ export const HeroTab: React.FC<HeroTabProps> = ({
                         </span>
                       </button>
                       {slideForm.image && !compressing && (
-                        <button
-                          type="button"
-                          onClick={handleRemoveModalImage}
-                          className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                          <span>{t("webAdmin.about.removeImage", "Eliminar")}</span>
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setModalPreviewOpen(true)}
+                            className="px-3 py-1.5 text-blue-600 hover:bg-blue-50 border border-blue-200 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                          >
+                            <Fullscreen className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleRemoveModalImage}
+                            className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            <span>{t("webAdmin.about.removeImage", "Eliminar")}</span>
+                          </button>
+                        </>
                       )}
                     </div>
                     <p className="text-[11px] text-gray-500">
@@ -717,10 +453,15 @@ export const HeroTab: React.FC<HeroTabProps> = ({
                     {compressInfo && (
                       <p className="text-[11px] text-amber-600 font-medium flex items-center gap-1.5 flex-wrap">
                         <span>
-                          {(compressInfo.original / 1024).toFixed(0)} KB → {(compressInfo.compressed / 1024).toFixed(0)} KB
+                          {(compressInfo.original / 1024).toFixed(0)} KB →{" "}
+                          {(compressInfo.compressed / 1024).toFixed(0)} KB
                         </span>
                         <span className="text-gray-400 font-normal">
-                          ({Math.round((1 - compressInfo.compressed / compressInfo.original) * 100)}% {t("common.compressed", "comprimido")})
+                          (
+                          {Math.round(
+                            (1 - compressInfo.compressed / compressInfo.original) * 100
+                          )}
+                          % {t("common.compressed", "comprimido")})
                         </span>
                         {compressInfo.width && compressInfo.height && (
                           <span className="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-600 border border-gray-200">
@@ -744,7 +485,11 @@ export const HeroTab: React.FC<HeroTabProps> = ({
             <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
               <button
                 type="button"
-                onClick={() => { setModalOpen(false); setCompressInfo(null); }}
+                onClick={() => {
+                  setModalOpen(false);
+                  setCompressInfo(null);
+                  setModalPreviewOpen(false);
+                }}
                 className="px-4 py-2 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
               >
                 {t("webAdmin.common.cancel")}
@@ -759,6 +504,15 @@ export const HeroTab: React.FC<HeroTabProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Full-screen preview triggered from inside the add/edit modal */}
+      {modalPreviewOpen && slideForm.image && (
+        <ImagePreviewModal
+          src={formatImageUrl(slideForm.image, driverApiUrl)}
+          alt="Slide preview"
+          onClose={() => setModalPreviewOpen(false)}
+        />
       )}
     </div>
   );

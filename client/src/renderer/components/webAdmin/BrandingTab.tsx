@@ -7,8 +7,11 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { formatImageUrl } from "../../utils/imageUrl";
+import { compressImageFile, fileToBase64, type CompressInfo } from "../../utils/imageCompression";
+import { ImageAspectHint } from "../shared/ImageAspectHint";
 import { LocalisedString } from "./HeroTab";
-import { ImageIcon, Upload, X, Clock, Palette } from "lucide-react";
+import { ImageIcon, Upload, X, Clock, Palette, Loader2, Fullscreen } from "lucide-react";
+import ImagePreviewModal from "../shared/ImagePreviewModal";
 
 export interface BrandingData {
   logoUrl: string;
@@ -52,6 +55,9 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
   const { auth: { token } } = useAuth();
   const [branding, setBranding] = useState<BrandingData>(EMPTY_BRANDING);
   const [saving, setSaving] = useState(false);
+  const [compressing, setCompressing] = useState(false);
+  const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
+  const [logoPreviewOpen, setLogoPreviewOpen] = useState(false);
   const envBaseUrl =
     (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
     "";
@@ -88,20 +94,35 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
     }
   }, [initialContent]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
+    setCompressing(true);
+    setCompressInfo(null);
+    setBranding((prev) => ({ ...prev, logoUrl: "" }));
+
+    try {
+      const { outputFile, compressInfo: info } = await compressImageFile(file);
+      const base64 = await fileToBase64(outputFile);
+      setBranding((prev) => ({ ...prev, logoUrl: base64 }));
+      setCompressInfo(info);
+    } catch {
+      // Fallback: raw file as base64
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setBranding((prev) => ({ ...prev, logoUrl: base64 }));
+        setBranding((prev) => ({ ...prev, logoUrl: reader.result as string }));
       };
       reader.readAsDataURL(file);
+    } finally {
+      setCompressing(false);
     }
   };
 
   const handleRemoveLogo = () => {
     setBranding((prev) => ({ ...prev, logoUrl: "" }));
+    setCompressInfo(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -149,18 +170,28 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
 
         {/* Logo Section */}
         <div className="flex flex-col sm:flex-row items-start gap-4">
-          <div className="w-28 h-28 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
-            {displayLogoSrc ? (
-              <img
-                src={displayLogoSrc}
-                alt="Brand logo"
-                className="w-full h-full object-contain p-2"
-              />
+          <div
+            className={`w-28 h-28 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0 relative${displayLogoSrc && !compressing ? " cursor-pointer group" : ""}`}
+            onClick={() => displayLogoSrc && !compressing && setLogoPreviewOpen(true)}
+          >
+            {compressing ? (
+              <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+            ) : displayLogoSrc ? (
+              <>
+                <img
+                  src={displayLogoSrc}
+                  alt="Brand logo"
+                  className="w-full h-full object-contain p-2"
+                />
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
+                  <Fullscreen className="w-5 h-5 text-white" />
+                </div>
+              </>
             ) : (
               <ImageIcon className="w-8 h-8 text-gray-400" />
             )}
           </div>
-          <div className="flex-1 space-y-3">
+          <div className="flex-1 space-y-2">
             <div>
               <h4 className="text-xs font-bold text-gray-800">
                 {t("webAdmin.branding.logoTitle")}
@@ -173,12 +204,19 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
+                disabled={compressing}
+                className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Upload className="w-3.5 h-3.5" />
-                <span>{t("webAdmin.branding.uploadLogo")}</span>
+                {compressing
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  : <Upload className="w-3.5 h-3.5" />}
+                <span>
+                  {compressing
+                    ? t("common.compressing", "Comprimiendo…")
+                    : t("webAdmin.branding.uploadLogo")}
+                </span>
               </button>
-              {branding.logoUrl && (
+              {branding.logoUrl && !compressing && (
                 <button
                   type="button"
                   onClick={handleRemoveLogo}
@@ -188,10 +226,36 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
                   <span>{t("webAdmin.branding.removeLogo")}</span>
                 </button>
               )}
+              {displayLogoSrc && !compressing && (
+                <button
+                  type="button"
+                  onClick={() => setLogoPreviewOpen(true)}
+                  className="px-3.5 py-1.5 text-gray-600 hover:bg-gray-100 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  <Fullscreen className="w-3.5 h-3.5" />
+                  <span>{t("common.preview")}</span>
+                </button>
+              )}
             </div>
-            {!branding.logoUrl && (
+            <ImageAspectHint ratio="1:1" width={512} height={512} />
+            {!branding.logoUrl && !compressing && (
               <p className="text-[11px] text-gray-400 italic">
                 {t("webAdmin.branding.noLogo")}
+              </p>
+            )}
+            {compressInfo && (
+              <p className="text-[11px] text-amber-600 font-medium flex items-center gap-1.5 flex-wrap">
+                <span>
+                  {(compressInfo.original / 1024).toFixed(0)} KB → {(compressInfo.compressed / 1024).toFixed(0)} KB
+                </span>
+                <span className="text-gray-400 font-normal">
+                  ({Math.round((1 - compressInfo.compressed / compressInfo.original) * 100)}% {t("common.compressed", "comprimido")})
+                </span>
+                {compressInfo.width && compressInfo.height && (
+                  <span className="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-600 border border-gray-200">
+                    {compressInfo.width} × {compressInfo.height} px
+                  </span>
+                )}
               </p>
             )}
           </div>
@@ -323,6 +387,14 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
           }
         />
       </div>
+
+      {logoPreviewOpen && displayLogoSrc && (
+        <ImagePreviewModal
+          src={displayLogoSrc}
+          alt="Brand logo"
+          onClose={() => setLogoPreviewOpen(false)}
+        />
+      )}
     </form>
   );
 };

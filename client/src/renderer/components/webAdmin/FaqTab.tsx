@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from "react";
-import CustomInput from "../shared/CustomInput";
 import CustomButton from "../ui/CustomButton";
-import TranslateButton from "./TranslateButton";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { LocalisedString } from "./HeroTab";
-import { Trash2, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
+import SortableFaqCard from "./SortableFaqCard";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
 export interface FaqItem {
   id: string;
@@ -19,9 +28,7 @@ export interface FaqContent {
   items: FaqItem[];
 }
 
-const DEFAULT_FAQ: FaqContent = {
-  items: [],
-};
+const DEFAULT_FAQ: FaqContent = { items: [] };
 
 interface FaqTabProps {
   initialContent?: FaqContent;
@@ -37,33 +44,36 @@ export const FaqTab: React.FC<FaqTabProps> = ({
   const [content, setContent] = useState<FaqContent>(DEFAULT_FAQ);
   const [saving, setSaving] = useState(false);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor, { activationConstraint: { distance: 8 } })
+  );
+
   useEffect(() => {
     if (initialContent && Array.isArray(initialContent.items)) {
       setContent(initialContent);
     }
   }, [initialContent]);
 
-  const addItem = () => {
-    const id = `faq-${Date.now()}`;
+  const addItem = () =>
     setContent((prev) => ({
       items: [
         ...prev.items,
         {
-          id,
+          id: `faq-${Date.now()}`,
           category: { en: "", es: "" },
           question: { en: "", es: "" },
           answer: { en: "", es: "" },
         },
       ],
     }));
-  };
 
   const updateField = (
     id: string,
     field: "category" | "question" | "answer",
     lang: "en" | "es",
     val: string
-  ) => {
+  ) =>
     setContent((prev) => ({
       items: prev.items.map((item) =>
         item.id === id
@@ -71,12 +81,18 @@ export const FaqTab: React.FC<FaqTabProps> = ({
           : item
       ),
     }));
-  };
 
-  const removeItem = (id: string) => {
-    setContent((prev) => ({
-      items: prev.items.filter((item) => item.id !== id),
-    }));
+  const removeItem = (id: string) =>
+    setContent((prev) => ({ items: prev.items.filter((item) => item.id !== id) }));
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setContent((prev) => {
+      const oldIndex = prev.items.findIndex((item) => item.id === active.id);
+      const newIndex = prev.items.findIndex((item) => item.id === over.id);
+      return { items: arrayMove(prev.items, oldIndex, newIndex) };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,11 +100,7 @@ export const FaqTab: React.FC<FaqTabProps> = ({
     setSaving(true);
     try {
       if ((window as any).electronAPI?.saveSiteContent) {
-        const res = await (window as any).electronAPI.saveSiteContent(
-          token,
-          "faq",
-          content
-        );
+        const res = await (window as any).electronAPI.saveSiteContent(token, "faq", content);
         if (res?.status) {
           toast.success(t("webAdmin.messages.saveSuccess"));
           onSaveSuccess?.();
@@ -135,162 +147,28 @@ export const FaqTab: React.FC<FaqTabProps> = ({
             />
           </div>
         ) : (
-          <div className="space-y-5">
-            {content.items.map((item, idx) => (
-              <div
-                key={item.id}
-                className="bg-gray-50 border border-gray-200 rounded-lg p-5 space-y-4"
-              >
-                <div className="flex items-center justify-between border-b border-gray-200 pb-2">
-                  <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    FAQ #{idx + 1}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removeItem(item.id)}
-                    className="p-1.5 text-red-600 hover:bg-red-50 rounded text-xs transition-colors cursor-pointer flex items-center gap-1 font-semibold"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>{t("webAdmin.common.delete")}</span>
-                  </button>
-                </div>
-
-                {/* Category */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <CustomInput
-                    type="text"
-                    name={`faqCategoryEn_${item.id}`}
-                    label={`${t("webAdmin.faq.category")} (EN)`}
-                    labelAction={
-                      <TranslateButton
-                        value={item.category.en}
-                        direction="en→es"
-                        onTranslated={(v) =>
-                          updateField(item.id, "category", "es", v)
-                        }
-                      />
-                    }
-                    value={item.category.en}
-                    placeholder={t("webAdmin.faq.categoryPlaceholderEn")}
-                    onChange={(e) =>
-                      updateField(item.id, "category", "en", e.target.value)
-                    }
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={content.items.map((item) => item.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-2">
+                {content.items.map((item, idx) => (
+                  <SortableFaqCard
+                    key={item.id}
+                    item={item}
+                    idx={idx}
+                    onUpdate={updateField}
+                    onRemove={removeItem}
                   />
-                  <CustomInput
-                    type="text"
-                    name={`faqCategoryEs_${item.id}`}
-                    label={`${t("webAdmin.faq.category")} (ES)`}
-                    labelAction={
-                      <TranslateButton
-                        value={item.category.es}
-                        direction="es→en"
-                        onTranslated={(v) =>
-                          updateField(item.id, "category", "en", v)
-                        }
-                      />
-                    }
-                    value={item.category.es}
-                    placeholder={t("webAdmin.faq.categoryPlaceholderEs")}
-                    onChange={(e) =>
-                      updateField(item.id, "category", "es", e.target.value)
-                    }
-                  />
-                </div>
-
-                {/* Question */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <CustomInput
-                    type="text"
-                    name={`faqQuestionEn_${item.id}`}
-                    label={`${t("webAdmin.faq.question")} (EN)`}
-                    labelAction={
-                      <TranslateButton
-                        value={item.question.en}
-                        direction="en→es"
-                        onTranslated={(v) =>
-                          updateField(item.id, "question", "es", v)
-                        }
-                      />
-                    }
-                    value={item.question.en}
-                    placeholder={t("webAdmin.faq.questionPlaceholderEn")}
-                    onChange={(e) =>
-                      updateField(item.id, "question", "en", e.target.value)
-                    }
-                  />
-                  <CustomInput
-                    type="text"
-                    name={`faqQuestionEs_${item.id}`}
-                    label={`${t("webAdmin.faq.question")} (ES)`}
-                    labelAction={
-                      <TranslateButton
-                        value={item.question.es}
-                        direction="es→en"
-                        onTranslated={(v) =>
-                          updateField(item.id, "question", "en", v)
-                        }
-                      />
-                    }
-                    value={item.question.es}
-                    placeholder={t("webAdmin.faq.questionPlaceholderEs")}
-                    onChange={(e) =>
-                      updateField(item.id, "question", "es", e.target.value)
-                    }
-                  />
-                </div>
-
-                {/* Answer */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        {t("webAdmin.faq.answer")} (EN)
-                      </label>
-                      <TranslateButton
-                        value={item.answer.en}
-                        direction="en→es"
-                        onTranslated={(v) =>
-                          updateField(item.id, "answer", "es", v)
-                        }
-                      />
-                    </div>
-                    <textarea
-                      rows={3}
-                      value={item.answer.en}
-                      onChange={(e) =>
-                        updateField(item.id, "answer", "en", e.target.value)
-                      }
-                      placeholder={t("webAdmin.faq.answerPlaceholderEn")}
-                      className="w-full touch-manipulation px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black bg-white resize-none text-sm text-gray-800"
-                    />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        {t("webAdmin.faq.answer")} (ES)
-                      </label>
-                      <TranslateButton
-                        value={item.answer.es}
-                        direction="es→en"
-                        onTranslated={(v) =>
-                          updateField(item.id, "answer", "en", v)
-                        }
-                      />
-                    </div>
-                    <textarea
-                      rows={3}
-                      value={item.answer.es}
-                      onChange={(e) =>
-                        updateField(item.id, "answer", "es", e.target.value)
-                      }
-                      placeholder={t("webAdmin.faq.answerPlaceholderEs")}
-                      className="w-full touch-manipulation px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black bg-white resize-none text-sm text-gray-800"
-                    />
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 
@@ -299,9 +177,7 @@ export const FaqTab: React.FC<FaqTabProps> = ({
           type="submit"
           variant="primary"
           isLoading={saving}
-          label={
-            saving ? t("webAdmin.actions.saving") : t("webAdmin.actions.save")
-          }
+          label={saving ? t("webAdmin.actions.saving") : t("webAdmin.actions.save")}
         />
       </div>
     </form>
