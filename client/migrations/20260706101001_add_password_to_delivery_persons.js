@@ -3,13 +3,19 @@
  * @returns { Promise<void> }
  */
 export async function up(knex) {
-    return knex.schema.table('delivery_persons', function (table) {
-        table.string('password').nullable();
-    });
+    const hasColumn = await knex.schema.hasColumn('delivery_persons', 'password');
+    if (!hasColumn) {
+        return knex.schema.table('delivery_persons', function (table) {
+            table.string('password').nullable();
+        });
+    }
 };
 
 export async function down(knex) {
-    return knex.schema.table('delivery_persons', function (table) {
-        table.dropColumn('password');
-    });
+    const hasColumn = await knex.schema.hasColumn('delivery_persons', 'password');
+    if (hasColumn) {
+        return knex.schema.table('delivery_persons', function (table) {
+            table.dropColumn('password');
+        });
+    }
 };
