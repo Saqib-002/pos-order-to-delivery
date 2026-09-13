@@ -61,6 +61,8 @@ import {
   getAllSubCategories,
   updateCategory,
   updateSubCategory,
+  updateCategoryPriorities,
+  updateSubcategoryPriorities,
 } from "./handlers/categories.js";
 import {
   createVariant,
@@ -356,6 +358,8 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-all-sub-categories", getAllSubCategories);
   ipcMain.handle("delete-sub-category", deleteSubCategory);
   ipcMain.handle("update-sub-category", updateSubCategory);
+  ipcMain.handle("update-category-priorities", updateCategoryPriorities);
+  ipcMain.handle("update-subcategory-priorities", updateSubcategoryPriorities);
   // variants handlers
   ipcMain.handle("create-variant", createVariant);
   ipcMain.handle("get-variants", getVariants);

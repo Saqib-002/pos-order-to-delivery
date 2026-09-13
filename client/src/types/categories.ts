@@ -19,6 +19,7 @@ export interface SubCategory{
     bannerImgUrl?: string;
     isForMenu?: boolean;
     categoryId: string;
+    priority?: number;
     createdAt: string;
     updatedAt: string;
     isDeleted: boolean;

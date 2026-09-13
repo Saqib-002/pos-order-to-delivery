@@ -25,6 +25,7 @@ export interface Category extends BaseMenuEntity {
 export interface Subcategory extends BaseMenuEntity {
   itemCount: number;
   categoryId: string;
+  priority?: number;
   type: "subcategory";
 }
 
@@ -75,6 +76,8 @@ export interface ContentSectionProps {
   products: Product[];
   selectedCategory: Category | null;
   onProductDragEnd: (event: DragEndEvent) => void;
+  onCategoryDragEnd: (event: DragEndEvent) => void;
+  onSubcategoryDragEnd: (event: DragEndEvent) => void;
   selectedSubcategory: Subcategory | null;
   onCategoryClick: (category: Category) => void;
   onSubcategoryClick: (subcategory: Subcategory) => void;
@@ -102,10 +105,12 @@ export interface SubcategorySectionProps {
   onSubcategoryClick: (subcategory: Subcategory) => void;
   onEditSubcategory: (subcategory: Subcategory) => void;
   onDeleteSubcategory:(id: string) => void;
+  onSubcategoryDragEnd: (event: DragEndEvent) => void;
 }
 export interface CategorySectionProps {
   categories: Category[];
   onCategoryClick: (category: Category) => void;
   onEditCategory: (category: Category) => void;
   onDeleteCategory: (catId: string) => void;
+  onCategoryDragEnd: (event: DragEndEvent) => void;
 }
