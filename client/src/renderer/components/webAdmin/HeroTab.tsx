@@ -66,7 +66,7 @@ export const HeroTab: React.FC<HeroTabProps> = ({
   const [saving, setSaving] = useState(false);
   const envBaseUrl =
     (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
-    "https://api.alikebabrivas.es";
+    "";
   const [driverApiUrl, setDriverApiUrl] = useState<string>(envBaseUrl);
 
   // Modal for add / edit slide
@@ -551,8 +551,8 @@ export const HeroTab: React.FC<HeroTabProps> = ({
                         type="button"
                         onClick={() => handleToggleVisible(slide.id)}
                         className={`p-1 rounded text-xs transition-colors cursor-pointer ${slide.visible
-                            ? "text-emerald-600 hover:bg-emerald-50"
-                            : "text-gray-400 hover:bg-gray-200"
+                          ? "text-emerald-600 hover:bg-emerald-50"
+                          : "text-gray-400 hover:bg-gray-200"
                           }`}
                         title={slide.visible ? t("webAdmin.hero.visible") : t("webAdmin.hero.hidden")}
                       >

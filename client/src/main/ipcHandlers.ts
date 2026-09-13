@@ -276,7 +276,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-driver-api-url", async () => {
     return (
       process.env.DRIVER_API_URL ||
-      "https://api.alikebabrivas.es"
+      ""
     );
   });
 

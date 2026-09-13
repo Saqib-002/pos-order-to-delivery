@@ -55,7 +55,7 @@ export const AboutTab: React.FC<AboutTabProps> = ({
   const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
   const envBaseUrl =
     (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
-    "https://api.alikebabrivas.es";
+    "";
   const [driverApiUrl, setDriverApiUrl] = useState<string>(envBaseUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -99,10 +99,10 @@ export const AboutTab: React.FC<AboutTabProps> = ({
         imageUrl: initialContent.imageUrl || (initialContent as any).image || "",
         milestones: Array.isArray(initialContent.milestones)
           ? initialContent.milestones.map((m) => ({
-              id: m.id || `milestone-${Date.now()}-${Math.random()}`,
-              year: m.year || "",
-              text: { en: m.text?.en || "", es: m.text?.es || "" },
-            }))
+            id: m.id || `milestone-${Date.now()}-${Math.random()}`,
+            year: m.year || "",
+            text: { en: m.text?.en || "", es: m.text?.es || "" },
+          }))
           : [],
       });
     }

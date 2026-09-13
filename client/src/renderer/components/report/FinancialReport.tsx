@@ -218,8 +218,8 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({
         <StatsCard
           title={t("reports.financial.totalExpenses")}
           value={data.summary.totalExpenses}
-          icon={<TrendingDownIcon className="h-6 w-6 text-rose-600" />}
-          bgColor="bg-rose-50"
+          icon={<TrendingDownIcon className="h-6 w-6 text-red-600" />}
+          bgColor="bg-red-50"
           format={(val: number) => `${val.toLocaleString()}€`}
         />
         <StatsCard
@@ -361,7 +361,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">
                 {t("reports.financial.cashOut")}
               </span>
-              <span className="text-sm font-bold text-rose-600">-{((data.summary as any).breakdown.cashOutTotal || 0).toFixed(2)}€</span>
+              <span className="text-sm font-bold text-red-600">-{((data.summary as any).breakdown.cashOutTotal || 0).toFixed(2)}€</span>
             </div>
           </div>
         </div>
@@ -596,7 +596,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({
           <div>
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                <UsersIcon className="w-4 h-4 text-rose-500" />
+                <UsersIcon className="w-4 h-4 text-red-500" />
                 {t("reports.financial.topWorkers")}
               </h3>
               {(data.breakdowns?.salariesByWorker || []).length > 0 && (
@@ -607,7 +607,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({
                     type: 'worker',
                     totalReference: data.summary.breakdown.workerExpenses
                   })}
-                  className="text-xs text-rose-600 hover:text-rose-700 font-medium flex items-center gap-1 transition-colors"
+                  className="text-xs text-red-600 hover:text-red-700 font-medium flex items-center gap-1 transition-colors"
                 >
                   <EyeIcon className="w-4 h-4" />
                   {t("common.seeAll")}
@@ -876,7 +876,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">
                 {t("reports.financial.netProfit")}
               </span>
-              <span className={`text-sm font-bold ${data.summary.netProfit >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+              <span className={`text-sm font-bold ${data.summary.netProfit >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                 {data.summary.netProfit.toFixed(2)}€
               </span>
             </div>
@@ -897,13 +897,13 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({
                     <span className="text-gray-600 font-medium capitalize">
                       {item.method.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                     </span>
-                    <span className={`font-bold ${item.amount >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                    <span className={`font-bold ${item.amount >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                       {item.amount >= 0 ? "+" : ""}{item.amount.toFixed(2)}€
                     </span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
                     <div 
-                      className={`h-full transition-all duration-500 ease-out rounded-full ${item.amount >= 0 ? "bg-emerald-500" : "bg-rose-500"}`}
+                      className={`h-full transition-all duration-500 ease-out rounded-full ${item.amount >= 0 ? "bg-emerald-500" : "bg-red-500"}`}
                       style={{ 
                         width: `${Math.min(100, (Math.abs(item.amount) / Math.max(...netBalances.map(b => Math.abs(b.amount)))) * 100)}%` 
                       }}
@@ -921,7 +921,7 @@ export const FinancialReport: React.FC<FinancialReportProps> = ({
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">
                 {t("reports.financial.netProfit")}
               </span>
-              <span className={`text-sm font-bold ${data.summary.netProfit >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+              <span className={`text-sm font-bold ${data.summary.netProfit >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                 {data.summary.netProfit.toFixed(2)}€
               </span>
             </div>

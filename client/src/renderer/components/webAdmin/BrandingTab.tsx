@@ -54,7 +54,7 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
   const [saving, setSaving] = useState(false);
   const envBaseUrl =
     (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
-    "https://api.alikebabrivas.es";
+    "";
   const [driverApiUrl, setDriverApiUrl] = useState<string>(envBaseUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

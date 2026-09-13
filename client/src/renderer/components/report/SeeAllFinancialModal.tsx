@@ -285,7 +285,7 @@ export const SeeAllFinancialModal: React.FC<SeeAllFinancialModalProps> = ({
                       {type === 'product' ? `(${item.units} ${t("reports.financial.units")}) ${item.name}` : item.name}
                     </span>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`font-bold ${isCashInOut ? (isInflow ? "text-emerald-600" : "text-rose-600") : "text-gray-900"}`}>
+                      <span className={`font-bold ${isCashInOut ? (isInflow ? "text-emerald-600" : "text-red-600") : "text-gray-900"}`}>
                         {displayValue}
                       </span>
                       {hasPending && item.pending > 0 && (

@@ -148,7 +148,7 @@ export const CashOutManagement = () => {
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${item.transactionType === "in"
                         ? "bg-emerald-100 text-emerald-700"
-                        : "bg-rose-100 text-rose-700"
+                        : "bg-red-100 text-red-700"
                         }`}>
                         {item.transactionType === "in" ? t("cashOutManagement.modal.in") : t("cashOutManagement.modal.out")}
                       </span>
@@ -156,7 +156,7 @@ export const CashOutManagement = () => {
                     <td className="px-6 py-4">
                       <span className={`font-bold ${item.transactionType === "in"
                         ? "text-emerald-600"
-                        : "text-rose-600"
+                        : "text-red-600"
                         }`}>
                         {item.transactionType === "in" ? "+" : "-"}{item.total.toFixed(2)}€
                       </span>
@@ -169,7 +169,7 @@ export const CashOutManagement = () => {
                         <button onClick={() => handleEdit(item)} className="p-2 hover:bg-amber-50 text-amber-600 rounded-lg transition-colors">
                           <EditIcon className="size-5" />
                         </button>
-                        <button onClick={() => handleDelete(item.id!)} className="p-2 hover:bg-rose-50 text-rose-600 rounded-lg transition-colors">
+                        <button onClick={() => handleDelete(item.id!)} className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors">
                           <Trash2Icon className="size-5" />
                         </button>
                       </div>
