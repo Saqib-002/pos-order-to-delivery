@@ -3,6 +3,7 @@ import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import HeroTab from "../components/webAdmin/HeroTab";
+import OffersTab from "../components/webAdmin/OffersTab";
 import BrandingTab from "../components/webAdmin/BrandingTab";
 import NotificationsTab from "../components/webAdmin/NotificationsTab";
 import FooterTab from "../components/webAdmin/FooterTab";
@@ -19,6 +20,7 @@ import { RefreshCw, Sparkles } from "lucide-react";
 
 export type TabKey =
   | "hero"
+  | "offers"
   | "branding"
   | "notifications"
   | "footer"
@@ -85,6 +87,7 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
 
   const tabIcons: Record<TabKey, string> = {
     hero: "./images/slider.png",
+    offers: "./images/menu-structure.png",
     branding: "./images/branding.png",
     notifications: "./images/notification.png",
     footer: "./images/footer.png",
@@ -103,6 +106,10 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
     hero: {
       title: t("webAdmin.tabs.hero"),
       subtitle: t("webAdmin.hero.subtitle"),
+    },
+    offers: {
+      title: t("webAdmin.tabs.offers", "Ofertas Promocionales"),
+      subtitle: t("webAdmin.offers.subtitle", "Configuración de ofertas y promociones emergentes"),
     },
     branding: {
       title: t("webAdmin.branding.title", "Marca y Configuración Web"),
@@ -163,6 +170,13 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
         return (
           <HeroTab
             initialContent={siteData.hero}
+            onSaveSuccess={loadLocalContent}
+          />
+        );
+      case "offers":
+        return (
+          <OffersTab
+            initialContent={siteData.offers}
             onSaveSuccess={loadLocalContent}
           />
         );

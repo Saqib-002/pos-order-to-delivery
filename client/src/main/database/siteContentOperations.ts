@@ -39,6 +39,12 @@ export class SiteContentOperations {
         processedValue.imageUrl = await uploadImgToServer(processedValue.imageUrl, false);
       } else if (key === "branding" && processedValue.logoUrl && typeof processedValue.logoUrl === "string" && processedValue.logoUrl.startsWith("data:")) {
         processedValue.logoUrl = await uploadImgToServer(processedValue.logoUrl, false);
+      } else if (key === "offers" && Array.isArray(processedValue.offers)) {
+        for (const offer of processedValue.offers) {
+          if (offer.imageUrl && typeof offer.imageUrl === "string" && offer.imageUrl.startsWith("data:")) {
+            offer.imageUrl = await uploadImgToServer(offer.imageUrl, false);
+          }
+        }
       }
 
       (siteContentStore as any).set(key, processedValue);

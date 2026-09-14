@@ -194,7 +194,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <CustomInput
-            type="url"
+            type="text"
             name="appStoreUrl"
             label={t("webAdmin.notifications.appStoreLabel")}
             value={appLinks.appStoreUrl}
@@ -204,7 +204,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({
             }
           />
           <CustomInput
-            type="url"
+            type="text"
             name="playStoreUrl"
             label={t("webAdmin.notifications.playStoreLabel")}
             value={appLinks.playStoreUrl}
