@@ -229,6 +229,58 @@ export const MenuComponent = () => {
     }
   };
 
+  const handleCategoryDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setCategories((currentCategories) => {
+        const oldIndex = currentCategories.findIndex((c) => c.id === active.id);
+        const newIndex = currentCategories.findIndex((c) => c.id === over.id);
+
+        const reorderedCategories = arrayMove(currentCategories, oldIndex, newIndex);
+        const newOrderCategories = reorderedCategories.map((category, index) => ({
+          ...category,
+          priority: index,
+        }));
+        const newPriorityIds = newOrderCategories.map((c) => c.id);
+
+        (window as any).electronAPI
+          .updateCategoryPriorities(token, newPriorityIds)
+          .catch((err: any) => {
+            console.error("Failed to update category priorities:", err);
+            toast.error("Failed to save new category order.");
+          });
+        return newOrderCategories;
+      });
+    }
+  };
+
+  const handleSubcategoryDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setSubcategories((currentSubcategories) => {
+        const oldIndex = currentSubcategories.findIndex((s) => s.id === active.id);
+        const newIndex = currentSubcategories.findIndex((s) => s.id === over.id);
+
+        const reorderedSubcategories = arrayMove(currentSubcategories, oldIndex, newIndex);
+        const newOrderSubcategories = reorderedSubcategories.map((subcategory, index) => ({
+          ...subcategory,
+          priority: index,
+        }));
+        const newPriorityIds = newOrderSubcategories.map((s) => s.id);
+
+        (window as any).electronAPI
+          .updateSubcategoryPriorities(token, newPriorityIds)
+          .catch((err: any) => {
+            console.error("Failed to update subcategory priorities:", err);
+            toast.error("Failed to save new subcategory order.");
+          });
+        return newOrderSubcategories;
+      });
+    }
+  };
+
   return (
     <>
       {/* Action Buttons */}
@@ -264,6 +316,8 @@ export const MenuComponent = () => {
         onEditSubcategory={(subcategory) =>
           openModal("subcategory", subcategory)
         }
+        onCategoryDragEnd={handleCategoryDragEnd}
+        onSubcategoryDragEnd={handleSubcategoryDragEnd}
         onProductDragEnd={handleProductDragEnd}
         onDeleteSubcategory={handleSubCategoryDelete}
         onEditProduct={(product) => openModal("product", product)}

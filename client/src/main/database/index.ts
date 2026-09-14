@@ -55,7 +55,32 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
         await db.raw("SELECT 1");
         Logger.info("Database connection successful");
 
-        // Run migrations
+        // Run migrations.
+        // Knex 3.x uses CREATE TABLE (without IF NOT EXISTS) for the knex_migrations and
+        // knex_migrations_lock tables. When a database is restored from a backup those tables
+        // already exist, which causes a "relation already exists" error before migrate.latest()
+        // can even check what has been run.
+        // Fix: ensure both tables exist ourselves (using IF NOT EXISTS) so Knex's internal
+        // CREATE TABLE call is never reached in a conflicting state.
+        await db.raw(`
+            CREATE TABLE IF NOT EXISTS knex_migrations (
+                id         serial primary key,
+                name       varchar(255),
+                batch      integer,
+                migration_time timestamptz
+            )
+        `);
+        await db.raw(`
+            CREATE TABLE IF NOT EXISTS knex_migrations_lock (
+                index     serial primary key,
+                is_locked integer
+            )
+        `);
+        // Seed the lock row if it doesn't exist yet (Knex expects exactly one row)
+        const lockRow = await db('knex_migrations_lock').select('index').first();
+        if (!lockRow) {
+            await db('knex_migrations_lock').insert({ is_locked: 0 });
+        }
         await db.migrate.latest();
         Logger.info("Database migrations completed");
 

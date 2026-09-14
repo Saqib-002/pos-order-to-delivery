@@ -200,3 +200,47 @@ export const updateSubCategory = async (
     };
   }
 };
+
+export const updateCategoryPriorities = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  categoryIds: string[]
+) => {
+  try {
+    await verifyToken(event, token);
+    const result = await CategoryDatabaseOperations.updateCategoryPriorities(categoryIds);
+    categoryIds.forEach((id) => syncCategoryToVPS(id));
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    Logger.error("Error updating category priorities:", error);
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};
+
+export const updateSubcategoryPriorities = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  subcategoryIds: string[]
+) => {
+  try {
+    await verifyToken(event, token);
+    const result = await SubCategoriesOperations.updateSubcategoryPriorities(subcategoryIds);
+    subcategoryIds.forEach((id) => syncSubCategoryToVPS(id));
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    Logger.error("Error updating subcategory priorities:", error);
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};

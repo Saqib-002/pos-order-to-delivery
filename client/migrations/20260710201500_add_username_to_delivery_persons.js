@@ -3,9 +3,12 @@
  * @returns { Promise<void> }
  */
 export async function up(knex) {
-    return knex.schema.alterTable('delivery_persons', function (table) {
-        table.string('username').unique().nullable();
-    });
+    const hasColumn = await knex.schema.hasColumn('delivery_persons', 'username');
+    if (!hasColumn) {
+        return knex.schema.alterTable('delivery_persons', function (table) {
+            table.string('username').unique().nullable();
+        });
+    }
 }
 
 /**
@@ -13,7 +16,10 @@ export async function up(knex) {
  * @returns { Promise<void> }
  */
 export async function down(knex) {
-    return knex.schema.alterTable('delivery_persons', function (table) {
-        table.dropColumn('username');
-    });
+    const hasColumn = await knex.schema.hasColumn('delivery_persons', 'username');
+    if (hasColumn) {
+        return knex.schema.alterTable('delivery_persons', function (table) {
+            table.dropColumn('username');
+        });
+    }
 }

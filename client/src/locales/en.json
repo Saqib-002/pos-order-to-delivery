@@ -28,6 +28,14 @@
     "imageAspectHint": "Recommended {ratio} aspect ratio (e.g. {width} × {height})",
     "compressing": "Compressing…",
     "compressedBy": "{percent}% smaller",
+    "preview": "Preview",
+    "imagePreview": {
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "resetZoom": "Reset zoom",
+      "close": "Close (Esc)",
+      "hint": "Click outside or press Esc to close"
+    },
     "paySelected": "Pay",
     "paymentStatus": {
       "paid": "PAID",
@@ -1690,8 +1698,6 @@
         "image": "IMAGE",
         "priority": "Priority",
         "enterPriority": "Enter priority (order)",
-        "bannerImage": "BANNER IMAGE (MOBILE)",
-        "uploadBanner": "Upload banner image for mobile app",
         "color": "Color",
         "cancel": "Cancel",
         "create": "Create",
@@ -1714,6 +1720,8 @@
         "parentCategory": "Parent Category",
         "selectCategory": "Select a category",
         "image": "IMAGE",
+        "bannerImage": "BANNER IMAGE (MOBILE)",
+        "uploadBanner": "Upload banner for mobile app (Recommended: horizontal)",
         "color": "Color",
         "cancel": "Cancel",
         "create": "Create",
@@ -2845,7 +2853,9 @@
       "imagePath": "Image Path / URL",
       "imagePlaceholder": "/images/dish.png",
       "visible": "Visible",
-      "hidden": "Hidden"
+      "hidden": "Hidden",
+      "viewImage": "View image",
+      "dragToReorder": "Drag to reorder"
     },
     "offers": {
       "title": "Promotional Offers",

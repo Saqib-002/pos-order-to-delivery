@@ -102,7 +102,17 @@ export class CategoryDatabaseOperations {
             throw error;
         }
     }
+    static async updateCategoryPriorities(categoryIds: string[]) {
+        const trx = await db.transaction();
+        const updatePromises = categoryIds.map((id, index) =>
+            trx("categories").where("id", id).update({ priority: index, updatedAt: new Date().toISOString() })
+        );
+        await Promise.all(updatePromises);
+        await trx.commit();
+        return { status: true, count: categoryIds.length };
+    }
 }
+
 export class SubCategoriesOperations {
     static async createSubCategory(
         subcategory: Omit<
@@ -247,5 +257,14 @@ export class SubCategoriesOperations {
         } catch (error) {
             throw error;
         }
+    }
+    static async updateSubcategoryPriorities(subcategoryIds: string[]) {
+        const trx = await db.transaction();
+        const updatePromises = subcategoryIds.map((id, index) =>
+            trx("sub_categories").where("id", id).update({ priority: index, updatedAt: new Date().toISOString() })
+        );
+        await Promise.all(updatePromises);
+        await trx.commit();
+        return { status: true, count: subcategoryIds.length };
     }
 }

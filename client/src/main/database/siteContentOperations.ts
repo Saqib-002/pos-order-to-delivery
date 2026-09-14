@@ -69,6 +69,8 @@ export class SiteContentOperations {
       }
       const data = await response.json();
       if (data && typeof data === "object") {
+        // Full overwrite — clear local store first so removed remote keys don't linger
+        (siteContentStore as any).clear();
         for (const [k, v] of Object.entries(data)) {
           (siteContentStore as any).set(k, v);
         }

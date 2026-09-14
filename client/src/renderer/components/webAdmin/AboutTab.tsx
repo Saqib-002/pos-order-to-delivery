@@ -10,7 +10,19 @@ import { formatImageUrl } from "../../utils/imageUrl";
 import { compressImageFile, fileToBase64, type CompressInfo } from "../../utils/imageCompression";
 import { ImageAspectHint } from "../shared/ImageAspectHint";
 import { LocalisedString } from "./HeroTab";
-import { Trash2, ImageIcon, Upload, X, Calendar, Loader2 } from "lucide-react";
+import { ImageIcon, Upload, X, Calendar, Loader2, Fullscreen } from "lucide-react";
+import ImagePreviewModal from "../shared/ImagePreviewModal";
+import SortableMilestoneCard from "./SortableMilestoneCard";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
 export interface AboutMilestone {
   id: string;
@@ -53,11 +65,27 @@ export const AboutTab: React.FC<AboutTabProps> = ({
   const [saving, setSaving] = useState(false);
   const [compressing, setCompressing] = useState(false);
   const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
+  const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
   const envBaseUrl =
     (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
     "";
   const [driverApiUrl, setDriverApiUrl] = useState<string>(envBaseUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor, { activationConstraint: { distance: 8 } })
+  );
+
+  const handleMilestoneDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setContent((prev) => {
+      const oldIndex = prev.milestones.findIndex((m) => m.id === active.id);
+      const newIndex = prev.milestones.findIndex((m) => m.id === over.id);
+      return { ...prev, milestones: arrayMove(prev.milestones, oldIndex, newIndex) };
+    });
+  };
 
   useEffect(() => {
     (async () => {
@@ -294,15 +322,23 @@ export const AboutTab: React.FC<AboutTabProps> = ({
         </div>
 
         <div className="flex flex-col sm:flex-row items-start gap-4">
-          <div className="flex-shrink-0 w-36 h-28 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
+          <div
+            className={`flex-shrink-0 w-36 h-28 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden relative${displayImageSrc && !compressing ? " cursor-pointer group" : ""}`}
+            onClick={() => displayImageSrc && !compressing && setImagePreviewOpen(true)}
+          >
             {compressing ? (
               <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
             ) : displayImageSrc ? (
-              <img
-                src={displayImageSrc}
-                alt="About featured"
-                className="w-full h-full object-cover"
-              />
+              <>
+                <img
+                  src={displayImageSrc}
+                  alt="About featured"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
+                  <Fullscreen className="w-5 h-5 text-white" />
+                </div>
+              </>
             ) : (
               <ImageIcon className="w-8 h-8 text-gray-400" />
             )}
@@ -332,6 +368,16 @@ export const AboutTab: React.FC<AboutTabProps> = ({
                 >
                   <X className="w-3.5 h-3.5" />
                   <span>{t("webAdmin.about.removeImage")}</span>
+                </button>
+              )}
+              {displayImageSrc && !compressing && (
+                <button
+                  type="button"
+                  onClick={() => setImagePreviewOpen(true)}
+                  className="px-3.5 py-1.5 text-gray-600 hover:bg-gray-100 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  <Fullscreen className="w-3.5 h-3.5" />
+                  <span>{t("common.preview")}</span>
                 </button>
               )}
             </div>
@@ -454,89 +500,28 @@ export const AboutTab: React.FC<AboutTabProps> = ({
             />
           </div>
         ) : (
-          <div className="space-y-4">
-            {content.milestones.map((m, idx) => (
-              <div
-                key={m.id}
-                className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3"
-              >
-                <div className="flex items-center justify-between border-b border-gray-200 pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-gray-500">
-                      #{idx + 1}
-                    </span>
-                    <CustomInput
-                      type="text"
-                      name={`milestoneYear_${m.id}`}
-                      value={m.year}
-                      placeholder={t("webAdmin.about.yearPlaceholder")}
-                      onChange={(e) =>
-                        updateMilestone(m.id, "year", e.target.value)
-                      }
-                      inputClasses="w-28 font-bold"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeMilestone(m.id)}
-                    className="p-1 text-red-600 hover:bg-red-50 rounded text-xs transition-colors cursor-pointer flex items-center gap-1 font-semibold"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>{t("webAdmin.common.delete")}</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        {t("webAdmin.about.description")} (EN)
-                      </label>
-                      <TranslateButton
-                        value={m.text.en}
-                        direction="en→es"
-                        onTranslated={(v) =>
-                          updateMilestone(m.id, "text", { es: v })
-                        }
-                      />
-                    </div>
-                    <textarea
-                      rows={2}
-                      value={m.text.en}
-                      onChange={(e) =>
-                        updateMilestone(m.id, "text", { en: e.target.value })
-                      }
-                      placeholder={t("webAdmin.about.descriptionPlaceholderEn")}
-                      className="w-full touch-manipulation px-3 py-1.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black bg-white resize-none text-xs text-gray-800"
-                    />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        {t("webAdmin.about.description")} (ES)
-                      </label>
-                      <TranslateButton
-                        value={m.text.es}
-                        direction="es→en"
-                        onTranslated={(v) =>
-                          updateMilestone(m.id, "text", { en: v })
-                        }
-                      />
-                    </div>
-                    <textarea
-                      rows={2}
-                      value={m.text.es}
-                      onChange={(e) =>
-                        updateMilestone(m.id, "text", { es: e.target.value })
-                      }
-                      placeholder={t("webAdmin.about.descriptionPlaceholderEs")}
-                      className="w-full touch-manipulation px-3 py-1.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black bg-white resize-none text-xs text-gray-800"
-                    />
-                  </div>
-                </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleMilestoneDragEnd}
+          >
+            <SortableContext
+              items={content.milestones.map((m) => m.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-2">
+                {content.milestones.map((m, idx) => (
+                  <SortableMilestoneCard
+                    key={m.id}
+                    milestone={m}
+                    idx={idx}
+                    onUpdate={updateMilestone}
+                    onRemove={removeMilestone}
+                  />
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 
@@ -551,6 +536,14 @@ export const AboutTab: React.FC<AboutTabProps> = ({
           }
         />
       </div>
+
+      {imagePreviewOpen && displayImageSrc && (
+        <ImagePreviewModal
+          src={displayImageSrc}
+          alt="About featured image"
+          onClose={() => setImagePreviewOpen(false)}
+        />
+      )}
     </form>
   );
 };

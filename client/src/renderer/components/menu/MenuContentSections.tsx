@@ -31,6 +31,8 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
   subcategories,
   products,
   onProductDragEnd,
+  onCategoryDragEnd,
+  onSubcategoryDragEnd,
   selectedCategory,
   selectedSubcategory,
   onCategoryClick,
@@ -52,6 +54,7 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
             onCategoryClick={onCategoryClick}
             onEditCategory={onEditCategory}
             onDeleteCategory={onDeleteCategory}
+            onCategoryDragEnd={onCategoryDragEnd}
           />
         );
 
@@ -63,6 +66,7 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
             onSubcategoryClick={onSubcategoryClick}
             onEditSubcategory={onEditSubcategory}
             onDeleteSubcategory={onDeleteSubcategory}
+            onSubcategoryDragEnd={onSubcategoryDragEnd}
           />
         );
 
@@ -85,32 +89,127 @@ export const MenuContentSections: React.FC<ContentSectionProps> = ({
   return <div className="mb-8">{renderSection()}</div>;
 };
 
+const SortableCategoryCard: React.FC<{
+  category: any;
+  onEditCategory: (category: any) => void;
+  onDeleteCategory: (id: string) => void;
+  onCategoryClick: (category: any) => void;
+}> = ({ category, onEditCategory, onDeleteCategory, onCategoryClick }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: category.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 0,
+    opacity: isDragging ? 0.8 : 1,
+  };
+
+  return (
+    <UnifiedCard
+      ref={setNodeRef}
+      style={style}
+      data={category}
+      type="category"
+      onDelete={() => onDeleteCategory(category.id)}
+      onEdit={() => onEditCategory(category)}
+      onClick={() => onCategoryClick(category)}
+      dragAttributes={attributes}
+      dragListeners={listeners}
+    />
+  );
+};
+
 const CategorySection: React.FC<CategorySectionProps> = ({
   categories,
   onCategoryClick,
   onEditCategory,
   onDeleteCategory,
+  onCategoryDragEnd,
 }) => {
   const { t } = useTranslation();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { distance: 10 },
+    })
+  );
+
   return (
     <SectionWrapper title={t("menuComponents.categories.title")}>
-      <ItemGrid>
-        {categories.length === 0 ? (
-          <EmptyState message={t("menuComponents.categories.noCategories")} />
-        ) : (
-          categories.map((category) => (
-            <UnifiedCard
-              key={category.id}
-              data={category}
-              type="category"
-              onDelete={() => onDeleteCategory(category.id)}
-              onEdit={() => onEditCategory(category)}
-              onClick={() => onCategoryClick(category)}
-            />
-          ))
-        )}
-      </ItemGrid>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={onCategoryDragEnd}
+      >
+        <SortableContext
+          items={categories.map((c) => c.id)}
+          strategy={rectSortingStrategy}
+        >
+          <ItemGrid>
+            {categories.length === 0 ? (
+              <EmptyState message={t("menuComponents.categories.noCategories")} />
+            ) : (
+              categories.map((category) => (
+                <SortableCategoryCard
+                  key={category.id}
+                  category={category}
+                  onEditCategory={onEditCategory}
+                  onDeleteCategory={onDeleteCategory}
+                  onCategoryClick={onCategoryClick}
+                />
+              ))
+            )}
+          </ItemGrid>
+        </SortableContext>
+      </DndContext>
     </SectionWrapper>
+  );
+};
+
+const SortableSubcategoryCard: React.FC<{
+  subcategory: any;
+  onEditSubcategory: (subcategory: any) => void;
+  onDeleteSubcategory: (id: string) => void;
+  onSubcategoryClick: (subcategory: any) => void;
+}> = ({ subcategory, onEditSubcategory, onDeleteSubcategory, onSubcategoryClick }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: subcategory.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 0,
+    opacity: isDragging ? 0.8 : 1,
+  };
+
+  return (
+    <UnifiedCard
+      ref={setNodeRef}
+      style={style}
+      data={subcategory}
+      type="subcategory"
+      onEdit={() => onEditSubcategory(subcategory)}
+      onClick={() => onSubcategoryClick(subcategory)}
+      onDelete={() => onDeleteSubcategory(subcategory.id)}
+      dragAttributes={attributes}
+      dragListeners={listeners}
+    />
   );
 };
 
@@ -120,26 +219,47 @@ const SubcategorySection: React.FC<SubcategorySectionProps> = ({
   onSubcategoryClick,
   onEditSubcategory,
   onDeleteSubcategory,
+  onSubcategoryDragEnd,
 }) => {
   const { t } = useTranslation();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { distance: 10 },
+    })
+  );
+
   return (
     <SectionWrapper title={`${t("menuComponents.subcategories.title")} in ${selectedCategory?.name}`}>
-      <ItemGrid>
-        {subcategories.length === 0 ? (
-          <EmptyState message={t("menuComponents.subcategories.noSubcategories")} />
-        ) : (
-          subcategories.map((subcategory) => (
-            <UnifiedCard
-              key={subcategory.id}
-              data={subcategory}
-              type="subcategory"
-              onEdit={() => onEditSubcategory(subcategory)}
-              onClick={() => onSubcategoryClick(subcategory)}
-              onDelete={() => onDeleteSubcategory(subcategory.id)}
-            />
-          ))
-        )}
-      </ItemGrid>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={onSubcategoryDragEnd}
+      >
+        <SortableContext
+          items={subcategories.map((s) => s.id)}
+          strategy={rectSortingStrategy}
+        >
+          <ItemGrid>
+            {subcategories.length === 0 ? (
+              <EmptyState message={t("menuComponents.subcategories.noSubcategories")} />
+            ) : (
+              subcategories.map((subcategory) => (
+                <SortableSubcategoryCard
+                  key={subcategory.id}
+                  subcategory={subcategory}
+                  onEditSubcategory={onEditSubcategory}
+                  onDeleteSubcategory={onDeleteSubcategory}
+                  onSubcategoryClick={onSubcategoryClick}
+                />
+              ))
+            )}
+          </ItemGrid>
+        </SortableContext>
+      </DndContext>
     </SectionWrapper>
   );
 };
@@ -188,11 +308,11 @@ const ProductSection: React.FC<ProductSectionProps & { onProductDragEnd: (event:
   const { t } = useTranslation();
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
     useSensor(TouchSensor, {
-      activationConstraint: {
-        distance: 10,
-      },
+      activationConstraint: { distance: 10 },
     })
   );
 

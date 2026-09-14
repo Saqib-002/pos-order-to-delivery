@@ -48,7 +48,10 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
   const { auth: { token } } = useAuth();
   const [loading, setLoading] = useState(false);
   const [siteData, setSiteData] = useState<Record<string, any>>({});
+  // Track whether the initial remote fetch has already run this session
+  const [remoteFetched, setRemoteFetched] = useState(false);
 
+  // Called after a save to refresh local state from the electron-store
   const loadLocalContent = useCallback(async () => {
     try {
       if ((window as any).electronAPI?.getSiteContent) {
@@ -62,28 +65,34 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
     }
   }, [token]);
 
-  const handleFetchRemote = async () => {
+  const fetchRemote = useCallback(async (showToast = false) => {
     setLoading(true);
     try {
       if ((window as any).electronAPI?.fetchRemoteSiteContent) {
         const res = await (window as any).electronAPI.fetchRemoteSiteContent(token);
         if (res?.status && res?.data) {
           setSiteData(res.data);
-          toast.success(t("webAdmin.messages.syncSuccess"));
+          if (showToast) toast.success(t("webAdmin.messages.syncSuccess"));
         } else {
-          toast.error(t("webAdmin.messages.syncError"));
+          if (showToast) toast.error(t("webAdmin.messages.syncError"));
         }
       }
     } catch {
-      toast.error(t("webAdmin.messages.syncError"));
+      if (showToast) toast.error(t("webAdmin.messages.syncError"));
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, t]);
 
+  const handleFetchRemote = () => fetchRemote(true);
+
+  // On first mount: fetch from remote once, then never again on tab switches
   useEffect(() => {
-    loadLocalContent();
-  }, [loadLocalContent]);
+    if (!remoteFetched) {
+      setRemoteFetched(true);
+      fetchRemote(false);
+    }
+  }, [remoteFetched, fetchRemote]);
 
   const tabIcons: Record<TabKey, string> = {
     hero: "./images/slider.png",

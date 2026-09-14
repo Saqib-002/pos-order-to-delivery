@@ -122,6 +122,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("delete-category", token, id),
   updateCategory: (token: string, id: string, updates: any) =>
     ipcRenderer.invoke("update-category", token, id, updates),
+  updateCategoryPriorities: (token: string, categoryIds: string[]) =>
+    ipcRenderer.invoke("update-category-priorities", token, categoryIds),
 
   // sub categories
   createSubcategory: (token: string, subCategory: any) =>
@@ -137,6 +139,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("delete-sub-category", token, id),
   updateSubcategory: (token: string, id: string, updates: any) =>
     ipcRenderer.invoke("update-sub-category", token, id, updates),
+  updateSubcategoryPriorities: (token: string, subcategoryIds: string[]) =>
+    ipcRenderer.invoke("update-subcategory-priorities", token, subcategoryIds),
 
   // variants
   createVariant: (token: string, variantData: any, variantItems: any) =>

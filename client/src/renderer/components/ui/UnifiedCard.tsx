@@ -316,11 +316,11 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(
       <div
         ref={ref}
         style={style}
-        {...(type === "product" ? dragAttributes : {})}
-        {...(type === "product" ? dragListeners : {})}
+        {...(["product", "category", "subcategory"].includes(type) ? dragAttributes : {})}
+        {...(["product", "category", "subcategory"].includes(type) ? dragListeners : {})}
         onClick={isDisabled ? undefined : onClick}
         className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${isClickable && !isDisabled ? "cursor-pointer" : ""
-          } ${isDisabled ? "opacity-60 cursor-not-allowed" : ""} ${["product", "menu"].includes(type) && !isDisabled ? "cursor-grab active:cursor-grabbing" : ""} ${layout === "row" ? "flex flex-row items-center gap-2 !p-2 w-full min-w-0" : ""}`}
+          } ${isDisabled ? "opacity-60 cursor-not-allowed" : ""} ${["product", "menu", "category", "subcategory"].includes(type) && !isDisabled ? "cursor-grab active:cursor-grabbing" : ""} ${layout === "row" ? "flex flex-row items-center gap-2 !p-2 w-full min-w-0" : ""}`}
       >
         {["product", "menu", "category", "subcategory"].includes(type) && (
           <img
