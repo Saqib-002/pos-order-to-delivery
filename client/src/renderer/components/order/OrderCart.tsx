@@ -565,12 +565,19 @@ const OrderCart: React.FC<OrderCartProps> = ({
                       {t("orderCart.addOns")}:
                     </p>
                     <ul className="text-xs text-gray-600 space-y-1">
-                      {item.complements.map((complement, index) => (
-                        <li key={index} className="flex justify-between">
-                          <span>• {complement.itemName}</span>
-                          <span>€{complement.price.toFixed(2)}</span>
-                        </li>
-                      ))}
+                      {item.complements.map((complement, index) => {
+                        const isRemoval = complement.isRemovalGroup;
+                        const cleanName = complement.itemName.replace(/^[-\s]+/, "");
+                        const displayName = cleanName.toLowerCase().startsWith("sin ") ? cleanName : `Sin ${cleanName}`;
+                        return (
+                          <li key={index} className="flex justify-between">
+                            <span className={isRemoval ? "text-red-600 font-semibold" : ""}>
+                              {isRemoval ? `[X] ${displayName}` : `• ${complement.itemName}`}
+                            </span>
+                            <span>{complement.price > 0 ? `€${complement.price.toFixed(2)}` : ""}</span>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 )}
@@ -816,15 +823,22 @@ const OrderCart: React.FC<OrderCartProps> = ({
                               {t("orderCart.addOns")}:
                             </p>
                             <ul className="text-xs text-gray-600 space-y-1">
-                              {item.complements.map((complement, index) => (
-                                <li
-                                  key={index}
-                                  className="flex justify-between"
-                                >
-                                  <span>• {complement.itemName}</span>
-                                  <span>€{complement.price.toFixed(2)}</span>
-                                </li>
-                              ))}
+                              {item.complements.map((complement, index) => {
+                                const isRemoval = complement.isRemovalGroup;
+                                const cleanName = complement.itemName.replace(/^[-\s]+/, "");
+                                const displayName = cleanName.toLowerCase().startsWith("sin ") ? cleanName : `Sin ${cleanName}`;
+                                return (
+                                  <li
+                                    key={index}
+                                    className="flex justify-between"
+                                  >
+                                    <span className={isRemoval ? "text-red-600 font-semibold" : ""}>
+                                      {isRemoval ? `[X] ${displayName}` : `• ${complement.itemName}`}
+                                    </span>
+                                    <span>{complement.price > 0 ? `€${complement.price.toFixed(2)}` : ""}</span>
+                                  </li>
+                                );
+                              })}
                             </ul>
                           </div>
                         )}

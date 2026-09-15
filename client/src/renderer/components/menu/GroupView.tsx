@@ -11,6 +11,7 @@ export interface Group {
   name: string;
   color: string;
   forProduct?: boolean;
+  isRemovalGroup?: boolean;
   items: Complement[];
 }
 interface Complement {

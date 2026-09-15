@@ -908,7 +908,8 @@
     "min": "Min",
     "max": "Max",
     "free": "Free",
-    "complementsDetached": "Complements have been detached from product",
+    "removed": "REMOVED",
+    "complementsDetached": "Complements have been detached from the product",
     "quantity": "Quantity",
     "priceBreakdown": "Price Breakdown",
     "baseProduct": "Base Product",
@@ -1998,6 +1999,8 @@
         "specialNote": "If you delete this group you can no longer edit this group in any attached order!",
         "forProduct": "For Product",
         "forProductDescription": "If checked, this group will only be available when processing products, not when processing menus",
+        "isRemovalGroup": "Removing Complement Group",
+        "isRemovalGroupDescription": "If checked, items selected from this group indicate ingredients to remove (e.g. Sin Cebolla) with [X] on receipts and tickets",
         "errors": {
           "nameRequired": "Please enter a group name",
           "itemNameRequired": "Please enter an item name",

@@ -20,6 +20,7 @@ interface Group {
   name: string;
   color: string;
   forProduct?: boolean;
+  isRemovalGroup?: boolean;
   items: Complement[];
 }
 
@@ -58,6 +59,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     name: "",
     color: "red",
     forProduct: false,
+    isRemovalGroup: false,
   });
   const [newComplement, setNewComplement] = useState({
     name: "",
@@ -126,7 +128,8 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       setFormData({
         name: editingGroup.name,
         color: editingGroup.color,
-        forProduct: (editingGroup as any).forProduct || false,
+        forProduct: Boolean((editingGroup as any).forProduct),
+        isRemovalGroup: Boolean((editingGroup as any).isRemovalGroup),
       });
       setComplements(editingGroup.items);
     } else {
@@ -134,6 +137,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         name: "",
         color: "red",
         forProduct: false,
+        isRemovalGroup: false,
       });
       setComplements([]);
     }
@@ -361,7 +365,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               />
               <label
                 htmlFor="forProduct"
-                className="text-sm text-gray-700 cursor-pointer"
+                className="text-sm text-gray-700 cursor-pointer font-medium"
               >
                 {t("menuComponents.modals.createGroupModal.forProduct") ||
                   "For Product"}
@@ -372,6 +376,37 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 "menuComponents.modals.createGroupModal.forProductDescription"
               ) ||
                 "If checked, this group will only be available when processing products, not when processing menus"}
+            </p>
+          </div>
+
+          {/* Removing Complement Group Checkbox */}
+          <div className="mb-6">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isRemovalGroup"
+                checked={formData.isRemovalGroup}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    isRemovalGroup: e.target.checked,
+                  })
+                }
+                className="h-4 w-4 accent-black cursor-pointer"
+              />
+              <label
+                htmlFor="isRemovalGroup"
+                className="text-sm text-gray-700 cursor-pointer font-medium"
+              >
+                {t("menuComponents.modals.createGroupModal.isRemovalGroup") ||
+                  "Removing Complement Group"}
+              </label>
+            </div>
+            <p className="text-xs text-gray-500 mt-1 ml-6">
+              {t(
+                "menuComponents.modals.createGroupModal.isRemovalGroupDescription"
+              ) ||
+                "If checked, items selected from this group indicate ingredients to remove (e.g. Sin Cebolla) with [X] on receipts and tickets"}
             </p>
           </div>
 

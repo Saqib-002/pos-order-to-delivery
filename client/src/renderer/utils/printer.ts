@@ -654,9 +654,14 @@ export const generateReceiptHTML = (
           if (Array.isArray(item.complements) && item.complements.length > 0) {
             item.complements.forEach((comp) => {
               const compTotal = comp.price * item.quantity;
-              const formattedCompName = comp.forProduct
-                ? (comp.itemName.startsWith("1 x") ? comp.itemName : `${item.quantity > 1 ? `${item.quantity} x ` : ""}${comp.itemName}`)
-                : comp.itemName;
+              let formattedCompName = comp.itemName;
+              if (comp.isRemovalGroup) {
+                const cleanName = comp.itemName.replace(/^[-\s]+/, "");
+                const displayName = cleanName.toLowerCase().startsWith("sin ") ? cleanName : `Sin ${cleanName}`;
+                formattedCompName = `[X] ${displayName}`;
+              } else if (comp.forProduct) {
+                formattedCompName = comp.itemName.startsWith("1 x") ? comp.itemName : `${item.quantity > 1 ? `${item.quantity} x ` : ""}${comp.itemName}`;
+              }
               html += `
                 <div class="item-row">
                   <span class="col-cant"></span>
@@ -716,9 +721,14 @@ export const generateReceiptHTML = (
         if (Array.isArray(item.complements) && item.complements.length > 0) {
           item.complements.forEach((comp) => {
             const compTotal = comp.price * item.quantity;
-            const formattedCompName = comp.forProduct
-              ? (comp.itemName.startsWith("1 x") ? comp.itemName : `${item.quantity > 1 ? `${item.quantity} x ` : ""}${comp.itemName}`)
-              : comp.itemName;
+            let formattedCompName = comp.itemName;
+            if (comp.isRemovalGroup) {
+              const cleanName = comp.itemName.replace(/^[-\s]+/, "");
+              const displayName = cleanName.toLowerCase().startsWith("sin ") ? cleanName : `Sin ${cleanName}`;
+              formattedCompName = `[X] ${displayName}`;
+            } else if (comp.forProduct) {
+              formattedCompName = comp.itemName.startsWith("1 x") ? comp.itemName : `${item.quantity > 1 ? `${item.quantity} x ` : ""}${comp.itemName}`;
+            }
             html += `
               <div class="item-row">
                 <span class="col-cant"></span>
@@ -1030,8 +1040,18 @@ export const generateItemsReceiptHTML = (
                 }
           `;
           item.complements.forEach((comp) => {
+            let formattedCompName = comp.itemName;
+            if (comp.isRemovalGroup) {
+              const cleanName = comp.itemName.replace(/^[-\s]+/, "");
+              const displayName = cleanName.toLowerCase().startsWith("sin ") ? cleanName : `Sin ${cleanName}`;
+              formattedCompName = `[X] ${displayName}`;
+            } else if (comp.forProduct) {
+              formattedCompName = `( ${item.quantity} X ${comp.itemName} )`;
+            } else {
+              formattedCompName = `+ ${comp.itemName}`;
+            }
             html += `
-                <div class="indent">${comp.forProduct ? `( ${item.quantity} X ${comp.itemName} )` : `+ ${comp.itemName}`}</div>
+                <div class="indent bold">${formattedCompName}</div>
             `;
           });
 
@@ -1053,8 +1073,18 @@ export const generateItemsReceiptHTML = (
                 }
         `;
         item.complements.forEach((comp) => {
+          let formattedCompName = comp.itemName;
+          if (comp.isRemovalGroup) {
+            const cleanName = comp.itemName.replace(/^[-\s]+/, "");
+            const displayName = cleanName.toLowerCase().startsWith("sin ") ? cleanName : `Sin ${cleanName}`;
+            formattedCompName = `[X] ${displayName}`;
+          } else if (comp.forProduct) {
+            formattedCompName = `( ${item.quantity} X ${comp.itemName} )`;
+          } else {
+            formattedCompName = `+ ${comp.itemName}`;
+          }
           html += `
-                <div class="sub-item bold">${comp.forProduct ? `( ${item.quantity} X ${comp.itemName} )` : `+ ${comp.itemName}`}</div>
+                <div class="sub-item bold">${formattedCompName}</div>
           `;
         });
 

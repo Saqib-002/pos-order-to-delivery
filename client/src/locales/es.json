@@ -908,6 +908,7 @@
     "min": "Mín",
     "max": "Máx",
     "free": "Gratis",
+    "removed": "ELIMINADO",
     "complementsDetached": "Los complementos han sido desvinculados del producto",
     "quantity": "Cantidad",
     "priceBreakdown": "Desglose de Precios",
@@ -1998,6 +1999,8 @@
         "specialNote": "Si eliminas este grupo ya no podrás editarlo en ningún pedido adjunto.",
         "forProduct": "Para Producto",
         "forProductDescription": "Si está marcado, este grupo solo estará disponible cuando se procesen productos, no cuando se procesen menús",
+        "isRemovalGroup": "Grupo de Quitar Ingredientes / Complementos",
+        "isRemovalGroupDescription": "Si está marcado, los elementos de este grupo indican ingredientes a quitar (ej. Sin Cebolla) con [X] en tickets y pedidos",
         "errors": {
           "nameRequired": "Por favor ingrese un nombre de grupo",
           "itemNameRequired": "Por favor ingrese un nombre de elemento",

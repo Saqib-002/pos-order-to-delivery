@@ -3,6 +3,7 @@ export interface Group {
   name: string;
   color: string;
   forProduct?: boolean;
+  isRemovalGroup?: boolean;
   createdAt: string;
   updatedAt: string;
   items?: GroupItem[];

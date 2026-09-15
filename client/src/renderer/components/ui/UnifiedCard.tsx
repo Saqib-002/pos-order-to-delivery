@@ -23,6 +23,8 @@ interface BaseCardData {
   groupName?: string;
   variantCount?: number;
   discount?: number;
+  isRemovalGroup?: boolean;
+  forProduct?: boolean;
 }
 
 interface UnifiedCardProps {
@@ -138,7 +140,16 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
     hasDelete: false,
     getBody: () => null,
     getLeft: (data, t) => ({
-      text: `${data.itemCount || 0} ${t("unifiedCard.groupCountText")}`,
+      text: (
+        <div className="flex flex-col gap-1">
+          <span>{`${data.itemCount || 0} ${t("unifiedCard.groupCountText")}`}</span>
+          {data.isRemovalGroup && (
+            <span className="inline-block bg-white/20 text-white text-[11px] font-semibold px-2 py-0.5 rounded-full w-fit">
+              [X] {t("menuComponents.modals.createGroupModal.isRemovalGroup") || "Removal Group"}
+            </span>
+          )}
+        </div>
+      ),
       className: "text-sm text-white opacity-90",
     }),
   },

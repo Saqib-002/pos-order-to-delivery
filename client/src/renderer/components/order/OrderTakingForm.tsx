@@ -317,6 +317,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
             price: item?.price || 0,
             priority: item?.priority || 0,
             forProduct: (group as any).forProduct || false,
+            isRemovalGroup: Boolean((group as any).isRemovalGroup),
           };
         });
       },
@@ -758,23 +759,37 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
 
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                         {group.items?.map((item) => {
+                          const isRemoval = Boolean((group as any).isRemovalGroup);
                           const isSelected =
                             selectedComplements[group.id]?.includes(item.id) ||
                             false;
+                          const cleanName = item.name.replace(/^[-\s]+/, "");
+                          const displayName =
+                            isRemoval && isSelected
+                              ? cleanName.toLowerCase().startsWith("sin ")
+                                ? cleanName.toUpperCase()
+                                : `SIN ${cleanName.toUpperCase()}`
+                              : item.name;
+
                           return (
                             <button
                               key={item.id}
                               onClick={() =>
                                 handleComplementToggle(group.id, item.id)
                               }
-                              className={`group relative flex flex-col p-3 border-2 rounded-lg text-left transition-all duration-200 hover:shadow-md touch-manipulation ${isSelected
-                                ? "border-gray-500 bg-gray-50 shadow-md"
-                                : "border-gray-200 hover:border-gray-300 bg-white"
-                                }`}
+                              className={`group relative flex flex-col p-3 border-2 rounded-xl text-left transition-all duration-200 hover:shadow-md touch-manipulation cursor-pointer ${
+                                isSelected && isRemoval
+                                  ? "border-red-500 bg-red-50/70 shadow-md ring-1 ring-red-500"
+                                  : isSelected
+                                  ? "border-gray-500 bg-gray-50 shadow-md"
+                                  : isRemoval
+                                  ? "border-gray-200 hover:border-red-300 bg-white"
+                                  : "border-gray-200 hover:border-gray-300 bg-white"
+                              }`}
                             >
                               {/* Image Section */}
                               <div className="relative mb-2">
-                                <div className="w-full h-20 rounded-md overflow-hidden bg-gray-100">
+                                <div className="w-full h-20 rounded-md overflow-hidden bg-gray-100 relative">
                                   {item.imgUrl ? (
                                     <img
                                       crossOrigin="anonymous"
@@ -791,12 +806,6 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                                         target.style.display = "none";
                                         target.nextElementSibling?.classList.remove(
                                           "hidden",
-                                        );
-                                      }}
-                                      onLoad={() => {
-                                        console.log(
-                                          "Successfully loaded group item image:",
-                                          item.imgUrl,
                                         );
                                       }}
                                     />
@@ -820,29 +829,95 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                                       </svg>
                                     </div>
                                   </div>
-                                </div>
 
-                                {/* Selection Indicator */}
-                                <div
-                                  className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected
-                                    ? "border-gray-500 bg-gray-500"
-                                    : "border-gray-300 bg-white shadow-sm group-hover:border-gray-400"
-                                    }`}
-                                >
-                                  {isSelected && (
-                                    <CheckIcon className="size-3 text-white" />
+                                  {/* Red X Cross Overlay over Image for Removal Items */}
+                                  {isSelected && isRemoval && (
+                                    <div className="absolute inset-0 bg-red-500/10 flex items-center justify-center pointer-events-none z-10">
+                                      <svg
+                                        className="w-14 h-14 text-red-600 drop-shadow-md"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="3.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      >
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                      </svg>
+                                    </div>
                                   )}
                                 </div>
+
+                                {/* Selection Indicator Badge */}
+                                {isSelected && isRemoval ? (
+                                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 border-2 border-white shadow-md flex items-center justify-center text-white z-20">
+                                    <svg
+                                      className="size-3.5 stroke-[3]"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                  </div>
+                                ) : (
+                                  <div
+                                    className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors z-20 ${
+                                      isSelected
+                                        ? "border-gray-500 bg-gray-500"
+                                        : "border-gray-300 bg-white shadow-sm group-hover:border-gray-400"
+                                    }`}
+                                  >
+                                    {isSelected && (
+                                      <CheckIcon className="size-3 text-white" />
+                                    )}
+                                  </div>
+                                )}
                               </div>
 
                               {/* Content Section */}
-                              <div className="flex-1 flex items-center justify-between px-1">
-                                <div className="font-medium text-black text-xs truncate flex-1">
-                                  {item.name}
+                              <div className="flex-1 flex flex-col justify-between w-full px-0.5">
+                                <div className="flex items-center justify-between w-full">
+                                  <div
+                                    className={`text-xs truncate flex-1 ${
+                                      isSelected && isRemoval
+                                        ? "font-bold text-red-600 tracking-tight"
+                                        : "font-medium text-black"
+                                    }`}
+                                  >
+                                    {displayName}
+                                  </div>
+                                  {!isRemoval && item.price > 0 && (
+                                    <div className="text-sm font-bold text-black ml-2">
+                                      €{item.price.toFixed(2)}
+                                    </div>
+                                  )}
                                 </div>
-                                <div className="text-sm font-bold text-black ml-2">
-                                  €{item.price.toFixed(2)}
-                                </div>
+
+                                {/* ELIMINADO Pill Badge */}
+                                {isSelected && isRemoval && (
+                                  <div className="mt-1.5 w-full flex items-center justify-center gap-1 bg-red-500 text-white rounded-full py-0.5 px-2 text-[10px] font-bold uppercase tracking-wider shadow-xs">
+                                    <svg
+                                      className="size-3 flex-shrink-0"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <circle cx="12" cy="12" r="10"></circle>
+                                      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                                    </svg>
+                                    <span>
+                                      {t("orderTakingForm.removed") || "ELIMINADO"}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </button>
                           );
