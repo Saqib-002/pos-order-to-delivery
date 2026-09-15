@@ -116,20 +116,47 @@ export const generateReceiptHTML = (
       break;
   }
 
-  let orderTypeLabel = orderType?.toUpperCase() || "";
-  switch (orderType?.toUpperCase()) {
-    case "DELIVERY":
-    case "WEB:DELIVERY":
-      orderTypeLabel = t("receipt.orderType.delivery");
-      break;
-    case "PICKUP":
-    case "WEB:PICKUP":
-      orderTypeLabel = t("receipt.orderType.pickup");
-      break;
-    case "DINE-IN":
-      orderTypeLabel = t("receipt.orderType.dineIn");
-      break;
+  const upperType = orderType?.toUpperCase() || "";
+  let orderTypeLabel = upperType;
+  let orderTypeIcon = "";
+
+  if (
+    upperType === "DELIVERY" ||
+    upperType.startsWith("WEB:DELIVERY") ||
+    upperType.startsWith("PLATFORM:DELIVERY")
+  ) {
+    orderTypeLabel = t("receipt.orderType.delivery") || "A DOMICILIO";
+    orderTypeIcon = `<svg style="width:18px; height:18px; display:inline-block; vertical-align:-3px; margin-right:5px;" viewBox="0 0 24 24" fill="currentColor"><path d="M19 7c0-1.1-.9-2-2-2h-3v2h3v2.65L13.52 14H10V9H6c-2.21 0-4 1.79-4 4v3h2c0 1.66 1.34 3 3 3s3-1.34 3-3h4c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-4-4zM7 17.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>`;
+  } else if (
+    upperType === "PICKUP" ||
+    upperType.startsWith("WEB:PICKUP") ||
+    upperType.startsWith("PLATFORM:PICKUP")
+  ) {
+    orderTypeLabel = t("receipt.orderType.pickup") || "PARA LLEVAR";
+    orderTypeIcon = `<svg style="width:18px; height:18px; display:inline-block; vertical-align:-3px; margin-right:5px;" viewBox="0 0 24 24" fill="currentColor"><path d="M18 6h-3c0-1.66-1.34-3-3-3S9 4.34 9 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-1c.55 0 1 .45 1 1h-2c0-.55.45-1 1-1zm0 5c-1.66 0-3-1.34-3-3h2c0 .55.45 1 1 1s1-.45 1-1h2c0 1.66-1.34 3-3 3z"/></svg>`;
+  } else if (upperType === "DINE-IN") {
+    orderTypeLabel = t("receipt.orderType.dineIn") || "EN SALA";
+    orderTypeIcon = `<svg style="width:18px; height:18px; display:inline-block; vertical-align:-3px; margin-right:5px;" viewBox="0 0 24 24" fill="currentColor"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>`;
   }
+
+  const isDelivery =
+    upperType === "DELIVERY" ||
+    upperType.startsWith("WEB:DELIVERY") ||
+    upperType.startsWith("PLATFORM:DELIVERY");
+
+  const phone =
+    configurations?.phone ||
+    configurations?.telephone ||
+    (Array.isArray(configurations?.contactTypes)
+      ? configurations.contactTypes.find(
+          (c: any) =>
+            c.type?.toLowerCase()?.includes("phone") ||
+            c.type?.toLowerCase()?.includes("tel")
+        )?.value
+      : "") ||
+    "911 086 981";
+  const restaurantName = configurations?.name || "ALI DONER KEBAB";
+  const restaurantAddress = configurations?.address || "";
 
   sortedGroups.forEach((group) => {
     const sectionQty = group.items[0]?.quantity || 1;
@@ -163,79 +190,355 @@ export const generateReceiptHTML = (
 
   if (rawStatus === "PAID") {
     displayPaid = orderTotal;
-    footerLabel = t("receipt.paymentStatus.paidLabel");
+    footerLabel = t("receipt.paymentStatus.paidLabel") || "PAGO REALIZADO";
   } else if (rawStatus === "PARTIAL") {
     displayPaid = amountPaid || 0;
-    footerLabel = t("receipt.paymentStatus.partialLabel");
+    footerLabel = t("receipt.paymentStatus.partialLabel") || "PAGO PARCIAL";
   } else {
     displayPaid = 0;
-    footerLabel = t("receipt.paymentStatus.unpaidLabel");
+    footerLabel = t("receipt.paymentStatus.unpaidLabel") || "PAGO PENDIENTE";
   }
 
+  const displayOrderId =
+    originalOrderType === "PLATFORM" || originalOrderType?.startsWith("WEB")
+      ? orderId
+      : `${configurations?.orderPrefix || ""}${orderId}`;
+
   let html = `
+    <!DOCTYPE html>
     <html>
         <head>
+        <meta charset="UTF-8">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&display=swap" rel="stylesheet">
         <style>
-            body { font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace; font-size: 13px; width: 72mm; margin: 0; padding: 0; color: #000; }
-            .container { padding: 1mm 2mm; }
-            .dashed-line { border-top: 1px dashed black; margin: 10px 0; width: 100%; height:0; }
-            .bold { font-weight: bold; }
+            @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&display=swap');
+            
+            * {
+                box-sizing: border-box;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body {
+                font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+                font-size: 13px;
+                width: 72mm;
+                margin: 0;
+                padding: 1mm 2mm;
+                color: #000;
+                background: #fff;
+            }
+            .container { width: 100%; }
+            .dashed-line {
+                border-top: 1px dashed #000;
+                margin: 6px 0;
+                width: 100%;
+            }
+            .bold { font-weight: 700; }
             .center { text-align: center; }
             .left { text-align: left; }
             .right { text-align: right; }
-            .large { font-size: 18px; }
-            .extra-large { font-size: 24px; }
-            
-            .header { margin-bottom: 5px; line-height: 1.2; }
-            .order-type-header { margin: 10px 0; }
-            
-            table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
-            th { text-align: left; }
-            td { vertical-align: top; padding: 1px 0; }
-            
-            .item-qty { width: 10%; }
-            .item-name { width: 65%; }
-            .item-total { width: 20%; text-align: right; }
-            
-            .sub-item { padding-left: 5px; font-size: 12px; }
-            .indent { padding-left: 20px; }
-            
-            .total-section { margin-top: 5px; }
-            .total-row { display: flex; justify-content: space-between; margin: 2px 0; }
-            .main-total { font-size: 16px; margin: 10px 0; }
-            
-            .footer-header { font-size: 18px; margin: 15px 0; border-top: 1px dashed black; border-bottom: 1px dashed black; padding: 5px 0; }
-            .client-details { font-size: 12px; line-height: 1.4; margin-bottom: 10px; }
-            .client-details-header { padding-top: 5px; margin-top: 10px; font-weight: bold; margin-bottom: 5px; }
-            .vat-table { font-size: 11px; margin-top: 20px; }
+
+            /* Restaurant Header */
+            .header {
+                margin-bottom: 4px;
+                line-height: 1.2;
+            }
+            .restaurant-name {
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 700;
+                font-size: 26px;
+                line-height: 1.1;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 3px;
+            }
+            .restaurant-address {
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 400;
+                font-size: 13px;
+            }
+            .restaurant-phone {
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 700;
+                font-size: 13px;
+                margin-top: 2px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+            }
+
+            /* Order Header */
+            .order-type-container {
+                margin: 2px 0;
+            }
+            .order-type {
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 700;
+                font-size: 16px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 5px;
+            }
+            .order-datetime {
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 400;
+                font-size: 13px;
+                margin: 3px 0 6px 0;
+            }
+            .order-badge-container {
+                margin: 4px 0 8px 0;
+                text-align: center;
+            }
+            .order-badge {
+                display: inline-block;
+                border: 1.5px solid #000;
+                border-radius: 6px;
+                padding: 2px 26px;
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 700;
+                font-size: 26px;
+                line-height: 1.1;
+                letter-spacing: 0.5px;
+                min-width: 90px;
+            }
+
+            /* Products Header Bar */
+            .products-header {
+                background-color: #000 !important;
+                color: #fff !important;
+                display: flex;
+                align-items: center;
+                padding: 3px 4px;
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 700;
+                font-size: 12px;
+                letter-spacing: 0.5px;
+                margin-bottom: 6px;
+            }
+            .col-cant {
+                width: 14%;
+                text-align: left;
+            }
+            .col-desc {
+                width: 66%;
+                text-align: left;
+            }
+            .col-precio {
+                width: 20%;
+                text-align: right;
+            }
+
+            /* Categories & Items */
+            .category-title {
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 700;
+                font-size: 13px;
+                text-transform: uppercase;
+                margin-top: 4px;
+                margin-bottom: 2px;
+                letter-spacing: 0.5px;
+            }
+            .item-row {
+                display: flex;
+                align-items: flex-start;
+                line-height: 1.35;
+                margin-bottom: 1px;
+            }
+            .item-product {
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 400;
+                font-size: 13px;
+                text-transform: uppercase;
+            }
+            .item-extra {
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 400;
+                font-size: 12px;
+                padding-left: 8px;
+            }
+            .item-price {
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 500;
+                font-size: 13px;
+                text-align: right;
+            }
+
+            /* Totals */
+            .total-row-main {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 700;
+                font-size: 24px;
+                line-height: 1.1;
+                margin-top: 4px;
+                margin-bottom: 4px;
+            }
+            .payment-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 400;
+                font-size: 13px;
+                margin-bottom: 4px;
+            }
+            .payment-status-banner {
+                background-color: #000 !important;
+                color: #fff !important;
+                text-align: center;
+                padding: 4px 0;
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 700;
+                font-size: 15px;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+                margin: 6px 0;
+            }
+
+            /* Client Box */
+            .client-box {
+                border: 1px solid #000;
+                border-radius: 6px;
+                padding: 4px 8px 8px 8px;
+                margin: 6px 0;
+                font-family: 'Roboto Condensed', sans-serif;
+            }
+            .client-header-row {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 5px;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+            }
+            .client-header-line {
+                flex: 1;
+                border-top: 1px dashed #000;
+            }
+            .client-header-title {
+                padding: 0 6px;
+                white-space: nowrap;
+            }
+            .client-label {
+                font-size: 11px;
+                font-weight: 400;
+                line-height: 1.2;
+            }
+            .client-name {
+                font-size: 12px;
+                font-weight: 700;
+            }
+            .client-address {
+                font-size: 12px;
+                font-weight: 400;
+                line-height: 1.25;
+            }
+            .client-phone {
+                font-size: 12px;
+                font-weight: 700;
+                margin-top: 1px;
+            }
+            .client-pickup {
+                font-size: 11px;
+                font-weight: 400;
+                margin-top: 2px;
+            }
+            .client-notes {
+                font-size: 11px;
+                font-weight: 400;
+                margin-top: 2px;
+            }
+            .client-served {
+                font-size: 11px;
+                font-weight: 400;
+                margin: 3px 0 6px 0;
+            }
+
+            /* VAT Table */
+            .vat-header {
+                background-color: #000 !important;
+                color: #fff !important;
+                display: flex;
+                justify-content: space-between;
+                padding: 2px 6px;
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 700;
+                font-size: 10px;
+                letter-spacing: 0.5px;
+            }
+            .vat-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 2px 6px;
+                font-family: 'Roboto Condensed', sans-serif;
+                font-size: 11px;
+                font-weight: 500;
+            }
+            .vat-col-rate {
+                width: 25%;
+                text-align: left;
+            }
+            .vat-col-base {
+                width: 45%;
+                text-align: center;
+            }
+            .vat-col-tax {
+                width: 30%;
+                text-align: right;
+            }
+
+            /* Footer */
+            .footer-thanks {
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 400;
+                font-size: 13px;
+                margin-top: 6px;
+            }
+            .footer-restaurant {
+                font-family: 'Roboto Condensed', sans-serif;
+                font-weight: 700;
+                font-size: 16px;
+                text-transform: uppercase;
+                margin-top: 2px;
+                letter-spacing: 0.5px;
+            }
         </style>
         </head>
         <body>
         <div class="container">
+            <!-- Restaurant Header -->
             <div class="center header">
-                <div class="bold" style="font-size: 16px;">${configurations.name}</div>
-                <div>${configurations.address}</div>
-                ${configurations.vatNumber ? `<div>${configurations.vatNumber}</div>` : ""}
+                <div class="restaurant-name">${restaurantName}</div>
+                ${restaurantAddress ? `<div class="restaurant-address">${restaurantAddress}</div>` : ""}
+                ${phone ? `<div class="restaurant-phone"><svg style="width:13px; height:13px; display:inline-block; vertical-align:-1px; margin-right:4px;" viewBox="0 0 24 24" fill="currentColor"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 0 0-1.01.24l-2.2 2.2a15.053 15.053 0 0 1-6.59-6.59l2.2-2.21a.96.96 0 0 0 .25-1A11.36 11.36 0 0 1 8.57 3.9c0-.5-.4-.9-.9-.9H4.11c-.53 0-1 .44-.99.97.43 8.35 7.15 15.07 15.5 15.5.53.01.97-.47.97-1v-3.09c0-.5-.4-.9-.9-.9z"/></svg><span>${phone}</span></div>` : ""}
             </div>
 
             <div class="dashed-line"></div>
 
-            <div class="center">
-                <div class="bold large order-type-header">${orderTypeLabel}</div>
-                <div class="bold">${t("receipt.date")}: ${dateTimeStr}</div>
-                <div class="bold extra-large" style="margin: 15px 0;">${(originalOrderType === "PLATFORM" || originalOrderType?.startsWith("WEB")) ? orderId : `${configurations.orderPrefix}${orderId}`}</div>
+            <!-- Order Header & Badge -->
+            <div class="center order-type-container">
+                <div class="order-type">${orderTypeIcon}<span>${orderTypeLabel}</span></div>
+                <div class="order-datetime">${t("receipt.date") || "Fecha"}: ${dateStr}&nbsp;&nbsp;&nbsp;${t("receipt.time") || "Hora"}: ${timeStr}</div>
+                <div class="order-badge-container">
+                    <span class="order-badge">${displayOrderId}</span>
+                </div>
             </div>
 
-            <div class="dashed-line"></div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th colspan="2" class="bold">${t("receipt.name")}</th>
-                        <th class="right bold">EUR</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <!-- Products Header Table Bar -->
+            <div class="products-header">
+                <span class="col-cant">${(t("receipt.quantity") || "CANT.").toUpperCase()}</span>
+                <span class="col-desc">${(t("receipt.description") || "DESCRIPCIÓN").toUpperCase()}</span>
+                <span class="col-precio">${(t("receipt.price") || "PRECIO").toUpperCase()}</span>
+            </div>
     `;
 
   // --- Start of Grouping and Sorting Logic ---
@@ -251,7 +554,7 @@ export const generateReceiptHTML = (
     const firstItem = group.items[0];
     const catName = firstItem?.subCategoryName || "";
     const catPriority = firstItem?.subCategoryPriority ?? -1;
-    const menuHeader = `${t("receipt.category.menus")}${catName ? ` / ${catName}` : ""}`;
+    const menuHeader = `${t("receipt.category.menus") || "MENUS"}${catName ? ` / ${catName}` : ""}`;
     
     if (!menuSubcategoryMap[menuHeader]) {
       menuSubcategoryMap[menuHeader] = {
@@ -306,12 +609,9 @@ export const generateReceiptHTML = (
   });
 
   categorizedGroups.forEach((category) => {
+    html += `<div>`;
     if (category.name) {
-      html += `
-                <tr class="bold">
-                    <td colspan="3" style="padding: 10px 0 5px 0; text-transform: uppercase; font-size: 14px;">${category.name}</td>
-                </tr>
-      `;
+      html += `<div class="category-title">${category.name}</div>`;
     }
 
     if (category.isMenu) {
@@ -320,223 +620,210 @@ export const generateReceiptHTML = (
         const supplementTotal = group.supplementTotal;
         const menuPriceWithTax = group.basePrice + group.taxPerUnit;
         const discountAmountLine = (menuPriceWithTax * group.menuDiscount / 100) * sectionQty;
-        const menuGroupPrice = menuPriceWithTax * sectionQty - discountAmountLine + supplementTotal * sectionQty;
         const menuBasePrice = (group.basePrice + group.taxPerUnit) * sectionQty;
 
         html += `
-                <tr class="bold">
-                    <td class="item-qty">${sectionQty} X</td>
-                    <td class="item-name">${group.menuName}</td>
-                    <td class="item-total">${menuBasePrice.toFixed(2)}</td>
-                </tr>
+          <div class="item-row">
+            <span class="col-cant item-product">${sectionQty}  x</span>
+            <span class="col-desc item-product">${group.menuName}</span>
+            <span class="col-precio item-price">${menuBasePrice.toFixed(2)}</span>
+          </div>
         `;
 
         group.items.forEach((item: OrderItem) => {
           const itemSupplementTotal = (item.supplement || 0) * item.quantity;
           html += `
-                <tr>
-                    <td class="item-qty"></td>
-                    <td class="item-name sub-item">• ${item.quantity} X ${item.productName}</td>
-                    <td class="item-total">${itemSupplementTotal.toFixed(2)}</td>
-                </tr>
+            <div class="item-row">
+              <span class="col-cant"></span>
+              <span class="col-desc item-extra">-  ${item.quantity > 1 ? `${item.quantity} x ` : ""}${item.productName}</span>
+              <span class="col-precio item-price">${itemSupplementTotal.toFixed(2)}</span>
+            </div>
           `;
 
           if (item.variantId && item.variantName) {
             const variantTotal = (item.variantPrice || 0) * item.quantity;
             html += `
-                <tr>
-                    <td class="item-qty"></td>
-                    <td class="item-name sub-item indent">${item.variantName}</td>
-                    <td class="item-total">${variantTotal.toFixed(2)}</td>
-                </tr>
+              <div class="item-row">
+                <span class="col-cant"></span>
+                <span class="col-desc item-extra">-  ${item.variantName}</span>
+                <span class="col-precio item-price">${variantTotal.toFixed(2)}</span>
+              </div>
             `;
           }
 
           if (Array.isArray(item.complements) && item.complements.length > 0) {
             item.complements.forEach((comp) => {
               const compTotal = comp.price * item.quantity;
+              const formattedCompName = comp.forProduct
+                ? (comp.itemName.startsWith("1 x") ? comp.itemName : `${item.quantity > 1 ? `${item.quantity} x ` : ""}${comp.itemName}`)
+                : comp.itemName;
               html += `
-                <tr>
-                    <td class="item-qty"></td>
-                    <td class="item-name sub-item indent">${comp.forProduct ? `( ${item.quantity} X ${comp.itemName} )` : `+ ${comp.itemName}`}</td>
-                    <td class="item-total">${compTotal.toFixed(2)}</td>
-                </tr>
+                <div class="item-row">
+                  <span class="col-cant"></span>
+                  <span class="col-desc item-extra">-  ${formattedCompName}</span>
+                  <span class="col-precio item-price">${compTotal.toFixed(2)}</span>
+                </div>
               `;
             });
           }
 
           if (item.productNote) {
             html += `
-                <tr>
-                    <td colspan="2" class="italic" style="font-size: 11px; padding: 0;">${t("common.note")}: ${item.productNote}</td>
-                    <td class="item-total"></td>
-                </tr>
+              <div class="item-row">
+                <span class="col-cant"></span>
+                <span class="col-desc item-extra italic" style="font-size: 11px;">(${t("common.note") || "Nota"}: ${item.productNote})</span>
+                <span class="col-precio item-price"></span>
+              </div>
             `;
           }
         });
+
         if (discountAmountLine > 0) {
           html += `
-                <tr>
-                    <td class="item-qty"></td>
-                    <td class="item-name sub-item" style="font-style: italic; color: #666;">${t("receipt.discount")} (-${group.menuDiscount}%)</td>
-                    <td class="item-total">-${discountAmountLine.toFixed(2)}</td>
-                </tr>
+            <div class="item-row">
+              <span class="col-cant"></span>
+              <span class="col-desc item-extra italic" style="color: #444;">-  ${t("receipt.discount") || "Descuento"} (-${group.menuDiscount}%)</span>
+              <span class="col-precio item-price">-${discountAmountLine.toFixed(2)}</span>
+            </div>
           `;
         }
-        html += `<tr style="height: 8px;"><td colspan="3"></td></tr>`;
       });
     } else {
       (category.data as OrderItem[]).forEach((item) => {
-        const complementsTotal = Array.isArray(item.complements)
-          ? item.complements.reduce((sum, complement) => sum + complement.price, 0)
-          : 0;
-
         const productBaseTotal = (item.productPrice + item.productTax) * item.quantity;
         const baseProductPriceWithTax = item.productPrice + item.productTax;
         const discountAmountLine = (baseProductPriceWithTax * item.productDiscount / 100) * item.quantity;
 
         html += `
-                <tr class="bold">
-                    <td class="item-qty">${item.quantity} X</td>
-                    <td class="item-name">${item.productName}</td>
-                    <td class="item-total">${productBaseTotal.toFixed(2)}</td>
-                </tr>
+          <div class="item-row">
+            <span class="col-cant item-product">${item.quantity}  x</span>
+            <span class="col-desc item-product">${item.productName}</span>
+            <span class="col-precio item-price">${productBaseTotal.toFixed(2)}</span>
+          </div>
         `;
 
         if (item.variantId && item.variantName) {
           const variantTotal = item.variantPrice * item.quantity;
           html += `
-                <tr>
-                    <td class="item-qty"></td>
-                    <td class="item-name sub-item">${item.variantName}</td>
-                    <td class="item-total">${variantTotal.toFixed(2)}</td>
-                </tr>
+            <div class="item-row">
+              <span class="col-cant"></span>
+              <span class="col-desc item-extra">-  ${item.variantName}</span>
+              <span class="col-precio item-price">${variantTotal.toFixed(2)}</span>
+            </div>
           `;
         }
 
         if (Array.isArray(item.complements) && item.complements.length > 0) {
           item.complements.forEach((comp) => {
             const compTotal = comp.price * item.quantity;
+            const formattedCompName = comp.forProduct
+              ? (comp.itemName.startsWith("1 x") ? comp.itemName : `${item.quantity > 1 ? `${item.quantity} x ` : ""}${comp.itemName}`)
+              : comp.itemName;
             html += `
-                <tr>
-                    <td class="item-qty"></td>
-                    <td class="item-name sub-item indent">${comp.forProduct ? `( ${item.quantity} X ${comp.itemName} )` : `+ ${comp.itemName}`}</td>
-                    <td class="item-total">${compTotal.toFixed(2)}</td>
-                </tr>
+              <div class="item-row">
+                <span class="col-cant"></span>
+                <span class="col-desc item-extra">-  ${formattedCompName}</span>
+                <span class="col-precio item-price">${compTotal.toFixed(2)}</span>
+              </div>
             `;
           });
         }
 
         if (item.productNote) {
           html += `
-              <tr>
-                  <td colspan="2" class="italic" style="font-size: 11px; padding: 0;">${t("common.note")}: ${item.productNote}</td>
-                  <td class="item-total"></td>
-              </tr>
+            <div class="item-row">
+              <span class="col-cant"></span>
+              <span class="col-desc item-extra italic" style="font-size: 11px;">(${t("common.note") || "Nota"}: ${item.productNote})</span>
+              <span class="col-precio item-price"></span>
+            </div>
           `;
         }
 
         if (discountAmountLine > 0) {
           html += `
-                <tr>
-                    <td class="item-qty"></td>
-                    <td class="item-name sub-item" style="font-style: italic; color: #666;">${t("receipt.discount")} (-${item.productDiscount}%)</td>
-                    <td class="item-total">-${discountAmountLine.toFixed(2)}</td>
-                </tr>
+            <div class="item-row">
+              <span class="col-cant"></span>
+              <span class="col-desc item-extra italic" style="color: #444;">-  ${t("receipt.discount") || "Descuento"} (-${item.productDiscount}%)</span>
+              <span class="col-precio item-price">-${discountAmountLine.toFixed(2)}</span>
+            </div>
           `;
         }
-        html += `<tr style="height: 8px;"><td colspan="3"></td></tr>`;
       });
     }
+
+    html += `</div>`;
+    html += `<div class="dashed-line"></div>`;
   });
   // --- End of Grouping and Sorting Logic ---
 
   html += `
-                </tbody>
-            </table>
-
-            <div class="dashed-line"></div>
-
-            <div class="total-section">
-                <div class="total-row bold main-total">
-                    <span>${t("receipt.total")}</span>
-                    <span>${orderTotal.toFixed(2)}</span>
-                </div>
-                <div class="total-row">
-                    <span>${(() => {
-                        let paymentMethodLabel = t("receipt.payment");
-                        if (paymentType) {
-                          const cleanPaymentType = paymentType.split(":")[0].toLowerCase();
-                          if (cleanPaymentType === "cash") {
-                            paymentMethodLabel = t("paymentOptions.cash") || "Efectivo";
-                          } else if (cleanPaymentType === "card") {
-                            paymentMethodLabel = t("paymentOptions.card") || "Tarjeta";
-                          } else if (cleanPaymentType === "online") {
-                            paymentMethodLabel = t("paymentOptions.online") || "Online";
-                          } else {
-                            paymentMethodLabel = cleanPaymentType.charAt(0).toUpperCase() + cleanPaymentType.slice(1);
-                          }
-                        }
-                        return paymentMethodLabel;
-                      })()}:</span>
-                    <span>${displayPaid.toFixed(2)}</span>
-                </div>
-                ${(orderTotal - displayPaid) > 0.005 ? `
-                <div class="total-row">
-                    <span>${t("receipt.remaining")}:</span>
-                    <span>${(orderTotal - displayPaid).toFixed(2)}</span>
-                </div>
-                ` : ""}
+            <!-- Total & Payment -->
+            <div class="total-row-main">
+                <span class="total-label">${t("receipt.total") || "TOTAL"}</span>
+                <span class="total-value">${orderTotal.toFixed(2)} €</span>
             </div>
-            
-            <div class="center bold footer-header">
+            <div class="payment-row">
+                <span class="payment-label">${t("receipt.payment") || "Pago"}:</span>
+                <span class="payment-value">${displayPaid.toFixed(2)} €</span>
+            </div>
+            ${(orderTotal - displayPaid) > 0.005 ? `
+            <div class="payment-row">
+                <span class="payment-label">${t("receipt.remaining") || "Pendiente"}:</span>
+                <span class="payment-value">${(orderTotal - displayPaid).toFixed(2)} €</span>
+            </div>
+            ` : ""}
+
+            <div class="payment-status-banner">
                 ${footerLabel}
             </div>
 
-            <div class="client-details">
-                <div class="client-details-header">${t("receipt.clientDetails")}</div>
-                ${customerName ? `<div class="bold">${customerName}</div>` : ""}
-                ${customerAddress ? `<div style="font-size:14px">${customerAddress}</div>` : ""}
-                ${customerPhone ? `<div>${customerPhone}</div>` : ""}
-                ${pickupTime ? `<div><span class="bold">${t("receipt.pickupTime")}:</span> ${pickupTime}</div>` : ""}
-                ${notes ? `<div style="margin-top:5px;"><span class="bold">${t("receipt.notes")}:</span> ${notes}</div>` : ""}
-                <div style="margin-top:5px;"><span class="bold">${t("receipt.servedBy")}:</span> ${userName || userRole}</div>
-            </div>
+            <!-- Client Details Box -->
+            <div class="client-box">
+                <div class="client-header-row">
+                    <span class="client-header-line"></span>
+                    <span class="client-header-title">${t("receipt.clientDetails") || "DATOS CLIENTE"}</span>
+                    <span class="client-header-line"></span>
+                </div>
+                ${isDelivery ? `<div class="client-label">${t("receipt.deliveryCustomer") || "Cliente de entrega:"}</div>` : (customerName ? `<div class="client-label">${t("receipt.customer") || "Cliente:"}</div>` : "")}
+                ${customerName && !isDelivery ? `<div class="client-name">${customerName}</div>` : ""}
+                ${customerAddress ? `<div class="client-address">${customerAddress.replace(/\n/g, "<br>")}</div>` : ""}
+                ${customerPhone ? `<div class="client-phone">${customerPhone}</div>` : ""}
+                ${pickupTime ? `<div class="client-pickup"><span class="bold">${t("receipt.pickupTime") || "Hora de recogida"}:</span> ${pickupTime}</div>` : ""}
+                ${notes ? `<div class="client-notes"><span class="bold">${t("receipt.notes") || "Notas"}:</span> ${notes}</div>` : ""}
+                <div class="client-served"><span class="bold">${t("receipt.servedBy") || "Atendido por"}:</span> ${userName || userRole}</div>
 
-            <div class="dashed-line"></div>
-            
-            <table class="vat-table">
-                <thead>
-                    <tr>
-                        <th class="bold">${t("receipt.vat")}</th>
-                        <th class="right bold">${t("receipt.base")}</th>
-                        <th class="right bold">${t("receipt.tax")}</th>
-                    </tr>
-                </thead>
-                <tbody>
-    `;
+                <!-- VAT Table inside Box -->
+                <div class="vat-header">
+                    <span class="vat-col-rate">${t("receipt.vat") || "IVA"}</span>
+                    <span class="vat-col-base">${t("receipt.base") || "BASE"}</span>
+                    <span class="vat-col-tax">${t("receipt.tax") || "IMPUESTO"}</span>
+                </div>
+  `;
 
   Object.entries(taxBreakdown).forEach(([rateKey, { base, tax }]) => {
     html += `
-                <tr>
-                    <td>${rateKey}</td>
-                    <td class="right">${base.toFixed(2)}</td>
-                    <td class="right">${tax.toFixed(2)}</td>
-                </tr>
-        `;
+                <div class="vat-row">
+                    <span class="vat-col-rate">${rateKey}</span>
+                    <span class="vat-col-base">${base.toFixed(2)}</span>
+                    <span class="vat-col-tax">${tax.toFixed(2)}</span>
+                </div>
+    `;
   });
 
   html += `
-                </tbody>
-            </table>
+            </div>
 
-            <div class="center" style="margin-top: 20px;">
-                <small>${t("receipt.thankYou")}</small>
+            <div class="dashed-line"></div>
+
+            <!-- Footer -->
+            <div class="center" style="margin-top: 6px;">
+                <div class="footer-thanks">${t("receipt.thankYouOrder") || "¡Gracias por su pedido!"}</div>
+                <div class="footer-restaurant">${restaurantName}</div>
             </div>
         </div>
         </body>
     </html>
-    `;
+  `;
   return html;
 };
 export const generateItemsReceiptHTML = (
@@ -601,8 +888,18 @@ export const generateItemsReceiptHTML = (
   let html = `
     <html>
         <head>
+        <meta charset="UTF-8">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&display=swap" rel="stylesheet">
         <style>
-            body { font-family: sans-serif, 'Courier New', monospace; font-size: 12px; width: 70mm; margin: 0; padding: 1mm;  }
+            @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&display=swap');
+            * {
+                box-sizing: border-box;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body { font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif; font-size: 12px; width: 70mm; margin: 0; padding: 1mm; }
             .line { width: 100%; height: 1px; background: black; margin: 5px 0; }
             .bold { font-weight: bold; font-size: 16px; }
             .center { text-align: center; }
