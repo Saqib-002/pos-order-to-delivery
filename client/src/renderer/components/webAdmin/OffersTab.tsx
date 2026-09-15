@@ -13,6 +13,11 @@ import {
   type CompressInfo,
 } from "../../utils/imageCompression";
 import { ImageAspectHint } from "../shared/ImageAspectHint";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker";
+import dayjs, { Dayjs } from "dayjs";
+import { DateRangePicker } from "../ui/DateRangePicker";
 import {
   Plus,
   Trash2,
@@ -28,6 +33,13 @@ import {
   Tag,
   UtensilsCrossed,
   Layers,
+  Calendar,
+  CalendarDays,
+  Clock,
+  Info,
+  Moon,
+  Utensils,
+  Wine,
 } from "lucide-react";
 
 export interface LocalisedString {
@@ -43,6 +55,190 @@ export interface OfferTargetItem {
   imgUrl?: string;
 }
 
+export interface OfferSchedule {
+  hasDateRange: boolean;
+  startDate?: string;
+  endDate?: string;
+  allDays: boolean;
+  days: number[]; // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  hasTimeRange: boolean;
+  startTime?: string; // "00:00"
+  endTime?: string;   // "23:59"
+}
+
+export const DEFAULT_SCHEDULE: OfferSchedule = {
+  hasDateRange: false,
+  startDate: "",
+  endDate: "",
+  allDays: true,
+  days: [1, 2, 3, 4, 5, 6, 0],
+  hasTimeRange: false,
+  startTime: "00:00",
+  endTime: "23:59",
+};
+
+export function formatScheduleSummary(schedule?: OfferSchedule, t?: any): string {
+  if (!schedule) return t ? t("webAdmin.offers.summaryAlwaysActive", "Siempre activa") : "Siempre activa";
+
+  const parts: string[] = [];
+
+  // Expiration / Date
+  if (schedule.hasDateRange) {
+    if (schedule.endDate) {
+      const d = new Date(schedule.endDate);
+      if (!isNaN(d.getTime())) {
+        const dateStr = d.toLocaleDateString(undefined, {
+          day: "2-digit",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        parts.push(t ? t("webAdmin.offers.summaryExpires", { date: dateStr, defaultValue: `Exp: ${dateStr}` }) : `Exp: ${dateStr}`);
+      }
+    }
+  }
+
+  // Days
+  if (!schedule.allDays && Array.isArray(schedule.days) && schedule.days.length > 0) {
+    if (schedule.days.length === 5 && [1, 2, 3, 4, 5].every((d) => schedule.days.includes(d))) {
+      parts.push(t ? t("webAdmin.offers.scheduleMonFri", "Lun-Vie") : "Lun-Vie");
+    } else if (schedule.days.length === 2 && [6, 0].every((d) => schedule.days.includes(d))) {
+      parts.push(t ? t("webAdmin.offers.scheduleWeekends", "Fin de semana") : "Fin de semana");
+    } else if (schedule.days.length === 7) {
+      parts.push(t ? t("webAdmin.offers.scheduleAll7Days", "Los 7 días") : "Los 7 días");
+    } else {
+      const dayNames = schedule.days.map((d) => (t ? t(`webAdmin.offers.days.${d}`) : String(d)));
+      parts.push(dayNames.join(", "));
+    }
+  } else {
+    parts.push(t ? t("webAdmin.offers.summaryEveryDay", "Todos los días") : "Todos los días");
+  }
+
+  // Hours
+  if (schedule.hasTimeRange && schedule.startTime && schedule.endTime) {
+    parts.push(`${schedule.startTime} - ${schedule.endTime}`);
+  }
+
+  return parts.join(" • ");
+}
+
+export function getScheduleStatus(schedule?: OfferSchedule, t?: any): {
+  status: "live" | "scheduled" | "expired" | "off_day" | "off_hours";
+  label: string;
+  badgeClass: string;
+} {
+  if (!schedule) {
+    return {
+      status: "live",
+      label: t ? t("webAdmin.offers.statusAlwaysActive", "Siempre Activa") : "Siempre Activa",
+      badgeClass: "bg-emerald-500 text-white",
+    };
+  }
+
+  const now = new Date();
+
+  // 1. Check Date Range
+  if (schedule.hasDateRange) {
+    if (schedule.startDate) {
+      const start = new Date(schedule.startDate);
+      if (!isNaN(start.getTime()) && now < start) {
+        return {
+          status: "scheduled",
+          label: t ? t("webAdmin.offers.statusUpcoming", "Próxima") : "Próxima",
+          badgeClass: "bg-gray-700 text-white",
+        };
+      }
+    }
+    if (schedule.endDate) {
+      const end = new Date(schedule.endDate);
+      if (!isNaN(end.getTime()) && now > end) {
+        return {
+          status: "expired",
+          label: t ? t("webAdmin.offers.statusExpired", "Expirada") : "Expirada",
+          badgeClass: "bg-amber-600 text-white",
+        };
+      }
+    }
+  }
+
+  // 2. Check Days
+  if (!schedule.allDays && Array.isArray(schedule.days) && schedule.days.length > 0) {
+    const currentDay = now.getDay();
+    if (!schedule.days.includes(currentDay)) {
+      return {
+        status: "off_day",
+        label: t ? t("webAdmin.offers.statusOffDay", "Día Inactivo") : "Día Inactivo",
+        badgeClass: "bg-gray-600 text-white",
+      };
+    }
+  }
+
+  // 3. Check Hours
+  if (schedule.hasTimeRange && schedule.startTime && schedule.endTime) {
+    const currentTotalMins = now.getHours() * 60 + now.getMinutes();
+    const [startH, startM] = schedule.startTime.split(":").map(Number);
+    const [endH, endM] = schedule.endTime.split(":").map(Number);
+    const startTotalMins = (startH || 0) * 60 + (startM || 0);
+    const endTotalMins = (endH || 0) * 60 + (endM || 0);
+
+    let isWithinHours = false;
+    if (startTotalMins <= endTotalMins) {
+      isWithinHours = currentTotalMins >= startTotalMins && currentTotalMins <= endTotalMins;
+    } else {
+      isWithinHours = currentTotalMins >= startTotalMins || currentTotalMins <= endTotalMins;
+    }
+
+    if (!isWithinHours) {
+      return {
+        status: "off_hours",
+        label: t ? t("webAdmin.offers.statusOffHours", "Fuera de Horario") : "Fuera de Horario",
+        badgeClass: "bg-gray-600 text-white",
+      };
+    }
+  }
+
+  return {
+    status: "live",
+    label: t ? t("webAdmin.offers.statusLiveNow", "En Vivo") : "En Vivo",
+    badgeClass: "bg-emerald-500 text-white",
+  };
+}
+
+export function isOfferCurrentlyValid(schedule?: OfferSchedule, now: Date = new Date()): boolean {
+  if (!schedule) return true;
+
+  if (schedule.hasDateRange) {
+    if (schedule.startDate) {
+      const start = new Date(schedule.startDate);
+      if (!isNaN(start.getTime()) && now < start) return false;
+    }
+    if (schedule.endDate) {
+      const end = new Date(schedule.endDate);
+      if (!isNaN(end.getTime()) && now > end) return false;
+    }
+  }
+
+  if (!schedule.allDays && Array.isArray(schedule.days) && schedule.days.length > 0) {
+    if (!schedule.days.includes(now.getDay())) return false;
+  }
+
+  if (schedule.hasTimeRange && schedule.startTime && schedule.endTime) {
+    const currentTotalMins = now.getHours() * 60 + now.getMinutes();
+    const [startH, startM] = schedule.startTime.split(":").map(Number);
+    const [endH, endM] = schedule.endTime.split(":").map(Number);
+    const startTotalMins = (startH || 0) * 60 + (startM || 0);
+    const endTotalMins = (endH || 0) * 60 + (endM || 0);
+
+    if (startTotalMins <= endTotalMins) {
+      if (currentTotalMins < startTotalMins || currentTotalMins > endTotalMins) return false;
+    } else {
+      if (currentTotalMins < startTotalMins && currentTotalMins > endTotalMins) return false;
+    }
+  }
+
+  return true;
+}
+
 export interface OfferItem {
   id: string;
   title?: LocalisedString | string;
@@ -52,6 +248,7 @@ export interface OfferItem {
   isActive: boolean;
   targets: OfferTargetItem[];
   createdAt?: string;
+  schedule?: OfferSchedule;
 }
 
 export interface OffersContent {
@@ -85,6 +282,7 @@ interface OfferFormData {
   priority: number;
   isActive: boolean;
   targets: OfferTargetItem[];
+  schedule: OfferSchedule;
 }
 
 const DEFAULT_FORM: OfferFormData = {
@@ -95,6 +293,7 @@ const DEFAULT_FORM: OfferFormData = {
   priority: 10,
   isActive: true,
   targets: [],
+  schedule: { ...DEFAULT_SCHEDULE },
 };
 
 export const OffersTab: React.FC<OffersTabProps> = ({
@@ -126,7 +325,7 @@ export const OffersTab: React.FC<OffersTabProps> = ({
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
   const [isNew, setIsNew] = useState(false);
-  const [modalTab, setModalTab] = useState<"details" | "targets">("details");
+  const [modalTab, setModalTab] = useState<"details" | "targets" | "time">("details");
   const [formData, setFormData] = useState<OfferFormData>(DEFAULT_FORM);
 
   // Target item selector states
@@ -251,6 +450,20 @@ export const OffersTab: React.FC<OffersTabProps> = ({
       priority: offer.priority ?? 10,
       isActive: offer.isActive ?? true,
       targets: Array.isArray(offer.targets) ? [...offer.targets] : [],
+      schedule: offer.schedule
+        ? {
+            hasDateRange: Boolean(offer.schedule.hasDateRange),
+            startDate: offer.schedule.startDate || "",
+            endDate: offer.schedule.endDate || "",
+            allDays: offer.schedule.allDays ?? true,
+            days: Array.isArray(offer.schedule.days)
+              ? [...offer.schedule.days]
+              : [1, 2, 3, 4, 5, 6, 0],
+            hasTimeRange: Boolean(offer.schedule.hasTimeRange),
+            startTime: offer.schedule.startTime || "00:00",
+            endTime: offer.schedule.endTime || "23:59",
+          }
+        : { ...DEFAULT_SCHEDULE },
     });
     setIsNew(false);
     setModalTab("details");
@@ -360,6 +573,7 @@ export const OffersTab: React.FC<OffersTabProps> = ({
       priority: Number(formData.priority) || 0,
       isActive: formData.isActive,
       targets: formData.targets,
+      schedule: formData.schedule,
     };
 
     setOffers((prev) => {
@@ -384,13 +598,7 @@ export const OffersTab: React.FC<OffersTabProps> = ({
 
   // Delete offer
   const handleDeleteOffer = (id: string) => {
-    if (
-      window.confirm(
-        currentLang === "es"
-          ? "¿Estás seguro de que deseas eliminar esta oferta?"
-          : "Are you sure you want to delete this offer?"
-      )
-    ) {
+    if (window.confirm(t("webAdmin.offers.deleteConfirm", "¿Estás seguro de que deseas eliminar esta oferta?"))) {
       setOffers((prev) => prev.filter((o) => o.id !== id));
     }
   };
@@ -480,6 +688,7 @@ export const OffersTab: React.FC<OffersTabProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {offers.map((offer, idx) => {
               const displaySrc = formatImageUrl(offer.imageUrl, driverApiUrl);
+              const scheduleStatus = getScheduleStatus(offer.schedule, t);
               const titleText =
                 typeof offer.title === "object" && offer.title !== null
                   ? (isEn
@@ -531,7 +740,16 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                       </span>
                     </div>
 
-                    <div className="absolute top-2 right-2">
+                    <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                      {offer.schedule?.hasDateRange && (
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            scheduleStatus.badgeClass
+                          }`}
+                        >
+                          {scheduleStatus.label}
+                        </span>
+                      )}
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                           offer.isActive
@@ -540,8 +758,8 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                         }`}
                       >
                         {offer.isActive
-                          ? (isEn ? "Active" : "Activa")
-                          : (isEn ? "Inactive" : "Inactiva")}
+                          ? t("webAdmin.offers.activeBadge", "Activa")
+                          : t("webAdmin.offers.inactiveBadge", "Inactiva")}
                       </span>
                     </div>
                   </div>
@@ -552,34 +770,28 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                       <h4 className="text-sm font-bold text-gray-900 truncate">
                         {titleText || (
                           <span className="text-gray-400 italic">
-                            ({isEn ? "Untitled" : "Sin título"})
+                            ({t("webAdmin.offers.noTitle", "Sin título")})
                           </span>
                         )}
                       </h4>
-                      {secondaryTitle && secondaryTitle !== titleText && (
-                        <p className="text-[11px] text-gray-500 truncate mt-0.5">
+                      {secondaryTitle && (
+                        <p className="text-xs text-gray-500 truncate">
                           {secondaryTitle}
-                        </p>
-                      )}
-                      {btnText && (
-                        <p className="text-xs text-emerald-700 font-medium mt-1 truncate">
-                          {isEn ? "Button" : "Botón"}: {btnText}
                         </p>
                       )}
                     </div>
 
-                    {/* Targets summary */}
-                    <div className="pt-2 border-t border-gray-200/80">
-                      <div className="flex items-center gap-1 text-[11px] text-gray-500 mb-1.5 font-medium">
-                        <UtensilsCrossed className="w-3 h-3 text-gray-400" />
+                    {/* Target Products & Menus count preview */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[11px] text-gray-500 font-semibold">
                         <span>
-                          {isEn ? "Target" : "Destino"}:{" "}
-                          <strong className="text-gray-700">
-                            {offer.targets?.length || 0}
-                          </strong>{" "}
-                          {isEn
-                            ? (offer.targets?.length === 1 ? "item" : "items")
-                            : (offer.targets?.length === 1 ? "artículo" : "artículos")}
+                          {t(
+                            "webAdmin.offers.selectedItems",
+                            "Artículos Seleccionados"
+                          )}
+                        </span>
+                        <span className="bg-gray-200 px-1.5 py-0.2 rounded-full text-[10px] font-bold text-gray-700">
+                          {offer.targets?.length || 0}
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
@@ -603,6 +815,12 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                       </div>
                     </div>
 
+                    {/* Schedule summary */}
+                    <div className="pt-2 border-t border-gray-200/80 flex items-center gap-1.5 text-[11px] text-gray-600 font-medium">
+                      <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                      <span className="truncate">{formatScheduleSummary(offer.schedule, t)}</span>
+                    </div>
+
                     {/* Actions toolbar */}
                     <div className="flex items-center justify-between pt-3 border-t border-gray-200 mt-2">
                       <button
@@ -615,19 +833,19 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                         }`}
                         title={
                           offer.isActive
-                            ? (isEn ? "Visible" : "Visible")
-                            : (isEn ? "Hidden" : "Oculto")
+                            ? t("webAdmin.offers.activeBadge", "Activa")
+                            : t("webAdmin.offers.inactiveBadge", "Inactiva")
                         }
                       >
                         {offer.isActive ? (
                           <>
                             <Eye className="w-3.5 h-3.5" />
-                            <span>{isEn ? "Active" : "Activa"}</span>
+                            <span>{t("webAdmin.offers.activeBadge", "Activa")}</span>
                           </>
                         ) : (
                           <>
                             <EyeOff className="w-3.5 h-3.5" />
-                            <span>{isEn ? "Inactive" : "Inactiva"}</span>
+                            <span>{t("webAdmin.offers.inactiveBadge", "Inactiva")}</span>
                           </>
                         )}
                       </button>
@@ -686,14 +904,10 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                 </h3>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {modalTab === "details"
-                    ? t(
-                        "webAdmin.offers.modalTabDetails",
-                        "Detalles de la Oferta"
-                      )
-                    : t(
-                        "webAdmin.offers.modalTabTargets",
-                        "Productos y Menús Destino"
-                      )}
+                    ? t("webAdmin.offers.modalTabDetails", "Detalles de la Oferta")
+                    : modalTab === "targets"
+                    ? t("webAdmin.offers.modalTabTargets", "Productos y Menús Destino")
+                    : t("webAdmin.offers.modalTabTime", "Horario y Tiempo")}
                 </p>
               </div>
               <button
@@ -739,11 +953,28 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                   ({formData.targets.length})
                 </span>
               </button>
+              <button
+                type="button"
+                onClick={() => setModalTab("time")}
+                className={`py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  modalTab === "time"
+                    ? "border-black text-black"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>
+                  {t("webAdmin.offers.modalTabTime", "3. Horario y Tiempo")}
+                </span>
+                {(formData.schedule.hasDateRange || !formData.schedule.allDays || formData.schedule.hasTimeRange) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                )}
+              </button>
             </div>
 
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto flex-1 space-y-5">
-              {modalTab === "details" ? (
+              {modalTab === "details" && (
                 <>
                   {/* Priority & Active toggle row */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-3.5 rounded-lg border border-gray-200">
@@ -1049,7 +1280,9 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                     />
                   </div>
                 </>
-              ) : (
+              )}
+
+              {modalTab === "targets" && (
                 /* ── Targets Tab ── */
                 <div className="space-y-4">
                   {/* Selected Items summary chips */}
@@ -1083,7 +1316,7 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                           />
                           <span>{tgt.name}</span>
                           <span className="text-gray-400 font-normal">
-                            €{tgt.price.toFixed(2)}
+                            {tgt.price.toFixed(2).replace('.', ',')}€
                           </span>
                           <button
                             type="button"
@@ -1186,7 +1419,7 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                                     {prod.name}
                                   </h5>
                                   <span className="text-[11px] text-gray-500">
-                                    €{prod.price.toFixed(2)}
+                                    {prod.price.toFixed(2).replace('.', ',')}€
                                   </span>
                                 </div>
                               </div>
@@ -1244,7 +1477,7 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                                   {menu.name}
                                 </h5>
                                 <span className="text-[11px] text-gray-500">
-                                  €{menu.price.toFixed(2)}
+                                  {menu.price.toFixed(2).replace('.', ',')}€
                                 </span>
                               </div>
                             </div>
@@ -1261,6 +1494,634 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                           </div>
                         );
                       })
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Time & Schedule Tab ── */}
+              {modalTab === "time" && (
+                <div className="space-y-5">
+                  {/* Card 1: Expiration & Date Range */}
+                  <div className="bg-gray-50/80 border border-gray-200 rounded-xl p-4 space-y-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center flex-shrink-0 text-emerald-700">
+                          <Calendar className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-gray-900">
+                            {t("webAdmin.offers.scheduleValidityTitle", "Vigencia y Fecha de Expiración")}
+                          </h4>
+                          <p className="text-[11px] text-gray-500">
+                            {t(
+                              "webAdmin.offers.scheduleValiditySubtitle",
+                              "Configura cuándo inicia la oferta y cuándo expira automáticamente"
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Toggle */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-semibold text-gray-700">
+                          {formData.schedule.hasDateRange
+                            ? t("webAdmin.offers.scheduleScheduled", "Con límite")
+                            : t("webAdmin.offers.scheduleNoExpiration", "Sin expiración")}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              schedule: {
+                                ...prev.schedule,
+                                hasDateRange: !prev.schedule.hasDateRange,
+                              },
+                            }))
+                          }
+                          className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors cursor-pointer ${
+                            formData.schedule.hasDateRange ? "bg-emerald-600" : "bg-gray-300"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                              formData.schedule.hasDateRange ? "translate-x-5" : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+
+                    {formData.schedule.hasDateRange ? (
+                      <div className="pt-2 border-t border-gray-200/80 space-y-3">
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="block text-[11px] font-bold text-gray-700">
+                              {t("webAdmin.offers.scheduleDateRange", "Rango de fechas")} <span className="text-red-500">*</span>
+                            </label>
+                            {(formData.schedule.startDate || formData.schedule.endDate) && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    schedule: {
+                                      ...prev.schedule,
+                                      startDate: "",
+                                      endDate: "",
+                                    },
+                                  }))
+                                }
+                                className="text-[10px] text-red-500 hover:text-red-700 font-semibold cursor-pointer transition-colors"
+                              >
+                                {t("webAdmin.offers.clearDates", "Borrar fechas")}
+                              </button>
+                            )}
+                          </div>
+
+                          <DateRangePicker
+                            startDate={formData.schedule.startDate ? new Date(formData.schedule.startDate) : null}
+                            endDate={formData.schedule.endDate ? new Date(formData.schedule.endDate) : null}
+                            onChange={(start, end) => {
+                              setFormData((prev) => {
+                                const currentStartTime =
+                                  prev.schedule.startDate && prev.schedule.startDate.includes("T")
+                                    ? prev.schedule.startDate.split("T")[1].substring(0, 5)
+                                    : "00:00";
+                                const currentEndTime =
+                                  prev.schedule.endDate && prev.schedule.endDate.includes("T")
+                                    ? prev.schedule.endDate.split("T")[1].substring(0, 5)
+                                    : "23:59";
+                                return {
+                                  ...prev,
+                                  schedule: {
+                                    ...prev.schedule,
+                                    startDate: start ? `${dayjs(start).format("YYYY-MM-DD")}T${currentStartTime}:00` : "",
+                                    endDate: end ? `${dayjs(end).format("YYYY-MM-DD")}T${currentEndTime}:00` : "",
+                                  },
+                                };
+                              });
+                            }}
+                          />
+                        </div>
+
+                        {/* Start & Expiration Time Pickers */}
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                            <div>
+                              <label className="block text-[11px] font-bold text-gray-700 mb-1.5">
+                                {t("webAdmin.offers.scheduleStartTime", "Hora de inicio")}
+                              </label>
+                              <MobileTimePicker
+                                value={
+                                  formData.schedule.startDate
+                                    ? dayjs(formData.schedule.startDate)
+                                    : dayjs("2000-01-01T00:00:00")
+                                }
+                                onChange={(newValue: Dayjs | null) => {
+                                  if (newValue && newValue.isValid()) {
+                                    const timeStr = newValue.format("HH:mm:00");
+                                    setFormData((prev) => {
+                                      const baseDate = prev.schedule.startDate
+                                        ? dayjs(prev.schedule.startDate).format("YYYY-MM-DD")
+                                        : dayjs().format("YYYY-MM-DD");
+                                      return {
+                                        ...prev,
+                                        schedule: {
+                                          ...prev.schedule,
+                                          startDate: `${baseDate}T${timeStr}`,
+                                        },
+                                      };
+                                    });
+                                  }
+                                }}
+                                views={["hours", "minutes"]}
+                                ampm={false}
+                                slotProps={{
+                                  textField: {
+                                    size: "small",
+                                    fullWidth: true,
+                                    sx: {
+                                      backgroundColor: "#ffffff",
+                                      "& .MuiOutlinedInput-root": {
+                                        borderRadius: "0.5rem",
+                                        fontSize: "0.8125rem",
+                                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                                          borderColor: "#10b981",
+                                        },
+                                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                          borderColor: "#059669",
+                                          borderWidth: "1.5px",
+                                        },
+                                      },
+                                    },
+                                  },
+                                }}
+                              />
+                              <p className="text-[10px] text-gray-500 mt-1">
+                                {t("webAdmin.offers.scheduleStartDateHint", "Dejar vacío para iniciar de inmediato")}
+                              </p>
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-bold text-gray-700 mb-1.5">
+                                {t("webAdmin.offers.scheduleExpirationTime", "Hora de expiración")} <span className="text-red-500">*</span>
+                              </label>
+                              <MobileTimePicker
+                                value={
+                                  formData.schedule.endDate
+                                    ? dayjs(formData.schedule.endDate)
+                                    : dayjs("2000-01-01T23:59:00")
+                                }
+                                onChange={(newValue: Dayjs | null) => {
+                                  if (newValue && newValue.isValid()) {
+                                    const timeStr = newValue.format("HH:mm:00");
+                                    setFormData((prev) => {
+                                      const baseDate = prev.schedule.endDate
+                                        ? dayjs(prev.schedule.endDate).format("YYYY-MM-DD")
+                                        : dayjs().add(7, "day").format("YYYY-MM-DD");
+                                      return {
+                                        ...prev,
+                                        schedule: {
+                                          ...prev.schedule,
+                                          endDate: `${baseDate}T${timeStr}`,
+                                        },
+                                      };
+                                    });
+                                  }
+                                }}
+                                views={["hours", "minutes"]}
+                                ampm={false}
+                                slotProps={{
+                                  textField: {
+                                    size: "small",
+                                    fullWidth: true,
+                                    sx: {
+                                      backgroundColor: "#ffffff",
+                                      "& .MuiOutlinedInput-root": {
+                                        borderRadius: "0.5rem",
+                                        fontSize: "0.8125rem",
+                                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                                          borderColor: "#10b981",
+                                        },
+                                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                          borderColor: "#059669",
+                                          borderWidth: "1.5px",
+                                        },
+                                      },
+                                    },
+                                  },
+                                }}
+                              />
+                              <p className="text-[10px] text-gray-500 mt-1">
+                                {t(
+                                  "webAdmin.offers.scheduleEndDateHint",
+                                  "La oferta desaparecerá automáticamente tras esta fecha y hora"
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                        </LocalizationProvider>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-gray-500 bg-white border border-gray-200 rounded-lg p-2.5 flex items-center gap-2">
+                        <Info className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <span>
+                          {t(
+                            "webAdmin.offers.scheduleNoExpirationNotice",
+                            "Esta oferta estará activa indefinidamente mientras su estado sea 'Activa'."
+                          )}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Card 2: Days of the week */}
+                  <div className="bg-gray-50/80 border border-gray-200 rounded-xl p-4 space-y-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center flex-shrink-0 text-emerald-700">
+                          <CalendarDays className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-gray-900">
+                            {t("webAdmin.offers.scheduleDaysTitle", "Días de la Semana")}
+                          </h4>
+                          <p className="text-[11px] text-gray-500">
+                            {t(
+                              "webAdmin.offers.scheduleDaysSubtitle",
+                              "Selecciona si la oferta se aplica todos los días o días específicos"
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Mode toggle */}
+                      <div className="flex bg-gray-200 p-0.5 rounded-lg text-xs">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              schedule: {
+                                ...prev.schedule,
+                                allDays: true,
+                              },
+                            }))
+                          }
+                          className={`px-3 py-1 rounded-md font-semibold transition-colors cursor-pointer ${
+                            formData.schedule.allDays
+                              ? "bg-white text-gray-900 shadow-2xs"
+                              : "text-gray-500 hover:text-gray-800"
+                          }`}
+                        >
+                          {t("webAdmin.offers.scheduleAllWeek", "Toda la semana")}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              schedule: {
+                                ...prev.schedule,
+                                allDays: false,
+                              },
+                            }))
+                          }
+                          className={`px-3 py-1 rounded-md font-semibold transition-colors cursor-pointer ${
+                            !formData.schedule.allDays
+                              ? "bg-white text-gray-900 shadow-2xs"
+                              : "text-gray-500 hover:text-gray-800"
+                          }`}
+                        >
+                          {t("webAdmin.offers.scheduleSpecificDays", "Días específicos")}
+                        </button>
+                      </div>
+                    </div>
+
+                    {!formData.schedule.allDays && (
+                      <div className="pt-2 border-t border-gray-200/80 space-y-3">
+                        {/* Day presets */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase">
+                            {t("webAdmin.offers.schedulePresets", "Preajustes:")}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                schedule: {
+                                  ...prev.schedule,
+                                  days: [1, 2, 3, 4, 5],
+                                },
+                              }))
+                            }
+                            className="px-2.5 py-0.5 bg-white border border-gray-300 rounded text-[11px] font-medium text-gray-700 hover:bg-gray-100 cursor-pointer"
+                          >
+                            {t("webAdmin.offers.scheduleMonFri", "Lun - Vie")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                schedule: {
+                                  ...prev.schedule,
+                                  days: [6, 0],
+                                },
+                              }))
+                            }
+                            className="px-2.5 py-0.5 bg-white border border-gray-300 rounded text-[11px] font-medium text-gray-700 hover:bg-gray-100 cursor-pointer"
+                          >
+                            {t("webAdmin.offers.scheduleWeekends", "Fin de semana")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                schedule: {
+                                  ...prev.schedule,
+                                  days: [1, 2, 3, 4, 5, 6, 0],
+                                },
+                              }))
+                            }
+                            className="px-2.5 py-0.5 bg-white border border-gray-300 rounded text-[11px] font-medium text-gray-700 hover:bg-gray-100 cursor-pointer"
+                          >
+                            {t("webAdmin.offers.scheduleAll7Days", "Los 7 días")}
+                          </button>
+                        </div>
+
+                        {/* 7 day buttons */}
+                        <div className="grid grid-cols-7 gap-2">
+                          {[1, 2, 3, 4, 5, 6, 0].map((dayNum) => {
+                            const isSelected = formData.schedule.days.includes(dayNum);
+                            return (
+                              <button
+                                key={dayNum}
+                                type="button"
+                                onClick={() => {
+                                  setFormData((prev) => {
+                                    const curr = prev.schedule.days || [];
+                                    const next = curr.includes(dayNum)
+                                      ? curr.filter((d) => d !== dayNum)
+                                      : [...curr, dayNum];
+                                    return {
+                                      ...prev,
+                                      schedule: {
+                                        ...prev.schedule,
+                                        days: next,
+                                      },
+                                    };
+                                  });
+                                }}
+                                title={t(`webAdmin.offers.fullDays.${dayNum}`)}
+                                className={`py-2 px-1 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center cursor-pointer ${
+                                  isSelected
+                                    ? "bg-black text-white shadow-xs"
+                                    : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-100"
+                                }`}
+                              >
+                                <span>{t(`webAdmin.offers.days.${dayNum}`)}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Card 3: Time Range / Specific hours (e.g. Midnight) */}
+                  <div className="bg-gray-50/80 border border-gray-200 rounded-xl p-4 space-y-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center flex-shrink-0 text-emerald-700">
+                          <Clock className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-gray-900">
+                            {t("webAdmin.offers.scheduleTimeTitle", "Franja Horaria del Día")}
+                          </h4>
+                          <p className="text-[11px] text-gray-500">
+                            {t(
+                              "webAdmin.offers.scheduleTimeSubtitle",
+                              "Ejecutar a medianoche, durante el almuerzo o en horas específicas"
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Toggle */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-semibold text-gray-700">
+                          {formData.schedule.hasTimeRange
+                            ? t("webAdmin.offers.scheduleSpecificHours", "Franja horaria")
+                            : t("webAdmin.offers.scheduleAllDay24h", "Todo el día (24h)")}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              schedule: {
+                                ...prev.schedule,
+                                hasTimeRange: !prev.schedule.hasTimeRange,
+                              },
+                            }))
+                          }
+                          className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors cursor-pointer ${
+                            formData.schedule.hasTimeRange ? "bg-emerald-600" : "bg-gray-300"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                              formData.schedule.hasTimeRange ? "translate-x-5" : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+
+                    {formData.schedule.hasTimeRange ? (
+                      <div className="pt-2 border-t border-gray-200/80 space-y-3">
+                        {/* Time presets */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase">
+                            {t("webAdmin.offers.schedulePresets", "Preajustes:")}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                schedule: {
+                                  ...prev.schedule,
+                                  startTime: "00:00",
+                                  endTime: "04:00",
+                                },
+                              }))
+                            }
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-300 rounded text-[11px] font-medium text-gray-700 hover:bg-gray-100 hover:border-emerald-500 cursor-pointer transition-colors"
+                          >
+                            <Moon className="w-3 h-3 text-emerald-600 shrink-0" />
+                            <span>{t("webAdmin.offers.schedulePresetMidnight", "Medianoche (00:00 - 04:00)")}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                schedule: {
+                                  ...prev.schedule,
+                                  startTime: "12:00",
+                                  endTime: "16:00",
+                                },
+                              }))
+                            }
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-300 rounded text-[11px] font-medium text-gray-700 hover:bg-gray-100 hover:border-emerald-500 cursor-pointer transition-colors"
+                          >
+                            <Utensils className="w-3 h-3 text-emerald-600 shrink-0" />
+                            <span>{t("webAdmin.offers.schedulePresetLunch", "Almuerzo (12:00 - 16:00)")}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                schedule: {
+                                  ...prev.schedule,
+                                  startTime: "20:00",
+                                  endTime: "23:59",
+                                },
+                              }))
+                            }
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-300 rounded text-[11px] font-medium text-gray-700 hover:bg-gray-100 hover:border-emerald-500 cursor-pointer transition-colors"
+                          >
+                            <Wine className="w-3 h-3 text-emerald-600 shrink-0" />
+                            <span>{t("webAdmin.offers.schedulePresetDinner", "Cena (20:00 - 23:59)")}</span>
+                          </button>
+                        </div>
+
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-[11px] font-bold text-gray-700 mb-1.5">
+                                {t("webAdmin.offers.scheduleStartTime", "Desde (Hora de inicio)")}
+                              </label>
+                              <MobileTimePicker
+                                value={
+                                  formData.schedule.startTime
+                                    ? dayjs(`2000-01-01T${formData.schedule.startTime}:00`)
+                                    : dayjs("2000-01-01T00:00:00")
+                                }
+                                onChange={(newValue: Dayjs | null) => {
+                                  if (newValue && newValue.isValid()) {
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      schedule: {
+                                        ...prev.schedule,
+                                        startTime: newValue.format("HH:mm"),
+                                      },
+                                    }));
+                                  }
+                                }}
+                                views={["hours", "minutes"]}
+                                ampm={false}
+                                slotProps={{
+                                  textField: {
+                                    size: "small",
+                                    fullWidth: true,
+                                    sx: {
+                                      backgroundColor: "#ffffff",
+                                      "& .MuiOutlinedInput-root": {
+                                        borderRadius: "0.5rem",
+                                        fontSize: "0.8125rem",
+                                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                                          borderColor: "#10b981",
+                                        },
+                                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                          borderColor: "#059669",
+                                          borderWidth: "1.5px",
+                                        },
+                                      },
+                                    },
+                                  },
+                                }}
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-bold text-gray-700 mb-1.5">
+                                {t("webAdmin.offers.scheduleEndTime", "Hasta (Hora de fin)")}
+                              </label>
+                              <MobileTimePicker
+                                value={
+                                  formData.schedule.endTime
+                                    ? dayjs(`2000-01-01T${formData.schedule.endTime}:00`)
+                                    : dayjs("2000-01-01T23:59:00")
+                                }
+                                onChange={(newValue: Dayjs | null) => {
+                                  if (newValue && newValue.isValid()) {
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      schedule: {
+                                        ...prev.schedule,
+                                        endTime: newValue.format("HH:mm"),
+                                      },
+                                    }));
+                                  }
+                                }}
+                                views={["hours", "minutes"]}
+                                ampm={false}
+                                slotProps={{
+                                  textField: {
+                                    size: "small",
+                                    fullWidth: true,
+                                    sx: {
+                                      backgroundColor: "#ffffff",
+                                      "& .MuiOutlinedInput-root": {
+                                        borderRadius: "0.5rem",
+                                        fontSize: "0.8125rem",
+                                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                                          borderColor: "#10b981",
+                                        },
+                                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                          borderColor: "#059669",
+                                          borderWidth: "1.5px",
+                                        },
+                                      },
+                                    },
+                                  },
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </LocalizationProvider>
+
+                        {formData.schedule.startTime && formData.schedule.endTime && formData.schedule.startTime > formData.schedule.endTime && (
+                          <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 flex items-center gap-1.5">
+                            <Info className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span>
+                              {t(
+                                "webAdmin.offers.scheduleCrossMidnightWarning",
+                                "Esta franja cruza la medianoche (activa desde la noche hasta la madrugada del día siguiente)."
+                              )}
+                            </span>
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-gray-500 bg-white border border-gray-200 rounded-lg p-2.5 flex items-center gap-2">
+                        <Info className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <span>
+                          {t(
+                            "webAdmin.offers.scheduleAllDayNotice",
+                            "Activa durante todo el día (24 horas) en los días programados."
+                          )}
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>
