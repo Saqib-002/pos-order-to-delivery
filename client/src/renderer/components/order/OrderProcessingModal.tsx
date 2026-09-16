@@ -94,29 +94,58 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     }
   }, [auth?.token]);
 
-  const calculateEstimatedTime = (orderCount: number): number => {
+  const getKitchenEstimates = (orderCount: number) => {
     const ranges = configurations?.kitchenTimeEstimationRanges;
     if (!ranges || ranges.length === 0) {
-      return 0;
+      return { pickup: null, delivery: null, overflow: null };
     }
 
-    const applicableRange = ranges.find(
-      (range) => orderCount >= range.minOrders && orderCount <= range.maxOrders
+    const applicable = ranges.find(
+      (r) => orderCount >= r.minOrders && orderCount <= r.maxOrders
     );
 
-    if (applicableRange) {
-      return applicableRange.estimatedTime;
+    if (applicable) {
+      const pickup = applicable.pickupTime ?? applicable.estimatedTime ?? 0;
+      const delivery = applicable.deliveryTime ?? applicable.estimatedTime ?? 0;
+      return {
+        pickup: pickup > 0 ? String(pickup) : null,
+        delivery: delivery > 0 ? String(delivery) : null,
+        overflow: null,
+      };
     }
 
-    const sortedRanges = ranges.sort((a, b) => b.maxOrders - a.maxOrders);
-    const highestRange = sortedRanges.find(
-      (range) => orderCount >= range.minOrders
-    );
+    const sorted = [...ranges].sort((a, b) => b.maxOrders - a.maxOrders);
+    const highest = sorted[0];
 
-    return highestRange?.estimatedTime || 0;
+    if (highest && orderCount > highest.maxOrders) {
+      const overflowMsg = configurations?.kitchenOverflowMessage?.trim();
+      if (overflowMsg) {
+        return { pickup: null, delivery: null, overflow: overflowMsg };
+      }
+      const pickup = highest.pickupTime ?? highest.estimatedTime ?? 0;
+      const delivery = highest.deliveryTime ?? highest.estimatedTime ?? 0;
+      return {
+        pickup: pickup > 0 ? `+${pickup}` : null,
+        delivery: delivery > 0 ? `+${delivery}` : null,
+        overflow: null,
+      };
+    }
+
+    const lowest = [...ranges].sort((a, b) => a.minOrders - b.minOrders)[0];
+    if (lowest) {
+      const pickup = lowest.pickupTime ?? lowest.estimatedTime ?? 0;
+      const delivery = lowest.deliveryTime ?? lowest.estimatedTime ?? 0;
+      return {
+        pickup: pickup > 0 ? String(pickup) : null,
+        delivery: delivery > 0 ? String(delivery) : null,
+        overflow: null,
+      };
+    }
+
+    return { pickup: null, delivery: null, overflow: null };
   };
 
-  const estimatedTime = calculateEstimatedTime(sentToKitchenCount);
+  const kitchenEstimates = getKitchenEstimates(sentToKitchenCount);
 
   const [pickupTime, setPickupTime] = useState<Dayjs | null>(null);
   const [notes, setNotes] = useState("");
@@ -537,14 +566,20 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           {sentToKitchenCount > 0 && (
             <div className="absolute inset-x-0 top-8 w-fit left-1/2 -translate-x-1/2 flex flex-col items-center">
               <p className="text-white text-xs bg-black/30 px-4 py-2 rounded-full backdrop-blur-sm border border-white/20 shadow-lg mb-2">
-                {sentToKitchenCount > 0 && estimatedTime > 0
-                  ? t("orderProcessingModal.sentToKitchenWithTime", {
-                    count: sentToKitchenCount,
-                    time: estimatedTime,
-                  })
+                {kitchenEstimates.overflow
+                  ? t("orderProcessingModal.sentToKitchenWithOverflow", {
+                      count: sentToKitchenCount,
+                      message: kitchenEstimates.overflow,
+                    })
+                  : kitchenEstimates.pickup && kitchenEstimates.delivery
+                  ? t("orderProcessingModal.sentToKitchenWithSeparateTimes", {
+                      count: sentToKitchenCount,
+                      pickupTime: kitchenEstimates.pickup,
+                      deliveryTime: kitchenEstimates.delivery,
+                    })
                   : t("orderProcessingModal.sentToKitchenCount", {
-                    count: sentToKitchenCount,
-                  })}
+                      count: sentToKitchenCount,
+                    })}
               </p>
               {Object.keys(typeCounts).length > 0 && (
                 <div className="flex gap-2">
@@ -942,7 +977,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   />
                 </div>
 
-                {orderType === "delivery" && (
+                {orderType === "delivery" || orderType === "web:delivery" ||  orderType === "app:delivery" && (
                   <div className="mt-4">
                     <AddressAutocomplete
                       label={t(
@@ -1078,7 +1113,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           </div>
 
           {/* Pickup Time (only for pickup) */}
-          {orderType === "pickup" && (
+          {orderType === "pickup" || orderType === "app:pickup" || orderType === "web:pickup" && (
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -1119,7 +1154,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           )}
 
           {/* Delivery Address Info (only for delivery) */}
-          {orderType === "delivery" &&
+          {orderType === "delivery" || orderType === "web:delivery" || orderType === "app:delivery" &&
             selectedCustomer &&
             selectedCustomer.address && (
               <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 rounded-xl flex items-start gap-4">
@@ -1141,7 +1176,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             )}
 
           {/* Payment Status Info (only for delivery) */}
-          {orderType === "delivery" && (
+          {orderType === "delivery" || orderType === "web:delivery" || orderType === "app:delivery" && (
             <div className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-xl flex items-start gap-4">
               <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
                 <CashIcon className="size-5 text-yellow-600" />

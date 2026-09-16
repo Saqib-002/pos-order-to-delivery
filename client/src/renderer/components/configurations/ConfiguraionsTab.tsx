@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { EyeIcon, ImgIcon, LocationIcon } from "@/renderer/public/Svg";
 import { AddressAutocomplete } from "../shared/AddressAutocomplete";
 import DeliveryZoneMapModal from "./Modals/DeliveryZoneMapModal";
+import { Trash2 } from "lucide-react";
 
 const ConfigurationsTab = () => {
   const [configurationsId, setConfigurationsId] = useState<string>("");
@@ -73,23 +74,25 @@ const ConfigurationsTab = () => {
             typeof range === "object" &&
             typeof range.minOrders === "number" &&
             typeof range.maxOrders === "number" &&
-            typeof range.estimatedTime === "number" &&
             !isNaN(range.minOrders) &&
             !isNaN(range.maxOrders) &&
-            !isNaN(range.estimatedTime) &&
             isFinite(range.minOrders) &&
             isFinite(range.maxOrders) &&
-            isFinite(range.estimatedTime) &&
             range.minOrders >= 0 &&
-            range.maxOrders >= 0 &&
-            range.estimatedTime >= 0
+            range.maxOrders >= 0
           );
         })
-        .map((range: any) => ({
-          minOrders: Math.floor(Math.max(0, range.minOrders)),
-          maxOrders: Math.floor(Math.max(0, range.maxOrders)),
-          estimatedTime: Math.floor(Math.max(0, range.estimatedTime)),
-        }));
+        .map((range: any) => {
+          const pickup = Math.floor(Math.max(0, Number(range.pickupTime ?? range.estimatedTime ?? 15)));
+          const delivery = Math.floor(Math.max(0, Number(range.deliveryTime ?? range.estimatedTime ?? 30)));
+          return {
+            minOrders: Math.floor(Math.max(0, range.minOrders)),
+            maxOrders: Math.floor(Math.max(0, range.maxOrders)),
+            pickupTime: pickup,
+            deliveryTime: delivery,
+            estimatedTime: pickup,
+          };
+        });
     }
 
     let cleanedDeliveryZones: any[] = [];
@@ -118,6 +121,7 @@ const ConfigurationsTab = () => {
 
     const cleanedConfigurations = {
       ...configurations,
+      kitchenOverflowMessage: (configurations.kitchenOverflowMessage || "").trim(),
       kitchenTimeEstimationRanges: cleanedRanges,
       deliveryZones: cleanedDeliveryZones,
     };
@@ -363,16 +367,22 @@ const ConfigurationsTab = () => {
             {/* Kitchen Time Estimation Ranges */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {t("configurations.kitchenTimeEstimationLabel")}
-                </h3>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {t("configurations.kitchenTimeEstimationLabel")}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {t("configurations.kitchenOverflowMessageHelp")}
+                  </p>
+                </div>
                 <CustomButton
                   type="button"
                   onClick={() => {
                     const newRange = {
                       minOrders: 0,
                       maxOrders: 10,
-                      estimatedTime: 20,
+                      pickupTime: 15,
+                      deliveryTime: 30,
                     };
                     const updatedRanges = [
                       ...(configurations.kitchenTimeEstimationRanges || []),
@@ -389,149 +399,213 @@ const ConfigurationsTab = () => {
                 />
               </div>
 
+              {/* High Volume Overflow Message Input */}
+              <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-4">
+                <CustomInput
+                  type="text"
+                  value={configurations.kitchenOverflowMessage || ""}
+                  onChange={(e) =>
+                    setConfigurations({
+                      ...configurations,
+                      kitchenOverflowMessage: e.target.value,
+                    })
+                  }
+                  label={t("configurations.kitchenOverflowMessage")}
+                  name="kitchenOverflowMessage"
+                  placeholder={t("configurations.kitchenOverflowMessagePlaceholder")}
+                  inputClasses="bg-white"
+                />
+              </div>
+
               {(configurations.kitchenTimeEstimationRanges || []).length ===
               0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <p className="text-sm">
+                <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                  <p className="text-sm font-medium">
                     {t("configurations.noTimeRangeSet")}
                   </p>
-                  <p className="text-xs mt-1">
+                  <p className="text-xs mt-1 text-gray-400">
                     {t("configurations.addTimeRangeHelp")}
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {(configurations.kitchenTimeEstimationRanges || []).map(
-                    (range, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-4"
-                      >
-                        <div className="flex items-center gap-6">
-                          {/* Orders Range */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-700 min-w-fit">
-                              {t("configurations.ordersLabel")}
-                            </span>
-                            <div className="flex items-center gap-1">
-                              <CustomInput
-                                type="number"
-                                value={String(range.minOrders)}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  const numValue =
-                                    value === "" ? 0 : Number(value);
-                                  if (isNaN(numValue)) return;
+                <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse min-w-[540px]">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                          <th className="py-3 px-4 w-[30%]">
+                            {t("configurations.ordersRangeLabel") || t("configurations.ordersLabel")}
+                          </th>
+                          <th className="py-3 px-4 w-[30%]">
+                            {t("configurations.pickupEstimatedTimeLabel")}
+                          </th>
+                          <th className="py-3 px-4 w-[30%]">
+                            {t("configurations.deliveryEstimatedTimeLabel")}
+                          </th>
+                          <th className="py-3 px-4 text-center w-[10%]">
+                            {t("configurations.actions") || "Actions"}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 text-sm">
+                        {(configurations.kitchenTimeEstimationRanges || []).map(
+                          (range, index) => (
+                            <tr
+                              key={index}
+                              className="hover:bg-gray-50/60 transition-colors"
+                            >
+                              {/* Orders Range: min - max */}
+                              <td className="py-3 px-4">
+                                <div className="flex items-center gap-1.5">
+                                  <CustomInput
+                                    type="number"
+                                    value={String(range.minOrders)}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      const numValue =
+                                        value === "" ? 0 : Number(value);
+                                      if (isNaN(numValue)) return;
+                                      const updatedRanges = [
+                                        ...(configurations.kitchenTimeEstimationRanges || []),
+                                      ];
+                                      updatedRanges[index] = {
+                                        ...range,
+                                        minOrders: numValue,
+                                      };
+                                      setConfigurations({
+                                        ...configurations,
+                                        kitchenTimeEstimationRanges: updatedRanges,
+                                      });
+                                    }}
+                                    placeholder="0"
+                                    min="0"
+                                    inputClasses="w-16 text-center px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black bg-white"
+                                    name={`minOrders-${index}`}
+                                  />
+                                  <span className="text-gray-400 font-bold">-</span>
+                                  <CustomInput
+                                    type="number"
+                                    value={String(range.maxOrders)}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      const numValue =
+                                        value === "" ? 0 : Number(value);
+                                      if (isNaN(numValue)) return;
+                                      const updatedRanges = [
+                                        ...(configurations.kitchenTimeEstimationRanges || []),
+                                      ];
+                                      updatedRanges[index] = {
+                                        ...range,
+                                        maxOrders: numValue,
+                                      };
+                                      setConfigurations({
+                                        ...configurations,
+                                        kitchenTimeEstimationRanges: updatedRanges,
+                                      });
+                                    }}
+                                    placeholder="10"
+                                    min="0"
+                                    inputClasses="w-16 text-center px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black bg-white"
+                                    name={`maxOrders-${index}`}
+                                  />
+                                </div>
+                              </td>
 
-                                  const updatedRanges = [
-                                    ...(configurations.kitchenTimeEstimationRanges ||
-                                      []),
-                                  ];
-                                  updatedRanges[index] = {
-                                    ...range,
-                                    minOrders: numValue,
-                                  };
-                                  setConfigurations({
-                                    ...configurations,
-                                    kitchenTimeEstimationRanges: updatedRanges,
-                                  });
-                                }}
-                                placeholder="0"
-                                min="0"
-                                inputClasses="w-16 text-center px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-black bg-white"
-                                name={`minOrders-${index}`}
-                              />
-                              <span className="text-gray-500">-</span>
-                              <CustomInput
-                                type="number"
-                                value={String(range.maxOrders)}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  const numValue =
-                                    value === "" ? 0 : Number(value);
-                                  if (isNaN(numValue)) return;
+                              {/* Pickup Time */}
+                              <td className="py-3 px-4">
+                                <div className="flex items-center gap-1.5">
+                                  <CustomInput
+                                    type="number"
+                                    value={String(range.pickupTime ?? range.estimatedTime ?? 15)}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      const numValue =
+                                        value === "" ? 0 : Number(value);
+                                      if (isNaN(numValue)) return;
+                                      const updatedRanges = [
+                                        ...(configurations.kitchenTimeEstimationRanges || []),
+                                      ];
+                                      updatedRanges[index] = {
+                                        ...range,
+                                        pickupTime: numValue,
+                                        estimatedTime: numValue,
+                                      };
+                                      setConfigurations({
+                                        ...configurations,
+                                        kitchenTimeEstimationRanges: updatedRanges,
+                                      });
+                                    }}
+                                    placeholder="15"
+                                    min="0"
+                                    inputClasses="w-20 text-center px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black bg-white"
+                                    name={`pickupTime-${index}`}
+                                  />
+                                  <span className="text-xs text-gray-500 font-medium">
+                                    {t("configurations.minutesLabel")}
+                                  </span>
+                                </div>
+                              </td>
 
-                                  const updatedRanges = [
-                                    ...(configurations.kitchenTimeEstimationRanges ||
-                                      []),
-                                  ];
-                                  updatedRanges[index] = {
-                                    ...range,
-                                    maxOrders: numValue,
-                                  };
-                                  setConfigurations({
-                                    ...configurations,
-                                    kitchenTimeEstimationRanges: updatedRanges,
-                                  });
-                                }}
-                                placeholder="10"
-                                min="0"
-                                inputClasses="w-16 text-center px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-black bg-white"
-                                name={`maxOrders-${index}`}
-                              />
-                            </div>
-                          </div>
+                              {/* Delivery Time */}
+                              <td className="py-3 px-4">
+                                <div className="flex items-center gap-1.5">
+                                  <CustomInput
+                                    type="number"
+                                    value={String(range.deliveryTime ?? range.estimatedTime ?? 30)}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      const numValue =
+                                        value === "" ? 0 : Number(value);
+                                      if (isNaN(numValue)) return;
+                                      const updatedRanges = [
+                                        ...(configurations.kitchenTimeEstimationRanges || []),
+                                      ];
+                                      updatedRanges[index] = {
+                                        ...range,
+                                        deliveryTime: numValue,
+                                      };
+                                      setConfigurations({
+                                        ...configurations,
+                                        kitchenTimeEstimationRanges: updatedRanges,
+                                      });
+                                    }}
+                                    placeholder="30"
+                                    min="0"
+                                    inputClasses="w-20 text-center px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black bg-white"
+                                    name={`deliveryTime-${index}`}
+                                  />
+                                  <span className="text-xs text-gray-500 font-medium">
+                                    {t("configurations.minutesLabel")}
+                                  </span>
+                                </div>
+                              </td>
 
-                          {/* Estimated Time */}
-                          <div className="flex items-center gap-2 mr-4">
-                            <span className="text-sm font-medium text-gray-700 min-w-fit">
-                              {t("configurations.estimatedTimeLabel")}
-                            </span>
-                            <div className="flex items-center gap-1">
-                              <CustomInput
-                                type="number"
-                                value={String(range.estimatedTime)}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  const numValue =
-                                    value === "" ? 0 : Number(value);
-                                  if (isNaN(numValue)) return;
-
-                                  const updatedRanges = [
-                                    ...(configurations.kitchenTimeEstimationRanges ||
-                                      []),
-                                  ];
-                                  updatedRanges[index] = {
-                                    ...range,
-                                    estimatedTime: numValue,
-                                  };
-                                  setConfigurations({
-                                    ...configurations,
-                                    kitchenTimeEstimationRanges: updatedRanges,
-                                  });
-                                }}
-                                placeholder="20"
-                                min="0"
-                                inputClasses="w-20 text-center px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-black bg-white"
-                                name={`estimatedTime-${index}`}
-                              />
-                              <span className="text-sm text-gray-600">
-                                {t("configurations.minutesLabel")}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Remove Button */}
-                        <CustomButton
-                          type="button"
-                          onClick={() => {
-                            const updatedRanges = [
-                              ...(configurations.kitchenTimeEstimationRanges ||
-                                []),
-                            ];
-                            updatedRanges.splice(index, 1);
-                            setConfigurations({
-                              ...configurations,
-                              kitchenTimeEstimationRanges: updatedRanges,
-                            });
-                          }}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2"
-                          label="✕"
-                        />
-                      </div>
-                    ),
-                  )}
+                              {/* Delete Action Button */}
+                              <td className="py-3 px-4 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updatedRanges = [
+                                      ...(configurations.kitchenTimeEstimationRanges || []),
+                                    ];
+                                    updatedRanges.splice(index, 1);
+                                    setConfigurations({
+                                      ...configurations,
+                                      kitchenTimeEstimationRanges: updatedRanges,
+                                    });
+                                  }}
+                                  className="inline-flex items-center justify-center p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                  title={t("configurations.actions") || "Delete"}
+                                >
+                                  <Trash2 className="size-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          )
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </div>

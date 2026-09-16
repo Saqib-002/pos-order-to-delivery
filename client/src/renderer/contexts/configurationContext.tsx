@@ -1,10 +1,12 @@
 import i18n from "@/i18n";
 import { createContext, useContext, useEffect, useState } from "react";
 
-interface KitchenTimeEstimationRange {
+export interface KitchenTimeEstimationRange {
   minOrders: number;
   maxOrders: number;
-  estimatedTime: number;
+  pickupTime?: number;
+  deliveryTime?: number;
+  estimatedTime?: number;
 }
 
 interface DeliveryZone {
@@ -24,6 +26,7 @@ interface ConfigurationType {
   mediumKitchenPriorityTime?: number;
   highKitchenPriorityTime?: number;
   kitchenTimeEstimationRanges?: KitchenTimeEstimationRange[];
+  kitchenOverflowMessage?: string;
   deliveryZones?: DeliveryZone[];
   googleMapsApiKey?: string;
   address: string;
@@ -72,6 +75,7 @@ export const ConfigurationsProvider = ({
     mediumKitchenPriorityTime: 0,
     highKitchenPriorityTime: 0,
     googleMapsApiKey: "",
+    kitchenOverflowMessage: "",
     deliveryZones: [],
     address: "",
     apartment: "",
