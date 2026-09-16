@@ -272,6 +272,20 @@ const ConfigurationsTab = () => {
             />
             <CustomInput
               type="text"
+              value={configurations.phone || ""}
+              onChange={(e) =>
+                setConfigurations({
+                  ...configurations,
+                  phone: e.target.value,
+                })
+              }
+              label={t("configurations.phone")}
+              name="phone"
+              placeholder={t("configurations.phonePlaceholder")}
+              inputClasses="bg-white"
+            />
+            <CustomInput
+              type="text"
               value={cdnUrl}
               onChange={(e) => setCdnUrl(e.target.value)}
               label="CDN URL"

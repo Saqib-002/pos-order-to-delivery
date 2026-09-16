@@ -3,10 +3,14 @@ import { FilterType, Order } from "@/types/order";
 import { AuthState } from "@/types/user";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { StringToComplements } from "../utils/order";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
+import { playNotificationSound } from "../utils/audio";
+import { printOrder } from "../utils/printer";
 
 const useOrderManagementInternal = (auth: AuthState) => {
+  const { t } = useTranslation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [totalOrders, setTotalOrders] = useState<number>(0);
   const [filter, setFilter] = useState<FilterType>({
@@ -59,6 +63,46 @@ const useOrderManagementInternal = (auth: AuthState) => {
     }, 5000);
     return () => clearInterval(interval);
   }, [auth.token, filter]);
+
+  // Listen for new synced web/app orders, play notification sound, and print receipt
+  useEffect(() => {
+    if (!auth.token) return;
+    if (!(window as any).electronAPI?.onNewWebOrder) return;
+
+    const cleanup = (window as any).electronAPI.onNewWebOrder(async (data: any) => {
+      // 1. Notification sound plays first
+      await playNotificationSound();
+
+      const ticketNum = data?.order?.ticketNumber || data?.order?.orderId || "";
+      const message = t("orderManagement.newOrderReceived", {
+        ticketNumber: ticketNum ? `#${ticketNum}` : "",
+        defaultValue: `¡Nuevo pedido recibido! ${ticketNum ? `#${ticketNum}` : ""}`,
+      });
+      toast.info(message, {
+        autoClose: 5000,
+      });
+      refreshOrdersCallback();
+
+      // 2. Print receipt after notification sound
+      try {
+        await printOrder({
+          order: data?.order,
+          orderItems: data?.items,
+          token: auth.token,
+          user: auth.user,
+          t,
+        });
+      } catch (err) {
+        console.error("Auto-print error on synced web order:", err);
+      }
+    });
+
+    return () => {
+      if (typeof cleanup === "function") {
+        cleanup();
+      }
+    };
+  }, [auth.token, filter, t]);
 
   return {
     orders,

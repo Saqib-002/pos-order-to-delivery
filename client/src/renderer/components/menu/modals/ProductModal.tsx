@@ -1756,13 +1756,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
                           className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl shadow-xs hover:border-gray-300 transition-all duration-200"
                         >
                           <div className="flex items-center space-x-3 min-w-0 pr-2 ">
-                            <div className="rounded-lg border border-gray-200 bg-gray-50 p-1">
+                            <div className="rounded-lg border border-gray-200 bg-gray-50">
                               {allergen.icon ? (
                                 <img
                                   crossOrigin="anonymous"
                                   src={allergen.icon}
                                   alt={allergen.nameEs}
-                                  className="w-8 h-8 object-contain rounded-md p-1 flex-shrink-0 filter invert brightness-200"
+                                  className="w-10 h-10 object-contain rounded-md flex-shrink-0"
                                 />
                               ) : (
                                 <div className="w-8 h-8 rounded-md bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xs flex-shrink-0 border border-amber-200/60">

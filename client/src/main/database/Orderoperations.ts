@@ -15,7 +15,7 @@ const stringToComplements = (complementStr: any): any[] => {
   const complements = complementStr.split("=");
   return complements.map((c) => {
     const parts = c.split("|");
-    const [groupId, groupName, itemId, itemName, price, forProduct] = parts;
+    const [groupId, groupName, itemId, itemName, price, forProduct, isRemovalGroup] = parts;
     return {
       groupId,
       groupName,
@@ -24,6 +24,7 @@ const stringToComplements = (complementStr: any): any[] => {
       price: parseFloat(price || "0"),
       priority: 0,
       forProduct: forProduct === "1",
+      isRemovalGroup: isRemovalGroup === "1",
     };
   });
 };
@@ -1300,10 +1301,18 @@ export class OrderDatabaseOperations {
         .first();
       const newDailyOrderId = (Number((countResult as any).count) || 0) + 1;
 
+      let customerId = orderData.customerId || null;
+      if (customerId) {
+        const existingCustomer = await trx("web_customers").where({ id: customerId }).first();
+        if (!existingCustomer) {
+          customerId = null;
+        }
+      }
+
       const newOrder = {
         id: orderData.id || randomUUID(),
         orderId: newDailyOrderId,
-        customerId: orderData.customerId || null,
+        customerId,
         customerName: orderData.customerName || "",
         customerPhone: orderData.customerPhone || "",
         customerCIF: orderData.customerCIF || "",
@@ -1326,6 +1335,7 @@ export class OrderDatabaseOperations {
 
       await trx("orders").insert(newOrder);
 
+      const savedItems: any[] = [];
       if (items && Array.isArray(items)) {
         for (const item of items) {
           let itemPrinters = item.printers || "";
@@ -1376,11 +1386,16 @@ export class OrderDatabaseOperations {
             updatedAt: nowObj,
           };
           await trx("order_items").insert(orderItem);
+          savedItems.push(orderItem);
         }
       }
 
       await trx.commit();
-      return { orderId: newOrder.id };
+      return {
+        orderId: newOrder.id,
+        order: newOrder,
+        items: this.formatOrderItems(savedItems),
+      };
     } catch (error) {
       await trx.rollback();
       throw error;

@@ -141,7 +141,7 @@ export const AllergenModal: React.FC<AllergenModalProps> = ({
                       crossOrigin="anonymous"
                       src={iconPreview}
                       alt="Icon Preview"
-                      className="w-full h-full object-contain p-2 filter invert brightness-200"
+                      className="w-full h-full object-contain p-2"
                     />
                   ) : (
                     <ImgIcon className="w-8 h-8 text-gray-400" />

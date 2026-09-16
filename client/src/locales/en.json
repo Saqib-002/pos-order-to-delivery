@@ -64,6 +64,8 @@
     "companyAddressPlaceholder": "Enter company Address",
     "vatNumber": "VAT Number",
     "vatNumberPlaceholder": "Enter VAT number",
+    "phone": "Phone Number",
+    "phonePlaceholder": "Enter phone number",
     "orderPrefix": "Order Prefix",
     "orderPrefixPlaceholder": "K",
     "googleMapsApiKey": "Google Maps API Key",
@@ -879,6 +881,7 @@
     "restaurantLogo": "Restaurant Logo"
   },
   "orderManagement": {
+    "newOrderReceived": "New order received! {{ticketNumber}}",
     "filters": {
       "allOrders": "All Orders",
       "pending": "📋 Pending",
@@ -3135,7 +3138,7 @@
       "announcementActive": "Enable Announcement",
       "announcementText": "Announcement Text",
       "announcementPlaceholderEn": "e.g. Free delivery on orders over €20 this weekend!",
-      "announcementPlaceholderEs": "ej. ¡Envío gratis en pedidos superiores a 20€ este fin de semana!",
+      "announcementPlaceholderEs": "ej. ¡Domicilio gratis en pedidos superiores a 20€ este fin de semana!",
       "systemTitle": "Estimated Response Time",
       "systemSubtitle": "Displays average response time to customers.",
       "responseTime": "Response Time",

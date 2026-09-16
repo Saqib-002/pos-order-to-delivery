@@ -15,6 +15,7 @@ export async function syncConfigToVPS(configId: string): Promise<void> {
             id: config.id,
             name: config.name || "",
             address: config.address || "",
+            phone: config.phone || "",
             logo: config.logo || "",
             lowKitchenPriorityTime: config.lowKitchenPriorityTime,
             mediumKitchenPriorityTime: config.mediumKitchenPriorityTime,

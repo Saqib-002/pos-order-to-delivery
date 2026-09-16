@@ -64,6 +64,8 @@
     "companyAddressPlaceholder": "Ingrese la dirección de la empresa",
     "vatNumber": "Número de IVA",
     "vatNumberPlaceholder": "Ingrese el número de IVA",
+    "phone": "Número de teléfono",
+    "phonePlaceholder": "Ingrese el número de teléfono",
     "orderPrefix": "prefijo de orden",
     "orderPrefixPlaceholder": "K",
     "googleMapsApiKey": "Clave API de Google Maps",
@@ -879,6 +881,7 @@
     "restaurantLogo": "Logo del Restaurante"
   },
   "orderManagement": {
+    "newOrderReceived": "¡Nuevo pedido recibido! {{ticketNumber}}",
     "filters": {
       "allOrders": "Todos los Pedidos",
       "pending": "📋 Pendiente",
@@ -2718,13 +2721,13 @@
     "delivery": "Domicilio",
     "dineIn": "Consumo en local",
     "platform": "Plataforma",
-    "platformDelivery": "Plataforma (Envío)",
+    "platformDelivery": "Plataforma (Domicilio)",
     "platformPickup": "Plataforma (Recogida)",
     "web": "Web",
-    "webDelivery": "Web (Envío)",
+    "webDelivery": "Web (Domicilio)",
     "webPickup": "Web (Recogida)",
     "app": "App",
-    "appDelivery": "App (Envío)",
+    "appDelivery": "App (Domicilio)",
     "appPickup": "App (Recogida)"
   },
   "orderComponent": {
@@ -3135,7 +3138,7 @@
       "announcementActive": "Activar Anuncio",
       "announcementText": "Texto del Anuncio",
       "announcementPlaceholderEn": "e.g. Free delivery on orders over €20 this weekend!",
-      "announcementPlaceholderEs": "ej. ¡Envío gratis en pedidos superiores a 20€ este fin de semana!",
+      "announcementPlaceholderEs": "ej. ¡Domicilio gratis en pedidos superiores a 20€ este fin de semana!",
       "systemTitle": "Tiempo Estimado de Respuesta",
       "systemSubtitle": "Muestra el tiempo de respuesta promedio a los clientes.",
       "responseTime": "Tiempo de Respuesta",

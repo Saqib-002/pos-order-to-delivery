@@ -331,7 +331,9 @@ export const KitchenView = () => {
               <CheckIcon className="size-4" />
             </button>
             {(order.orderType === "delivery" ||
-              order.orderType === "platform:delivery") && (
+              order.orderType === "platform:delivery" ||
+              order.orderType === "web:delivery" ||
+              order.orderType === "app:delivery") && (
                 <button
                   onClick={() => {
                     setSelectedOrderForRoute(order);

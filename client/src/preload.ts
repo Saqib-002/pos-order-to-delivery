@@ -662,6 +662,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.removeListener("order-change", orderChangeCallback);
     };
   },
+  onNewWebOrder: (callback: (data: any) => void) => {
+    const newWebOrderCallback = (_event: any, data: any) => {
+      callback(data);
+    };
+    ipcRenderer.on("new-web-order", newWebOrderCallback);
+    return () => {
+      ipcRenderer.removeListener("new-web-order", newWebOrderCallback);
+    };
+  },
 
   // cash out operations
   createCashOut: (token: string, data: any) =>

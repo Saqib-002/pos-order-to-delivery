@@ -20,6 +20,7 @@ import {
   generateReceiptHTML,
   generateItemsReceiptHTML,
   groupItemsByPrinter,
+  printOrder,
 } from "@/renderer/utils/printer";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
@@ -116,125 +117,19 @@ const OrderCart: React.FC<OrderCartProps> = ({
   }, [orderItems, token]);
 
   const handlePrint = async () => {
-    const printerGroups = groupItemsByPrinter(orderItems, order?.orderType);
-    if (!Object.keys(printerGroups).length) {
-      toast.warn(t("orderCart.warnings.noPrintersAttached"));
-      return;
+    toast.info(
+      t("orderCart.messages.preparingForPrinting") || "Preparing for printing..."
+    );
+    const success = await printOrder({
+      order,
+      orderItems,
+      token,
+      user,
+      t,
+    });
+    if (success) {
+      toast.success(t("orderCart.messages.receiptPrintedSuccessfully"));
     }
-    let configurations = {
-      name: t("orderCart.pointOfSale"),
-      address: t("orderCart.defaultAddress"),
-      logo: "",
-      id: "",
-    };
-    let res = await (window as any).electronAPI.getConfigurations(token);
-    if (!res.status) {
-      toast.error(t("orderCart.errors.errorGettingConfigurations"));
-      return;
-    }
-    if (res.data) {
-      configurations = res.data;
-    }
-    toast.info(t("orderCart.messages.preparingForPrinting") || "Preparing for printing...");
-    for (const [printer, items] of Object.entries(printerGroups)) {
-      const printerName = printer.split("|")[0];
-      const printerIsMain = printer.split("|")[1];
-      let receiptHTML = "";
-      const paymentStatus = calculatePaymentStatus(
-        order?.paymentType || "",
-        orderTotal,
-      );
-      if (printerIsMain === "true") {
-        if (order?.orderType?.toLowerCase().includes("platform")) {
-          receiptHTML = generateItemsReceiptHTML(
-            items,
-            configurations,
-            order,
-            user!.role,
-            paymentStatus.status,
-            t,
-          );
-        } else {
-          // Get customer address only for delivery orders
-          let customerAddress: string | undefined = undefined;
-          if (order?.orderType === "delivery") {
-            if (order?.customer?.address && order.customer.address.trim()) {
-              customerAddress = order.customer.address.includes("|")
-                ? formatAddress(order.customer.address)
-                : order.customer.address;
-            }
-          }
-
-          // Get pickup time and format it
-          let formattedPickupTime: string | undefined = undefined;
-          if (order?.orderType === "pickup" && order.pickupTime) {
-            try {
-              const pickupDate = new Date(order.pickupTime);
-              if (!isNaN(pickupDate.getTime())) {
-                formattedPickupTime = pickupDate.toLocaleTimeString("es-ES", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
-              } else {
-                formattedPickupTime = order.pickupTime;
-              }
-            } catch (e) {
-              formattedPickupTime = order.pickupTime;
-            }
-          }
-
-          // Get customer phone
-          const customerPhone = order?.customer?.phone;
-          const customerName = order?.customer?.name;
-
-          receiptHTML = generateReceiptHTML(
-            orderItems,
-            configurations,
-            (order?.orderType?.toLowerCase().includes("platform") || order?.orderType?.toLowerCase().includes("web"))
-              ? order.ticketNumber || order.orderId
-              : order!.orderId,
-            order?.orderType,
-            user!.role,
-            paymentStatus.status,
-            t,
-            customerAddress,
-            formattedPickupTime,
-            customerPhone,
-            customerName,
-            user!.name,
-            order?.notes,
-            paymentStatus.totalPaid,
-            order?.paymentType,
-          );
-        }
-      } else {
-        receiptHTML = generateItemsReceiptHTML(
-          items,
-          configurations,
-          order,
-          user!.role,
-          paymentStatus.status,
-          t,
-        );
-      }
-      if (!receiptHTML) {
-        continue;
-      }
-      const res = await (window as any).electronAPI.printToPrinter(
-        token,
-        printerName,
-        { html: receiptHTML },
-      );
-      if (!res.status) {
-        if (res.error === t("orderCart.errors.printerNotFoundError")) {
-          toast.error(t("orderCart.errors.printerNotFound", { printerName }));
-        } else {
-          toast.error(t("orderCart.errors.errorPrintingReceipt"));
-        }
-        return;
-      }
-    }
-    toast.success(t("orderCart.messages.receiptPrintedSuccessfully"));
   };
   const handleRemoveItem = async (itemId: string, itemName: string) => {
     const paymentStatusDerive = calculatePaymentStatus(

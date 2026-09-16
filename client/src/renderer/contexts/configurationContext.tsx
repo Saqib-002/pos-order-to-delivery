@@ -19,6 +19,7 @@ interface ConfigurationType {
   logo: string;
   vatNumber?: string;
   orderPrefix?: string;
+  phone?: string;
   lowKitchenPriorityTime?: number;
   mediumKitchenPriorityTime?: number;
   highKitchenPriorityTime?: number;
@@ -66,6 +67,7 @@ export const ConfigurationsProvider = ({
     logo: "",
     vatNumber: "",
     orderPrefix: "",
+    phone: "",
     lowKitchenPriorityTime: 0,
     mediumKitchenPriorityTime: 0,
     highKitchenPriorityTime: 0,

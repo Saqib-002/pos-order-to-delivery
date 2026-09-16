@@ -171,7 +171,7 @@ const Allergens = () => {
                             crossOrigin="anonymous"
                             src={item.icon}
                             alt={item.nameEs}
-                            className="w-full h-full object-contain p-1 filter invert brightness-200"
+                            className="w-full h-full object-contain p-1"
                           />
                         ) : (
                           <ImgIcon className="w-5 h-5 text-gray-400" />

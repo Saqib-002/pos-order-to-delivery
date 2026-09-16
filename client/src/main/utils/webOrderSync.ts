@@ -1,5 +1,24 @@
+import { BrowserWindow } from "electron";
 import { OrderDatabaseOperations } from "../database/Orderoperations.js";
+import { WebCustomerDatabaseOperations } from "../database/webCustomerOperations.js";
 import Logger from "electron-log";
+
+function notifyWindowsNewOrder(order: any, items: any[]) {
+  try {
+    const windows = BrowserWindow.getAllWindows();
+    for (const win of windows) {
+      if (!win.isDestroyed()) {
+        win.webContents.send("new-web-order", { order, items });
+        win.webContents.send("order-change", {
+          type: "insert",
+          doc: { ...order, items },
+        });
+      }
+    }
+  } catch (err) {
+    Logger.error("WebOrderSync: failed to broadcast new order to renderer:", err);
+  }
+}
 
 async function syncWebOrders(): Promise<void> {
   const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
@@ -21,10 +40,16 @@ async function syncWebOrders(): Promise<void> {
     const processedIds: string[] = [];
 
     for (const item of pendingOrders) {
-      const { order, items } = item;
+      const { order, items, customer } = item;
       try {
-        await OrderDatabaseOperations.saveWebOrder(order, items);
+        if (customer) {
+          await WebCustomerDatabaseOperations.upsertWebCustomer(customer);
+        }
+        const saveResult = await OrderDatabaseOperations.saveWebOrder(order, items);
         processedIds.push(order.id);
+        const savedOrder = saveResult?.order || order;
+        const savedItems = saveResult?.items || items;
+        notifyWindowsNewOrder(savedOrder, savedItems);
         Logger.info(`WebOrderSync: Successfully synced web order ${order.id} (${order.ticketNumber}) locally.`);
       } catch (dbErr) {
         Logger.error(`WebOrderSync: failed to save web order ${order.id} locally:`, dbErr);

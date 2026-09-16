@@ -656,9 +656,9 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                       <div className="font-medium text-black text-sm truncate flex-1">
                         {item.name || `Variant ${item.id}`}
                       </div>
-                      <div className="text-sm font-bold text-gray-600 ml-2">
-                        €{item.price?.toFixed(2) || "0.00"}
-                      </div>
+                        <div className="text-sm font-bold text-gray-600 ml-2">
+                          €{item.price?.toFixed(2) || "0.00"}
+                        </div>
                     </div>
                   </label>
                 ))}

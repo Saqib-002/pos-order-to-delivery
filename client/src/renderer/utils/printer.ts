@@ -5,6 +5,9 @@ import {
   calculateOrderTotal,
   calculateTaxPercentage,
 } from "./orderCalculations";
+import { calculatePaymentStatus } from "./paymentStatus";
+import { formatAddress } from "./utils";
+import { StringToComplements } from "./order";
 
 export const fetchConnectedPrinters = async (
   token: string | null,
@@ -145,16 +148,7 @@ export const generateReceiptHTML = (
     upperType.startsWith("PLATFORM:DELIVERY");
 
   const phone =
-    configurations?.phone ||
-    configurations?.telephone ||
-    (Array.isArray(configurations?.contactTypes)
-      ? configurations.contactTypes.find(
-          (c: any) =>
-            c.type?.toLowerCase()?.includes("phone") ||
-            c.type?.toLowerCase()?.includes("tel")
-        )?.value
-      : "") ||
-    "911 086 981";
+    configurations?.phone || "";
   const restaurantName = configurations?.name || "ALI DONER KEBAB";
   const restaurantAddress = configurations?.address || "";
 
@@ -1109,4 +1103,214 @@ export const generateItemsReceiptHTML = (
     `;
 
   return html;
+};
+
+export interface PrintOrderParams {
+  order: any;
+  orderItems: any[];
+  token: string | null;
+  user?: any;
+  t: (key: string, options?: any) => string;
+}
+
+export const printOrder = async ({
+  order,
+  orderItems,
+  token,
+  user,
+  t,
+}: PrintOrderParams): Promise<boolean> => {
+  if (!order || !token) return false;
+
+  try {
+    let configurations = {
+      name: t("orderCart.pointOfSale") || "Point of Sale",
+      address: t("orderCart.defaultAddress") || "",
+      logo: "",
+      id: "",
+      orderPrefix: "K",
+    };
+    const configRes = await (window as any).electronAPI.getConfigurations(token);
+    if (configRes?.status && configRes.data) {
+      configurations = { ...configurations, ...configRes.data };
+    }
+
+    const printersRes = await (window as any).electronAPI.getAllPrinters(token);
+    const allPrinters =
+      printersRes?.status && Array.isArray(printersRes.data)
+        ? printersRes.data
+        : [];
+    if (allPrinters.length === 0) {
+      toast.warn(t("orderCart.warnings.noPrintersAttached") || "No printers attached.");
+      return false;
+    }
+
+    const formattedItems: OrderItem[] = (orderItems || []).map((item: any) => {
+      let comps = item.complements;
+      if (typeof comps === "string") {
+        try {
+          if (comps.trim().startsWith("[")) {
+            comps = JSON.parse(comps);
+          } else {
+            comps = StringToComplements(comps);
+          }
+        } catch {
+          comps = StringToComplements(comps);
+        }
+      } else if (!Array.isArray(comps)) {
+        comps = [];
+      }
+
+      let printerList: string[] = [];
+      if (Array.isArray(item.printers)) {
+        printerList = item.printers;
+      } else if (typeof item.printers === "string" && item.printers) {
+        printerList = item.printers.split("=");
+      }
+
+      return {
+        ...item,
+        complements: comps,
+        printers: printerList,
+      };
+    });
+
+    const { orderTotal } = calculateOrderTotal(formattedItems);
+    const paymentStatusResult = calculatePaymentStatus(
+      order.paymentType || "",
+      orderTotal
+    );
+    const paymentStatus = {
+      ...paymentStatusResult,
+      status: order.isPaid ? "PAID" : paymentStatusResult.status,
+      totalPaid:
+        order.isPaid && paymentStatusResult.totalPaid === 0
+          ? orderTotal
+          : paymentStatusResult.totalPaid,
+    };
+
+    let printerGroups = groupItemsByPrinter(formattedItems, order.orderType);
+    let mainPrinterName: string | null = null;
+
+    for (const printerKey of Object.keys(printerGroups)) {
+      const parts = printerKey.split("|");
+      if (parts[1] === "true") {
+        mainPrinterName = parts[0];
+        break;
+      }
+    }
+
+    if (!mainPrinterName) {
+      const mainPrinterObj =
+        allPrinters.find(
+          (p: any) => p.isMain === true || p.isMain === 1 || p.isMain === "true"
+        ) || allPrinters[0];
+      if (mainPrinterObj) {
+        mainPrinterName = mainPrinterObj.name;
+      }
+    }
+
+    if (!mainPrinterName) {
+      toast.warn(t("orderCart.warnings.noPrintersAttached") || "No printers attached.");
+      return false;
+    }
+
+    let customerAddress: string | undefined = undefined;
+    const isDelivery =
+      order.orderType === "delivery" ||
+      order.orderType?.toLowerCase().includes("delivery");
+    if (isDelivery) {
+      const addr = order?.customer?.address || order?.customerAddress;
+      if (addr && typeof addr === "string" && addr.trim()) {
+        customerAddress = addr.includes("|") ? formatAddress(addr) : addr;
+      }
+    }
+
+    let formattedPickupTime: string | undefined = undefined;
+    const isPickup =
+      order.orderType === "pickup" ||
+      order.orderType?.toLowerCase().includes("pickup");
+    if (isPickup && order.pickupTime) {
+      try {
+        const pickupDate = new Date(order.pickupTime);
+        if (!isNaN(pickupDate.getTime())) {
+          formattedPickupTime = pickupDate.toLocaleTimeString("es-ES", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        } else {
+          formattedPickupTime = order.pickupTime;
+        }
+      } catch {
+        formattedPickupTime = order.pickupTime;
+      }
+    }
+
+    const customerPhone = order?.customer?.phone || order?.customerPhone;
+    const customerName = order?.customer?.name || order?.customerName;
+
+    const ticketOrOrderId =
+      (order.orderType?.toLowerCase().includes("platform") ||
+        order.orderType?.toLowerCase().includes("web") ||
+        order.orderType?.toLowerCase().includes("app")) &&
+      order.ticketNumber
+        ? order.ticketNumber
+        : order.orderId;
+
+    const receiptHTML = generateReceiptHTML(
+      formattedItems,
+      configurations,
+      ticketOrOrderId,
+      order.orderType,
+      user?.role || "admin",
+      paymentStatus.status,
+      t,
+      customerAddress,
+      formattedPickupTime,
+      customerPhone,
+      customerName,
+      user?.name || "System",
+      order.notes || order.customerComments,
+      paymentStatus.totalPaid,
+      order.paymentType
+    );
+
+    if (receiptHTML) {
+      const printRes = await (window as any).electronAPI.printToPrinter(
+        token,
+        mainPrinterName,
+        { html: receiptHTML }
+      );
+      if (!printRes?.status) {
+        if (printRes?.error === t("orderCart.errors.printerNotFoundError")) {
+          toast.error(t("orderCart.errors.printerNotFound", { printerName: mainPrinterName }));
+        } else {
+          toast.error(t("orderCart.errors.errorPrintingReceipt"));
+        }
+        return false;
+      }
+      return true;
+    }
+
+    return false;
+  } catch (err) {
+    console.error("Error in printOrder:", err);
+    return false;
+  }
+};
+
+export const printSyncedOrder = async (
+  rawOrder: any,
+  rawItems: any[],
+  token: string | null,
+  user: any,
+  t: (key: string, options?: any) => string
+): Promise<void> => {
+  await printOrder({
+    order: rawOrder,
+    orderItems: rawItems,
+    token,
+    user,
+    t,
+  });
 };

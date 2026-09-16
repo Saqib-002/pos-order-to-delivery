@@ -381,7 +381,9 @@ export const DeliveryView = () => {
             </button>
           )}
           {(order.orderType === "delivery" ||
-            order.orderType === "platform:delivery") && (
+            order.orderType === "platform:delivery" ||
+            order.orderType === "web:delivery" ||
+            order.orderType === "app:delivery") && (
               <button
                 onClick={() => {
                   setSelectedOrderForRoute(order);
@@ -485,7 +487,9 @@ export const DeliveryView = () => {
               </button>
             )}
             {(order.orderType === "delivery" ||
-              order.orderType === "platform:delivery") && (
+              order.orderType === "platform:delivery" ||
+              order.orderType === "web:delivery" ||
+              order.orderType === "app:delivery") && (
                 <button
                   onClick={() => {
                     setSelectedOrderForRoute(order);
