@@ -62,6 +62,14 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     | "app:delivery"
     | "app:pickup"
   >("delivery");
+  const isDelivery =
+    orderType === "delivery" ||
+    orderType === "web:delivery" ||
+    orderType === "app:delivery";
+  const isPickup =
+    orderType === "pickup" ||
+    orderType === "web:pickup" ||
+    orderType === "app:pickup";
   const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
 
   useEffect(() => {
@@ -315,7 +323,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     totalAmount: number;
   }) => {
     if (
-      (orderType === "delivery" || orderType === "web:delivery" || orderType === "app:delivery") &&
+      isDelivery &&
       !selectedCustomer &&
       (!customCustomerPhone.trim() || !customCustomerAddress.trim())
     ) {
@@ -327,7 +335,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       customCustomerName.trim() ||
       (orderType === "dine-in"
         ? t("orderProcessingModal.defaultCustomers.dineInCustomer")
-        : (orderType === "delivery" || orderType === "web:delivery" || orderType === "app:delivery")
+        : isDelivery
           ? t("orderProcessingModal.defaultCustomers.deliveryCustomer")
           : t("orderProcessingModal.defaultCustomers.walkInCustomer"));
     const customerPhone = selectedCustomer?.phone || customCustomerPhone.trim();
@@ -349,17 +357,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         : paymentData.paymentType || existingPaymentType || "pending";
 
     const isTransitioningToNonDelivery =
-      (orderType === "pickup" ||
-        orderType === "dine-in" ||
-        orderType === "web:pickup" ||
-        orderType === "app:pickup") &&
+      (isPickup || orderType === "dine-in") &&
       (order?.orderType === "delivery" ||
         order?.orderType === "web:delivery" ||
         order?.orderType === "app:delivery");
     const isTransitioningToDelivery =
-      (orderType === "delivery" ||
-        orderType === "web:delivery" ||
-        orderType === "app:delivery") &&
+      isDelivery &&
       (order?.orderType === "pickup" ||
         order?.orderType === "dine-in" ||
         order?.orderType === "web:pickup" ||
@@ -634,7 +637,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 </div>
               </div>
               <h3 className="text-xl font-bold text-black">
-                {(orderType === "delivery" || orderType === "web:delivery" || orderType === "app:delivery")
+                {isDelivery
                   ? t("orderProcessingModal.customerSearch.titleRequired")
                   : t("orderProcessingModal.customerSearch.titleOptional")}
               </h3>
@@ -644,7 +647,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             <div className="flex gap-6 relative">
               <CustomInput
                 label={
-                  (orderType === "delivery" || orderType === "web:delivery" || orderType === "app:delivery")
+                  isDelivery
                     ? t("orderProcessingModal.customerSearch.titleRequired")
                     : t("orderProcessingModal.customerSearch.titleOptional")
                 }
@@ -930,7 +933,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     </div>
                   </div>
                   <h4 className="text-lg font-bold text-black">
-                    {orderType === "delivery"
+                    {isDelivery
                       ? t("orderProcessingModal.customerDetails.titleRequired")
                       : t("orderProcessingModal.customerDetails.titleOptional")}
                   </h4>
@@ -977,7 +980,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                   />
                 </div>
 
-                {orderType === "delivery" || orderType === "web:delivery" ||  orderType === "app:delivery" && (
+                {isDelivery && (
                   <div className="mt-4">
                     <AddressAutocomplete
                       label={t(
@@ -1075,7 +1078,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                       name="custom-customer-address"
                       inputClasses="py-3 px-4"
                     />
-                    {customerDistance !== null && orderType === "delivery" && (
+                    {customerDistance !== null && isDelivery && (
                       <div className="mt-2 flex items-center justify-between">
                         <div className="flex items-center gap-2 text-emerald-600 font-semibold text-sm">
                           <LocationIcon className="size-4" />
@@ -1100,7 +1103,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 )}
 
                 <div className="mt-3 text-sm text-gray-600">
-                  {orderType === "delivery"
+                  {isDelivery
                     ? t(
                       "orderProcessingModal.customerDetails.descriptionRequired"
                     )
@@ -1113,7 +1116,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           </div>
 
           {/* Pickup Time (only for pickup) */}
-          {orderType === "pickup" || orderType === "app:pickup" || orderType === "web:pickup" && (
+          {isPickup && (
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
