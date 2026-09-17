@@ -68,6 +68,7 @@
     "phonePlaceholder": "Enter phone number",
     "orderPrefix": "Order Prefix",
     "orderPrefixPlaceholder": "K",
+    "orderPrefixReservedError": "\"{{prefix}}\" is reserved. The prefixes 'A' and 'W' are used by the App and Website ordering systems. Please choose a different prefix (e.g. K, P, R).",
     "googleMapsApiKey": "Google Maps API Key",
     "googleMapsApiKeyPlaceholder": "Enter Google Maps API Key",
     "kitchenPriorityLabel": "Kitchen Priority Time (in minutes)",

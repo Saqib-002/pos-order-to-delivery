@@ -68,6 +68,7 @@
     "phonePlaceholder": "Ingrese el número de teléfono",
     "orderPrefix": "prefijo de orden",
     "orderPrefixPlaceholder": "K",
+    "orderPrefixReservedError": "\"{{prefix}}\" está reservado. Los prefijos 'A' y 'W' están en uso por los sistemas de pedidos de la App y el sitio web. Por favor elige un prefijo diferente (p.ej. K, P, R).",
     "googleMapsApiKey": "Clave API de Google Maps",
     "googleMapsApiKeyPlaceholder": "Ingrese la clave API de Google Maps",
     "kitchenPriorityLabel": "Tiempo de prioridad en la cocina (en minutos)",

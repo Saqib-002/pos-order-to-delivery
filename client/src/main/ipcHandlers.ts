@@ -281,6 +281,17 @@ export function registerIpcHandlers() {
       ""
     );
   });
+  // Mint a short-lived admin JWT signed with ADMIN_JWT_SECRET so the renderer
+  // can authenticate its support-notification WebSocket against the driver-server.
+  ipcMain.handle("get-driver-admin-token", async () => {
+    const jwt = await import("jsonwebtoken");
+    const secret = process.env.ADMIN_JWT_SECRET || "admin-fallback-secret";
+    return jwt.default.sign(
+      { email: "pos-admin@system", name: "POS Admin", type: "admin" },
+      secret,
+      { expiresIn: "7d" }
+    );
+  });
 
   // language handlers
   ipcMain.handle("get-language", async () => {

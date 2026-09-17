@@ -37,6 +37,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getCdnUrl: () => ipcRenderer.invoke("get-cdn-url"),
   saveCdnUrl: (url: string) => ipcRenderer.invoke("save-cdn-url", url),
   getDriverApiUrl: () => ipcRenderer.invoke("get-driver-api-url"),
+  getDriverAdminToken: () => ipcRenderer.invoke("get-driver-admin-token"),
   // Language handlers
   getLanguage: () => ipcRenderer.invoke("get-language"),
   saveLanguage: (language: string) => ipcRenderer.invoke("save-language", language),

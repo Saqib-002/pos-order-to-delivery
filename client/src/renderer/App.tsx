@@ -28,6 +28,8 @@ import { MarketPurchaseManagement } from "./Views/MarketPurchaseManagement";
 import { IncomesManagement } from "./Views/IncomesManagement";
 import { CashOutManagement } from "./Views/CashOutManagement";
 import { WebAdminView } from "./Views/WebAdminView";
+import { SupportNotificationProvider } from "./contexts/SupportNotificationContext";
+import { SupportNotificationBubble } from "./components/shared/SupportNotificationBubble";
 
 interface ViewConfig {
   component: JSX.Element;
@@ -211,23 +213,37 @@ const App: React.FC = () => {
     return <LoginView onLogin={handleLogin} />;
   }
 
+  const isAdmin = auth.user?.role === "admin";
+
   return (
-    <div className="min-h-screen bg-slate-100">
-      <Navigation
-        currentView={view}
-        setView={setView}
-        userRole={auth.user?.role}
-        userModulePermissions={auth.user?.modulePermissions}
-        onLogout={handleLogout}
-        webAdminTab={webAdminTab}
-        setWebAdminTab={setWebAdminTab}
-      />
-      <div className="ml-16 h-screen overflow-y-auto">
-        <OrderManagementProvider auth={auth}>
-          {renderView()}
-        </OrderManagementProvider>
+    <SupportNotificationProvider>
+      <div className="min-h-screen bg-slate-100">
+        <Navigation
+          currentView={view}
+          setView={setView}
+          userRole={auth.user?.role}
+          userModulePermissions={auth.user?.modulePermissions}
+          onLogout={handleLogout}
+          webAdminTab={webAdminTab}
+          setWebAdminTab={setWebAdminTab}
+        />
+        <div className="ml-16 h-screen overflow-y-auto">
+          <OrderManagementProvider auth={auth}>
+            {renderView()}
+          </OrderManagementProvider>
+        </div>
+
+        {/* Global support-message notification bubble — visible on every view */}
+        {isAdmin && (
+          <SupportNotificationBubble
+            onOpen={() => {
+              setView(VIEWS.WEB_ADMIN);
+              setWebAdminTab("support");
+            }}
+          />
+        )}
       </div>
-    </div>
+    </SupportNotificationProvider>
   );
 };
 
