@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { useTranslation } from "react-i18next";
-import { hasModuleAccess } from "@/renderer/utils/permissions";
+import { hasModuleAccess, hasWebAdminTabAccess } from "@/renderer/utils/permissions";
 import { ArrowLeft } from "lucide-react";
 
 export const Navigation = ({
@@ -34,6 +34,7 @@ export const Navigation = ({
   const { t } = useTranslation();
   const navContainerRef = useRef<HTMLDivElement>(null);
   const [visibleItemsCount, setVisibleItemsCount] = useState(10);
+  const [webAdminVisibleCount, setWebAdminVisibleCount] = useState(10);
 
   const isWebAdmin = currentView === "web-admin";
 
@@ -46,9 +47,9 @@ export const Navigation = ({
 
   const webAdminItems = [
     { key: "hero", label: t("webAdmin.tabs.hero"), icon: "./images/slider.png" },
-    { key: "offers", label: t("webAdmin.tabs.offers", "Ofertas"), icon: "./images/menu-structure.png" },
+    { key: "offers", label: t("webAdmin.tabs.offers", "Ofertas"), icon: "./images/offers.png" },
     { key: "branding", label: t("webAdmin.branding.title", "Marca y Ajustes"), icon: "./images/branding.png" },
-    { key: "notifications", label: t("webAdmin.notifications.title", "Notificaciones y Enlaces"), icon: "./images/notification.png" },
+    { key: "notifications", label: t("webAdmin.notifications.title", "Notificaciones y Enlaces"), icon: "./images/notification-links.png" },
     { key: "footer", label: t("webAdmin.tabs.footer"), icon: "./images/footer.png" },
     { key: "about", label: t("webAdmin.tabs.about"), icon: "./images/about-us.png" },
     { key: "contact", label: t("webAdmin.tabs.contact"), icon: "./images/contact.png" },
@@ -56,10 +57,14 @@ export const Navigation = ({
     { key: "allergens", label: t("webAdmin.tabs.allergens"), icon: "./images/allergen.png" },
     { key: "terms", label: t("webAdmin.tabs.terms"), icon: "./images/terms-and-conditions.png" },
     { key: "privacy", label: t("webAdmin.tabs.privacy"), icon: "./images/privacy-policy.png" },
-    { key: "maintenance", label: t("webAdmin.tabs.maintenance", "Modo Mantenimiento"), icon: "./images/car-maintainence.png" },
+    { key: "maintenance", label: t("webAdmin.tabs.maintenance", "Modo Mantenimiento"), icon: "./images/admin-maintanance.png" },
     { key: "customers", label: t("webAdmin.customers.title", "Clientes Web"), icon: "./images/web-customers.png" },
     { key: "support", label: t("webAdmin.support.title", "Soporte y Mensajes"), icon: "./images/support.png" },
   ];
+
+  const accessibleWebAdminItems = webAdminItems.filter((item) =>
+    hasWebAdminTabAccess(item.key, userModulePermissions, userRole)
+  );
 
   useEffect(() => {
     const calculateVisibleItems = () => {
@@ -67,6 +72,7 @@ export const Navigation = ({
       const itemHeight = 54;
       const scrollButtonsHeight = 100;
 
+      // 1. Regular POS Navigation Calculation
       const availableHeight = window.innerHeight - headerHeight;
       const totalItemsHeight = accessibleNavItems.length * itemHeight;
 
@@ -77,6 +83,21 @@ export const Navigation = ({
         const count = Math.floor(availableSpaceForItems / itemHeight);
         setVisibleItemsCount(Math.max(1, count));
       }
+
+      // 2. Web Admin Sub-Navigation Calculation
+      const backButtonHeight = 54;
+      const availableSpaceForWebAdmin =
+        window.innerHeight - headerHeight - backButtonHeight;
+      const totalWebAdminHeight = accessibleWebAdminItems.length * itemHeight;
+
+      if (totalWebAdminHeight <= availableSpaceForWebAdmin) {
+        setWebAdminVisibleCount(accessibleWebAdminItems.length);
+      } else {
+        const availableWebAdminSpaceForItems =
+          availableSpaceForWebAdmin - scrollButtonsHeight;
+        const count = Math.floor(availableWebAdminSpaceForItems / itemHeight);
+        setWebAdminVisibleCount(Math.max(1, count));
+      }
     };
 
     calculateVisibleItems();
@@ -85,7 +106,7 @@ export const Navigation = ({
     return () => {
       window.removeEventListener("resize", calculateVisibleItems);
     };
-  }, [accessibleNavItems.length]);
+  }, [accessibleNavItems.length, accessibleWebAdminItems.length]);
 
   const scrollUp = () => {
     setScrollPosition(Math.max(0, scrollPosition - 1));
@@ -103,17 +124,20 @@ export const Navigation = ({
     scrollPosition < Math.max(0, accessibleNavItems.length - visibleItemsCount);
 
   const [webAdminScrollPosition, setWebAdminScrollPosition] = useState(0);
-  const webAdminVisibleCount = Math.max(1, visibleItemsCount - 2);
 
   const canWebAdminScrollUp = webAdminScrollPosition > 0;
   const canWebAdminScrollDown =
-    webAdminScrollPosition < Math.max(0, webAdminItems.length - webAdminVisibleCount);
+    webAdminScrollPosition <
+    Math.max(0, accessibleWebAdminItems.length - webAdminVisibleCount);
 
   const scrollWebAdminUp = () => {
     setWebAdminScrollPosition((prev) => Math.max(0, prev - 1));
   };
   const scrollWebAdminDown = () => {
-    const maxScroll = Math.max(0, webAdminItems.length - webAdminVisibleCount);
+    const maxScroll = Math.max(
+      0,
+      accessibleWebAdminItems.length - webAdminVisibleCount
+    );
     setWebAdminScrollPosition((prev) => Math.min(maxScroll, prev + 1));
   };
 
@@ -198,9 +222,9 @@ export const Navigation = ({
 
   const getVisibleWebAdminItems = () => {
     if (isOpen) {
-      return webAdminItems;
+      return accessibleWebAdminItems;
     }
-    return webAdminItems.slice(
+    return accessibleWebAdminItems.slice(
       webAdminScrollPosition,
       webAdminScrollPosition + webAdminVisibleCount
     );
@@ -308,7 +332,7 @@ export const Navigation = ({
             </div>
 
             {/* Scroll Up Button (Collapsed Mode Only) */}
-            {!isOpen && webAdminItems.length > webAdminVisibleCount && (
+            {!isOpen && accessibleWebAdminItems.length > webAdminVisibleCount && (
               <button
                 onClick={scrollWebAdminUp}
                 disabled={!canWebAdminScrollUp}
@@ -370,7 +394,7 @@ export const Navigation = ({
             </div>
 
             {/* Scroll Down Button (Collapsed Mode Only) */}
-            {!isOpen && webAdminItems.length > webAdminVisibleCount && (
+            {!isOpen && accessibleWebAdminItems.length > webAdminVisibleCount && (
               <button
                 onClick={scrollWebAdminDown}
                 disabled={!canWebAdminScrollDown}

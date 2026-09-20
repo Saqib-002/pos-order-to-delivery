@@ -115,6 +115,44 @@ export const MODULE_LABELS = {
 
 export const AVAILABLE_MODULES = Object.values(MODULES) as string[];
 
+export const WEB_ADMIN_SUBMODULES = {
+  HERO: "web-admin:hero",
+  OFFERS: "web-admin:offers",
+  BRANDING: "web-admin:branding",
+  NOTIFICATIONS: "web-admin:notifications",
+  FOOTER: "web-admin:footer",
+  ABOUT: "web-admin:about",
+  CONTACT: "web-admin:contact",
+  FAQ: "web-admin:faq",
+  ALLERGENS: "web-admin:allergens",
+  TERMS: "web-admin:terms",
+  PRIVACY: "web-admin:privacy",
+  MAINTENANCE: "web-admin:maintenance",
+  CUSTOMERS: "web-admin:customers",
+  SUPPORT: "web-admin:support",
+} as const;
+
+export const WEB_ADMIN_SUBMODULE_LABELS = {
+  [WEB_ADMIN_SUBMODULES.HERO]: "Hero Slider",
+  [WEB_ADMIN_SUBMODULES.OFFERS]: "Promotional Offers",
+  [WEB_ADMIN_SUBMODULES.BRANDING]: "Branding & Settings",
+  [WEB_ADMIN_SUBMODULES.NOTIFICATIONS]: "Notifications & App Links",
+  [WEB_ADMIN_SUBMODULES.FOOTER]: "Footer",
+  [WEB_ADMIN_SUBMODULES.ABOUT]: "About Us",
+  [WEB_ADMIN_SUBMODULES.CONTACT]: "Contact",
+  [WEB_ADMIN_SUBMODULES.FAQ]: "FAQ",
+  [WEB_ADMIN_SUBMODULES.ALLERGENS]: "Allergens",
+  [WEB_ADMIN_SUBMODULES.TERMS]: "Terms & Conditions",
+  [WEB_ADMIN_SUBMODULES.PRIVACY]: "Privacy Policy",
+  [WEB_ADMIN_SUBMODULES.MAINTENANCE]: "Maintenance Mode",
+  [WEB_ADMIN_SUBMODULES.CUSTOMERS]: "Web Customers",
+  [WEB_ADMIN_SUBMODULES.SUPPORT]: "Support & Messages",
+} as const;
+
+export const AVAILABLE_WEB_ADMIN_SUBMODULES = Object.values(
+  WEB_ADMIN_SUBMODULES
+) as string[];
+
 export const FUNCTIONS = {
   CANCEL_ORDER: "cancel-order",
   CHANGE_DELIVERY_PERSON: "change-delivery-person",
@@ -129,3 +167,4 @@ export const FUNCTION_LABELS = {
 
 // Available functions for permission management
 export const AVAILABLE_FUNCTIONS = Object.values(FUNCTIONS) as string[];
+

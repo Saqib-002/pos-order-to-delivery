@@ -318,6 +318,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
             priority: item?.priority || 0,
             forProduct: (group as any).forProduct || false,
             isRemovalGroup: Boolean((group as any).isRemovalGroup),
+            isBold: Boolean((group as any).isBold),
           };
         });
       },
@@ -891,7 +892,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                                   >
                                     {displayName}
                                   </div>
-                                  {!isRemoval && item.price > 0 && (
+                                  {item.price > 0 && (
                                     <div className="text-sm font-bold text-black ml-2">
                                       €{item.price.toFixed(2)}
                                     </div>

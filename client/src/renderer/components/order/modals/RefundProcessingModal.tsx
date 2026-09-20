@@ -33,24 +33,52 @@ const RefundProcessingModal: React.FC<RefundProcessingModalProps> = ({
   const [refundMethods, setRefundMethods] = useState<RefundPaymentMethod[]>([]);
 
   useEffect(() => {
+    const raw = (existingPaymentType || "").trim();
+    const rawLower = raw.toLowerCase();
+
     if (
       isOpen &&
-      existingPaymentType &&
-      existingPaymentType !== "pending" &&
-      existingPaymentType !== "refunded"
+      raw &&
+      rawLower !== "pending" &&
+      rawLower !== "pending:0" &&
+      rawLower !== "refunded"
     ) {
       try {
-        const existingPayments: RefundPaymentMethod[] = existingPaymentType
-          .split(", ")
-          .map((payment) => {
-            const [type, amount] = payment.split(":");
-            return {
-              type: type.trim() as "cash" | "card",
-              amount: parseFloat(amount) || 0,
-              selected: false,
-            };
-          })
-          .filter((payment) => payment.amount > 0);
+        const separators = /[,;=]\s*/;
+        const parts = raw.split(separators).filter((p) => p.trim() !== "");
+        const existingPayments: RefundPaymentMethod[] = [];
+
+        for (const part of parts) {
+          if (part.includes(":")) {
+            const [typeRaw, amountRaw] = part.split(":");
+            const amt = parseFloat(amountRaw);
+            const typeKey = typeRaw.trim().toLowerCase();
+            const normalizedType: "cash" | "card" =
+              typeKey === "cash" || typeKey === "efectivo" ? "cash" : "card";
+
+            if (!isNaN(amt) && amt > 0) {
+              existingPayments.push({
+                type: normalizedType,
+                amount: amt,
+                selected: false,
+              });
+            }
+          } else {
+            const typeKey = part.trim().toLowerCase();
+            if (typeKey && typeKey !== "pending" && typeKey !== "refunded") {
+              const normalizedType: "cash" | "card" =
+                typeKey === "cash" || typeKey === "efectivo" ? "cash" : "card";
+              const amt = Number(totalAmount) || 0;
+              if (amt > 0) {
+                existingPayments.push({
+                  type: normalizedType,
+                  amount: amt,
+                  selected: false,
+                });
+              }
+            }
+          }
+        }
 
         setRefundMethods(existingPayments);
       } catch (error) {
@@ -60,7 +88,7 @@ const RefundProcessingModal: React.FC<RefundProcessingModalProps> = ({
     } else if (isOpen) {
       setRefundMethods([]);
     }
-  }, [isOpen, existingPaymentType]);
+  }, [isOpen, existingPaymentType, totalAmount]);
 
   const totalPaid = refundMethods.reduce(
     (sum, method) => sum + method.amount,
@@ -189,8 +217,8 @@ const RefundProcessingModal: React.FC<RefundProcessingModalProps> = ({
                       <input
                         type="checkbox"
                         checked={method.selected}
-                        onChange={() => handleRefundMethodToggle(index)}
-                        className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                        readOnly
+                        className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500 pointer-events-none"
                       />
                       <img
                         src={

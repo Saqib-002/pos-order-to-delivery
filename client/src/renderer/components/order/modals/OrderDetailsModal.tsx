@@ -756,8 +756,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       <p className="text-black">
                         {order.assignedAt
                           ? dayjs(order.assignedAt).format("DD/MM/YYYY HH:mm:ss")
-                          : order.status === "out for delivery" ||
-                            order.status === "delivered"
+                          : order.status?.toLowerCase() === "out for delivery" ||
+                            order.status?.toLowerCase() === "delivered"
                             ? t("orderDetailsModal.notRecorded")
                             : t("orderDetailsModal.notAssignedYet")}
                       </p>

@@ -140,7 +140,10 @@ const HistoryModal = ({ customer, onClose }: HistoryModalProps) => {
 
         if (printerIsMain === "true") {
           let customerAddress: string | undefined = undefined;
-          if (order.orderType === "delivery") {
+          if (
+            order.orderType === "delivery" ||
+            order.orderType?.toLowerCase().includes("delivery")
+          ) {
             if (order?.customer?.address && order.customer.address.trim()) {
               customerAddress = order.customer.address.includes("|")
                 ? formatAddress(order.customer.address)
@@ -149,7 +152,11 @@ const HistoryModal = ({ customer, onClose }: HistoryModalProps) => {
           }
 
           let formattedPickupTime: string | undefined = undefined;
-          if (order.orderType === "pickup" && order.pickupTime) {
+          if (
+            (order.orderType === "pickup" ||
+              order.orderType?.toLowerCase().includes("pickup")) &&
+            order.pickupTime
+          ) {
             try {
               const pickupDate = new Date(order.pickupTime);
               if (!isNaN(pickupDate.getTime())) {
@@ -171,9 +178,7 @@ const HistoryModal = ({ customer, onClose }: HistoryModalProps) => {
           const receiptHTML = generateReceiptHTML(
             convertedItems, 
             configs,
-            (order.orderType?.toLowerCase().includes("platform") || order.orderType?.toLowerCase().includes("web"))
-              ? order.ticketNumber || order.orderId
-              : order.orderId,
+            order.ticketNumber || order.orderId,
             order.orderType,
             user?.role || "",
             paymentStatus.status,

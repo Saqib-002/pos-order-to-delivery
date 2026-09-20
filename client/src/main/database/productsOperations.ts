@@ -85,12 +85,25 @@ export class ProductsDatabaseOperations {
                     "=",
                     "sub_categories.id"
                 )
+                .leftJoin(
+                    "categories",
+                    "sub_categories.categoryId",
+                    "=",
+                    "categories.id"
+                )
                 .where("products.name", "!=", "250f812e66c1afab64c57bcea36bb3b7")
-                .select("products.*", "sub_categories.categoryId", "sub_categories.name as subcategoryName", "sub_categories.priority as subcategoryPriority")
+                .select(
+                    "products.*",
+                    "sub_categories.categoryId",
+                    "sub_categories.name as subcategoryName",
+                    "sub_categories.priority as rawSubcategoryPriority",
+                    "categories.priority as categoryPriority"
+                )
                 .orderBy("products.priority", "asc");
             const products = await query;
             return products.map((p: any) => ({
                 ...p,
+                subcategoryPriority: ((p.categoryPriority ?? 0) * 10000) + (p.rawSubcategoryPriority ?? 0),
                 imgUrl: `${p.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${p.imgUrl}` : ""}`,
             }));
         } catch (error) {
@@ -106,9 +119,21 @@ export class ProductsDatabaseOperations {
                     "=",
                     "sub_categories.id"
                 )
+                .leftJoin(
+                    "categories",
+                    "sub_categories.categoryId",
+                    "=",
+                    "categories.id"
+                )
                 .where("products.subcategoryId", subcatId)
                 .andWhere("products.name", "!=", "250f812e66c1afab64c57bcea36bb3b7")
-                .select("products.*", "sub_categories.categoryId", "sub_categories.name as subcategoryName", "sub_categories.priority as subcategoryPriority")
+                .select(
+                    "products.*",
+                    "sub_categories.categoryId",
+                    "sub_categories.name as subcategoryName",
+                    "sub_categories.priority as rawSubcategoryPriority",
+                    "categories.priority as categoryPriority"
+                )
                 .orderBy("products.priority", "asc");
             if (isForOrder) {
                 query = query.andWhere("products.isAvailable", true);
@@ -135,6 +160,7 @@ export class ProductsDatabaseOperations {
             }
             for (const product of products) {
                 const uploadUrl = (store as any).get("cdnUrl");
+                product.subcategoryPriority = ((product.categoryPriority ?? 0) * 10000) + (product.rawSubcategoryPriority ?? 0);
                 product.printerIds = printerMap.get(product.id) || [];
                 product.imgUrl = `${product.imgUrl ? `${uploadUrl}/uploads/${product.imgUrl}` : ""}`;
             }
@@ -300,9 +326,23 @@ export class ProductsDatabaseOperations {
                     "=",
                     "sub_categories.id"
                 )
+                .leftJoin(
+                    "categories",
+                    "sub_categories.categoryId",
+                    "=",
+                    "categories.id"
+                )
                 .where("products.id", productId)
-                .select("products.*", "sub_categories.name as subcategoryName", "sub_categories.priority as subcategoryPriority")
+                .select(
+                    "products.*",
+                    "sub_categories.name as subcategoryName",
+                    "sub_categories.priority as rawSubcategoryPriority",
+                    "categories.priority as categoryPriority"
+                )
                 .first();
+            if (product) {
+                product.subcategoryPriority = ((product.categoryPriority ?? 0) * 10000) + (product.rawSubcategoryPriority ?? 0);
+            }
             const productPrinters = await db("printers_products")
                 .join(
                     "printers",

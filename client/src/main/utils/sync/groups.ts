@@ -16,6 +16,7 @@ export async function syncGroupToVPS(groupId: string): Promise<void> {
             color: group.color || "green",
             forProduct: !!group.forProduct,
             isRemovalGroup: !!group.isRemovalGroup,
+            isBold: !!group.isBold,
         });
     } catch (err) {
         Logger.error(`SyncManager [groups]: error queuing upsert for group ${groupId}:`, err);

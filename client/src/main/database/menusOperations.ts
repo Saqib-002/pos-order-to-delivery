@@ -54,10 +54,17 @@ export class MenusOperations {
         try {
             const menus = await db("menus")
                 .leftJoin("sub_categories", "menus.subcategoryId", "sub_categories.id")
-                .select("menus.*", "sub_categories.name as subcategoryName", "sub_categories.priority as subcategoryPriority")
+                .leftJoin("categories", "sub_categories.categoryId", "categories.id")
+                .select(
+                    "menus.*",
+                    "sub_categories.name as subcategoryName",
+                    "sub_categories.priority as rawSubcategoryPriority",
+                    "categories.priority as categoryPriority"
+                )
                 .orderBy("menus.priority", "asc");
-            return menus.map((menu) => ({
+            return menus.map((menu: any) => ({
                 ...menu,
+                subcategoryPriority: ((menu.categoryPriority ?? 0) * 10000) + (menu.rawSubcategoryPriority ?? 0),
                 imgUrl: `${menu.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${menu.imgUrl}` : ""}`,
             }));
         } catch (error) {
@@ -69,11 +76,18 @@ export class MenusOperations {
         try {
             const menus = await db("menus")
                 .leftJoin("sub_categories", "menus.subcategoryId", "sub_categories.id")
+                .leftJoin("categories", "sub_categories.categoryId", "categories.id")
                 .where("menus.subcategoryId", subcategoryId)
-                .select("menus.*", "sub_categories.name as subcategoryName", "sub_categories.priority as subcategoryPriority")
+                .select(
+                    "menus.*",
+                    "sub_categories.name as subcategoryName",
+                    "sub_categories.priority as rawSubcategoryPriority",
+                    "categories.priority as categoryPriority"
+                )
                 .orderBy("menus.priority", "asc");
-            return menus.map((menu) => ({
+            return menus.map((menu: any) => ({
                 ...menu,
+                subcategoryPriority: ((menu.categoryPriority ?? 0) * 10000) + (menu.rawSubcategoryPriority ?? 0),
                 imgUrl: `${menu.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${menu.imgUrl}` : ""}`,
             }));
         } catch (error) {
@@ -82,14 +96,21 @@ export class MenusOperations {
     }
     static async getMenuById(id: string): Promise<Menu> {
         try {
-            const menu = await db("menus")
+            const menu: any = await db("menus")
                 .leftJoin("sub_categories", "menus.subcategoryId", "sub_categories.id")
+                .leftJoin("categories", "sub_categories.categoryId", "categories.id")
                 .where("menus.id", id)
-                .select("menus.*", "sub_categories.name as subcategoryName", "sub_categories.priority as subcategoryPriority")
+                .select(
+                    "menus.*",
+                    "sub_categories.name as subcategoryName",
+                    "sub_categories.priority as rawSubcategoryPriority",
+                    "categories.priority as categoryPriority"
+                )
                 .first();
             return {
                 ...menu,
-                imgUrl: `${menu.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${menu.imgUrl}` : ""}`,
+                subcategoryPriority: menu ? ((menu.categoryPriority ?? 0) * 10000) + (menu.rawSubcategoryPriority ?? 0) : 0,
+                imgUrl: `${menu?.imgUrl ? `${(store as any).get("cdnUrl")}/uploads/${menu.imgUrl}` : ""}`,
             };
         } catch (error) {
             throw error;

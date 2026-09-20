@@ -63,13 +63,13 @@ const ConfigurationsTab = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // 'A' and 'W' are reserved for App and Web orders from the rider server (A-XXXX / W-XXXX)
+    // 'A' and 'W' are reserved for App and Web orders from the server (A-XXXX / W-XXXX)
     const reservedPrefixes = ["A", "W"];
     const prefix = (configurations.orderPrefix || "").trim().toUpperCase();
     if (reservedPrefixes.includes(prefix) || reservedPrefixes.some((p) => prefix.startsWith(p + "-"))) {
       toast.error(
         t("configurations.orderPrefixReservedError", {
-          prefix: configurations.orderPrefix.trim(),
+          prefix: (configurations.orderPrefix || "").trim(),
         })
       );
       return;

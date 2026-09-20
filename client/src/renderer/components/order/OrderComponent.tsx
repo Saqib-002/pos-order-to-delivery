@@ -94,7 +94,7 @@ const OrderComponent = () => {
   };
 
   const handleProcessOrderSubmit = async (orderData: any) => {
-    const isFirstTime = order?.status === "pending";
+    const isFirstTime = order?.status?.toLowerCase() === "pending";
     const result = await updateOrder(token!, order!.id, orderData);
     if (!result) {
       toast.error("Failed to process order");
@@ -104,7 +104,15 @@ const OrderComponent = () => {
     setPostProcessOrderData(orderData);
 
     const type = orderData.orderType?.toLowerCase();
-    if ((type === "dine-in" || type === "pickup") && !isFirstTime) {
+    const isWebOrApp =
+      order?.orderType?.toLowerCase().startsWith("web:") ||
+      order?.orderType?.toLowerCase().startsWith("app:") ||
+      order?.orderType?.toLowerCase() === "app" ||
+      type?.startsWith("web:") ||
+      type?.startsWith("app:") ||
+      type === "app";
+
+    if (isWebOrApp || ((type === "dine-in" || type === "pickup") && !isFirstTime)) {
       setIsPrintConfirmationModalOpen(true);
     } else {
       await handlePrintConfirm(true, orderData);
@@ -122,7 +130,7 @@ const OrderComponent = () => {
       setPostProcessOrderData(null);
       return;
     }
-
+    //if (shouldPrintMainReceipt === "cancel") 
     if (shouldPrintMainReceipt === "cancel" || !shouldPrintMainReceipt) {
       clearOrder();
       setPostProcessOrderData(null);
@@ -183,7 +191,10 @@ const OrderComponent = () => {
         let receiptHTML = "";
         if (isMainPrinter) {
           let customerAddress: string | undefined = undefined;
-          if (orderData.orderType?.toLowerCase() === "delivery") {
+          if (
+            orderData.orderType?.toLowerCase() === "delivery" ||
+            orderData.orderType?.toLowerCase().includes("delivery")
+          ) {
             if (orderData.customerAddress && orderData.customerAddress.trim()) {
               const defaultValues = [
                 t("orderProcessingModal.defaultCustomers.dineIn"),
@@ -207,7 +218,8 @@ const OrderComponent = () => {
           // Get pickup time and format it
           let formattedPickupTime: string | undefined = undefined;
           if (
-            orderData.orderType?.toLowerCase() === "pickup" &&
+            (orderData.orderType?.toLowerCase() === "pickup" ||
+              orderData.orderType?.toLowerCase().includes("pickup")) &&
             orderData.pickupTime
           ) {
             try {
@@ -227,7 +239,8 @@ const OrderComponent = () => {
             }
           } else if (
             order?.pickupTime &&
-            orderData.orderType?.toLowerCase() === "pickup"
+            (orderData.orderType?.toLowerCase() === "pickup" ||
+              orderData.orderType?.toLowerCase().includes("pickup"))
           ) {
             try {
               const pickupDate = new Date(order.pickupTime);
@@ -262,9 +275,7 @@ const OrderComponent = () => {
             receiptHTML = generateReceiptHTML(
               orderItems,
               configs,
-              (orderData.orderType?.toLowerCase()?.includes("platform") || orderData.orderType?.toLowerCase()?.includes("web"))
-                ? order!.ticketNumber || order!.orderId
-                : order!.orderId,
+              order!.ticketNumber || order!.orderId,
               orderData.orderType,
               user!.role,
               paymentStatus.status,
@@ -337,7 +348,8 @@ const OrderComponent = () => {
     setPostProcessOrderData(null);
   };
   const handleOrderClick = async (order: Order) => {
-    if (order.status === "cancelled") {
+    const statusLower = order.status?.toLowerCase();
+    if (statusLower === "cancelled" || statusLower === "canceled") {
       handleRefundClick(order);
       return;
     }
@@ -445,7 +457,8 @@ const OrderComponent = () => {
                   );
                   const isPaid = paymentStatus.status === "PAID";
                   const isPlatform = order.orderType?.toLowerCase().includes("platform");
-                  const isCancelled = order.status === "cancelled";
+                  const statusLower = order.status?.toLowerCase();
+                  const isCancelled = statusLower === "cancelled" || statusLower === "canceled";
                   const isLocked = (isAssignedToDelivery || (isPaid && !isPlatform)) && !isCancelled;
 
                   return (

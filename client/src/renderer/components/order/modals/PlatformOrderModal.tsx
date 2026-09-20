@@ -229,15 +229,16 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
         let assignedAt: any = initialOrder.assignedAt;
         let deliveredAt: any = initialOrder.deliveredAt;
 
+        const finalStatusLower = finalStatus?.toLowerCase();
         if (isTransitioningToNonDelivery) {
-          if (finalStatus === "ready for delivery" || finalStatus === "out for delivery") {
+          if (finalStatusLower === "ready for delivery" || finalStatusLower === "out for delivery") {
             finalStatus = "completed";
           }
           deliveryPerson = null;
           assignedAt = null;
           deliveredAt = null;
         } else if (isTransitioningToDelivery) {
-          if (finalStatus === "completed") {
+          if (finalStatusLower === "completed" || finalStatusLower === "complete") {
             finalStatus = "ready for delivery";
             assignedAt = null;
             deliveredAt = null;

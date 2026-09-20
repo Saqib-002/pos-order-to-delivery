@@ -25,6 +25,7 @@ interface BaseCardData {
   discount?: number;
   isRemovalGroup?: boolean;
   forProduct?: boolean;
+  isBold?: boolean;
 }
 
 interface UnifiedCardProps {
@@ -146,6 +147,11 @@ const configs: Record<UnifiedCardProps["type"], Config> = {
           {data.isRemovalGroup && (
             <span className="inline-block bg-white/20 text-white text-[11px] font-semibold px-2 py-0.5 rounded-full w-fit">
               [X] {t("menuComponents.modals.createGroupModal.isRemovalGroup") || "Removal Group"}
+            </span>
+          )}
+          {data.isBold && (
+            <span className="inline-block bg-white/20 text-white text-[11px] font-bold px-2 py-0.5 rounded-full w-fit">
+              <b>B</b> {t("menuComponents.modals.createGroupModal.isBold") || "Bold on Receipt"}
             </span>
           )}
         </div>

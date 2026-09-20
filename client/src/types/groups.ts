@@ -4,6 +4,7 @@ export interface Group {
   color: string;
   forProduct?: boolean;
   isRemovalGroup?: boolean;
+  isBold?: boolean;
   createdAt: string;
   updatedAt: string;
   items?: GroupItem[];

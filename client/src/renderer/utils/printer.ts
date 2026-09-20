@@ -126,18 +126,20 @@ export const generateReceiptHTML = (
   if (
     upperType === "DELIVERY" ||
     upperType.startsWith("WEB:DELIVERY") ||
-    upperType.startsWith("PLATFORM:DELIVERY")
+    upperType.startsWith("PLATFORM:DELIVERY") ||
+    upperType.startsWith("APP:DELIVERY")
   ) {
     orderTypeLabel = t("receipt.orderType.delivery") || "A DOMICILIO";
     orderTypeIcon = `<svg style="width:18px; height:18px; display:inline-block; vertical-align:-3px; margin-right:5px;" viewBox="0 0 24 24" fill="currentColor"><path d="M19 7c0-1.1-.9-2-2-2h-3v2h3v2.65L13.52 14H10V9H6c-2.21 0-4 1.79-4 4v3h2c0 1.66 1.34 3 3 3s3-1.34 3-3h4c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-4-4zM7 17.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>`;
   } else if (
     upperType === "PICKUP" ||
     upperType.startsWith("WEB:PICKUP") ||
-    upperType.startsWith("PLATFORM:PICKUP")
+    upperType.startsWith("PLATFORM:PICKUP") ||
+    upperType.startsWith("APP:PICKUP")
   ) {
     orderTypeLabel = t("receipt.orderType.pickup") || "PARA LLEVAR";
     orderTypeIcon = `<svg style="width:18px; height:18px; display:inline-block; vertical-align:-3px; margin-right:5px;" viewBox="0 0 24 24" fill="currentColor"><path d="M18 6h-3c0-1.66-1.34-3-3-3S9 4.34 9 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-1c.55 0 1 .45 1 1h-2c0-.55.45-1 1-1zm0 5c-1.66 0-3-1.34-3-3h2c0 .55.45 1 1 1s1-.45 1-1h2c0 1.66-1.34 3-3 3z"/></svg>`;
-  } else if (upperType === "DINE-IN") {
+  } else if (upperType === "DINE-IN" || upperType === "DINEIN") {
     orderTypeLabel = t("receipt.orderType.dineIn") || "EN SALA";
     orderTypeIcon = `<svg style="width:18px; height:18px; display:inline-block; vertical-align:-3px; margin-right:5px;" viewBox="0 0 24 24" fill="currentColor"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>`;
   }
@@ -145,7 +147,8 @@ export const generateReceiptHTML = (
   const isDelivery =
     upperType === "DELIVERY" ||
     upperType.startsWith("WEB:DELIVERY") ||
-    upperType.startsWith("PLATFORM:DELIVERY");
+    upperType.startsWith("PLATFORM:DELIVERY") ||
+    upperType.startsWith("APP:DELIVERY");
 
   const phone =
     configurations?.phone || "";
@@ -193,8 +196,21 @@ export const generateReceiptHTML = (
     footerLabel = t("receipt.paymentStatus.unpaidLabel") || "PAGO PENDIENTE";
   }
 
+  const isSpecialOrder =
+    originalOrderType === "PLATFORM" ||
+    originalOrderType?.startsWith("PLATFORM:") ||
+    originalOrderType?.startsWith("WEB") ||
+    originalOrderType?.startsWith("APP");
+
+  const isAlreadyPrefixed =
+    typeof orderId === "string" &&
+    (orderId.startsWith("A-") ||
+      orderId.startsWith("W-") ||
+      (configurations?.orderPrefix &&
+        orderId.startsWith(configurations.orderPrefix)));
+
   const displayOrderId =
-    originalOrderType === "PLATFORM" || originalOrderType?.startsWith("WEB")
+    isSpecialOrder || isAlreadyPrefixed
       ? orderId
       : `${configurations?.orderPrefix || ""}${orderId}`;
 
@@ -229,7 +245,7 @@ export const generateReceiptHTML = (
                 margin: 6px 0;
                 width: 100%;
             }
-            .bold { font-weight: 700; }
+            .bold { font-weight: 800 !important; }
             .center { text-align: center; }
             .left { text-align: left; }
             .right { text-align: right; }
@@ -332,7 +348,7 @@ export const generateReceiptHTML = (
             .category-title {
                 font-family: 'Roboto Condensed', sans-serif;
                 font-weight: 700;
-                font-size: 13px;
+                font-size: 15px;
                 text-transform: uppercase;
                 margin-top: 4px;
                 margin-bottom: 2px;
@@ -346,21 +362,29 @@ export const generateReceiptHTML = (
             }
             .item-product {
                 font-family: 'Roboto Condensed', sans-serif;
-                font-weight: 400;
-                font-size: 13px;
+                font-weight: 800 !important;
+                font-size: 17px;
                 text-transform: uppercase;
             }
             .item-extra {
                 font-family: 'Roboto Condensed', sans-serif;
                 font-weight: 400;
-                font-size: 12px;
+                font-size: 14px;
                 padding-left: 8px;
             }
             .item-price {
                 font-family: 'Roboto Condensed', sans-serif;
                 font-weight: 500;
-                font-size: 13px;
+                font-size: 17px;
                 text-align: right;
+            }
+            .bold,
+            .item-product,
+            .item-product.bold,
+            .item-extra.bold,
+            .item-price.bold,
+            span.bold {
+                font-weight: 800 !important;
             }
 
             /* Totals */
@@ -618,9 +642,9 @@ export const generateReceiptHTML = (
 
         html += `
           <div class="item-row">
-            <span class="col-cant item-product">${sectionQty}  x</span>
-            <span class="col-desc item-product">${group.menuName}</span>
-            <span class="col-precio item-price">${menuBasePrice.toFixed(2)}</span>
+            <span class="col-cant item-product bold">${sectionQty}  x</span>
+            <span class="col-desc item-product bold">${group.menuName}</span>
+            <span class="col-precio item-price bold">${menuBasePrice.toFixed(2)}</span>
           </div>
         `;
 
@@ -653,14 +677,13 @@ export const generateReceiptHTML = (
                 const cleanName = comp.itemName.replace(/^[-\s]+/, "");
                 const displayName = cleanName.toLowerCase().startsWith("sin ") ? cleanName : `Sin ${cleanName}`;
                 formattedCompName = `[X] ${displayName}`;
-              } else if (comp.forProduct) {
-                formattedCompName = comp.itemName.startsWith("1 x") ? comp.itemName : `${item.quantity > 1 ? `${item.quantity} x ` : ""}${comp.itemName}`;
               }
+              const isBold = Boolean((comp as any).isBold);
               html += `
                 <div class="item-row">
                   <span class="col-cant"></span>
-                  <span class="col-desc item-extra">-  ${formattedCompName}</span>
-                  <span class="col-precio item-price">${compTotal.toFixed(2)}</span>
+                  <span class="col-desc item-extra ${isBold ? "bold" : ""}">-  ${formattedCompName}</span>
+                  <span class="col-precio item-price ${isBold ? "bold" : ""}">${compTotal.toFixed(2)}</span>
                 </div>
               `;
             });
@@ -670,7 +693,7 @@ export const generateReceiptHTML = (
             html += `
               <div class="item-row">
                 <span class="col-cant"></span>
-                <span class="col-desc item-extra italic" style="font-size: 11px;">(${t("common.note") || "Nota"}: ${item.productNote})</span>
+                <span class="col-desc item-extra italic" style="font-size: 13px;">(${t("common.note") || "Nota"}: ${item.productNote})</span>
                 <span class="col-precio item-price"></span>
               </div>
             `;
@@ -695,9 +718,9 @@ export const generateReceiptHTML = (
 
         html += `
           <div class="item-row">
-            <span class="col-cant item-product">${item.quantity}  x</span>
-            <span class="col-desc item-product">${item.productName}</span>
-            <span class="col-precio item-price">${productBaseTotal.toFixed(2)}</span>
+            <span class="col-cant item-product bold">${item.quantity}  x</span>
+            <span class="col-desc item-product bold">${item.productName}</span>
+            <span class="col-precio item-price bold">${productBaseTotal.toFixed(2)}</span>
           </div>
         `;
 
@@ -712,32 +735,31 @@ export const generateReceiptHTML = (
           `;
         }
 
-        if (Array.isArray(item.complements) && item.complements.length > 0) {
-          item.complements.forEach((comp) => {
-            const compTotal = comp.price * item.quantity;
-            let formattedCompName = comp.itemName;
-            if (comp.isRemovalGroup) {
-              const cleanName = comp.itemName.replace(/^[-\s]+/, "");
-              const displayName = cleanName.toLowerCase().startsWith("sin ") ? cleanName : `Sin ${cleanName}`;
-              formattedCompName = `[X] ${displayName}`;
-            } else if (comp.forProduct) {
-              formattedCompName = comp.itemName.startsWith("1 x") ? comp.itemName : `${item.quantity > 1 ? `${item.quantity} x ` : ""}${comp.itemName}`;
-            }
-            html += `
-              <div class="item-row">
-                <span class="col-cant"></span>
-                <span class="col-desc item-extra">-  ${formattedCompName}</span>
-                <span class="col-precio item-price">${compTotal.toFixed(2)}</span>
-              </div>
-            `;
-          });
-        }
+          if (Array.isArray(item.complements) && item.complements.length > 0) {
+            item.complements.forEach((comp) => {
+              const compTotal = comp.price * item.quantity;
+              let formattedCompName = comp.itemName;
+              if (comp.isRemovalGroup) {
+                const cleanName = comp.itemName.replace(/^[-\s]+/, "");
+                const displayName = cleanName.toLowerCase().startsWith("sin ") ? cleanName : `Sin ${cleanName}`;
+                formattedCompName = `[X] ${displayName}`;
+              }
+              const isBold = Boolean((comp as any).isBold);
+              html += `
+                <div class="item-row">
+                  <span class="col-cant"></span>
+                  <span class="col-desc item-extra ${isBold ? "bold" : ""}">-  ${formattedCompName}</span>
+                  <span class="col-precio item-price ${isBold ? "bold" : ""}">${compTotal.toFixed(2)}</span>
+                </div>
+              `;
+            });
+          }
 
         if (item.productNote) {
           html += `
             <div class="item-row">
               <span class="col-cant"></span>
-              <span class="col-desc item-extra italic" style="font-size: 11px;">(${t("common.note") || "Nota"}: ${item.productNote})</span>
+              <span class="col-desc item-extra italic" style="font-size: 13px;">(${t("common.note") || "Nota"}: ${item.productNote})</span>
               <span class="col-precio item-price"></span>
             </div>
           `;
@@ -858,13 +880,16 @@ export const generateItemsReceiptHTML = (
   switch (orderTypeDisplay?.toUpperCase()) {
     case "DELIVERY":
     case "WEB:DELIVERY":
+    case "APP:DELIVERY":
       orderTypeDisplay = t("receipt.orderType.delivery");
       break;
     case "PICKUP":
     case "WEB:PICKUP":
+    case "APP:PICKUP":
       orderTypeDisplay = t("receipt.orderType.pickup");
       break;
     case "DINE-IN":
+    case "DINEIN":
       orderTypeDisplay = t("receipt.orderType.dineIn");
       break;
     default:
@@ -905,7 +930,7 @@ export const generateItemsReceiptHTML = (
             }
             body { font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif; font-size: 12px; width: 70mm; margin: 0; padding: 1mm; }
             .line { width: 100%; height: 1px; background: black; margin: 5px 0; }
-            .bold { font-weight: bold; font-size: 16px; }
+            .bold { font-weight: 800 !important; font-size: 16px; }
             .center { text-align: center; }
             .left { text-align: left; }
             .order-info { margin: 0 0 24px 0; } 
@@ -927,7 +952,7 @@ export const generateItemsReceiptHTML = (
         </head>
         <body>
         <div class="order-info center">
-            <h1 class="bold" style="font-size: 24px;">${(order.orderType?.toLowerCase().startsWith("platform") || order.orderType?.toLowerCase().startsWith("web") || order.orderType?.toLowerCase().startsWith("app")) && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`}</h1>
+            <h1 class="bold" style="font-size: 24px;">${order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix || ""}${order.orderId}`}</h1>
             <h1 class="bold" style="font-size: 16px;">${orderTypeDisplay.toUpperCase()}</h1>
             <p class="bold" style="font-size: 14px;">${dateTimeStr}</p>
             <p class="bold" style="font-size: 14px;">${status}</p>
@@ -1006,7 +1031,7 @@ export const generateItemsReceiptHTML = (
   categorizedGroups.forEach((category) => {
     if (category.name) {
       html += `
-            <div style="border-bottom: 1px solid #000; padding: 5px 0; margin-top: 10px; font-weight: bold; font-size: 14px; text-transform: uppercase;">
+            <div style="border-bottom: 1px solid #000; padding: 5px 0; margin-top: 10px; font-weight: bold; font-size: 17px; text-transform: uppercase;">
                 ${category.name}
             </div>
       `;
@@ -1016,7 +1041,7 @@ export const generateItemsReceiptHTML = (
       (category.data as any[]).forEach((group) => {
         const sectionQty = group.items[0]?.quantity || 1;
         html += `
-                <div class="name-col bold" style="margin-top: 5px;">${sectionQty}x ${group.menuName}</div>
+                <div class="name-col bold" style="margin-top: 5px; font-size: 17px;">${sectionQty}x ${group.menuName}</div>
         `;
         group.items.forEach((item: OrderItem) => {
           const supplementText =
@@ -1039,8 +1064,6 @@ export const generateItemsReceiptHTML = (
               const cleanName = comp.itemName.replace(/^[-\s]+/, "");
               const displayName = cleanName.toLowerCase().startsWith("sin ") ? cleanName : `Sin ${cleanName}`;
               formattedCompName = `[X] ${displayName}`;
-            } else if (comp.forProduct) {
-              formattedCompName = `( ${item.quantity} X ${comp.itemName} )`;
             } else {
               formattedCompName = `+ ${comp.itemName}`;
             }
@@ -1050,14 +1073,14 @@ export const generateItemsReceiptHTML = (
           });
 
           if (item.productNote) {
-            html += `<div class="italic" style="font-size: 12px; margin-left: 0;">${t("common.note")}: ${item.productNote}</div>`;
+            html += `<div class="italic" style="font-size: 14px; margin-left: 0;">${t("common.note")}: ${item.productNote}</div>`;
           }
         });
       });
     } else {
       (category.data as OrderItem[]).forEach((item) => {
         html += `
-                <div class="bold" style="margin-top: 5px;">
+                <div class="bold" style="margin-top: 5px; font-size: 17px;">
                     ${item.quantity}x ${item.productName}
                 </div>
                 ${
@@ -1072,8 +1095,6 @@ export const generateItemsReceiptHTML = (
             const cleanName = comp.itemName.replace(/^[-\s]+/, "");
             const displayName = cleanName.toLowerCase().startsWith("sin ") ? cleanName : `Sin ${cleanName}`;
             formattedCompName = `[X] ${displayName}`;
-          } else if (comp.forProduct) {
-            formattedCompName = `( ${item.quantity} X ${comp.itemName} )`;
           } else {
             formattedCompName = `+ ${comp.itemName}`;
           }
@@ -1083,7 +1104,7 @@ export const generateItemsReceiptHTML = (
         });
 
         if (item.productNote) {
-          html += `<div class="italic" style="font-size: 12px; margin-left: 0;">${t("common.note")}: ${item.productNote}</div>`;
+          html += `<div class="italic" style="font-size: 14px; margin-left: 0;">${t("common.note")}: ${item.productNote}</div>`;
         }
       });
     }
@@ -1094,7 +1115,7 @@ export const generateItemsReceiptHTML = (
         </div>
         <div class="line"></div>
         <div class="bold">
-            ${t("receipt.order")} ${(order.orderType?.toLowerCase().startsWith("platform") || order.orderType?.toLowerCase().startsWith("web") || order.orderType?.toLowerCase().startsWith("app")) && order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix}${order.orderId}`} - ${dateTimeStr}
+            ${t("receipt.order")} ${order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix || ""}${order.orderId}`} - ${dateTimeStr}
         </div>
         ${order.notes ? `<div class="bold">${t("receipt.notes")}: ${order.notes}</div>` : ""}
         <div class="center bold">
@@ -1249,13 +1270,9 @@ export const printOrder = async ({
     const customerPhone = order?.customer?.phone || order?.customerPhone;
     const customerName = order?.customer?.name || order?.customerName;
 
-    const ticketOrOrderId =
-      (order.orderType?.toLowerCase().includes("platform") ||
-        order.orderType?.toLowerCase().includes("web") ||
-        order.orderType?.toLowerCase().includes("app")) &&
-      order.ticketNumber
-        ? order.ticketNumber
-        : order.orderId;
+    const ticketOrOrderId = order.ticketNumber
+      ? order.ticketNumber
+      : order.orderId;
 
     const receiptHTML = generateReceiptHTML(
       formattedItems,

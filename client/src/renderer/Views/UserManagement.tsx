@@ -3,10 +3,15 @@ import { User } from "@/types/user";
 import { toast } from "react-toastify";
 import {
   MODULE_LABELS,
+  MODULES,
   AVAILABLE_MODULES,
   FUNCTION_LABELS,
   AVAILABLE_FUNCTIONS,
+  WEB_ADMIN_SUBMODULES,
+  WEB_ADMIN_SUBMODULE_LABELS,
+  AVAILABLE_WEB_ADMIN_SUBMODULES,
 } from "@/constants";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import { useAuth } from "../contexts/AuthContext";
 import {
@@ -49,6 +54,7 @@ export const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
   const [emailError, setEmailError] = useState("");
+  const [isWebAdminExpanded, setIsWebAdminExpanded] = useState(false);
   const {
     auth: { token },
   } = useAuth();
@@ -186,11 +192,42 @@ export const UserManagement = () => {
       id: "",
     });
     setEmailError("");
+    setIsWebAdminExpanded(false);
     setActiveTab("general");
   };
 
   const toggleModulePermission = (module: string) => {
     const currentPermissions = formData.modulePermissions;
+
+    if (module === MODULES.WEB_ADMIN) {
+      const hasWebAdminOrSub =
+        currentPermissions.includes(MODULES.WEB_ADMIN) ||
+        currentPermissions.some((p) => p.startsWith("web-admin:"));
+
+      if (hasWebAdminOrSub) {
+        setFormData({
+          ...formData,
+          modulePermissions: currentPermissions.filter(
+            (m) => m !== MODULES.WEB_ADMIN && !m.startsWith("web-admin:")
+          ),
+        });
+      } else {
+        const otherPermissions = currentPermissions.filter(
+          (m) => m !== MODULES.WEB_ADMIN && !m.startsWith("web-admin:")
+        );
+        setFormData({
+          ...formData,
+          modulePermissions: [
+            ...otherPermissions,
+            MODULES.WEB_ADMIN,
+            ...AVAILABLE_WEB_ADMIN_SUBMODULES,
+          ],
+        });
+        setIsWebAdminExpanded(true);
+      }
+      return;
+    }
+
     if (currentPermissions.includes(module)) {
       setFormData({
         ...formData,
@@ -202,6 +239,33 @@ export const UserManagement = () => {
         modulePermissions: [...currentPermissions, module],
       });
     }
+  };
+
+  const toggleWebAdminSubmodule = (submoduleKey: string) => {
+    const currentPermissions = formData.modulePermissions;
+    let nextPermissions: string[];
+
+    if (currentPermissions.includes(submoduleKey)) {
+      nextPermissions = currentPermissions.filter((m) => m !== submoduleKey);
+    } else {
+      nextPermissions = [...currentPermissions, submoduleKey];
+    }
+
+    const remainingSubmodules = nextPermissions.filter((p) =>
+      p.startsWith("web-admin:")
+    );
+    if (remainingSubmodules.length > 0) {
+      if (!nextPermissions.includes(MODULES.WEB_ADMIN)) {
+        nextPermissions.push(MODULES.WEB_ADMIN);
+      }
+    } else {
+      nextPermissions = nextPermissions.filter((m) => m !== MODULES.WEB_ADMIN);
+    }
+
+    setFormData({
+      ...formData,
+      modulePermissions: nextPermissions,
+    });
   };
 
   const toggleFunctionPermission = (functionName: string) => {
@@ -252,16 +316,21 @@ export const UserManagement = () => {
 
   const openEditModal = (user: User) => {
     setModalMode("edit");
+    const userPermissions = user.modulePermissions || [];
     setFormData({
       id: user?.id || "",
       username: user.username,
       name: user.name,
       email: user.email || "",
       role: user.role,
-      modulePermissions: user.modulePermissions || [],
+      modulePermissions: userPermissions,
       functionPermissions: user.functionPermissions || [],
       password: "",
     });
+    setIsWebAdminExpanded(
+      userPermissions.includes(MODULES.WEB_ADMIN) ||
+      userPermissions.some((p) => p.startsWith("web-admin:"))
+    );
     setEmailError("");
     setIsModalOpen(true);
   };
@@ -640,25 +709,146 @@ export const UserManagement = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-3">
                       {t("userManagement.modal.modulePermissions")}
                     </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                      {AVAILABLE_MODULES.map((module) => (
-                        <label
-                          key={module}
-                          className="flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-50 transition-colors"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={formData.modulePermissions.includes(
-                              module
-                            )}
-                            onChange={() => toggleModulePermission(module)}
-                            className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black accent-black"
-                          />
-                          <span className="text-sm text-gray-700">
-                            {t(`userManagement.modal.moduleLabels.${module as keyof typeof MODULE_LABELS}`)}
-                          </span>
-                        </label>
-                      ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
+                      {AVAILABLE_MODULES.map((module) => {
+                        if (module === MODULES.WEB_ADMIN) {
+                          const isChecked =
+                            formData.modulePermissions.includes(
+                              MODULES.WEB_ADMIN
+                            ) ||
+                            formData.modulePermissions.some((p) =>
+                              p.startsWith("web-admin:")
+                            );
+                          const selectedCount =
+                            AVAILABLE_WEB_ADMIN_SUBMODULES.filter((sub) =>
+                              formData.modulePermissions.includes(sub)
+                            ).length;
+
+                          return (
+                            <div
+                              key={module}
+                              className="col-span-1 sm:col-span-2 border border-gray-200 rounded-lg p-2.5 bg-white shadow-sm"
+                            >
+                              <div className="flex items-center justify-between">
+                                <label className="flex items-center gap-2 cursor-pointer select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() =>
+                                      toggleModulePermission(module)
+                                    }
+                                    className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black accent-black"
+                                  />
+                                  <span className="text-sm font-medium text-gray-800">
+                                    {t(
+                                      `userManagement.modal.moduleLabels.${module as keyof typeof MODULE_LABELS}`
+                                    )}
+                                  </span>
+                                  {selectedCount > 0 && (
+                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-medium">
+                                      {selectedCount}/
+                                      {AVAILABLE_WEB_ADMIN_SUBMODULES.length}
+                                    </span>
+                                  )}
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setIsWebAdminExpanded(!isWebAdminExpanded)
+                                  }
+                                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-black p-1 rounded hover:bg-gray-100 transition-colors"
+                                  title={
+                                    isWebAdminExpanded
+                                      ? "Collapse submodules"
+                                      : "Expand submodules"
+                                  }
+                                >
+                                  <span>
+                                    {isWebAdminExpanded
+                                      ? t(
+                                          "userManagement.modal.hideSubmodules",
+                                          "Ocultar módulos"
+                                        )
+                                      : t(
+                                          "userManagement.modal.showSubmodules",
+                                          "Ver módulos"
+                                        )}
+                                  </span>
+                                  <ChevronDown
+                                    className={`w-4 h-4 transition-transform duration-200 ${
+                                      isWebAdminExpanded ? "rotate-180" : ""
+                                    }`}
+                                  />
+                                </button>
+                              </div>
+
+                              {isWebAdminExpanded && (
+                                <div className="mt-3 pt-3 border-t border-gray-100 bg-gray-50/70 p-3 rounded-md">
+                                  <div className="mb-2">
+                                    <span className="text-xs font-medium text-gray-600">
+                                      {t(
+                                        "userManagement.modal.submodulesTitle",
+                                        "Módulos de Web y App Admin"
+                                      )}
+                                    </span>
+                                  </div>
+
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                                    {AVAILABLE_WEB_ADMIN_SUBMODULES.map(
+                                      (submodule) => (
+                                        <label
+                                          key={submodule}
+                                          className="flex items-center gap-2 p-1.5 rounded cursor-pointer hover:bg-white/80 transition-colors"
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            checked={formData.modulePermissions.includes(
+                                              submodule
+                                            )}
+                                            onChange={() =>
+                                              toggleWebAdminSubmodule(submodule)
+                                            }
+                                            className="w-3.5 h-3.5 text-black border-gray-300 rounded focus:ring-black accent-black"
+                                          />
+                                          <span className="text-xs text-gray-700">
+                                            {t(
+                                              `userManagement.modal.webAdminSubmoduleLabels.${submodule}`,
+                                              WEB_ADMIN_SUBMODULE_LABELS[
+                                                submodule as keyof typeof WEB_ADMIN_SUBMODULE_LABELS
+                                              ] || submodule
+                                            )}
+                                          </span>
+                                        </label>
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <label
+                            key={module}
+                            className="flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-50 transition-colors border border-transparent"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.modulePermissions.includes(
+                                module
+                              )}
+                              onChange={() => toggleModulePermission(module)}
+                              className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black accent-black"
+                            />
+                            <span className="text-sm text-gray-700">
+                              {t(
+                                `userManagement.modal.moduleLabels.${module as keyof typeof MODULE_LABELS}`
+                              )}
+                            </span>
+                          </label>
+                        );
+                      })}
                     </div>
                     <p className="text-xs text-gray-500 mt-2">
                       {t("userManagement.modal.selectModules")}

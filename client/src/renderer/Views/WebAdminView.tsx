@@ -17,6 +17,8 @@ import WebCustomersTab from "../components/webAdmin/WebCustomersTab";
 import SupportTab from "../components/webAdmin/SupportTab";
 import MaintenanceTab from "../components/webAdmin/MaintenanceTab";
 import { RefreshCw, Sparkles } from "lucide-react";
+import { hasWebAdminTabAccess } from "../utils/permissions";
+import { AccessDenied } from "../components/shared/AccessDenied";
 
 export type TabKey =
   | "hero"
@@ -39,13 +41,47 @@ interface WebAdminViewProps {
   onTabChange?: (tab: string) => void;
 }
 
+const ALL_TABS: TabKey[] = [
+  "hero",
+  "offers",
+  "branding",
+  "notifications",
+  "footer",
+  "about",
+  "contact",
+  "faq",
+  "allergens",
+  "terms",
+  "privacy",
+  "maintenance",
+  "customers",
+  "support",
+];
+
 const WebAdminView: React.FC<WebAdminViewProps> = ({
   activeTab = "hero",
   onTabChange,
 }) => {
-  const currentSubview = (activeTab as TabKey) || "hero";
   const { t } = useTranslation();
-  const { auth: { token } } = useAuth();
+  const { auth } = useAuth();
+  const token = auth.token;
+
+  const allowedTabs = ALL_TABS.filter((tab) =>
+    hasWebAdminTabAccess(tab, auth.user?.modulePermissions, auth.user?.role)
+  );
+
+  const currentSubview = (activeTab as TabKey) || (allowedTabs[0] ?? "hero");
+  const hasAccessToCurrent = hasWebAdminTabAccess(
+    currentSubview,
+    auth.user?.modulePermissions,
+    auth.user?.role
+  );
+
+  useEffect(() => {
+    if (!hasAccessToCurrent && allowedTabs.length > 0 && onTabChange) {
+      onTabChange(allowedTabs[0]);
+    }
+  }, [hasAccessToCurrent, allowedTabs, onTabChange]);
   const [loading, setLoading] = useState(false);
   const [siteData, setSiteData] = useState<Record<string, any>>({});
   // Track whether the initial remote fetch has already run this session
@@ -174,6 +210,17 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
   const activeIconSrc = tabIcons[currentSubview] || "./images/admin-panel.png";
 
   const renderSubview = () => {
+    if (!hasAccessToCurrent) {
+      return (
+        <AccessDenied
+          message={t(
+            "common.accessDenied",
+            "No tienes permiso para acceder a este módulo."
+          )}
+        />
+      );
+    }
+
     switch (currentSubview) {
       case "hero":
         return (
@@ -278,6 +325,19 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
         );
     }
   };
+
+  if (allowedTabs.length === 0) {
+    return (
+      <div className="p-6">
+        <AccessDenied
+          message={t(
+            "common.accessDenied",
+            "No tienes permisos para acceder a los módulos de Web y App Admin."
+          )}
+        />
+      </div>
+    );
+  }
 
   const isLiveDirectTab = currentSubview === "customers" || currentSubview === "support";
 

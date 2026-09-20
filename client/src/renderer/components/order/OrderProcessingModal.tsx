@@ -368,13 +368,14 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         order?.orderType === "web:pickup" ||
         order?.orderType === "app:pickup");
 
-    let finalStatus = order?.status === "pending" ? "sent to kitchen" : (order?.status || "sent to kitchen");
+    let finalStatus = order?.status?.toLowerCase() === "pending" ? "sent to kitchen" : (order?.status || "sent to kitchen");
     let deliveryPerson: any = order?.deliveryPerson;
     let assignedAt: any = order?.assignedAt;
     let deliveredAt: any = order?.deliveredAt;
 
+    const finalStatusLower = finalStatus?.toLowerCase();
     if (isTransitioningToNonDelivery) {
-      if (finalStatus === "ready for delivery" || finalStatus === "out for delivery") {
+      if (finalStatusLower === "ready for delivery" || finalStatusLower === "out for delivery") {
         finalStatus = "completed";
       }
       deliveryPerson = null;

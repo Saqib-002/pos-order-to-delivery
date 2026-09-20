@@ -353,6 +353,11 @@ const OrderCart: React.FC<OrderCartProps> = ({
               {t("orderTypes.web")}
             </span>
           )}
+          {order?.orderType?.startsWith("app:") && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">
+              {t("orderTypes.app")}
+            </span>
+          )}
         </p>
         <p className="text-sm">{t("orderCart.selectItemsFromMenu")}</p>
       </div>
@@ -386,6 +391,11 @@ const OrderCart: React.FC<OrderCartProps> = ({
             {order?.orderType?.startsWith("web:") && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30">
                 {t("orderTypes.web")}
+              </span>
+            )}
+            {order?.orderType?.startsWith("app:") && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">
+                {t("orderTypes.app")}
               </span>
             )}
           </h2>

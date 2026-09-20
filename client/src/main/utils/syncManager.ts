@@ -143,18 +143,18 @@ export function startBackgroundSync() {
                 try {
                     if (update.status.toLowerCase() === "delivered") {
                         await db("orders").where({ id: update.id }).update({
-                            status: "Delivered",
+                            status: "delivered",
                             deliveredAt: update.deliveredAt || new Date().toISOString(),
                             updatedAt: new Date().toISOString()
                         });
-                        // console.log(`SyncManager: Locally marked order ${update.id} as Delivered`);
+                        // console.log(`SyncManager: Locally marked order ${update.id} as delivered`);
                     } else if (update.status.toLowerCase() === "cancelled") {
                         await db("orders").where({ id: update.id }).update({
-                            status: "Cancelled",
+                            status: "cancelled",
                             notes: update.notes,
                             updatedAt: new Date().toISOString()
                         });
-                        // console.log(`SyncManager: Locally marked order ${update.id} as Cancelled`);
+                        // console.log(`SyncManager: Locally marked order ${update.id} as cancelled`);
                     }
                     processedIds.push(update.id);
                 } catch (dbErr) {

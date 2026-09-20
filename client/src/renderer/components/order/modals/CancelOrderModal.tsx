@@ -60,8 +60,11 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
               {t("cancelOrderModal.orderNumber") || "Order Number"}:
             </p>
             <p className="text-lg font-semibold text-black">
-              {orderPrefix}
-              {order.orderId}
+              {order.ticketNumber
+                ? order.ticketNumber
+                : order.orderId
+                ? `${orderPrefix}${order.orderId}`
+                : "-"}
             </p>
           </div>
 
@@ -69,7 +72,7 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
             <p className="text-sm text-gray-600 mb-2">
               {t("cancelOrderModal.customer") || "Customer"}:
             </p>
-            <p className="text-base text-black">{order.customer.name}</p>
+            <p className="text-base text-black">{order.customer?.name || "-"}</p>
           </div>
 
           <div className="mb-6">

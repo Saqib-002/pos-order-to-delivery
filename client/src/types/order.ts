@@ -19,6 +19,7 @@ export interface OrderItem {
     priority: number;
     forProduct?: boolean;
     isRemovalGroup?: boolean;
+    isBold?: boolean;
   }>;
   printers?: string[];
   quantity: number;

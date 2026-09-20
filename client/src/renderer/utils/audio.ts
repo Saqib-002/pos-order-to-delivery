@@ -26,7 +26,7 @@ export const playNotificationSound = (): Promise<void> => {
       audioInstance.onended = onDone;
       audioInstance.onerror = onDone;
 
-      setTimeout(onDone, 2000);
+      setTimeout(onDone, 5000);
 
       audioInstance.play().catch((err) => {
         console.warn("Could not play notification sound:", err);

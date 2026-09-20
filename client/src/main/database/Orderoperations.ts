@@ -15,7 +15,7 @@ const stringToComplements = (complementStr: any): any[] => {
   const complements = complementStr.split("=");
   return complements.map((c) => {
     const parts = c.split("|");
-    const [groupId, groupName, itemId, itemName, price, forProduct, isRemovalGroup] = parts;
+    const [groupId, groupName, itemId, itemName, price, forProduct, isRemovalGroup, isBold] = parts;
     return {
       groupId,
       groupName,
@@ -25,6 +25,7 @@ const stringToComplements = (complementStr: any): any[] => {
       priority: 0,
       forProduct: forProduct === "1",
       isRemovalGroup: isRemovalGroup === "1",
+      isBold: isBold === "1",
     };
   });
 };
@@ -142,18 +143,26 @@ export class OrderDatabaseOperations {
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date(nowObj);
       endOfDay.setHours(23, 59, 59, 999);
-      const countResult = await trx("orders")
-        .whereBetween("createdAt", [
-          startOfDay.toISOString(),
-          endOfDay.toISOString(),
-        ])
-        .count("* as count")
-        .first();
-      const newDailyOrderId = (Number((countResult as any).count) || 0) + 1;
+
+      let platformOrderId = null;
+      if (!orderData.ticketNumber) {
+        const maxResult = await trx("orders")
+          .whereBetween("createdAt", [
+            startOfDay.toISOString(),
+            endOfDay.toISOString(),
+          ])
+          .where(function () {
+            this.whereNull("ticketNumber").orWhere("ticketNumber", "");
+          })
+          .max("orderId as maxOrderId")
+          .first();
+        platformOrderId = (Number((maxResult as any)?.maxOrderId) || 0) + 1;
+      }
+
       const newOrder = {
         id: randomUUID(),
         status: "sent to kitchen",
-        orderId: newDailyOrderId,
+        orderId: platformOrderId,
         orderType: orderData.orderType || "platform:delivery",
         platformId: orderData.platformId,
         ticketNumber: orderData.ticketNumber || null,
@@ -223,6 +232,47 @@ export class OrderDatabaseOperations {
     }
   }
 
+  private static async resolveItemSubCategory(item: any, dbOrTrx: any = db) {
+    let subCategoryName = item.subCategoryName || "";
+    let subCategoryPriority = item.subCategoryPriority ? parseInt(item.subCategoryPriority, 10) : 0;
+
+    if (!subCategoryName || !subCategoryPriority) {
+      if (item.productId) {
+        const prod = await dbOrTrx("products")
+          .leftJoin("sub_categories", "products.subcategoryId", "sub_categories.id")
+          .leftJoin("categories", "sub_categories.categoryId", "categories.id")
+          .where("products.id", item.productId)
+          .select(
+            "sub_categories.name as subcategoryName",
+            "sub_categories.priority as subcategoryPriority",
+            "categories.priority as categoryPriority"
+          )
+          .first();
+        if (prod) {
+          if (!subCategoryName && prod.subcategoryName) subCategoryName = prod.subcategoryName;
+          if (!subCategoryPriority) subCategoryPriority = ((prod.categoryPriority ?? 0) * 10000) + (prod.subcategoryPriority ?? 0);
+        }
+      }
+      if ((!subCategoryName || !subCategoryPriority) && item.menuId) {
+        const menu = await dbOrTrx("menus")
+          .leftJoin("sub_categories", "menus.subcategoryId", "sub_categories.id")
+          .leftJoin("categories", "sub_categories.categoryId", "categories.id")
+          .where("menus.id", item.menuId)
+          .select(
+            "sub_categories.name as subcategoryName",
+            "sub_categories.priority as subcategoryPriority",
+            "categories.priority as categoryPriority"
+          )
+          .first();
+        if (menu) {
+          if (!subCategoryName && menu.subcategoryName) subCategoryName = menu.subcategoryName;
+          if (!subCategoryPriority) subCategoryPriority = ((menu.categoryPriority ?? 0) * 10000) + (menu.subcategoryPriority ?? 0);
+        }
+      }
+    }
+    return { subCategoryName, subCategoryPriority };
+  }
+
   static async saveOrder(item: any): Promise<any> {
     const trx = await db.transaction();
     try {
@@ -232,14 +282,17 @@ export class OrderDatabaseOperations {
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date(nowObj);
       endOfDay.setHours(23, 59, 59, 999);
-      const countResult = await trx("orders")
+      const maxResult = await trx("orders")
         .whereBetween("createdAt", [
           startOfDay.toISOString(),
           endOfDay.toISOString(),
         ])
-        .count("* as count")
+        .where(function () {
+          this.whereNull("ticketNumber").orWhere("ticketNumber", "");
+        })
+        .max("orderId as maxOrderId")
         .first();
-      const newDailyOrderId = (Number((countResult as any).count) || 0) + 1;
+      const newDailyOrderId = (Number((maxResult as any)?.maxOrderId) || 0) + 1;
       const newOrder = {
         id: randomUUID(),
         status: "pending",
@@ -248,9 +301,12 @@ export class OrderDatabaseOperations {
         updatedAt: nowObj,
       };
       const order = await trx("orders").insert(newOrder).returning("*");
+      const { subCategoryName, subCategoryPriority } = await this.resolveItemSubCategory(item, trx);
       const orderItem = {
         ...item,
-        printers: item.printers.join("="),
+        subCategoryName,
+        subCategoryPriority,
+        printers: item.printers ? (Array.isArray(item.printers) ? item.printers.join("=") : item.printers) : "",
         id: randomUUID(),
         orderId: newOrder.id,
         createdAt: nowObj,
@@ -270,10 +326,13 @@ export class OrderDatabaseOperations {
   static async addItemToOrder(orderId: string, item: any): Promise<any> {
     try {
       const now = new Date().toISOString();
+      const { subCategoryName, subCategoryPriority } = await this.resolveItemSubCategory(item, db);
       const orderItem = {
         ...item,
+        subCategoryName,
+        subCategoryPriority,
         id: randomUUID(),
-        printers: item.printers.join("="),
+        printers: item.printers ? (Array.isArray(item.printers) ? item.printers.join("=") : item.printers) : "",
         orderId,
         createdAt: now,
         updatedAt: now,
@@ -829,7 +888,8 @@ export class OrderDatabaseOperations {
       const formattedItems = this.formatOrderItems(orderItems);
 
       const { orderTotal } = calculateOrderTotal(formattedItems);
-      if (order.status !== "cancelled") {
+      const statusLower = order.status?.toLowerCase();
+      if (statusLower !== "cancelled" && statusLower !== "canceled") {
         let orderTypeKey = order.orderType;
         if (orderTypeKey.startsWith("platform")) {
           if (order.platformName) {
@@ -1292,14 +1352,20 @@ export class OrderDatabaseOperations {
       const endOfDay = new Date(nowObj);
       endOfDay.setHours(23, 59, 59, 999);
 
-      const countResult = await trx("orders")
-        .whereBetween("createdAt", [
-          startOfDay.toISOString(),
-          endOfDay.toISOString(),
-        ])
-        .count("* as count")
-        .first();
-      const newDailyOrderId = (Number((countResult as any).count) || 0) + 1;
+      let webOrderId = orderData.orderId || null;
+      if (!orderData.ticketNumber && !webOrderId) {
+        const maxResult = await trx("orders")
+          .whereBetween("createdAt", [
+            startOfDay.toISOString(),
+            endOfDay.toISOString(),
+          ])
+          .where(function () {
+            this.whereNull("ticketNumber").orWhere("ticketNumber", "");
+          })
+          .max("orderId as maxOrderId")
+          .first();
+        webOrderId = (Number((maxResult as any)?.maxOrderId) || 0) + 1;
+      }
 
       let customerId = orderData.customerId || null;
       if (customerId) {
@@ -1311,7 +1377,7 @@ export class OrderDatabaseOperations {
 
       const newOrder = {
         id: orderData.id || randomUUID(),
-        orderId: newDailyOrderId,
+        orderId: webOrderId,
         customerId,
         customerName: orderData.customerName || "",
         customerPhone: orderData.customerPhone || "",
@@ -1351,6 +1417,8 @@ export class OrderDatabaseOperations {
             }
           }
 
+          const { subCategoryName, subCategoryPriority } = await this.resolveItemSubCategory(item, trx);
+
           const orderItem = {
             id: item.id || randomUUID(),
             orderId: newOrder.id,
@@ -1379,8 +1447,8 @@ export class OrderDatabaseOperations {
             printers: itemPrinters,
             menuPageId: item.menuPageId || null,
             menuPageName: item.menuPageName || null,
-            subCategoryName: item.subCategoryName || "",
-            subCategoryPriority: item.subCategoryPriority ? parseInt(item.subCategoryPriority, 10) : 0,
+            subCategoryName: subCategoryName,
+            subCategoryPriority: subCategoryPriority,
             isKitchenPrinted: item.isKitchenPrinted === 1 || item.isKitchenPrinted === true,
             createdAt: item.createdAt || nowObj,
             updatedAt: nowObj,

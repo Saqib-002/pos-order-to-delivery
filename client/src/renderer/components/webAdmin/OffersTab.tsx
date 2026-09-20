@@ -52,6 +52,7 @@ export interface OfferTargetItem {
   id: string;
   name: string;
   price: number;
+  discount?: number;
   imgUrl?: string;
 }
 
@@ -259,6 +260,7 @@ interface ProductItem {
   id: string;
   name: string;
   price: number;
+  discount?: number;
   imgUrl?: string;
 }
 
@@ -266,6 +268,7 @@ interface MenuItem {
   id: string;
   name: string;
   price: number;
+  discount?: number;
   imgUrl?: string;
 }
 
@@ -361,6 +364,7 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                 id: p.id || p._id,
                 name: p.name || "",
                 price: Number(p.price) || 0,
+                discount: Number(p.discount || 0),
                 imgUrl: p.imgUrl || p.image || "",
               }))
             );
@@ -375,6 +379,7 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                 id: m.id || m._id,
                 name: m.name || "",
                 price: Number(m.price) || 0,
+                discount: Number(m.discount || 0),
                 imgUrl: m.imgUrl || m.image || "",
               }))
             );
@@ -523,6 +528,7 @@ export const OffersTab: React.FC<OffersTabProps> = ({
         id: item.id,
         name: item.name,
         price: Number(item.price) || 0,
+        discount: Number(item.discount || 0),
         imgUrl: item.imgUrl || "",
       };
       return {
@@ -795,23 +801,45 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
-                        {offer.targets?.map((tgt) => (
-                          <span
-                            key={`${tgt.type}-${tgt.id}`}
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white border border-gray-200 rounded text-[10px] text-gray-700 font-medium"
-                          >
+                        {offer.targets?.map((tgt) => {
+                          const hasDiscount = Boolean(tgt.discount && tgt.discount > 0);
+                          const discountedPrice = hasDiscount
+                            ? Number(tgt.price) * (1 - (tgt.discount || 0) / 100)
+                            : Number(tgt.price);
+                          return (
                             <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                tgt.type === "menu"
-                                  ? "bg-black"
-                                  : "bg-emerald-500"
-                              }`}
-                            />
-                            <span className="truncate max-w-[120px]">
-                              {tgt.name}
+                              key={`${tgt.type}-${tgt.id}`}
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white border border-gray-200 rounded text-[10px] text-gray-700 font-medium"
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  tgt.type === "menu"
+                                    ? "bg-black"
+                                    : "bg-emerald-500"
+                                }`}
+                              />
+                              <span className="truncate max-w-[120px]">
+                                {tgt.name}
+                              </span>
+                              {tgt.price > 0 && (
+                                hasDiscount ? (
+                                  <span className="inline-flex items-center gap-1 text-[9px]">
+                                    <span className="px-1 rounded bg-red-50 text-red-600 font-bold">
+                                      -{tgt.discount}%
+                                    </span>
+                                    <span className="font-bold text-gray-800">
+                                      {discountedPrice.toFixed(2).replace('.', ',')}€
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400">
+                                    {Number(tgt.price).toFixed(2).replace('.', ',')}€
+                                  </span>
+                                )
+                              )}
                             </span>
-                          </span>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -1302,33 +1330,53 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                       )}
                     </div>
                     <div className="flex flex-wrap gap-1.5 min-h-[36px] items-center">
-                      {formData.targets.map((tgt) => (
-                        <span
-                          key={`${tgt.type}-${tgt.id}`}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-gray-300 rounded-full text-xs text-gray-800 font-medium shadow-2xs"
-                        >
+                      {formData.targets.map((tgt) => {
+                        const hasDiscount = Boolean(tgt.discount && tgt.discount > 0);
+                        const discountedPrice = hasDiscount
+                          ? Number(tgt.price) * (1 - (tgt.discount || 0) / 100)
+                          : Number(tgt.price);
+                        return (
                           <span
-                            className={`w-2 h-2 rounded-full ${
-                              tgt.type === "menu"
-                                ? "bg-black"
-                                : "bg-emerald-500"
-                            }`}
-                          />
-                          <span>{tgt.name}</span>
-                          <span className="text-gray-400 font-normal">
-                            {tgt.price.toFixed(2).replace('.', ',')}€
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleRemoveTarget(tgt.id, tgt.type)
-                            }
-                            className="text-gray-400 hover:text-red-600 p-0.5 ml-0.5 cursor-pointer"
+                            key={`${tgt.type}-${tgt.id}`}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-300 rounded-full text-xs text-gray-800 font-medium shadow-2xs"
                           >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </span>
-                      ))}
+                            <span
+                              className={`w-2 h-2 rounded-full ${
+                                tgt.type === "menu"
+                                  ? "bg-black"
+                                  : "bg-emerald-500"
+                              }`}
+                            />
+                            <span>{tgt.name}</span>
+                            {hasDiscount ? (
+                              <span className="inline-flex items-center gap-1 font-normal">
+                                <span className="text-[10px] px-1 rounded bg-red-100 text-red-600 font-bold">
+                                  -{tgt.discount}%
+                                </span>
+                                <span className="text-[10px] text-gray-400 line-through">
+                                  {Number(tgt.price).toFixed(2).replace('.', ',')}€
+                                </span>
+                                <span className="text-gray-800 font-bold">
+                                  {discountedPrice.toFixed(2).replace('.', ',')}€
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 font-normal">
+                                {Number(tgt.price).toFixed(2).replace('.', ',')}€
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleRemoveTarget(tgt.id, tgt.type)
+                              }
+                              className="text-gray-400 hover:text-red-600 p-0.5 ml-0.5 cursor-pointer"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -1418,9 +1466,23 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                                   <h5 className="text-xs font-bold text-gray-800">
                                     {prod.name}
                                   </h5>
-                                  <span className="text-[11px] text-gray-500">
-                                    {prod.price.toFixed(2).replace('.', ',')}€
-                                  </span>
+                                  {prod.discount && prod.discount > 0 ? (
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-600">
+                                        -{prod.discount}%
+                                      </span>
+                                      <span className="text-[10px] text-gray-400 line-through">
+                                        {prod.price.toFixed(2).replace('.', ',')}€
+                                      </span>
+                                      <span className="text-xs font-bold text-gray-800">
+                                        {(prod.price * (1 - prod.discount / 100)).toFixed(2).replace('.', ',')}€
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-[11px] text-gray-500">
+                                      {prod.price.toFixed(2).replace('.', ',')}€
+                                    </span>
+                                  )}
                                 </div>
                               </div>
 
@@ -1476,9 +1538,23 @@ export const OffersTab: React.FC<OffersTabProps> = ({
                                 <h5 className="text-xs font-bold text-gray-800">
                                   {menu.name}
                                 </h5>
-                                <span className="text-[11px] text-gray-500">
-                                  {menu.price.toFixed(2).replace('.', ',')}€
-                                </span>
+                                  {menu.discount && menu.discount > 0 ? (
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-600">
+                                        -{menu.discount}%
+                                      </span>
+                                      <span className="text-[10px] text-gray-400 line-through">
+                                        {menu.price.toFixed(2).replace('.', ',')}€
+                                      </span>
+                                      <span className="text-xs font-bold text-gray-800">
+                                        {(menu.price * (1 - menu.discount / 100)).toFixed(2).replace('.', ',')}€
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-[11px] text-gray-500">
+                                      {menu.price.toFixed(2).replace('.', ',')}€
+                                    </span>
+                                  )}
                               </div>
                             </div>
 
