@@ -16,6 +16,7 @@ const ConfigurationsTab = () => {
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [cdnUrl, setCdnUrl] = useState<string>(""); // State for CDN URL
+  const [isSyncMaster, setIsSyncMaster] = useState<boolean>(false);
   const {
     auth: { token },
   } = useAuth();
@@ -25,9 +26,14 @@ const ConfigurationsTab = () => {
   const [isZoneModalOpen, setIsZoneModalOpen] = useState(false);
 
   const getConfigurations = async () => {
-    // Fetch CDN URL
+    // Fetch CDN URL & Master Sync role
     const url = await (window as any).electronAPI.getCdnUrl();
     if (url) setCdnUrl(url);
+
+    if ((window as any).electronAPI?.getIsSyncMaster) {
+      const syncMaster = await (window as any).electronAPI.getIsSyncMaster();
+      setIsSyncMaster(!!syncMaster);
+    }
 
     const res = await (window as any).electronAPI.getConfigurations(token);
     if (!res.status) {
@@ -139,8 +145,11 @@ const ConfigurationsTab = () => {
       deliveryZones: cleanedDeliveryZones,
     };
 
-    // Save CDN URL
+    // Save CDN URL & Terminal Master Sync Role
     await (window as any).electronAPI.saveCdnUrl(cdnUrl);
+    if ((window as any).electronAPI?.setIsSyncMaster) {
+      await (window as any).electronAPI.setIsSyncMaster(isSyncMaster);
+    }
 
     let res;
     if (mode === "add") {
@@ -178,6 +187,26 @@ const ConfigurationsTab = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column - Form Fields */}
           <div className="flex-auto flex flex-col gap-6">
+            {/* Terminal Master Sync Role */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl">
+              <div className="flex flex-col pr-4">
+                <span className="font-bold text-gray-800 text-sm">
+                  {t("configurations.serverPosMaster", "Server POS (Master Terminal)")}
+                </span>
+                <span className="text-xs text-gray-500 mt-0.5">
+                  {t("configurations.serverPosMasterDesc", "Syncs incoming web/mobile orders from the cloud server and auto-prints receipts. Keep disabled on secondary POS terminals.")}
+                </span>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isSyncMaster}
+                  onChange={(e) => setIsSyncMaster(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+              </label>
+            </div>
             <div className="flex gap-4">
               <CustomInput
                 type="text"
@@ -687,7 +716,7 @@ const ConfigurationsTab = () => {
             <label className="text-sm font-medium text-gray-700">
               {t("configurations.companyLogo")}
             </label>
-            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-50 flex items-center justify-center">
+            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-black transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 min-h-50 flex items-center justify-center">
               <input
                 type="file"
                 accept="image/*"

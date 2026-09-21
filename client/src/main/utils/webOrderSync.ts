@@ -74,7 +74,10 @@ async function syncWebOrders(): Promise<void> {
   }
 }
 
+let syncInterval: NodeJS.Timeout | null = null;
+
 export function startWebOrderSync(): void {
+  if (syncInterval) return;
   Logger.info("WebOrderSync: starting background sync loop (10s interval)...");
 
   // Run once immediately on startup
@@ -82,9 +85,17 @@ export function startWebOrderSync(): void {
     Logger.error("WebOrderSync: initial sync error:", err)
   );
 
-  setInterval(() => {
+  syncInterval = setInterval(() => {
     syncWebOrders().catch((err) =>
       Logger.error("WebOrderSync: sync tick error:", err)
     );
   }, 10_000);
+}
+
+export function stopWebOrderSync(): void {
+  if (syncInterval) {
+    clearInterval(syncInterval);
+    syncInterval = null;
+    Logger.info("WebOrderSync: stopped background sync loop.");
+  }
 }

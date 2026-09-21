@@ -50,8 +50,24 @@
     "type": "Tipo"
   },
   "welcome": "Bienvenido a nuestro sitio web.",
+  "databaseSetup": {
+    "title": "Conexión a la Base de Datos",
+    "subtitle": "Por favor, introduce las credenciales de PostgreSQL para continuar.",
+    "host": "Host",
+    "port": "Puerto",
+    "database": "Base de datos",
+    "user": "Usuario",
+    "password": "Contraseña",
+    "serverPosMaster": "TPV Servidor (Terminal Principal)",
+    "serverPosMasterDesc": "Sincroniza pedidos web/móvil desde el servidor en la nube e imprime tickets automáticamente. Mantener desactivado en TPVs secundarios.",
+    "failedToConnect": "Error al conectar con la base de datos.",
+    "connecting": "Conectando...",
+    "saveAndConnect": "Guardar y Conectar"
+  },
   "configurations": {
     "title": "Configuraciones",
+    "serverPosMaster": "TPV Servidor (Terminal Principal)",
+    "serverPosMasterDesc": "Sincroniza pedidos web/móvil desde el servidor en la nube e imprime tickets automáticamente. Mantener desactivado en TPVs secundarios.",
     "languageLabel": "Idioma",
     "noRangeSet": "Aún no se ha establecido ningún rango",
     "languageOptions": {

@@ -125,10 +125,13 @@ async function clearWhiteboardOrders(ids: string[]) {
     }
 }
 
+let bgSyncInterval: NodeJS.Timeout | null = null;
+
 // Run a 10-second polling loop to download status updates (Delivered/Cancelled) from VPS whiteboard
 export function startBackgroundSync() {
+    if (bgSyncInterval) return;
     console.log("SyncManager: Starting background sync loop (10s interval)...");
-    setInterval(async () => {
+    bgSyncInterval = setInterval(async () => {
         const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
         try {
             const response = await fetch(`${vpsUrl}/api/pos/poll-updates`);
@@ -169,4 +172,12 @@ export function startBackgroundSync() {
             console.error("SyncManager: Background sync execution error:", err);
         }
     }, 10000);
+}
+
+export function stopBackgroundSync() {
+    if (bgSyncInterval) {
+        clearInterval(bgSyncInterval);
+        bgSyncInterval = null;
+        console.log("SyncManager: Stopped background sync loop.");
+    }
 }

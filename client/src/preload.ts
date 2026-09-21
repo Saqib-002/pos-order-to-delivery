@@ -33,6 +33,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getDbCredentials: () => ipcRenderer.invoke("get-db-credentials"),
   saveAndInitDb: (credentials: any) =>
     ipcRenderer.invoke("save-and-init-db", credentials),
+  getIsSyncMaster: () => ipcRenderer.invoke("get-is-sync-master"),
+  setIsSyncMaster: (enabled: boolean) =>
+    ipcRenderer.invoke("set-is-sync-master", enabled),
   // CDN & Driver URL
   getCdnUrl: () => ipcRenderer.invoke("get-cdn-url"),
   saveCdnUrl: (url: string) => ipcRenderer.invoke("save-cdn-url", url),

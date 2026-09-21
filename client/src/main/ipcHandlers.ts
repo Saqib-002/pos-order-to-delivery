@@ -156,7 +156,7 @@ import {
   updateMultipleVehicleMaintenancePayments,
 } from "./handlers/vehicles.js";
 import Store from "electron-store";
-import { initDatabase } from "./database/index.js";
+import { initDatabase, startCloudSyncServices, stopCloudSyncServices } from "./database/index.js";
 import {
   createWorker,
   getWorkers,
@@ -242,6 +242,7 @@ interface DbCredentials {
   database: string;
   user: string;
   password: string;
+  isSyncMaster?: boolean;
 }
 interface StoreSchema {
   dbCredentials: DbCredentials;
@@ -256,6 +257,7 @@ const store = new Store<StoreSchema>({
       database: "postgres",
       user: "postgres",
       password: "",
+      isSyncMaster: false,
     },
     cdnUrl: "http://192.168.1.0:3000",
     language: "en",
@@ -266,6 +268,25 @@ export function registerIpcHandlers() {
   // db handlers
   ipcMain.handle("get-db-credentials", async () => {
     return (store as any).get("dbCredentials");
+  });
+  ipcMain.handle("get-is-sync-master", async () => {
+    const creds = (store as any).get("dbCredentials");
+    return !!creds?.isSyncMaster;
+  });
+  ipcMain.handle("set-is-sync-master", async (event, enabled: boolean) => {
+    const creds = (store as any).get("dbCredentials") || {};
+    creds.isSyncMaster = enabled;
+    (store as any).set("dbCredentials", creds);
+    try {
+      if (enabled) {
+        await startCloudSyncServices();
+      } else {
+        await stopCloudSyncServices();
+      }
+    } catch (e) {
+      console.error("Failed to toggle cloud sync services live:", e);
+    }
+    return true;
   });
   // cdn handlers
   ipcMain.handle("get-cdn-url", async () => {

@@ -50,8 +50,24 @@
     "type": "Type"
   },
   "welcome": "Welcome to our website.",
+  "databaseSetup": {
+    "title": "Database Connection",
+    "subtitle": "Please enter your PostgreSQL credentials to continue.",
+    "host": "Host",
+    "port": "Port",
+    "database": "Database",
+    "user": "User",
+    "password": "Password",
+    "serverPosMaster": "Server POS (Master Terminal)",
+    "serverPosMasterDesc": "Syncs incoming web/app orders from cloud & auto-prints receipts. Disable on secondary client terminals.",
+    "failedToConnect": "Failed to connect to the database.",
+    "connecting": "Connecting...",
+    "saveAndConnect": "Save & Connect"
+  },
   "configurations": {
     "title": "Configurations",
+    "serverPosMaster": "Server POS (Master Terminal)",
+    "serverPosMasterDesc": "Syncs incoming web/mobile orders from the cloud server and auto-prints receipts. Keep disabled on secondary POS terminals.",
     "languageLabel": "Language",
     "noRangeSet": "No range has been set yet",
     "languageOptions": {

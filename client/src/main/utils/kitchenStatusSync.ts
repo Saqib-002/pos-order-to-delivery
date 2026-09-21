@@ -31,22 +31,27 @@ async function pushKitchenStatus(): Promise<void> {
   }
 }
 
-/**
- * Start the background loop that pushes the current "sent to kitchen"
- * order count (all order types) to the VPS every 20s. This is independent
- * of any renderer UI being open — unlike OrderProcessingModal's own local
- * count, which only refreshes while that specific modal is visible.
- */
+let kitchenInterval: NodeJS.Timeout | null = null;
+
 export function startKitchenStatusSync(): void {
+  if (kitchenInterval) return;
   Logger.info(`KitchenStatusSync: starting background push loop (${INTERVAL_MS / 1000}s interval)...`);
 
   pushKitchenStatus().catch((err) =>
     Logger.error("KitchenStatusSync: initial push error:", err)
   );
 
-  setInterval(() => {
+  kitchenInterval = setInterval(() => {
     pushKitchenStatus().catch((err) =>
       Logger.error("KitchenStatusSync: push tick error:", err)
     );
   }, INTERVAL_MS);
+}
+
+export function stopKitchenStatusSync(): void {
+  if (kitchenInterval) {
+    clearInterval(kitchenInterval);
+    kitchenInterval = null;
+    Logger.info("KitchenStatusSync: stopped background push loop.");
+  }
 }
