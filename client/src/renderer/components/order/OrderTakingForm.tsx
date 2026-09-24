@@ -968,7 +968,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                               crossOrigin="anonymous"
                               src={item.icon}
                               alt={i18n.language === "en" ? (item.nameEn || item.nameEs) : item.nameEs}
-                              className="w-5 h-5 object-contain flex-shrink-0 filter invert brightness-200"
+                              className="w-10 h-10 object-contain flex-shrink-0"
                             />
                           ) : (
                             <span className="w-5 h-5 rounded bg-red-100 text-red-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
@@ -1004,7 +1004,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
                               crossOrigin="anonymous"
                               src={item.icon}
                               alt={i18n.language === "en" ? (item.nameEn || item.nameEs) : item.nameEs}
-                              className="w-5 h-5 object-contain flex-shrink-0 filter invert brightness-200"
+                              className="w-10 h-10 object-contain flex-shrink-0"
                             />
                           ) : (
                             <span className="w-5 h-5 rounded bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs flex-shrink-0">

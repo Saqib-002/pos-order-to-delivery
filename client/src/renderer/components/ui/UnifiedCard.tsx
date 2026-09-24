@@ -5,6 +5,7 @@ import {
   GrabberIcon,
   NoMenuIcon,
   UnAvailableIcon,
+  InfoIcon,
 } from "@/renderer/public/Svg";
 import React, { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,6 +42,7 @@ interface UnifiedCardProps {
   onEdit: () => void;
   onDelete?: () => void;
   onClick?: () => void;
+  onAllergenClick?: () => void;
   showActions?: boolean;
   style?: React.CSSProperties;
   dragAttributes?: any;
@@ -263,6 +265,7 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(
       onEdit,
       onDelete,
       onClick,
+      onAllergenClick,
       showActions = true,
       style,
       dragAttributes,
@@ -339,6 +342,20 @@ const UnifiedCard = React.forwardRef<HTMLDivElement, UnifiedCardProps>(
         className={`relative ${padding} rounded-lg border-2 ${colorClasses} hover:shadow-md transition-all duration-200 group ${isClickable && !isDisabled ? "cursor-pointer" : ""
           } ${isDisabled ? "opacity-60 cursor-not-allowed" : ""} ${["product", "menu", "category", "subcategory"].includes(type) && !isDisabled ? "cursor-grab active:cursor-grabbing" : ""} ${layout === "row" ? "flex flex-row items-center gap-2 !p-2 w-full min-w-0" : ""}`}
       >
+        {onAllergenClick && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAllergenClick();
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="absolute top-2.5 right-2.5 p-0.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-xs transition-all duration-200 cursor-pointer shadow-md hover:scale-110 z-10"
+            title={t("orderTakingForm.viewAllergens", "Ver Alérgenos")}
+          >
+            <InfoIcon className="size-5" />
+          </button>
+        )}
         {["product", "menu", "category", "subcategory"].includes(type) && (
           <img
             crossOrigin="anonymous"

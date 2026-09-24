@@ -30,6 +30,109 @@ export const IncomesManagement = () => {
     deleteOtherIncome,
   } = useOtherIncomesData();
 
+  const getPaymentIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+      case "cash":
+        return "./images/cash.png";
+      case "card":
+        return "./images/card.png";
+      case "bizum":
+        return "./images/bizum.png";
+      case "bank-transfer":
+      case "banktransfer":
+        return "./images/bank-transfer.png";
+      case "account-direct-debit":
+      case "accountdirectdebit":
+        return "./images/direct-debit.png";
+      default:
+        return "./images/cash.png";
+    }
+  };
+
+  const getPaymentMethodLabel = (type: string) => {
+    switch (type.toLowerCase()) {
+      case "cash":
+        return t("marketPurchaseManagement.modal.cash", "Cash");
+      case "card":
+        return t("marketPurchaseManagement.modal.card", "Card");
+      case "bizum":
+        return t("marketPurchaseManagement.modal.bizum", "Bizum");
+      case "bank-transfer":
+      case "banktransfer":
+        return t("marketPurchaseManagement.modal.bankTransfer", "Bank Transfer");
+      case "account-direct-debit":
+      case "accountdirectdebit":
+        return t("marketPurchaseManagement.modal.account-direct-debit", "Direct Debit");
+      case "pending":
+        return t("common.paymentStatus.pending", "Pending");
+      default:
+        return type.charAt(0).toUpperCase() + type.slice(1);
+    }
+  };
+
+  const getPaymentCardStyle = (type: string) => {
+    switch (type.toLowerCase()) {
+      case "cash":
+        return {
+          card: "bg-green-50 border-green-300 text-green-900",
+          iconBg: "bg-white border-green-200",
+          title: "text-green-700",
+          amount: "text-green-950",
+          pending: "text-amber-700",
+        };
+      case "card":
+        return {
+          card: "bg-blue-50 border-blue-300 text-blue-900",
+          iconBg: "bg-white border-blue-200",
+          title: "text-blue-700",
+          amount: "text-blue-950",
+          pending: "text-amber-700",
+        };
+      case "bizum":
+        return {
+          card: "bg-purple-50 border-purple-300 text-purple-900",
+          iconBg: "bg-white border-purple-200",
+          title: "text-purple-700",
+          amount: "text-purple-950",
+          pending: "text-amber-700",
+        };
+      case "bank-transfer":
+      case "banktransfer":
+        return {
+          card: "bg-orange-50 border-orange-300 text-orange-900",
+          iconBg: "bg-white border-orange-200",
+          title: "text-orange-700",
+          amount: "text-orange-950",
+          pending: "text-amber-700",
+        };
+      case "account-direct-debit":
+      case "accountdirectdebit":
+        return {
+          card: "bg-indigo-50 border-indigo-300 text-indigo-900",
+          iconBg: "bg-white border-indigo-200",
+          title: "text-indigo-700",
+          amount: "text-indigo-950",
+          pending: "text-amber-700",
+        };
+      default:
+        return {
+          card: "bg-gray-50 border-gray-300 text-gray-900",
+          iconBg: "bg-white border-gray-200",
+          title: "text-gray-600",
+          amount: "text-gray-950",
+          pending: "text-amber-700",
+        };
+    }
+  };
+
+  const totalCardStyle = {
+    card: "bg-slate-100 border-slate-300 text-slate-900",
+    iconBg: "bg-white border-slate-300",
+    title: "text-slate-600",
+    amount: "text-slate-950",
+    pending: "text-amber-700",
+  };
+
   const handleClearFilters = () => {
     setFilters({
       page: 1,
@@ -178,16 +281,114 @@ export const IncomesManagement = () => {
           </div>
         )}
 
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-black">
-            {t("incomesManagement.table.otherIncomes")} (
-            {otherIncomesData.pagination.total})
-          </h3>
-          {loading && (
-            <span className="text-sm text-gray-500 animate-pulse">
-              {t("incomesManagement.table.updating")}
-            </span>
-          )}
+        <div className="px-6 py-5 border-b border-gray-200 flex flex-col gap-4">
+          {/* Top Row: Title & count + loading indicator */}
+          <div className="flex justify-between items-center w-full">
+            <h3 className="text-lg font-bold text-black">
+              {t("incomesManagement.table.otherIncomes")} (
+              {otherIncomesData.pagination.total})
+            </h3>
+            {loading && (
+              <span className="text-sm text-gray-500 animate-pulse">
+                {t("incomesManagement.table.updating")}
+              </span>
+            )}
+          </div>
+
+          {/* Bottom Row: Full-width Summary Boxes */}
+          <div className="flex flex-wrap gap-3.5 w-full">
+            {/* Total Box */}
+            <div
+              className={`${totalCardStyle.card} border-2 rounded-xl p-3.5 flex items-center gap-3.5 flex-1 min-w-[170px] shadow-2xs transition-all`}
+            >
+              <div
+                className={`size-12 rounded-xl ${totalCardStyle.iconBg} border flex items-center justify-center shrink-0 shadow-2xs`}
+              >
+                <img
+                  src="./images/expense.png"
+                  className="size-8 object-contain"
+                  alt="Total"
+                />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span
+                  className={`text-xs font-semibold ${totalCardStyle.title} uppercase tracking-wider`}
+                >
+                  {t("incomesManagement.summary.total", "Total")}
+                </span>
+                <span
+                  className={`text-base font-bold ${totalCardStyle.amount} leading-tight`}
+                >
+                  €{(otherIncomesData.summary?.totalAmount || 0).toFixed(2)}
+                </span>
+                {((otherIncomesData.summary?.totalPendingAmount ??
+                  Object.values(
+                    otherIncomesData.summary?.paymentMethodTotals || {}
+                  ).reduce((acc, curr) => acc + (curr.pending || 0), 0)) >
+                  0) && (
+                  <span
+                    className={`text-xs font-semibold ${totalCardStyle.pending} leading-tight mt-0.5`}
+                  >
+                    {t("common.paymentStatus.pending", "Pending")}: €{(
+                      otherIncomesData.summary?.totalPendingAmount ??
+                      Object.values(
+                        otherIncomesData.summary?.paymentMethodTotals || {}
+                      ).reduce((acc, curr) => acc + (curr.pending || 0), 0)
+                    ).toFixed(2)}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Payment Method Boxes */}
+            {Object.entries(otherIncomesData.summary?.paymentMethodTotals || {})
+              .filter(
+                ([_, stats]) =>
+                  (stats.paid || 0) > 0 || (stats.pending || 0) > 0
+              )
+              .map(([method, stats]) => {
+                const paid = stats.paid || 0;
+                const pending = stats.pending || 0;
+                const style = getPaymentCardStyle(method);
+
+                return (
+                  <div
+                    key={method}
+                    className={`${style.card} border-2 rounded-xl p-3.5 flex items-center gap-3.5 flex-1 min-w-[170px] shadow-2xs transition-all`}
+                  >
+                    <div
+                      className={`size-12 rounded-xl ${style.iconBg} border flex items-center justify-center shrink-0 shadow-2xs`}
+                    >
+                      <img
+                        src={getPaymentIcon(method)}
+                        className="size-8 object-contain"
+                        alt={method}
+                      />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span
+                        className={`text-xs font-semibold ${style.title} truncate`}
+                      >
+                        {getPaymentMethodLabel(method)}
+                      </span>
+                      <span
+                        className={`text-base font-bold ${style.amount} leading-tight`}
+                      >
+                        €{paid.toFixed(2)}
+                      </span>
+                      {pending > 0 && (
+                        <span
+                          className={`text-xs font-semibold ${style.pending} leading-tight mt-0.5`}
+                        >
+                          {t("common.paymentStatus.pending", "Pending")}: €
+                          {pending.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
         </div>
 
         <div className="grow">

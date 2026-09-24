@@ -173,16 +173,6 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
       return;
     }
 
-    if (
-      orderType === "platform:delivery" &&
-      !addressFields.address.trim() &&
-      !address.trim()
-    ) {
-      toast.error(t("platformOrders.errors.addressRequired"));
-      setLoading(false);
-      return;
-    }
-
     try {
       const selectedPlatform = platforms.find(
         (p) => p.id === selectedPlatformId,

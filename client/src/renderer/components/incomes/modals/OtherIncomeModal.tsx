@@ -36,7 +36,7 @@ export const OtherIncomeModal = ({
     name: "",
     description: "",
     total: 0,
-    date: dayjs().format("DD/MM/YYYY"),
+    date: "",
     paymentType: "cash",
     ticketId: "",
     incomeSourceId: "",
@@ -63,10 +63,26 @@ export const OtherIncomeModal = ({
       fetchIncomeSources();
 
       if (initialData) {
+        let formattedDate = "";
+        const rawDate = initialData.date as any;
+        if (rawDate) {
+          if (typeof rawDate === "string") {
+            formattedDate = rawDate;
+          } else if (
+            rawDate instanceof Date ||
+            (typeof rawDate === "object" &&
+              typeof rawDate.toISOString === "function")
+          ) {
+            formattedDate = dayjs(rawDate).format("YYYY-MM-DD");
+          } else {
+            formattedDate = String(rawDate);
+          }
+        }
+
         setFormData({
           ...initialData,
-          incomeSourceId: initialData.incomeSourceId ||
-            "",
+          date: formattedDate,
+          incomeSourceId: initialData.incomeSourceId || "",
         });
         setTotalRaw(initialData.total?.toString() || "0");
         if (initialData.paymentType) {
@@ -120,7 +136,7 @@ export const OtherIncomeModal = ({
           name: "",
           description: "",
           total: 0,
-          date: dayjs().format("DD/MM/YYYY"),
+          date: "",
           paymentType: "cash",
           ticketId: "",
           incomeSourceId: "",
@@ -135,7 +151,8 @@ export const OtherIncomeModal = ({
   if (!isOpen) return null;
 
   const validateStep1 = (): boolean => {
-    if (!formData.incomeSourceId || !formData.incomeSourceId.trim()) {
+    const incomeSourceIdStr = String(formData.incomeSourceId || "").trim();
+    if (!incomeSourceIdStr) {
       toast.error(t("incomesManagement.modal.errors.incomeSourceRequired"));
       return false;
     }
@@ -143,7 +160,8 @@ export const OtherIncomeModal = ({
       toast.error(t("incomesManagement.modal.errors.totalRequired"));
       return false;
     }
-    if (!formData.date) {
+    const dateStr = String(formData.date || "").trim();
+    if (!dateStr) {
       toast.error(t("incomesManagement.modal.errors.dateRequired"));
       return false;
     }
@@ -178,6 +196,12 @@ export const OtherIncomeModal = ({
       return;
     }
 
+    const dateStr = String(formData.date || "").trim();
+    if (!dateStr) {
+      toast.error(t("incomesManagement.modal.errors.dateRequired"));
+      return;
+    }
+
     const totalAmount = parseFloat(totalRaw) || 0;
     const paymentTypeString =
       paymentMethods.length > 0
@@ -195,7 +219,7 @@ export const OtherIncomeModal = ({
       ...formData,
       name: selectedIncomeSource?.name || "",
       total: Number(totalAmount),
-      date: formData.date!,
+      date: dateStr,
       paymentType: paymentTypeString,
       ticketId: formData.ticketId || undefined,
       incomeSourceId: formData.incomeSourceId!,
@@ -208,9 +232,10 @@ export const OtherIncomeModal = ({
         name: "",
         description: "",
         total: 0,
-        date: dayjs().format("DD/MM/YYYY"),
+        date: "",
         paymentType: "cash",
         ticketId: "",
+        incomeSourceId: "",
       });
       setTotalRaw("0");
       setPaymentMethods([]);

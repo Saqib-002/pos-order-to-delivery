@@ -1,4 +1,4 @@
-import { CrossIcon, DocumentIcon, EditIcon } from "@/renderer/public/Svg";
+import { CrossIcon, DocumentIcon, EditIcon, InfoIcon } from "@/renderer/public/Svg";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -6,6 +6,7 @@ import CustomButton from "../ui/CustomButton";
 import { useTranslation } from "react-i18next";
 import { OrderItem } from "@/types/order";
 import { ComplementsToString } from "@/renderer/utils/order";
+import ProductAllergenModal from "./modals/ProductAllergenModal";
 
 interface MenuPageProduct {
   id: string;
@@ -21,6 +22,7 @@ interface MenuPageProduct {
   menuPageId?: string;
   totalPrice?: number;
   imgUrl?: string;
+  isDrink?: boolean;
 }
 
 interface MenuPage {
@@ -52,6 +54,8 @@ const MenuOrderTakingForm = ({
     Record<string, number>
   >({});
   const [isCompleting, setIsCompleting] = useState(false);
+  const [selectedProductForAllergens, setSelectedProductForAllergens] =
+    useState<any | null>(null);
   const {
     order,
     addToOrder,
@@ -130,6 +134,7 @@ const MenuOrderTakingForm = ({
                           productPriority: product.priority,
                           imgUrl:
                             product.imgUrl || product.imageUrl || product.image,
+                          isDrink: product.isDrink,
                         };
                       }
                     }
@@ -443,7 +448,16 @@ const MenuOrderTakingForm = ({
     }
   };
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
+    <>
+      {selectedProductForAllergens && (
+        <ProductAllergenModal
+          isOpen={!!selectedProductForAllergens}
+          product={selectedProductForAllergens}
+          onClose={() => setSelectedProductForAllergens(null)}
+          token={token}
+        />
+      )}
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Modern Header */}
         <div className="border-b border-gray-700 bg-gradient-to-r from-black to-gray-800 rounded-t-2xl">
@@ -632,6 +646,30 @@ const MenuOrderTakingForm = ({
                         </div>
                       )}
 
+                      {/* Allergen Info Button */}
+                      {!menuProduct.isDrink && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedProductForAllergens({
+                              id: menuProduct.productId,
+                              name: menuProduct.name,
+                              imgUrl: menuProduct.imgUrl,
+                            });
+                          }}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          className={`absolute top-2 ${
+                            processedMenuProducts.has(menuProduct.productId)
+                              ? "right-9"
+                              : "right-2"
+                          } z-10 p-0.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-xs transition-all duration-200 cursor-pointer shadow-md hover:scale-110`}
+                          title={t("orderTakingForm.viewAllergens", "Ver Alérgenos")}
+                        >
+                          <InfoIcon className="size-5" />
+                        </button>
+                      )}
+
                       {/* Product Image */}
                       <div className="relative h-32 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                         {menuProduct.imgUrl ? (
@@ -814,7 +852,8 @@ const MenuOrderTakingForm = ({
         </div>
       </div>
     </div>
-  );
+  </>
+);
 };
 
 export default MenuOrderTakingForm;

@@ -20,6 +20,12 @@ export interface IncomeFilters {
   endDate?: string;
 }
 
+export interface IncomeSummary {
+  totalAmount: number;
+  totalPendingAmount?: number;
+  paymentMethodTotals: Record<string, { paid: number; pending: number }>;
+}
+
 export interface PaginatedResult<T> {
   data: T[];
   pagination: {
@@ -28,4 +34,5 @@ export interface PaginatedResult<T> {
     pageSize: number;
     totalPages: number;
   };
+  summary?: IncomeSummary;
 }

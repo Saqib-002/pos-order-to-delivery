@@ -60,7 +60,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     const sortedNonMenuItems = nonMenuItems.sort(prioritySort);
     const sortedGroups = groups.map((group) => ({
       ...group,
-      items: group.items.sort(prioritySort),
+      items: group.items,
     }));
 
     const taxBreakdown: Record<
@@ -75,21 +75,35 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       const rate = calculateTaxPercentage(base, tax);
       const rateKey = `${Math.round(rate)}%`;
 
-      if (!taxBreakdown[rateKey]) {
-        taxBreakdown[rateKey] = {
-          base: 0,
-          tax: 0,
-          rate: parseFloat(rateKey),
-        };
-      }
-      taxBreakdown[rateKey].base += base * sectionQty;
-      taxBreakdown[rateKey].tax += tax * sectionQty;
-    });
-    sortedNonMenuItems.forEach((item) => {
-      const base = item.productPrice || 0;
-      const tax = item.productTax || 0;
-      const rate = calculateTaxPercentage(base, tax);
-      const rateKey = `${Math.round(rate)}%`;
+      const menuDiscount = group.menuDiscount || 0;
+      const menuPriceWithTax = group.basePrice + group.taxPerUnit;
+      const discountAmount = (menuPriceWithTax * menuDiscount) / 100;
+      const menuGroupPrice =
+        (menuPriceWithTax - discountAmount + group.supplementTotal) *
+        sectionQty;
+
+      const variantsAndComplementsTotal = group.items.reduce(
+        (itemTotal, item) => {
+          const complementsTotal = Array.isArray(item.complements)
+            ? item.complements.reduce(
+                (sum, complement) => sum + complement.price,
+                0
+              )
+            : 0;
+
+          return (
+            itemTotal +
+            ((item.variantPrice || 0) + complementsTotal) * item.quantity
+          );
+        },
+        0
+      );
+
+      const groupTotal = menuGroupPrice + variantsAndComplementsTotal;
+      const taxRateDecimal = rate / 100;
+      const groupBase =
+        rate > 0 ? groupTotal / (1 + taxRateDecimal) : groupTotal;
+      const groupTax = groupTotal - groupBase;
 
       if (!taxBreakdown[rateKey]) {
         taxBreakdown[rateKey] = {
@@ -98,8 +112,47 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           rate: parseFloat(rateKey),
         };
       }
-      taxBreakdown[rateKey].base += base * item.quantity;
-      taxBreakdown[rateKey].tax += tax * item.quantity;
+      taxBreakdown[rateKey].base += groupBase;
+      taxBreakdown[rateKey].tax += groupTax;
+    });
+
+    sortedNonMenuItems.forEach((item) => {
+      const base = item.productPrice || 0;
+      const tax = item.productTax || 0;
+      const rate = calculateTaxPercentage(base, tax);
+      const rateKey = `${Math.round(rate)}%`;
+
+      const complementsTotal = Array.isArray(item.complements)
+        ? item.complements.reduce(
+            (complementSum, complement) => complementSum + complement.price,
+            0
+          )
+        : 0;
+
+      const baseProductPriceWithTax = item.productPrice + item.productTax;
+      const discountAmount =
+        (baseProductPriceWithTax * item.productDiscount) / 100;
+      const itemTotal =
+        (baseProductPriceWithTax -
+          discountAmount +
+          item.variantPrice +
+          complementsTotal) *
+        item.quantity;
+
+      const taxRateDecimal = rate / 100;
+      const itemBase =
+        rate > 0 ? itemTotal / (1 + taxRateDecimal) : itemTotal;
+      const itemTax = itemTotal - itemBase;
+
+      if (!taxBreakdown[rateKey]) {
+        taxBreakdown[rateKey] = {
+          base: 0,
+          tax: 0,
+          rate: parseFloat(rateKey),
+        };
+      }
+      taxBreakdown[rateKey].base += itemBase;
+      taxBreakdown[rateKey].tax += itemTax;
     });
 
     return (
@@ -184,7 +237,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         <React.Fragment key={itemIndex}>
                           <tr>
                             <td></td>
-                            <td className="pl-5 text-base">
+                            <td className="pl-5 text-base font-bold text-gray-900">
                               {item.productName}{" "}
                               {item.variantName &&
                                 item.variantId &&

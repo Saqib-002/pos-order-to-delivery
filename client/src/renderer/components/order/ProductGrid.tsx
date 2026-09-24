@@ -6,12 +6,14 @@ import { useTranslation } from "react-i18next";
 interface ProductGridProps {
   products: Product[] | null;
   onProductSelect: (product: Product) => void;
+  onAllergenClick?: (product: Product) => void;
   isLoading?: boolean;
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({
   products,
   onProductSelect,
+  onAllergenClick,
   isLoading = false,
 }) => {
   const { t } = useTranslation();
@@ -82,6 +84,11 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                 }
                 onProductSelect(product);
               }}
+              onAllergenClick={
+                onAllergenClick && !product.isDrink
+                  ? () => onAllergenClick(product)
+                  : undefined
+              }
               onEdit={() => { }} 
               showActions={false}
             />

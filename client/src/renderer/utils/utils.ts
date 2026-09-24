@@ -73,13 +73,11 @@ export const colorOptions = [
 ];
 export const calculateBaseProductPrice = (product: any) => {
   const productTaxRate = (product.tax || 0) / 100;
-  return Math.round((product.price / (1 + productTaxRate)) * 100) / 100;
+  return (product.price || 0) / (1 + productTaxRate);
 };
 
 export const calculateProductTaxAmount = (product: any) => {
   const productTaxRate = (product.tax || 0) / 100;
-  return (
-    Math.round((product.price - product.price / (1 + productTaxRate)) * 100) /
-    100
-  );
+  const price = product.price || 0;
+  return price - price / (1 + productTaxRate);
 };

@@ -11,6 +11,7 @@ export const useOtherIncomesData = () => {
   const [otherIncomesData, setOtherIncomesData] = useState<PaginatedResult<Income>>({
     data: [],
     pagination: { total: 0, page: 1, pageSize: 10, totalPages: 1 },
+    summary: { totalAmount: 0, totalPendingAmount: 0, paymentMethodTotals: {} },
   });
   const [filters, setFilters] = useState<IncomeFilters>({
     page: 1,

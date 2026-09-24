@@ -986,7 +986,9 @@
     },
     "allergens": "Allergen Information",
     "containsAllergens": "Contains",
-    "tracesAllergens": "Traces (May contain)"
+    "tracesAllergens": "Traces (May contain)",
+    "noAllergens": "No allergens declared for this product.",
+    "viewAllergens": "View Allergens"
   },
   "orderCart": {
     "yourOrder": "Your Order",
@@ -2219,6 +2221,14 @@
       "startDate": "Start Date",
       "endDate": "End Date",
       "clearFilters": "Clear Filters"
+    },
+    "summary": {
+      "total": "Total",
+      "cash": "Cash",
+      "card": "Card",
+      "bizum": "Bizum",
+      "bankTransfer": "Bank Transfer",
+      "accountDirectDebit": "Direct Debit"
     },
     "table": {
       "otherIncomes": "Income Sources",

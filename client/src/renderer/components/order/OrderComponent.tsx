@@ -546,7 +546,7 @@ const OrderComponent = () => {
                         {order.customer && (
                           <div className="text-xs text-gray-600">
                             <span className="font-medium">
-                              {order.orderType?.toLowerCase() === "delivery"
+                              {order.orderType?.toLowerCase() === "delivery" || order.orderType?.toLowerCase().includes("delivery")
                                 ? order.customer.address
                                   ? order.customer.address.includes("|")
                                     ? formatAddress(order.customer.address)

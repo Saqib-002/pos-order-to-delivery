@@ -84,7 +84,7 @@ export const generateReceiptHTML = (
   const sortedNonMenuItems = nonMenuItems.sort(prioritySort);
   const sortedGroups = groups.map((group) => ({
     ...group,
-    items: group.items.sort(prioritySort),
+    items: group.items,
   }));
 
   const now = new Date();
@@ -162,11 +162,40 @@ export const generateReceiptHTML = (
     const rate = calculateTaxPercentage(base, tax);
     const rateKey = `${Math.round(rate)}%`;
 
+    const menuDiscount = group.menuDiscount || 0;
+    const menuPriceWithTax = group.basePrice + group.taxPerUnit;
+    const discountAmount = (menuPriceWithTax * menuDiscount) / 100;
+    const menuGroupPrice =
+      (menuPriceWithTax - discountAmount + group.supplementTotal) * sectionQty;
+
+    const variantsAndComplementsTotal = group.items.reduce(
+      (itemTotal, item) => {
+        const complementsTotal = Array.isArray(item.complements)
+          ? item.complements.reduce(
+              (sum, complement) => sum + complement.price,
+              0
+            )
+          : 0;
+
+        return (
+          itemTotal +
+          ((item.variantPrice || 0) + complementsTotal) * item.quantity
+        );
+      },
+      0
+    );
+
+    const groupTotal = menuGroupPrice + variantsAndComplementsTotal;
+    const taxRateDecimal = rate / 100;
+    const groupBase =
+      rate > 0 ? groupTotal / (1 + taxRateDecimal) : groupTotal;
+    const groupTax = groupTotal - groupBase;
+
     if (!taxBreakdown[rateKey]) {
       taxBreakdown[rateKey] = { base: 0, tax: 0, rate: parseFloat(rateKey) };
     }
-    taxBreakdown[rateKey].base += base * sectionQty;
-    taxBreakdown[rateKey].tax += tax * sectionQty;
+    taxBreakdown[rateKey].base += groupBase;
+    taxBreakdown[rateKey].tax += groupTax;
   });
 
   sortedNonMenuItems.forEach((item) => {
@@ -175,11 +204,32 @@ export const generateReceiptHTML = (
     const rate = calculateTaxPercentage(base, tax);
     const rateKey = `${Math.round(rate)}%`;
 
+    const complementsTotal = Array.isArray(item.complements)
+      ? item.complements.reduce(
+          (complementSum, complement) => complementSum + complement.price,
+          0
+        )
+      : 0;
+
+    const baseProductPriceWithTax = item.productPrice + item.productTax;
+    const discountAmount =
+      (baseProductPriceWithTax * item.productDiscount) / 100;
+    const itemTotal =
+      (baseProductPriceWithTax -
+        discountAmount +
+        item.variantPrice +
+        complementsTotal) *
+      item.quantity;
+
+    const taxRateDecimal = rate / 100;
+    const itemBase = rate > 0 ? itemTotal / (1 + taxRateDecimal) : itemTotal;
+    const itemTax = itemTotal - itemBase;
+
     if (!taxBreakdown[rateKey]) {
       taxBreakdown[rateKey] = { base: 0, tax: 0, rate: parseFloat(rateKey) };
     }
-    taxBreakdown[rateKey].base += base * item.quantity;
-    taxBreakdown[rateKey].tax += tax * item.quantity;
+    taxBreakdown[rateKey].base += itemBase;
+    taxBreakdown[rateKey].tax += itemTax;
   });
 
   let displayPaid = 0;
@@ -582,7 +632,7 @@ export const generateReceiptHTML = (
     }
     menuSubcategoryMap[menuHeader].groups.push({
       ...group,
-      items: group.items.sort(prioritySort),
+      items: group.items,
     });
   });
 
@@ -653,8 +703,8 @@ export const generateReceiptHTML = (
           html += `
             <div class="item-row">
               <span class="col-cant"></span>
-              <span class="col-desc item-extra">-  ${item.quantity > 1 ? `${item.quantity} x ` : ""}${item.productName}</span>
-              <span class="col-precio item-price">${itemSupplementTotal.toFixed(2)}</span>
+              <span class="col-desc item-extra bold">${item.quantity > 1 ? `${item.quantity} x ` : ""}${item.productName}</span>
+              <span class="col-precio item-price bold">${itemSupplementTotal.toFixed(2)}</span>
             </div>
           `;
 
@@ -704,7 +754,7 @@ export const generateReceiptHTML = (
           html += `
             <div class="item-row">
               <span class="col-cant"></span>
-              <span class="col-desc item-extra italic" style="color: #444;">-  ${t("receipt.discount") || "Descuento"} (-${group.menuDiscount}%)</span>
+              <span class="col-desc item-extra italic" style="color: #444;">${t("receipt.discount") || "Descuento"} (-${group.menuDiscount}%)</span>
               <span class="col-precio item-price">-${discountAmountLine.toFixed(2)}</span>
             </div>
           `;
@@ -769,7 +819,7 @@ export const generateReceiptHTML = (
           html += `
             <div class="item-row">
               <span class="col-cant"></span>
-              <span class="col-desc item-extra italic" style="color: #444;">-  ${t("receipt.discount") || "Descuento"} (-${item.productDiscount}%)</span>
+              <span class="col-desc item-extra italic" style="color: #444;">${t("receipt.discount") || "Descuento"} (-${item.productDiscount}%)</span>
               <span class="col-precio item-price">-${discountAmountLine.toFixed(2)}</span>
             </div>
           `;
@@ -984,7 +1034,7 @@ export const generateItemsReceiptHTML = (
     }
     menuSubcategoryMap[menuHeader].groups.push({
       ...group,
-      items: group.items.sort(prioritySort),
+      items: group.items,
     });
   });
 

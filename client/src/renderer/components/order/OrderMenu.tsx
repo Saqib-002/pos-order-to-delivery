@@ -18,6 +18,8 @@ import { useOrder } from "@/renderer/contexts/OrderContext";
 import { UnifiedCard } from "@/renderer/components/ui/UnifiedCard";
 import { DocumentIcon } from "@/renderer/public/Svg";
 import { useTranslation } from "react-i18next";
+import ProductAllergenModal from "./modals/ProductAllergenModal";
+
 const OrderMenu = () => {
   const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[] | null>(null);
@@ -44,6 +46,8 @@ const OrderMenu = () => {
   );
   const [selectedSubcategory, setSelectedSubcategory] =
     useState<SubCategory | null>(null);
+  const [selectedProductForAllergens, setSelectedProductForAllergens] =
+    useState<Product | null>(null);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [isLoadingSubcategories, setIsLoadingSubcategories] = useState(false);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
@@ -122,6 +126,14 @@ const OrderMenu = () => {
           setCurrentOrderItem={setCurrentOrderItem}
         />
       )}
+      {selectedProductForAllergens && (
+        <ProductAllergenModal
+          isOpen={!!selectedProductForAllergens}
+          product={selectedProductForAllergens}
+          onClose={() => setSelectedProductForAllergens(null)}
+          token={token}
+        />
+      )}
       <div className="w-full mx-auto p-4">
         <BreadcrumbNavigation
           selectedCategory={selectedCategory}
@@ -160,6 +172,7 @@ const OrderMenu = () => {
                     <ProductGrid
                       products={products}
                       onProductSelect={(p) => handleSelectProduct(p)}
+                      onAllergenClick={(p) => setSelectedProductForAllergens(p)}
                       isLoading={isLoadingProducts}
                     />
                   </div>
