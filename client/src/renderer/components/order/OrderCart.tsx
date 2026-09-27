@@ -423,138 +423,153 @@ const OrderCart: React.FC<OrderCartProps> = ({
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto px-4 space-y-3">
         {/* Non-Menu Items */}
-        {nonMenuItems.map((item) => (
-          <div
-            key={item.id}
-            className="bg-white border border-gray-200 rounded-lg p-3 relative"
-          >
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex-1">
-                <h3 className="font-medium text-gray-800">
-                  {item.productName}
-                </h3>
-                <div className="text-sm text-gray-600 space-y-1">
-                  <div className="flex justify-between">
-                    <span>{t("orderCart.itemPrice")}</span>
-                    <span>
-                      €{(item.productPrice + item.productTax).toFixed(2)}
-                    </span>
-                  </div>
-                  {item.variantId && (
-                    <div className="flex justify-between font-normal">
+        {nonMenuItems.map((item) => {
+          const isPlatformOrderItem = Boolean(
+            item.productDescription?.toLowerCase().includes("platform order") ||
+            ((order?.orderType?.toLowerCase().includes("platform") || !!order?.platformId) &&
+              (item.productName?.toLowerCase().endsWith(" order") ||
+                item.productName?.toLowerCase().includes("platform order")))
+          );
+
+          return (
+            <div
+              key={item.id}
+              className="bg-white border border-gray-200 rounded-lg p-3 relative"
+            >
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex-1">
+                  <h3 className="font-medium text-gray-800">
+                    {item.productName}
+                  </h3>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <div className="flex justify-between">
+                      <span>{t("orderCart.itemPrice")}</span>
                       <span>
-                        {t("orderCart.variant")}: {item.variantName}
+                        €{(item.productPrice + item.productTax).toFixed(2)}
                       </span>
-                      <span>€{item.variantPrice.toFixed(2)}</span>
                     </div>
-                  )}
-                  {item.productDiscount > 0 && (
-                    <div className="flex justify-between text-yellow-600 font-medium">
-                      <span>
-                        {t("orderCart.discount")} (-{item.productDiscount}%)
-                      </span>
-                      <span>
-                        -€
-                        {(
-                          ((item.productPrice + item.productTax) *
-                            item.productDiscount) /
-                          100
-                        ).toFixed(2)}
-                      </span>
+                    {item.variantId && (
+                      <div className="flex justify-between font-normal">
+                        <span>
+                          {t("orderCart.variant")}: {item.variantName}
+                        </span>
+                        <span>€{item.variantPrice.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {item.productDiscount > 0 && (
+                      <div className="flex justify-between text-yellow-600 font-medium">
+                        <span>
+                          {t("orderCart.discount")} (-{item.productDiscount}%)
+                        </span>
+                        <span>
+                          -€
+                          {(
+                            ((item.productPrice + item.productTax) *
+                              item.productDiscount) /
+                            100
+                          ).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {item.complements.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs text-gray-500 font-medium">
+                        {t("orderCart.addOns")}:
+                      </p>
+                      <ul className="text-xs text-gray-600 space-y-1">
+                        {item.complements.map((complement, index) => {
+                          const isRemoval = complement.isRemovalGroup;
+                          const cleanName = complement.itemName.replace(/^[-\s]+/, "");
+                          const displayName = cleanName.toLowerCase().startsWith("sin ") ? cleanName : `Sin ${cleanName}`;
+                          return (
+                            <li key={index} className="flex justify-between">
+                              <span className={isRemoval ? "text-red-600 font-semibold" : ""}>
+                                {isRemoval ? `[X] ${displayName}` : `• ${complement.itemName}`}
+                              </span>
+                              <span>{complement.price > 0 ? `€${complement.price.toFixed(2)}` : ""}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </div>
                   )}
                 </div>
-                {item.complements.length > 0 && (
-                  <div className="mt-2">
-                    <p className="text-xs text-gray-500 font-medium">
-                      {t("orderCart.addOns")}:
-                    </p>
-                    <ul className="text-xs text-gray-600 space-y-1">
-                      {item.complements.map((complement, index) => {
-                        const isRemoval = complement.isRemovalGroup;
-                        const cleanName = complement.itemName.replace(/^[-\s]+/, "");
-                        const displayName = cleanName.toLowerCase().startsWith("sin ") ? cleanName : `Sin ${cleanName}`;
-                        return (
-                          <li key={index} className="flex justify-between">
-                            <span className={isRemoval ? "text-red-600 font-semibold" : ""}>
-                              {isRemoval ? `[X] ${displayName}` : `• ${complement.itemName}`}
-                            </span>
-                            <span>{complement.price > 0 ? `€${complement.price.toFixed(2)}` : ""}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
+                {!isPlatformOrderItem && (
+                  <div className="ml-2 flex gap-2 absolute top-2 right-4">
+                    {productsWithVariants[item.productId || ""] !== false && (
+                      <CustomButton
+                        type="button"
+                        onClick={() => handleEditItem(item)}
+                        variant="transparent"
+                        Icon={<EditIcon className="size-4" />}
+                        className="p-0!"
+                      />
+                    )}
+                    <CustomButton
+                      type="button"
+                      onClick={() =>
+                        handleRemoveItem(item.id || "", item.productName)
+                      }
+                      className="p-0! text-sm text-red-500 hover:text-red-700"
+                      variant="transparent"
+                      label="✕"
+                    />
                   </div>
                 )}
               </div>
-              <div className="ml-2 flex gap-2 absolute top-2 right-4">
-                {productsWithVariants[item.productId || ""] !== false && (
-                  <CustomButton
-                    type="button"
-                    onClick={() => handleEditItem(item)}
-                    variant="transparent"
-                    Icon={<EditIcon className="size-4" />}
-                    className="p-0!"
-                  />
-                )}
-                <CustomButton
-                  type="button"
-                  onClick={() =>
-                    handleRemoveItem(item.id || "", item.productName)
-                  }
-                  className="p-0! text-sm text-red-500 hover:text-red-700"
-                  variant="transparent"
-                  label="✕"
-                />
-              </div>
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() =>
-                    handleUpdateQuantity(
-                      item.id,
-                      Math.max(1, item.quantity - 1),
-                    )
-                  }
-                  className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-sm hover:bg-gray-50 cursor-pointer"
-                >
-                  -
-                </button>
-                <span className="w-8 text-center text-sm font-medium">
-                  {item.quantity}
+              <div className="flex items-center justify-between">
+                {!isPlatformOrderItem ? (
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() =>
+                        handleUpdateQuantity(
+                          item.id,
+                          Math.max(1, item.quantity - 1),
+                        )
+                      }
+                      className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-sm hover:bg-gray-50 cursor-pointer"
+                    >
+                      -
+                    </button>
+                    <span className="w-8 text-center text-sm font-medium">
+                      {item.quantity}
+                    </span>
+                    <button
+                      onClick={() =>
+                        handleUpdateQuantity(item.id, item.quantity + 1)
+                      }
+                      className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-sm hover:bg-gray-50 cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </div>
+                ) : (
+                  <div />
+                )}
+                <span className="font-semibold text-gray-800">
+                  €
+                  {(
+                    (item.productPrice +
+                      item.productTax -
+                      ((item.productPrice + item.productTax) *
+                        item.productDiscount) /
+                      100 +
+                      item.variantPrice +
+                      (Array.isArray(item.complements)
+                        ? item.complements.reduce(
+                          (sum, complement) => sum + complement.price,
+                          0,
+                        )
+                        : 0)) *
+                    item.quantity
+                  ).toFixed(2)}
                 </span>
-                <button
-                  onClick={() =>
-                    handleUpdateQuantity(item.id, item.quantity + 1)
-                  }
-                  className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-sm hover:bg-gray-50 cursor-pointer"
-                >
-                  +
-                </button>
               </div>
-              <span className="font-semibold text-gray-800">
-                €
-                {(
-                  (item.productPrice +
-                    item.productTax -
-                    ((item.productPrice + item.productTax) *
-                      item.productDiscount) /
-                    100 +
-                    item.variantPrice +
-                    (Array.isArray(item.complements)
-                      ? item.complements.reduce(
-                        (sum, complement) => sum + complement.price,
-                        0,
-                      )
-                      : 0)) *
-                  item.quantity
-                ).toFixed(2)}
-              </span>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {/* Menu Groups */}
         {groups.map((group) => {

@@ -1,5 +1,5 @@
 import { WebCustomerDatabaseOperations, WebCustomer } from "../../database/webCustomerOperations.js";
-import Logger from "electron-log";
+import { syncLogger as Logger } from "../logger.js";
 import Store from "electron-store";
 
 interface SyncCursorSchema {

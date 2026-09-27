@@ -5,6 +5,7 @@
     "online": "Online"
   },
   "common": {
+    "back": "Atrás",
     "loading": "Cargando...",
     "edit": "Editar",
     "delete": "Eliminar",
@@ -482,6 +483,10 @@
     "title": "Pedidos de Plataforma",
     "subtitle": "Registrar pedidos de plataformas de entrega",
     "addOrder": "Agregar Pedido",
+    "nextPayment": "Continuar al Pago",
+    "stepDetails": "Detalles",
+    "stepPayment": "Pago",
+    "stepDetailsDescription": "Ingrese los detalles del pedido y la información del cliente",
     "tableDescription": "Ver y gestionar todos los pedidos de plataforma",
     "platformName": "Nombre de la Plataforma",
     "selectPlatform": "Seleccionar plataforma",
@@ -521,7 +526,9 @@
     },
     "errors": {
       "platformRequired": "Por favor seleccione una plataforma",
+      "selectPlatformRequired": "Por favor seleccione una plataforma",
       "priceRequired": "Por favor ingrese un precio válido",
+      "validPriceRequired": "Por favor ingrese un precio válido",
       "fetchPlatformsError": "Error al obtener las plataformas",
       "createOrderError": "Error al crear el pedido de plataforma",
       "addressRequired": "Por favor ingrese una dirección para pedidos de entrega",
@@ -899,6 +906,8 @@
           "delivery": "Domicilio",
           "pickup": "Recoger",
           "dineIn": "Comer Aquí",
+          "web": "Web",
+          "app": "App Móvil",
           "platform": "Plataforma"
         }
       },
@@ -1215,7 +1224,7 @@
     "confirm": "Confirmar Cancelación"
   },
   "orderDetailsModal": {
-    "title": "Artículos del Pedido - K{{orderId}}",
+    "title": "Artículos del Pedido - {{orderId}}",
     "created": "Creado:",
     "customer": "Cliente",
     "deliveryAddress": "Dirección de Entrega",
@@ -1253,7 +1262,7 @@
     "assignedAt": "Asignado el",
     "deliveredAt": "Entregado el",
     "orderItems": "Artículos del Pedido",
-    "orderItemsForTicket": "Artículos del pedido para #{{ticketNumber}}",
+    "orderItemsForTicket": "Artículos del pedido para {{ticketNumber}}",
     "addOns": "Complementos:",
     "each": "cada uno",
     "noItemsFound": "No se encontraron artículos",
@@ -1466,6 +1475,7 @@
       "items": "Artículos",
       "amount": "Monto",
       "readySince": "Listo Desde",
+      "assignedSince": "Asignado Desde",
       "driver": "Conductor",
       "actions": "Acciones",
       "outForDelivery": "En Camino"

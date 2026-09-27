@@ -1,4 +1,4 @@
-import Logger from "electron-log";
+import { syncLogger as Logger } from "../../logger.js";
 import { readQueue, writeQueue, SyncJob } from "./db.js";
 import { isOnline } from "./connectivity.js";
 

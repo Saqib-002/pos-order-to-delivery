@@ -1,7 +1,7 @@
 import { BrowserWindow } from "electron";
 import { OrderDatabaseOperations } from "../database/Orderoperations.js";
 import { WebCustomerDatabaseOperations } from "../database/webCustomerOperations.js";
-import Logger from "electron-log";
+import { syncLogger as Logger } from "./logger.js";
 
 function notifyWindowsNewOrder(order: any, items: any[]) {
   try {

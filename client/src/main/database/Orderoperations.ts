@@ -31,7 +31,7 @@ const stringToComplements = (complementStr: any): any[] => {
 };
 
 export class OrderDatabaseOperations {
-  private static formatOrderItems(items: any[]): OrderItem[] {
+  public static formatOrderItems(items: any[]): OrderItem[] {
     return items.map((item: any) => {
       let complements: any[] = [];
       if (item.complements) {
@@ -439,15 +439,68 @@ export class OrderDatabaseOperations {
   ): Promise<any> {
     try {
       const now = new Date().toISOString();
-      await db("order_items").where("id", itemId).update({
+      const existing = await db("order_items").where("id", itemId).first();
+      const updateData: any = {
         quantity,
         isKitchenPrinted: false,
         updatedAt: now,
-      });
+      };
+      if (existing) {
+        const oldQty = Number(existing.quantity) || 1;
+        if (oldQty > 0 && existing.totalPrice != null) {
+          const unitPrice = Number(existing.totalPrice) / oldQty;
+          updateData.totalPrice = Math.round(unitPrice * quantity * 100) / 100;
+        }
+      }
+      await db("order_items").where("id", itemId).update(updateData);
       return { itemId };
     } catch (error) {
       throw error;
     }
+  }
+
+  public static async getCalculatedOrdersForDateRange(startDate: Date, endDate: Date) {
+    const orders = await db("orders")
+      .whereBetween("orders.createdAt", [
+        startDate.toISOString(),
+        endDate.toISOString(),
+      ])
+      .whereRaw("LOWER(COALESCE(orders.status, '')) NOT IN (?, ?, ?)", [
+        "pending",
+        "cancelled",
+        "canceled",
+      ])
+      .select(
+        "orders.id",
+        "orders.createdAt",
+        "orders.orderType",
+        "orders.status",
+        "orders.paymentType"
+      );
+
+    const orderIds = orders.map((o: any) => o.id);
+    const allOrderItems =
+      orderIds.length > 0
+        ? await db("order_items").whereIn("orderId", orderIds)
+        : [];
+
+    const orderItemsMap = new Map<string, any[]>();
+    for (const item of allOrderItems) {
+      if (!orderItemsMap.has(item.orderId)) {
+        orderItemsMap.set(item.orderId, []);
+      }
+      orderItemsMap.get(item.orderId)!.push(item);
+    }
+
+    return orders.map((order: any) => {
+      const items = orderItemsMap.get(order.id) || [];
+      const formattedItems = OrderDatabaseOperations.formatOrderItems(items);
+      const { orderTotal } = calculateOrderTotal(formattedItems);
+      return {
+        ...order,
+        orderTotal,
+      };
+    });
   }
   static async updateOrderItem(
     itemId: string,
@@ -628,17 +681,27 @@ export class OrderDatabaseOperations {
       }
     }
 
-    const applyOrderTypeFilter = (query: any) => {
+    const applyOrderTypeFilter = (query: any, tablePrefix = "") => {
+      const col = tablePrefix ? `${tablePrefix}.orderType` : "orderType";
       if (orderType) {
-        if (orderType?.toLowerCase().startsWith("platform")) {
-          return query.where("orderType", "like", "platform%");
+        const lowerType = orderType.toLowerCase().trim();
+        if (lowerType.startsWith("platform")) {
+          return query.where(col, "like", "platform%");
+        } else if (lowerType === "delivery") {
+          return query.whereIn(col, ["delivery", "web:delivery", "app:delivery"]);
+        } else if (lowerType === "pickup") {
+          return query.whereIn(col, ["pickup", "web:pickup", "app:pickup"]);
+        } else if (lowerType === "web") {
+          return query.where(col, "like", "web%");
+        } else if (lowerType === "app") {
+          return query.where(col, "like", "app%");
+        } else {
+          const normalizedOrderType = lowerType.replace(/-/g, "");
+          return query.whereRaw(
+            `LOWER(REPLACE(${tablePrefix ? `"${tablePrefix}"."orderType"` : `"orderType"`}, '-', '')) = LOWER(?)`,
+            [normalizedOrderType]
+          );
         }
-        // Normalize orderType: handle both "dine-in" and "dinein"
-        const normalizedOrderType = orderType.toLowerCase().replace(/-/g, "");
-        return query.whereRaw(
-          "LOWER(REPLACE(\"orderType\", '-', '')) = LOWER(?)",
-          [normalizedOrderType]
-        );
       }
       return query;
     };
@@ -738,6 +801,8 @@ export class OrderDatabaseOperations {
         "createdAt",
         "customerName",
         "orderId",
+        "ticketNumber",
+        "orderType",
         "customerPhone",
         "status"
       )
@@ -765,6 +830,8 @@ export class OrderDatabaseOperations {
           phone: order.customerPhone,
         },
         orderId: order.orderId,
+        ticketNumber: order.ticketNumber,
+        orderType: order.orderType,
         status: order.status,
         items: formattedItems,
       };
@@ -777,16 +844,15 @@ export class OrderDatabaseOperations {
         startDate.toISOString(),
         endDate.toISOString(),
       ])
-      .andWhere("order_items.menuId", null)
-      .andWhereNot("orders.status", "pending")
-      .andWhere("orders.orderType", "not like", "platform%");
+      .andWhere(function () {
+        this.whereNull("order_items.menuId").orWhere("order_items.menuId", "");
+      })
+      .andWhereNot("orders.status", "pending");
 
     if (orderType) {
-      const normalizedOrderType = orderType.toLowerCase().replace(/-/g, "");
-      topItemsQuery = topItemsQuery.whereRaw(
-        "LOWER(REPLACE(orders.\"orderType\", '-', '')) = LOWER(?)",
-        [normalizedOrderType]
-      );
+      topItemsQuery = applyOrderTypeFilter(topItemsQuery, "orders");
+    } else {
+      topItemsQuery = topItemsQuery.andWhere("orders.orderType", "not like", "platform%");
     }
 
     const topItemsRaw = await topItemsQuery
@@ -798,13 +864,15 @@ export class OrderDatabaseOperations {
       .orderBy("count", "desc")
       .limit(8);
 
-    const topItems = topItemsRaw.map((item: any) => ({
-      name: item.name,
-      count:
-        typeof item.count === "bigint"
-          ? Number(item.count)
-          : parseInt(item.count, 10) || 0,
-    }));
+    const topItems = topItemsRaw
+      .filter((item: any) => item.name && item.name.trim() !== "")
+      .map((item: any) => ({
+        name: item.name,
+        count:
+          typeof item.count === "bigint"
+            ? Number(item.count)
+            : parseInt(item.count, 10) || 0,
+      }));
     const subquery = db("order_items")
       .select(
         "menuId",
@@ -813,6 +881,9 @@ export class OrderDatabaseOperations {
         db.raw("MIN(quantity) as menu_qty")
       )
       .whereNotNull("menuId")
+      .whereNot("menuId", "")
+      .whereNotNull("menuName")
+      .whereNot("menuName", "")
       .groupBy("menuId", "menuName", "orderId")
       .as("sub");
 
@@ -822,15 +893,12 @@ export class OrderDatabaseOperations {
         startDate.toISOString(),
         endDate.toISOString(),
       ])
-      .andWhereNot("orders.status", "pending")
-      .andWhere("orders.orderType", "not like", "platform%");
+      .andWhereNot("orders.status", "pending");
 
     if (orderType) {
-      const normalizedOrderType = orderType.toLowerCase().replace(/-/g, "");
-      topMenusQuery = topMenusQuery.whereRaw(
-        "LOWER(REPLACE(orders.\"orderType\", '-', '')) = LOWER(?)",
-        [normalizedOrderType]
-      );
+      topMenusQuery = applyOrderTypeFilter(topMenusQuery, "orders");
+    } else {
+      topMenusQuery = topMenusQuery.andWhere("orders.orderType", "not like", "platform%");
     }
 
     const topMenusRaw = await topMenusQuery
@@ -839,13 +907,15 @@ export class OrderDatabaseOperations {
       .orderBy("count", "desc")
       .limit(8);
 
-    const topMenus = topMenusRaw.map((menu: any) => ({
-      name: menu.name,
-      count:
-        typeof menu.count === "bigint"
-          ? Number(menu.count)
-          : parseInt(menu.count, 10) || 0,
-    }));
+    const topMenus = topMenusRaw
+      .filter((menu: any) => menu.name && menu.name.trim() !== "")
+      .map((menu: any) => ({
+        name: menu.name,
+        count:
+          typeof menu.count === "bigint"
+            ? Number(menu.count)
+            : parseInt(menu.count, 10) || 0,
+      }));
 
     let ordersQuery = db("orders")
       .leftJoin("platforms", "orders.platformId", "platforms.id")
@@ -857,13 +927,7 @@ export class OrderDatabaseOperations {
       .whereNotNull("orders.orderType")
       .whereNot("orders.orderType", "");
 
-    if (orderType) {
-      const normalizedOrderType = orderType.toLowerCase().replace(/-/g, "");
-      ordersQuery = ordersQuery.whereRaw(
-        "LOWER(REPLACE(\"orderType\", '-', '')) = LOWER(?)",
-        [normalizedOrderType]
-      );
-    }
+    ordersQuery = applyOrderTypeFilter(ordersQuery, "orders");
 
     const ordersForTotals = await ordersQuery.select(
       "orders.id",
@@ -890,13 +954,16 @@ export class OrderDatabaseOperations {
       const { orderTotal } = calculateOrderTotal(formattedItems);
       const statusLower = order.status?.toLowerCase();
       if (statusLower !== "cancelled" && statusLower !== "canceled") {
-        let orderTypeKey = order.orderType;
-        if (orderTypeKey.startsWith("platform")) {
-          if (order.platformName) {
-            orderTypeKey = order.platformName;
+        const rawType = (order.orderType || "").trim();
+        let orderTypeKey = rawType;
+        if (rawType.toLowerCase().startsWith("platform")) {
+          if (order.platformName && order.platformName.trim()) {
+            orderTypeKey = order.platformName.trim();
           } else {
             orderTypeKey = "platform";
           }
+        } else {
+          orderTypeKey = rawType.toLowerCase();
         }
         if (!orderTotalsMap.has(orderTypeKey)) {
           orderTotalsMap.set(orderTypeKey, { type: orderTypeKey, total: 0, count: 0 });
@@ -1435,10 +1502,10 @@ export class OrderDatabaseOperations {
             variantId: item.variantId || "",
             variantName: item.variantName || "",
             variantPrice: parseFloat(item.variantPrice || "0"),
-            menuId: item.menuId || "",
+            menuId: item.menuId || null,
             menuSecondaryId: item.menuSecondaryId ? parseInt(item.menuSecondaryId, 10) : null,
-            menuName: item.menuName || "",
-            menuDescription: item.menuDescription || "",
+            menuName: item.menuName || null,
+            menuDescription: item.menuDescription || null,
             menuDiscount: parseFloat(item.menuDiscount || "0"),
             menuTax: parseFloat(item.menuTax || "0"),
             menuPrice: parseFloat(item.menuPrice || "0"),

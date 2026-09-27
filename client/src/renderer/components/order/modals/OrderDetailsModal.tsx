@@ -6,7 +6,7 @@ import {
   calculateTaxPercentage,
 } from "../../../utils/orderCalculations";
 import { calculatePaymentStatus } from "../../../utils/paymentStatus";
-import { formatAddress } from "../../../utils/utils";
+import { formatAddress, getOrderDisplayNumber } from "../../../utils/utils";
 import {
   translateOrderStatus,
   getOrderStatusStyle,
@@ -16,6 +16,7 @@ import {
   getOrderTypeStyle,
 } from "@/renderer/utils/orderStatus";
 import { useTranslation } from "react-i18next";
+import { useConfigurations } from "../../../contexts/configurationContext";
 import dayjs from "dayjs";
 
 const parseComplements = (complements: any) => {
@@ -33,6 +34,7 @@ interface OrderDetailsModalProps {
   onClose: () => void;
   view?: "kitchen" | "manage" | "platform";
   platforms?: Array<{ id: string; name: string }>;
+  orderPrefix?: string;
 }
 
 const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
@@ -40,8 +42,14 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   onClose,
   view = "kitchen",
   platforms = [],
+  orderPrefix,
 }) => {
   const { t } = useTranslation();
+  const { configurations } = useConfigurations();
+  const displayOrderNumber = getOrderDisplayNumber(
+    order,
+    orderPrefix || configurations.orderPrefix || "K"
+  );
 
   const getPlatformName = (platformId: string | undefined) => {
     if (!platformId) return "-";
@@ -161,11 +169,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         style={{ fontFamily: "'Courier New', monospace" }}
       >
         <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-2 mb-4">
-          {order.ticketNumber ? (
-            t("orderDetailsModal.orderItemsForTicket", { ticketNumber: order.ticketNumber })
-          ) : (
-            t("orderDetailsModal.orderItems")
-          )}
+          {t("orderDetailsModal.orderItemsForTicket", {
+            ticketNumber: displayOrderNumber,
+          })}
         </h3>
 
         {/* Receipt Table */}
@@ -478,11 +484,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-black">
-                {order.ticketNumber ? (
-                  <>#{order.ticketNumber}</>
-                ) : (
-                  t("orderDetailsModal.title", { orderId: order.orderId })
-                )}
+                {displayOrderNumber}
               </h2>
               <p className="text-sm text-gray-600 mt-1">
                 {t("orderDetailsModal.created")} {" "}

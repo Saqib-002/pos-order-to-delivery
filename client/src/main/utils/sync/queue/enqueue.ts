@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { readQueue, writeQueue, SyncJob } from "./db.js";
-import Logger from "electron-log";
+import { syncLogger as Logger } from "../../logger.js";
 
 /**
  * Add a new sync job to the persistent queue.

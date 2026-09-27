@@ -1,5 +1,5 @@
 import { enqueue } from "./queue/index.js";
-import Logger from "electron-log";
+import { syncLogger as Logger } from "../logger.js";
 
 /**
  * Enqueue site content key/value pair to sync to VPS v1 API.

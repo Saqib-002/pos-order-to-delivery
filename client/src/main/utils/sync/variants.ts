@@ -1,6 +1,6 @@
 import { db } from "../../database/index.js";
 import { enqueue } from "./queue/index.js";
-import Logger from "electron-log";
+import { syncLogger as Logger } from "../logger.js";
 
 /**
  * Enqueue a variant upsert to the VPS.

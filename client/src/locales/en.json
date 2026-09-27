@@ -5,6 +5,7 @@
     "online": "Online"
   },
   "common": {
+    "back": "Back",
     "loading": "Loading...",
     "edit": "Edit",
     "delete": "Delete",
@@ -737,6 +738,10 @@
     "title": "Platform Orders",
     "subtitle": "Register orders from delivery platforms",
     "addOrder": "Add Order",
+    "nextPayment": "Continue to Payment",
+    "stepDetails": "Details",
+    "stepPayment": "Payment",
+    "stepDetailsDescription": "Enter order details and customer information",
     "tableDescription": "View and manage all platform orders",
     "platformName": "Platform Name",
     "selectPlatform": "Select platform",
@@ -776,7 +781,9 @@
     },
     "errors": {
       "platformRequired": "Please select a platform",
+      "selectPlatformRequired": "Please select a platform",
       "priceRequired": "Please enter a valid price",
+      "validPriceRequired": "Please enter a valid price",
       "fetchPlatformsError": "Error fetching platforms",
       "createOrderError": "Failed to create platform order",
       "addressRequired": "Please enter an address for delivery orders",
@@ -899,6 +906,8 @@
           "delivery": "Delivery",
           "pickup": "Pickup",
           "dineIn": "Dine In",
+          "web": "Web",
+          "app": "Mobile App",
           "platform": "Platform"
         }
       },
@@ -1215,7 +1224,7 @@
     "confirm": "Confirm Cancellation"
   },
   "orderDetailsModal": {
-    "title": "Order Items - K{{orderId}}",
+    "title": "Order Items - {{orderId}}",
     "created": "Created:",
     "customer": "Customer",
     "deliveryAddress": "Delivery Address",
@@ -1253,7 +1262,7 @@
     "assignedAt": "Assigned At",
     "deliveredAt": "Delivered At",
     "orderItems": "Order Items",
-    "orderItemsForTicket": "Order items for #{{ticketNumber}}",
+    "orderItemsForTicket": "Order items for {{ticketNumber}}",
     "addOns": "Add-ons:",
     "each": "each",
     "noItemsFound": "No items found",
@@ -1466,6 +1475,7 @@
       "items": "Items",
       "amount": "Amount",
       "readySince": "Ready Since",
+      "assignedSince": "Assigned Since",
       "driver": "Driver",
       "actions": "Actions",
       "outForDelivery": "Out for Delivery"

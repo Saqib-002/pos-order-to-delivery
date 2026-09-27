@@ -1,4 +1,5 @@
 import { db } from "../database/index.js";
+import { syncLogger as Logger } from "./logger.js";
 
 // Push a driver profile to the VPS database (for login authentication)
 export async function syncDriverToVPS(driver: any) {
@@ -20,10 +21,10 @@ export async function syncDriverToVPS(driver: any) {
             })
         });
         if (!response.ok) {
-            console.error(`SyncManager: Failed to sync driver ${driver.id}: ${response.statusText}`);
+            Logger.error(`SyncManager: Failed to sync driver ${driver.id}: ${response.statusText}`);
         }
     } catch (err) {
-        console.error(`SyncManager: Error syncing driver ${driver.id}:`, err);
+        Logger.error(`SyncManager: Error syncing driver ${driver.id}:`, err);
     }
 }
 
@@ -130,7 +131,7 @@ let bgSyncInterval: NodeJS.Timeout | null = null;
 // Run a 10-second polling loop to download status updates (Delivered/Cancelled) from VPS whiteboard
 export function startBackgroundSync() {
     if (bgSyncInterval) return;
-    console.log("SyncManager: Starting background sync loop (10s interval)...");
+    Logger.info("SyncManager: Starting background sync loop (10s interval)...");
     bgSyncInterval = setInterval(async () => {
         const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
         try {
@@ -150,18 +151,16 @@ export function startBackgroundSync() {
                             deliveredAt: update.deliveredAt || new Date().toISOString(),
                             updatedAt: new Date().toISOString()
                         });
-                        // console.log(`SyncManager: Locally marked order ${update.id} as delivered`);
                     } else if (update.status.toLowerCase() === "cancelled") {
                         await db("orders").where({ id: update.id }).update({
                             status: "cancelled",
                             notes: update.notes,
                             updatedAt: new Date().toISOString()
                         });
-                        // console.log(`SyncManager: Locally marked order ${update.id} as cancelled`);
                     }
                     processedIds.push(update.id);
                 } catch (dbErr) {
-                    console.error(`SyncManager: Failed to update local order ${update.id}:`, dbErr);
+                    Logger.error(`SyncManager: Failed to update local order ${update.id}:`, dbErr);
                 }
             }
 
@@ -169,7 +168,7 @@ export function startBackgroundSync() {
                 await clearWhiteboardOrders(processedIds);
             }
         } catch (err) {
-            console.error("SyncManager: Background sync execution error:", err);
+            Logger.error("SyncManager: Background sync execution error:", err);
         }
     }, 10000);
 }
@@ -178,6 +177,6 @@ export function stopBackgroundSync() {
     if (bgSyncInterval) {
         clearInterval(bgSyncInterval);
         bgSyncInterval = null;
-        console.log("SyncManager: Stopped background sync loop.");
+        Logger.info("SyncManager: Stopped background sync loop.");
     }
 }

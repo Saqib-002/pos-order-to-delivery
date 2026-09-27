@@ -1,4 +1,5 @@
 import { db } from "./index.js";
+import { OrderDatabaseOperations } from "./Orderoperations.js";
 
 export class FinancialDatabaseOperations {
   static async getFinancialAnalytics(filter: any): Promise<any> {
@@ -61,15 +62,9 @@ export class FinancialDatabaseOperations {
     const startISO = formatDate(startDate);
     const endISO = formatDate(endDate) + ' 23:59:59';
 
-    // 1. Calculate Income (Orders)
-    const ordersIncomeResult = await db("order_items")
-      .join("orders", "order_items.orderId", "orders.id")
-      .whereBetween("orders.createdAt", [startISO, endISO])
-      .whereNotIn("orders.status", ["pending", "sent to kitchen", "cancelled"])
-      .sum("order_items.totalPrice as total")
-      .first();
-
-    const ordersIncome = Number(ordersIncomeResult?.total || 0);
+    // 1. Calculate Income (Orders) using unified order total calculation
+    const calculatedOrders = await OrderDatabaseOperations.getCalculatedOrdersForDateRange(startDate, endDate);
+    const ordersIncome = calculatedOrders.reduce((sum: number, o: any) => sum + (o.orderTotal || 0), 0);
 
     // 2. Calculate Other Income (formerly general expenses)
     const otherIncomeResult = await db("other_incomes")
@@ -147,15 +142,15 @@ export class FinancialDatabaseOperations {
       return q.groupBy(db.raw(`TO_CHAR("${dateCol}"::timestamp, 'YYYY-MM-DD')`));
     };
 
-    const dailyOrdersIncomeRaw = await db("order_items")
-      .join("orders", "order_items.orderId", "orders.id")
-      .select(
-        db.raw(`TO_CHAR(orders."createdAt"::timestamp, 'YYYY-MM-DD') as date`)
-      )
-      .sum("order_items.totalPrice as total")
-      .whereBetween("orders.createdAt", [startISO, endISO])
-      .whereNotIn("orders.status", ["pending", "sent to kitchen", "cancelled"])
-      .groupBy(db.raw(`TO_CHAR(orders."createdAt"::timestamp, 'YYYY-MM-DD')`));
+    const dailyOrdersIncomeMap = new Map<string, number>();
+    calculatedOrders.forEach((o: any) => {
+      const date = formatDate(new Date(o.createdAt));
+      dailyOrdersIncomeMap.set(date, (dailyOrdersIncomeMap.get(date) || 0) + (o.orderTotal || 0));
+    });
+    const dailyOrdersIncomeRaw = Array.from(dailyOrdersIncomeMap.entries()).map(([date, total]) => ({
+      date,
+      total,
+    }));
 
     const dailyOtherIncomeRaw = await getDailySums(
       "other_incomes",
@@ -322,6 +317,7 @@ export class FinancialDatabaseOperations {
     };
 
     // 1. Other Income by Source (including POS Orders) with pending amounts
+    const calculatedOrders = await OrderDatabaseOperations.getCalculatedOrdersForDateRange(startDate, endDate);
     let otherIncomeBySource: any[] = [];
     try {
       const otherIncomeSources = await db("other_incomes")
@@ -363,31 +359,41 @@ export class FinancialDatabaseOperations {
         })
       );
 
-      const posOrders = await db("order_items")
-        .join("orders", "order_items.orderId", "orders.id")
-        .whereBetween("orders.createdAt", [startISO, endISO])
-        .whereNotIn("orders.status", ["pending", "sent to kitchen", "cancelled"])
-        .select(
-          db.raw("SUM(order_items.\"totalPrice\") as order_total"),
-          "orders.paymentType"
-        )
-        .groupBy("orders.id", "orders.paymentType");
+      const channelTotals: Record<string, { total: number; pending: number }> = {
+        "POS Orders": { total: 0, pending: 0 },
+        "Web Orders": { total: 0, pending: 0 },
+        "Mobile App Orders": { total: 0, pending: 0 },
+        "Platform Orders": { total: 0, pending: 0 },
+      };
 
-      let posOrdersTotal = 0;
-      let posOrdersPending = 0;
+      calculatedOrders.forEach((order: any) => {
+        const total = Number(order.orderTotal || 0);
+        const pending = calculatePendingAmount(total, order.paymentType || "");
+        const orderTypeLower = (order.orderType || "").toLowerCase();
 
-      posOrders.forEach((order: any) => {
-        const total = Number(order.order_total || 0);
-        posOrdersTotal += total;
-        posOrdersPending += calculatePendingAmount(total, order.paymentType || "");
+        let channel = "POS Orders";
+        if (orderTypeLower.startsWith("web")) {
+          channel = "Web Orders";
+        } else if (orderTypeLower.startsWith("app")) {
+          channel = "Mobile App Orders";
+        } else if (orderTypeLower.startsWith("platform")) {
+          channel = "Platform Orders";
+        }
+
+        channelTotals[channel].total += total;
+        channelTotals[channel].pending += pending;
       });
 
+      const orderSourceEntries = Object.entries(channelTotals)
+        .filter(([, data]) => data.total > 0)
+        .map(([name, data]) => ({
+          name,
+          total: data.total,
+          pending: data.pending,
+        }));
+
       const combinedSources = [
-        {
-          name: "POS Orders",
-          total: posOrdersTotal,
-          pending: posOrdersPending
-        },
+        ...orderSourceEntries,
         ...otherIncomeSourcesWithPending
       ];
 
@@ -711,16 +717,10 @@ export class FinancialDatabaseOperations {
     };
 
     // 1. Process Order Income Payments
-    const orderPayments = await db("order_items")
-      .join("orders", "order_items.orderId", "orders.id")
-      .select("orders.paymentType")
-      .sum("order_items.totalPrice as total")
-      .whereBetween("orders.createdAt", [startISO, endISO])
-      .whereNotIn("orders.status", ["pending", "sent to kitchen", "cancelled"])
-      .groupBy("orders.id", "orders.paymentType");
+    const calculatedOrders = await OrderDatabaseOperations.getCalculatedOrdersForDateRange(startDate, endDate);
 
-    orderPayments.forEach((order: any) => {
-      const totalAmount = Number(order.total) || 0;
+    calculatedOrders.forEach((order: any) => {
+      const totalAmount = Number(order.orderTotal) || 0;
       if (order.paymentType && order.paymentType.includes(":")) {
         const payments = order.paymentType.split(", ");
         payments.forEach((payment: string) => {

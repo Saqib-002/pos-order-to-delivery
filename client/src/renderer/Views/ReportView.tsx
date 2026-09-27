@@ -138,6 +138,7 @@ export const ReportView = () => {
     currentPage,
     activeTab,
   ]);
+  console.log(analytics?.topMenus);
 
   const handlePrintReport = async () => {
     if (!token) return;
@@ -209,8 +210,13 @@ export const ReportView = () => {
     >
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm font-medium text-black">
-          {configurations.orderPrefix || "K"}
-          {order.orderId}
+          {order.ticketNumber ||
+            (typeof order.orderId === "string" &&
+            (order.orderId.startsWith("A-") ||
+              order.orderId.startsWith("W-") ||
+              order.orderId.startsWith(configurations.orderPrefix || "K"))
+              ? order.orderId
+              : `${configurations.orderPrefix || "K"}${order.orderId}`)}
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">

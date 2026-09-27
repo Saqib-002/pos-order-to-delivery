@@ -25,8 +25,10 @@ import {
   AddIcon,
   EditIcon,
   CrossIcon,
+  Euro,
 } from "@/renderer/public/Svg";
 import OrderDetailsModal from "../components/order/modals/OrderDetailsModal";
+import IndividualPaymentModal from "../components/order/modals/IndividualPaymentModal";
 import { CancelOrderModal } from "../components/order/modals/CancelOrderModal";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
 import Pagination from "../components/shared/Pagination";
@@ -63,6 +65,9 @@ const PlatformOrdersView = () => {
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
   const [isCancelOrderModalOpen, setIsCancelOrderModalOpen] = useState(false);
   const [selectedOrderForCancel, setSelectedOrderForCancel] =
+    useState<Order | null>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedOrderForPayment, setSelectedOrderForPayment] =
     useState<Order | null>(null);
   const [platforms, setPlatforms] = useState<
     Array<{ id: string; name: string }>
@@ -180,6 +185,11 @@ const PlatformOrdersView = () => {
   const handleCancelOrderClick = (order: Order) => {
     setSelectedOrderForCancel(order);
     setIsCancelOrderModalOpen(true);
+  };
+
+  const handlePaymentClick = (order: Order) => {
+    setSelectedOrderForPayment(order);
+    setIsPaymentModalOpen(true);
   };
 
   const handleCancelOrderConfirm = async (cancelNote: string) => {
@@ -324,31 +334,71 @@ const PlatformOrdersView = () => {
             >
               <EyeIcon className="w-5 h-5" />
             </button>
-            {order.status?.toLowerCase() !== "completed" &&
+
+            {/* Process Payment Button for UNPAID or PARTIAL orders */}
+            {(() => {
+              const { orderTotal } = calculateOrderTotal(order.items || []);
+              const effectiveTotal =
+                orderTotal > 0
+                  ? orderTotal
+                  : Number(order.totalPrice) || Number((order as any).price) || 0;
+              const paymentStatus = calculatePaymentStatus(
+                order.paymentType || "",
+                effectiveTotal,
+              );
+              const isCancelled =
+                order.status?.toLowerCase() === "cancelled" ||
+                order.status?.toLowerCase() === "canceled";
+              const hasUnpaidAmount =
+                (paymentStatus.status === "UNPAID" ||
+                  paymentStatus.status === "PARTIAL" ||
+                  order.paymentStatus === "UNPAID" ||
+                  order.paymentStatus === "PARTIAL" ||
+                  !order.isPaid) &&
+                (paymentStatus.remainingAmount > 0 || (effectiveTotal > 0 && !order.isPaid));
+
+              if (!isCancelled && hasUnpaidAmount) {
+                return (
+                  <button
+                    onClick={() => handlePaymentClick(order)}
+                    className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors duration-200 cursor-pointer"
+                    title={t("manageOrders.actions.processPayment") || "Process Payment"}
+                  >
+                    <Euro className="w-5 h-5" />
+                  </button>
+                );
+              }
+              return null;
+            })()}
+
+            {/* Edit Order Button */}
+            {canEditPlatformOrder() &&
+              order.status?.toLowerCase() !== "completed" &&
               order.status?.toLowerCase() !== "cancelled" &&
               order.status?.toLowerCase() !== "delivered" &&
-              order.status?.toLowerCase() !== "out for delivery" &&
-              (canEditPlatformOrder() || canCancelOrder()) && (
-                <>
-                  {canEditPlatformOrder() && (
-                    <button
-                      onClick={() => handleEditOrder(order)}
-                      className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 cursor-pointer"
-                      title={t("platformOrders.actions.editOrder")}
-                    >
-                      <EditIcon className="w-5 h-5" />
-                    </button>
-                  )}
-                  {canCancelOrder() && (
-                    <button
-                      onClick={() => handleCancelOrderClick(order)}
-                      className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 cursor-pointer"
-                      title={t("platformOrders.actions.cancelOrder")}
-                    >
-                      <CrossIcon className="w-5 h-5" />
-                    </button>
-                  )}
-                </>
+              order.status?.toLowerCase() !== "out for delivery" && (
+                <button
+                  onClick={() => handleEditOrder(order)}
+                  className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 cursor-pointer"
+                  title={t("platformOrders.actions.editOrder")}
+                >
+                  <EditIcon className="w-5 h-5" />
+                </button>
+              )}
+
+            {/* Cancel Order Button */}
+            {canCancelOrder() &&
+              order.status?.toLowerCase() !== "completed" &&
+              order.status?.toLowerCase() !== "cancelled" &&
+              order.status?.toLowerCase() !== "delivered" &&
+              order.status?.toLowerCase() !== "out for delivery" && (
+                <button
+                  onClick={() => handleCancelOrderClick(order)}
+                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 cursor-pointer"
+                  title={t("platformOrders.actions.cancelOrder")}
+                >
+                  <CrossIcon className="w-5 h-5" />
+                </button>
               )}
           </div>
         </td>
@@ -630,6 +680,18 @@ const PlatformOrdersView = () => {
           platforms={platforms}
         />
       )}
+
+      {/* Individual Payment Modal */}
+      <IndividualPaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => {
+          setIsPaymentModalOpen(false);
+          setSelectedOrderForPayment(null);
+        }}
+        order={selectedOrderForPayment}
+        token={token || ""}
+        refreshOrdersCallback={fetchPlatformOrders}
+      />
     </div>
   );
 };

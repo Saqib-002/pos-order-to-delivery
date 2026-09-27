@@ -280,16 +280,40 @@ export const generateReceiptHTML = (
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
+            @page {
+                margin: 0;
+            }
+            @media print {
+                @page {
+                    margin: 0;
+                }
+                html, body {
+                    margin: 0 !important;
+                    margin-left: 0 !important;
+                    margin-right: auto !important;
+                }
+                .container {
+                    margin-left: 0 !important;
+                    margin-right: auto !important;
+                }
+            }
             body {
                 font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
                 font-size: 13px;
                 width: 72mm;
                 margin: 0;
+                margin-left: 0;
+                margin-right: auto;
                 padding: 1mm 2mm;
                 color: #000;
                 background: #fff;
             }
-            .container { width: 100%; }
+            .container {
+                width: 100%;
+                margin: 0;
+                margin-left: 0;
+                margin-right: auto;
+            }
             .dashed-line {
                 border-top: 1px dashed #000;
                 margin: 6px 0;
@@ -484,7 +508,7 @@ export const generateReceiptHTML = (
                 align-items: center;
                 justify-content: center;
                 margin-bottom: 5px;
-                font-size: 11px;
+                font-size: 13px;
                 font-weight: 700;
                 letter-spacing: 0.5px;
             }
@@ -497,36 +521,36 @@ export const generateReceiptHTML = (
                 white-space: nowrap;
             }
             .client-label {
-                font-size: 11px;
+                font-size: 13px;
                 font-weight: 400;
                 line-height: 1.2;
             }
             .client-name {
-                font-size: 12px;
+                font-size: 14px;
                 font-weight: 700;
             }
             .client-address {
-                font-size: 12px;
+                font-size: 14px;
                 font-weight: 400;
                 line-height: 1.25;
             }
             .client-phone {
-                font-size: 12px;
+                font-size: 14px;
                 font-weight: 700;
                 margin-top: 1px;
             }
             .client-pickup {
-                font-size: 11px;
+                font-size: 13px;
                 font-weight: 400;
                 margin-top: 2px;
             }
             .client-notes {
-                font-size: 11px;
+                font-size: 13px;
                 font-weight: 400;
                 margin-top: 2px;
             }
             .client-served {
-                font-size: 11px;
+                font-size: 13px;
                 font-weight: 400;
                 margin: 3px 0 6px 0;
             }
@@ -978,7 +1002,28 @@ export const generateItemsReceiptHTML = (
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
-            body { font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif; font-size: 12px; width: 70mm; margin: 0; padding: 1mm; }
+            @page {
+                margin: 0;
+            }
+            @media print {
+                @page {
+                    margin: 0;
+                }
+                html, body {
+                    margin: 0 !important;
+                    margin-left: 0 !important;
+                    margin-right: auto !important;
+                }
+            }
+            body {
+                font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+                font-size: 12px;
+                width: 70mm;
+                margin: 0;
+                margin-left: 0;
+                margin-right: auto;
+                padding: 1mm;
+            }
             .line { width: 100%; height: 1px; background: black; margin: 5px 0; }
             .bold { font-weight: 800 !important; font-size: 16px; }
             .center { text-align: center; }

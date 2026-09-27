@@ -9,7 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
 import { FilterControls } from "../components/shared/FilterControl.order";
 import { updateOrder } from "../utils/order";
-import { formatAddress } from "../utils/utils";
+import { formatAddress, getOrderDisplayNumber } from "../utils/utils";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 import { calculateOrderTotal } from "../utils/orderCalculations";
@@ -58,6 +58,14 @@ export const DeliveryView = () => {
   const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
   const [selectedOrderForRoute, setSelectedOrderForRoute] =
     useState<Order | null>(null);
+
+  const [, setTimerTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimerTick((prev) => prev + 1);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const fetchDeliveryPersons = async () => {
@@ -307,14 +315,7 @@ export const DeliveryView = () => {
       >
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-2xl font-bold text-black">
-            {order.ticketNumber ? (
-              <>{order.ticketNumber}</>
-            ) : (
-              <>
-                {configurations.orderPrefix || "K"}
-                {order.orderId}
-              </>
-            )}
+            {getOrderDisplayNumber(order, configurations.orderPrefix || "K")}
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
@@ -402,70 +403,83 @@ export const DeliveryView = () => {
       </tr>
     );
   };
-  const renderOutForDeliveryRow = (order: Order) => (
-    <tr
-      key={order.id}
-      className="hover:bg-gray-50 transition-colors duration-150"
-    >
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-2xl font-bold text-black">
-          {order.ticketNumber ? (
-            <>{order.ticketNumber}</>
+  const renderOutForDeliveryRow = (order: Order) => {
+    const assignedTime = new Date(
+      order.assignedAt || (order as any).updatedAt || order.createdAt || ""
+    );
+    const now = new Date();
+    const diffMinutes = Math.floor(
+      (now.getTime() - assignedTime.getTime()) / (1000 * 60)
+    );
+    const assignedSince = `${Math.floor(diffMinutes / 60)}h ${diffMinutes % 60}m`;
+    const orderTotal =
+      calculateOrderTotal(order.items || []).orderTotal ||
+      (order as any).price ||
+      0;
+
+    return (
+      <tr
+        key={order.id}
+        className="hover:bg-gray-50 transition-colors duration-150"
+      >
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="text-2xl font-bold text-black">
+            {getOrderDisplayNumber(order, configurations.orderPrefix || "K")}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="text-sm font-medium text-black">
+            {order.customer.name || "-"}
+          </div>
+        </td>
+        <td className="px-6 py-4">
+          <div className="text-sm text-black max-w-xs">
+            {order.customer.address ? formatAddress(order.customer.address) : "-"}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          {order.deliveryPerson ? (
+            <div className="text-sm">
+              <div className="font-medium text-black">
+                {order.deliveryPerson.name || "-"}
+              </div>
+              <div className="text-gray-500 text-xs">
+                {order.deliveryPerson.phone || "-"} •{" "}
+                {order.deliveryPerson.vehicleType || "-"}
+              </div>
+            </div>
           ) : (
-            <>
-              {configurations.orderPrefix || "K"}
-              {order.orderId}
-            </>
+            <span className="text-gray-400 text-sm">-</span>
           )}
-        </div>
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-medium text-black">
-          {order.customer.name || "-"}
-        </div>
-      </td>
-      <td className="px-6 py-4">
-        <div className="text-sm text-black max-w-xs">
-          {order.customer.address ? formatAddress(order.customer.address) : "-"}
-        </div>
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        {order.deliveryPerson ? (
-          <div className="text-sm">
-            <div className="font-medium text-black">
-              {order.deliveryPerson.name || "-"}
-            </div>
-            <div className="text-gray-500 text-xs">
-              {order.deliveryPerson.phone || "-"} •{" "}
-              {order.deliveryPerson.vehicleType || "-"}
+        </td>
+        <td className="px-6 py-4">
+          <div className="text-sm text-black">
+            <div className="space-y-1">
+              {order.items && order.items.length > 0 ? (
+                order.items.map((item, index) => (
+                  <div key={index} className="flex justify-between">
+                    <span className="text-gray-600">{item.productName}</span>
+                    <span className="text-black font-medium">
+                      x{item.quantity}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
             </div>
           </div>
-        ) : (
-          <span className="text-gray-400 text-sm">-</span>
-        )}
-      </td>
-      <td className="px-6 py-4">
-        <div className="text-sm text-black">
-          <div className="space-y-1">
-            {order.items && order.items.length > 0 ? (
-              order.items.map((item, index) => (
-                <div key={index} className="flex justify-between">
-                  <span className="text-gray-600">{item.productName}</span>
-                  <span className="text-black font-medium">
-                    x{item.quantity}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <span className="text-gray-400">-</span>
-            )}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
+          €{orderTotal.toFixed(2)}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="text-sm text-black font-medium">{assignedSince}</div>
+          <div className="text-xs text-gray-500">
+            {assignedTime.toLocaleTimeString()}
           </div>
-        </div>
-      </td>
-      <td className="px-6 py-4 text-sm font-medium text-black">
-        €{calculateOrderTotal(order.items || []).orderTotal.toFixed(2)}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2 min-w-[280px]">
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2 min-w-[280px]">
         {/* Hide Delivered and Cancel buttons when in edit mode */}
         {selectedOrderForChange?.id !== order.id && (
           <>
@@ -581,6 +595,7 @@ export const DeliveryView = () => {
       </td>
     </tr>
   );
+};
 
   return (
     <div className="p-4 flex flex-col">
@@ -672,6 +687,7 @@ export const DeliveryView = () => {
                   t("deliveryView.table.driver"),
                   t("deliveryView.table.items"),
                   t("deliveryView.table.amount"),
+                  t("deliveryView.table.assignedSince") || "Assigned Since",
                   t("deliveryView.table.actions"),
                 ]}
                 renderRow={renderOutForDeliveryRow}

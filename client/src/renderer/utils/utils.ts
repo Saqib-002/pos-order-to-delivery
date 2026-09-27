@@ -81,3 +81,22 @@ export const calculateProductTaxAmount = (product: any) => {
   const price = product.price || 0;
   return price - price / (1 + productTaxRate);
 };
+
+export const getOrderDisplayNumber = (
+  order: { ticketNumber?: string | null; orderId?: number | string | null; orderType?: string | null },
+  defaultPrefix: string = "K"
+): string => {
+  if (order.ticketNumber && order.ticketNumber.trim()) {
+    return order.ticketNumber.trim();
+  }
+  const orderType = (order.orderType || "").toLowerCase();
+  let prefix = defaultPrefix;
+  if (orderType.startsWith("platform")) {
+    prefix = "P";
+  } else if (orderType.startsWith("web")) {
+    prefix = "W";
+  } else if (orderType.startsWith("app")) {
+    prefix = "A";
+  }
+  return `${prefix}${order.orderId ?? ""}`;
+};

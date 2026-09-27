@@ -87,7 +87,7 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
     if (actualAmount <= 0) {
       toast.error(
         t("marketPurchaseManagement.modal.errors.noRemainingAmount") ||
-          "No remaining amount to pay. The total has already been paid."
+        "No remaining amount to pay. The total has already been paid."
       );
       return;
     }
@@ -303,9 +303,8 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                   {t("individualPaymentModal.remainingAmount")}
                 </span>
                 <span
-                  className={`text-lg font-bold ${
-                    remainingAmount > 0.01 ? "text-red-600" : "text-green-600"
-                  }`}
+                  className={`text-lg font-bold ${remainingAmount > 0.01 ? "text-red-600" : "text-green-600"
+                    }`}
                 >
                   €{remainingAmount.toFixed(2)}
                 </span>
@@ -408,22 +407,20 @@ const IndividualPaymentModal: React.FC<IndividualPaymentModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("cash")}
-                  className={`p-1 border-2 rounded-lg transition-all duration-200 flex items-center justify-center ${
-                    paymentMethod === "cash"
+                  className={`p-1 border-2 rounded-lg transition-all duration-200 flex items-center justify-center ${paymentMethod === "cash"
                       ? "border-green-400 bg-green-50"
                       : "border-gray-200 hover:border-green-300"
-                  }`}
+                    }`}
                 >
                   <img src="./images/cash.png" alt="cash" className="w-8 h-8" />
                 </button>
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("card")}
-                  className={`p-1 border-2 rounded-lg transition-all duration-200 flex items-center justify-center ${
-                    paymentMethod === "card"
+                  className={`p-1 border-2 rounded-lg transition-all duration-200 flex items-center justify-center ${paymentMethod === "card"
                       ? "border-blue-400 bg-blue-50"
                       : "border-gray-200 hover:border-blue-300"
-                  }`}
+                    }`}
                 >
                   <img src="./images/card.png" alt="card" className="w-8 h-8" />
                 </button>

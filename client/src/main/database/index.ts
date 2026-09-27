@@ -1,6 +1,6 @@
 import knex, { Knex } from "knex";
 import knexConfig from "../../knexfile.js";
-import Logger from "electron-log";
+import Logger, { syncLogger } from "../utils/logger.js";
 import path from "path";
 import os from "os";
 import { app } from "electron";
@@ -159,35 +159,41 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
 
 export async function startCloudSyncServices(): Promise<void> {
     Logger.info("Starting background cloud sync services...");
+    syncLogger.info("Starting background cloud sync services...");
     try {
         const { startBackgroundSync } = await import("../utils/syncManager.js");
         startBackgroundSync();
     } catch (syncErr) {
         Logger.error("Failed to start background sync manager:", syncErr);
+        syncLogger.error("Failed to start background sync manager:", syncErr);
     }
     try {
         const { startQueueProcessor } = await import("../utils/sync/index.js");
         startQueueProcessor();
     } catch (queueErr) {
         Logger.error("Failed to start sync queue processor:", queueErr);
+        syncLogger.error("Failed to start sync queue processor:", queueErr);
     }
     try {
         const { startWebCustomerSync } = await import("../utils/sync/webCustomer.js");
         startWebCustomerSync();
     } catch (webCustomerSyncErr) {
         Logger.error("Failed to start web customer sync:", webCustomerSyncErr);
+        syncLogger.error("Failed to start web customer sync:", webCustomerSyncErr);
     }
     try {
         const { startWebOrderSync } = await import("../utils/webOrderSync.js");
         startWebOrderSync();
     } catch (webOrderSyncErr) {
         Logger.error("Failed to start web order sync:", webOrderSyncErr);
+        syncLogger.error("Failed to start web order sync:", webOrderSyncErr);
     }
     try {
         const { startKitchenStatusSync } = await import("../utils/kitchenStatusSync.js");
         startKitchenStatusSync();
     } catch (kitchenSyncErr) {
         Logger.error("Failed to start kitchen status sync:", kitchenSyncErr);
+        syncLogger.error("Failed to start kitchen status sync:", kitchenSyncErr);
     }
 }
 

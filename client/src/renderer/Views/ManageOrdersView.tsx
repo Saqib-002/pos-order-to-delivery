@@ -42,7 +42,7 @@ import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 import { DEFAULT_PAGE_LIMIT, FUNCTIONS } from "@/constants";
 import Pagination from "../components/shared/Pagination";
-import { formatAddress } from "../utils/utils";
+import { formatAddress, getOrderDisplayNumber } from "../utils/utils";
 import dayjs from "dayjs";
 import { Bike } from "lucide-react";
 
@@ -462,14 +462,7 @@ export const ManageOrdersView = () => {
     return (
       <tr key={order.id} className="hover:bg-gray-50 transition-colors">
         <td className="px-6 py-4 whitespace-nowrap text-2xl font-bold text-black">
-          {order.ticketNumber ? (
-            <>{order.ticketNumber}</>
-          ) : (
-            <>
-              {configurations.orderPrefix || "K"}
-              {order.orderId}
-            </>
-          )}
+          {getOrderDisplayNumber(order, configurations.orderPrefix || "K")}
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-sm font-medium text-black">
@@ -555,25 +548,32 @@ export const ManageOrdersView = () => {
             {/* Process Payment Button - Only show for UNPAID or PARTIAL orders with remaining amount > 0 */}
             {(() => {
               const { orderTotal } = calculateOrderTotal(order.items || []);
+              const effectiveTotal =
+                orderTotal > 0
+                  ? orderTotal
+                  : Number(order.totalPrice) || Number(order.price) || 0;
               const paymentStatus = calculatePaymentStatus(
                 order.paymentType || "",
-                orderTotal,
+                effectiveTotal,
               );
 
               const statusLower = order.status?.toLowerCase();
-              const isPaymentAllowed =
-                statusLower === "complete" || statusLower === "delivered";
+              const isCancelled =
+                statusLower === "cancelled" || statusLower === "canceled";
               const hasUnpaidAmount =
                 (paymentStatus.status === "UNPAID" ||
-                  paymentStatus.status === "PARTIAL") &&
-                paymentStatus.remainingAmount > 0;
+                  paymentStatus.status === "PARTIAL" ||
+                  order.paymentStatus === "UNPAID" ||
+                  order.paymentStatus === "PARTIAL" ||
+                  !order.isPaid) &&
+                (paymentStatus.remainingAmount > 0 || (effectiveTotal > 0 && !order.isPaid));
 
-              if (isPaymentAllowed && hasUnpaidAmount) {
+              if (!isCancelled && hasUnpaidAmount) {
                 return (
                   <button
                     onClick={() => handlePaymentClick(order)}
                     className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors duration-200 cursor-pointer"
-                    title={t("manageOrders.actions.processPayment")}
+                    title={t("manageOrders.actions.processPayment") || "Process Payment"}
                   >
                     <Euro className="w-5 h-5" />
                   </button>
@@ -584,8 +584,7 @@ export const ManageOrdersView = () => {
 
             {/* Cancel Order Button - Only show if user has permission and order is not already cancelled/delivered */}
             {hasCancelOrderPermission() &&
-              order.status?.toLowerCase() !== "cancelled" &&
-              order.status?.toLowerCase() !== "delivered" && (
+              order.status?.toLowerCase() !== "cancelled" && (
                 <button
                   onClick={() => handleCancelOrderClick(order)}
                   className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 cursor-pointer"
@@ -601,7 +600,6 @@ export const ManageOrdersView = () => {
             {(order.orderType === "delivery" || order.orderType?.toLowerCase().includes("platform:delivery")) &&
               (order.deliveryPerson?.id || order.deliveryPerson?.name) &&
               order.status?.toLowerCase() !== "cancelled" &&
-              order.status?.toLowerCase() !== "delivered" &&
               order.status?.toLowerCase() !== "senttokitchen" && (
                 <button
                   onClick={() => handleChangeDeliveryClick(order)}
@@ -967,6 +965,7 @@ export const ManageOrdersView = () => {
           }}
           view="manage"
           platforms={platforms}
+          orderPrefix={configurations.orderPrefix || "K"}
         />
       )}
 

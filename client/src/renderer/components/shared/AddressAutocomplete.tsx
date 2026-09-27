@@ -48,7 +48,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   value = "",
   onChange,
   label,
-  placeholder = "Enter address",
+  placeholder = "Search address...",
   required = false,
   className = "",
   inputClasses = "",
@@ -78,10 +78,12 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const [internalPostalCode, setInternalPostalCode] = useState(postalCodeValue);
   const [internalCity, setInternalCity] = useState(cityValue);
   const [internalProvince, setInternalProvince] = useState(provinceValue);
-  const autocompleteRef = useRef<HTMLElement | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<any>(null);
   const address1FieldRef = useRef<HTMLInputElement>(null);
 
+  // Load Google Maps JavaScript API
   useEffect(() => {
     if (!apiKey) {
       setIsLoaded(false);
@@ -94,7 +96,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     }
 
     const POLL_INTERVAL_MS = 200;
-    const POLL_TIMEOUT_MS = 15000; 
+    const POLL_TIMEOUT_MS = 15000;
     let cancelled = false;
 
     const waitForGoogleMaps = () => {
@@ -163,171 +165,125 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     };
   }, [apiKey]);
 
+  // Initialize standard Google Places Autocomplete on the search input
   useEffect(() => {
-    if (!isLoaded || !containerRef.current || !window.google) return;
+    if (!isLoaded || !searchInputRef.current || !window.google) return;
+
+    let isMounted = true;
 
     const initAutocomplete = async () => {
       try {
-        const { Place, Autocomplete } = (await window.google.maps.importLibrary(
-          "places"
-        )) as any;
+        const { Autocomplete } = (await window.google.maps.importLibrary("places")) as any;
+        if (!searchInputRef.current || !isMounted) return;
 
-        if (!autocompleteRef.current && containerRef.current) {
-          const autocompleteElement = document.createElement(
-            "gmp-place-autocomplete"
-          ) as any;
-
-          autocompleteElement.setAttribute(
-            "id",
-            id || name || "place-autocomplete"
-          );
-          if (placeholder) {
-            autocompleteElement.setAttribute("placeholder", placeholder);
-          }
-          if (required) {
-            autocompleteElement.setAttribute("required", "true");
-          }
-
-          // autocompleteElement.setAttribute(
-          //   "included-primary-types",
-          //   "street_address"
-          // );
-          
-          autocompleteElement.setAttribute("included-region-codes", "ES");
-
-          containerRef.current.appendChild(autocompleteElement);
-          autocompleteRef.current = autocompleteElement;
-
-          setTimeout(async () => {
-            const placeAutocomplete = document.querySelector(
-              `#${id || name || "place-autocomplete"}`
-            ) as any;
-
-            if (!placeAutocomplete) return;
-
-            if (value) {
-              placeAutocomplete.value = value;
-              setAddress1(value);
-            }
-
-            placeAutocomplete.addEventListener(
-              "gmp-select",
-              async (event: any) => {
-                try {
-                  const placePrediction =
-                    event.placePrediction || event.detail?.placePrediction;
-                  if (placePrediction) {
-                    await fillInAddress(placePrediction);
-                  }
-                } catch (err) {
-                  console.error("Error in gmp-select handler:", err);
-                }
-              }
-            );
-
-            placeAutocomplete.addEventListener("input", (event: any) => {
-              const newValue = event.target?.value || "";
-              setAddress1(newValue);
-              if (onChange) {
-                onChange(newValue);
-              }
-            });
-          }, 100);
+        if (autocompleteRef.current) {
+          window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
         }
+
+        autocompleteRef.current = new Autocomplete(searchInputRef.current, {
+          componentRestrictions: { country: "ES" },
+          fields: ["address_components", "geometry", "formatted_address"],
+        });
+
+        autocompleteRef.current.addListener("place_changed", () => {
+          const place = autocompleteRef.current.getPlace();
+          if (!place) return;
+
+          let streetNumber = "";
+          let route = "";
+          let postalCode = "";
+          let city = "";
+          let province = "";
+
+          if (place.address_components) {
+            for (const component of place.address_components) {
+              if (component.types.includes("street_number")) {
+                streetNumber = component.long_name || component.short_name || "";
+              }
+              if (component.types.includes("route")) {
+                // Use long_name so full name like "Calle Madres de la Plaza de Mayo" is preserved
+                route = component.long_name || component.short_name || "";
+              }
+              if (component.types.includes("postal_code")) {
+                postalCode = component.long_name || component.short_name || "";
+              }
+              if (
+                component.types.includes("locality") ||
+                component.types.includes("postal_town") ||
+                component.types.includes("sublocality") ||
+                component.types.includes("sublocality_level_1")
+              ) {
+                if (!city) city = component.long_name || component.short_name || "";
+              }
+              if (component.types.includes("administrative_area_level_2")) {
+                // In Spain, level 2 is the province (e.g. Madrid, Barcelona)
+                if (!province) province = component.long_name || component.short_name || "";
+              }
+              if (component.types.includes("administrative_area_level_1")) {
+                if (!province) province = component.long_name || component.short_name || "";
+              }
+            }
+          }
+
+          // Format street: in Spanish addresses, route/street name comes first, followed by number
+          let street = "";
+          if (route && streetNumber) {
+            street = `${route}, ${streetNumber}`;
+          } else if (route) {
+            street = route;
+          } else if (streetNumber) {
+            street = streetNumber;
+          }
+
+          if (!street && place.formatted_address) {
+            street = place.formatted_address.split(",")[0]?.trim() || "";
+          }
+
+          setAddress1(street);
+          setInternalPostalCode(postalCode);
+          setInternalCity(city);
+          setInternalProvince(province);
+
+          if (address1FieldRef.current) {
+            address1FieldRef.current.value = street;
+          }
+
+          if (onPostalCodeChange) onPostalCodeChange(postalCode);
+          if (onCityChange) onCityChange(city);
+          if (onProvinceChange) onProvinceChange(province);
+
+          onAddressSelect({
+            address: street,
+            apartment: internalApartment,
+            postalCode,
+            city,
+            province,
+          });
+
+          if (onChange) {
+            onChange(street);
+          }
+        });
       } catch (error) {
-        console.error("Error initializing autocomplete:", error);
+        console.error("Error initializing Google Places Autocomplete:", error);
       }
     };
 
     initAutocomplete();
-  }, [isLoaded, id, name, placeholder, required, error, value, onChange]);
 
-  const fillInAddress = async (placePrediction: any) => {
-    try {
-      const { Place } = (await window.google.maps.importLibrary(
-        "places"
-      )) as any;
-
-      const place = placePrediction.toPlace();
-      await place.fetchFields({
-        fields: ["addressComponents", "formattedAddress"],
-      });
-
-      if (!place.addressComponents) {
-        return;
+    return () => {
+      isMounted = false;
+      if (autocompleteRef.current && window.google?.maps?.event) {
+        window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
       }
-
-      let address1Value = "";
-      let postalCode = "";
-      let city = "";
-      let province = "";
-
-      for (const component of place.addressComponents) {
-        if (component.types.includes("street_address")) {
-          address1Value = `${component.longText} ${address1Value}`;
-        }
-        if (component.types.includes("street_number")) {
-          address1Value = `${component.longText} ${address1Value}`;
-        }
-        if (component.types.includes("route")) {
-          address1Value += component.shortText;
-        }
-        if (component.types.includes("postal_code")) {
-          postalCode = `${component.longText}${postalCode}`;
-        }
-        if (component.types.includes("postal_code_suffix")) {
-          postalCode = `${postalCode}-${component.longText}`;
-        }
-        if (
-          component.types.includes("locality") ||
-          component.types.includes("postal_town")
-        ) {
-          city = component.longText || "";
-        }
-        if (component.types.includes("administrative_area_level_1")) {
-          province = component.shortText || component.longText || "";
-        }
-      }
-
-      address1Value = address1Value.trim();
-
-      setAddress1(address1Value);
-      setInternalPostalCode(postalCode);
-      setInternalCity(city);
-      setInternalProvince(province);
-
-      if (address1FieldRef.current) {
-        address1FieldRef.current.value = address1Value;
-      }
-
-      if (onPostalCodeChange) onPostalCodeChange(postalCode);
-      if (onCityChange) onCityChange(city);
-      if (onProvinceChange) onProvinceChange(province);
-
-      onAddressSelect({
-        address: address1Value,
-        apartment: internalApartment,
-        postalCode: postalCode,
-        city: city,
-        province: province,
-      });
-
-      if (onChange) {
-        onChange(address1Value);
-      }
-    } catch (error) {
-      console.error("Error filling address:", error);
-    }
-  };
+    };
+  }, [isLoaded, onAddressSelect, onChange, internalApartment, onPostalCodeChange, onCityChange, onProvinceChange]);
 
   useEffect(() => {
     if (value !== address1) {
       setAddress1(value);
       if (address1FieldRef.current) {
         address1FieldRef.current.value = value;
-      }
-      if (autocompleteRef.current) {
-        (autocompleteRef.current as any).value = value;
       }
     }
   }, [value, address1]);
@@ -359,34 +315,45 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   return (
     <>
       <style>{`
-        gmp-basic-place-autocomplete,
-        gmp-place-autocomplete {
-          color-scheme: light !important;
-          padding: 0 !important;
-          width: 100% !important;
-          display: block !important;
-          border: 1px solid #d1d5db !important;
-          border-radius: 0.5rem !important;
-        }
-        
-        gmp-place-autocomplete::part(input) {
-          width: 100% !important;
-          padding: 12px 16px !important;
-          border: none !important;
-          border-radius: 0 !important;
-          font-size: 16px !important;
-          box-sizing: border-box !important;
-          margin: 0 !important;
+        .pac-container {
           background-color: #ffffff !important;
-          color: #1f2937 !important;
-          outline: none !important;
+          border: 1px solid #e5e7eb !important;
+          border-radius: 0.75rem !important;
+          margin-top: 4px !important;
+          font-family: inherit !important;
+          z-index: 999999 !important;
+          padding: 4px !important;
         }
-        
-        gmp-place-autocomplete:focus-within {
-          border: none !important;
-          outline: none !important;
+        .pac-item {
+          border-top: 1px solid #f3f4f6 !important;
+          padding: 8px 12px !important;
+          color: #374151 !important;
+          cursor: pointer !important;
+          border-radius: 0.375rem !important;
+          font-size: 13px !important;
+          display: flex;
+          align-items: center;
         }
-        
+        .pac-item:first-child {
+          border-top: none !important;
+        }
+        .pac-item:hover, .pac-item-selected {
+          background-color: #f3f4f6 !important;
+          color: #111827 !important;
+        }
+        .pac-item-query {
+          color: #111827 !important;
+          font-weight: 600 !important;
+          font-size: 13px !important;
+          padding-right: 4px;
+        }
+        .pac-matched {
+          color: #000000 !important;
+          font-weight: 700 !important;
+        }
+        .pac-icon {
+          margin-right: 8px !important;
+        }
       `}</style>
       <div className={className}>
         {label && (
@@ -398,31 +365,25 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           </label>
         )}
 
-        {/* Autocomplete field */}
+        {/* Autocomplete Search Input */}
         <div className="mb-4">
           <label
-            htmlFor={id || name}
+            htmlFor={`${id || name}-search`}
             className="block text-sm font-medium text-gray-700 mb-2"
           >
             {searchAddressLabel}
           </label>
-          <div
-            ref={containerRef}
-            className="relative border border-gray-300 rounded-lg focus:border-0 focus:ring-0 focus:outline-none"
-          >
-            {!isLoaded && (
-              <input
-                type="text"
-                id={id || name}
-                name={name}
-                value={address1}
-                disabled
-                placeholder={placeholder}
-                required={required}
-                className={`w-full px-4 py-3 bg-gray-100 cursor-not-allowed ${inputClasses}`}
-              />
-            )}
-          </div>
+          <input
+            ref={searchInputRef}
+            type="text"
+            id={`${id || name}-search`}
+            name={`${name}-search`}
+            disabled={!isLoaded}
+            placeholder={isLoaded ? placeholder : (apiKey ? "Loading address search..." : "Configure Google Maps API key in Settings")}
+            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none transition-colors ${
+              !isLoaded ? "bg-gray-100 cursor-not-allowed" : "bg-white"
+            } ${inputClasses}`}
+          />
         </div>
 
         {/* Street address field */}
@@ -444,7 +405,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               setAddress1(val);
               if (onChange) onChange(val);
             }}
-            placeholder={t("customerManagement.modal.address")}
+            placeholder={t("customerManagement.modal.address") || "Street address"}
             required={required}
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-black outline-none transition-colors ${
               error

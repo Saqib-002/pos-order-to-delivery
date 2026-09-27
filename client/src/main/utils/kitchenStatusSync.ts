@@ -1,5 +1,5 @@
 import { db } from "../database/index.js";
-import Logger from "electron-log";
+import { syncLogger as Logger } from "./logger.js";
 
 const INTERVAL_MS = 20_000; // 20 seconds
 

@@ -92,6 +92,8 @@ export interface Order {
   platformId?: string;
   platformName?: string;
   ticketNumber?: string;
+  price?: number;
+  totalPrice?: number;
   updatedAt?: string;
   createdAt?: string;
   items?: OrderItem[];

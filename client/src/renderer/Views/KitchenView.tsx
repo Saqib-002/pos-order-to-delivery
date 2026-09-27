@@ -32,7 +32,7 @@ import {
   MapIcon,
 } from "../public/Svg";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
-import { formatAddress } from "../utils/utils";
+import { formatAddress, getOrderDisplayNumber } from "../utils/utils";
 import DeliveryRouteModal from "../components/order/modals/DeliveryRouteModal";
 
 export const KitchenView = () => {
@@ -248,14 +248,7 @@ export const KitchenView = () => {
           </span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-2xl font-bold text-black">
-          {order.ticketNumber ? (
-            <>{order.ticketNumber}</>
-          ) : (
-            <>
-              {configurations.orderPrefix || "K"}
-              {order.orderId}
-            </>
-          )}
+          {getOrderDisplayNumber(order, configurations.orderPrefix || "K")}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
           {order.customer.name}
@@ -446,6 +439,7 @@ export const KitchenView = () => {
             setIsOrderDetailsOpen(false);
             setSelectedOrder(null);
           }}
+          orderPrefix={configurations.orderPrefix || "K"}
         />
       )}
 
