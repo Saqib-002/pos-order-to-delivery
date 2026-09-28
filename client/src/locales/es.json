@@ -616,6 +616,7 @@
         "web-admin:hero": "Slider Principal (Hero)",
         "web-admin:offers": "Ofertas Promocionales",
         "web-admin:branding": "Marca y Ajustes",
+        "web-admin:opening-hours": "Horario de Apertura",
         "web-admin:notifications": "Notificaciones y Enlaces",
         "web-admin:footer": "Pie de Página (Footer)",
         "web-admin:about": "Sobre Nosotros",
@@ -2885,7 +2886,8 @@
       "about": "Nosotros",
       "contact": "Contacto",
       "allergens": "Alérgenos",
-      "maintenance": "Modo Mantenimiento"
+      "maintenance": "Modo Mantenimiento",
+      "openingHours": "Horario de Apertura"
     },
     "actions": {
       "refreshCloud": "Actualizar desde la Nube",
@@ -3331,6 +3333,31 @@
       "all": "Todos",
       "english": "Inglés",
       "espanol": "Español"
+    },
+    "openingHours": {
+      "title": "Horario de Apertura",
+      "subtitle": "Configura los horarios de apertura y cierre para cada día de la semana",
+      "timezoneLabel": "Zona Horaria",
+      "dayCol": "Día",
+      "openCol": "Abierto",
+      "session1StartCol": "Sesión 1 Apertura",
+      "session1EndCol": "Sesión 1 Cierre",
+      "session2StartCol": "Sesión 2 Apertura",
+      "session2EndCol": "Sesión 2 Cierre",
+      "resetBtn": "Restablecer valores predeterminados",
+      "session1Label": "Sesión 1",
+      "session2Label": "Sesión 2",
+      "openLabel": "Apertura",
+      "closeLabel": "Cierre",
+      "days": {
+        "monday": "Lunes",
+        "tuesday": "Martes",
+        "wednesday": "Miércoles",
+        "thursday": "Jueves",
+        "friday": "Viernes",
+        "saturday": "Sábado",
+        "sunday": "Domingo"
+      }
     },
     "messages": {
       "saveSuccess": "Cambios guardados y encolados para sincronización.",

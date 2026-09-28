@@ -49,6 +49,7 @@ export const Navigation = ({
     { key: "hero", label: t("webAdmin.tabs.hero"), icon: "./images/slider.png" },
     { key: "offers", label: t("webAdmin.tabs.offers", "Ofertas"), icon: "./images/offers.png" },
     { key: "branding", label: t("webAdmin.branding.title", "Marca y Ajustes"), icon: "./images/branding.png" },
+    { key: "opening-hours", label: t("webAdmin.tabs.openingHours", "Opening Hours"), icon: "./images/opening-hours.png" },
     { key: "notifications", label: t("webAdmin.notifications.title", "Notificaciones y Enlaces"), icon: "./images/notification-links.png" },
     { key: "footer", label: t("webAdmin.tabs.footer"), icon: "./images/footer.png" },
     { key: "about", label: t("webAdmin.tabs.about"), icon: "./images/about-us.png" },

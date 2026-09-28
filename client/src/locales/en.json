@@ -228,6 +228,7 @@
         "web-admin:hero": "Hero Slider",
         "web-admin:offers": "Promotional Offers",
         "web-admin:branding": "Branding & Settings",
+        "web-admin:opening-hours": "Opening Hours Schedule",
         "web-admin:notifications": "Notifications & App Links",
         "web-admin:footer": "Footer",
         "web-admin:about": "About Us",
@@ -2885,7 +2886,8 @@
       "about": "About Us",
       "contact": "Contact",
       "allergens": "Allergens",
-      "maintenance": "Maintenance Mode"
+      "maintenance": "Maintenance Mode",
+      "openingHours": "Opening Hours"
     },
     "actions": {
       "refreshCloud": "Refresh from Cloud",
@@ -3331,6 +3333,31 @@
       "all": "All",
       "english": "English",
       "espanol": "Spanish"
+    },
+    "openingHours": {
+      "title": "Opening Hours Schedule",
+      "subtitle": "Set opening and closing times for each day of the week",
+      "timezoneLabel": "Timezone",
+      "dayCol": "Day",
+      "openCol": "Open",
+      "session1StartCol": "Session 1 Open",
+      "session1EndCol": "Session 1 Close",
+      "session2StartCol": "Session 2 Open",
+      "session2EndCol": "Session 2 Close",
+      "resetBtn": "Reset to default",
+      "session1Label": "Session 1",
+      "session2Label": "Session 2",
+      "openLabel": "Open",
+      "closeLabel": "Close",
+      "days": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
+      }
     },
     "messages": {
       "saveSuccess": "Changes saved and queued for cloud synchronization.",

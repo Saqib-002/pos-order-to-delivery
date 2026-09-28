@@ -16,6 +16,7 @@ import AllergensTab from "../components/webAdmin/AllergensTab";
 import WebCustomersTab from "../components/webAdmin/WebCustomersTab";
 import SupportTab from "../components/webAdmin/SupportTab";
 import MaintenanceTab from "../components/webAdmin/MaintenanceTab";
+import OpeningHoursTab from "../components/webAdmin/OpeningHoursTab";
 import { RefreshCw, Sparkles } from "lucide-react";
 import { hasWebAdminTabAccess } from "../utils/permissions";
 import { AccessDenied } from "../components/shared/AccessDenied";
@@ -24,6 +25,7 @@ export type TabKey =
   | "hero"
   | "offers"
   | "branding"
+  | "opening-hours"
   | "notifications"
   | "footer"
   | "about"
@@ -45,6 +47,7 @@ const ALL_TABS: TabKey[] = [
   "hero",
   "offers",
   "branding",
+  "opening-hours",
   "notifications",
   "footer",
   "about",
@@ -134,6 +137,7 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
     hero: "./images/slider.png",
     offers: "./images/menu-structure.png",
     branding: "./images/branding.png",
+    "opening-hours": "./images/opening-hours.png",
     notifications: "./images/notification.png",
     footer: "./images/footer.png",
     about: "./images/about-us.png",
@@ -159,6 +163,10 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
     branding: {
       title: t("webAdmin.branding.title", "Marca y Configuración Web"),
       subtitle: t("webAdmin.branding.subtitle"),
+    },
+    "opening-hours": {
+      title: t("webAdmin.tabs.openingHours", "Opening Hours"),
+      subtitle: t("webAdmin.openingHours.subtitle", "Set opening and closing times for each day of the week"),
     },
     notifications: {
       title: t("webAdmin.notifications.title", "Notificaciones y Enlaces"),
@@ -242,6 +250,13 @@ const WebAdminView: React.FC<WebAdminViewProps> = ({
             initialContent={{
               branding: siteData.branding,
             }}
+            onSaveSuccess={loadLocalContent}
+          />
+        );
+      case "opening-hours":
+        return (
+          <OpeningHoursTab
+            initialContent={siteData["opening-hours"]}
             onSaveSuccess={loadLocalContent}
           />
         );
