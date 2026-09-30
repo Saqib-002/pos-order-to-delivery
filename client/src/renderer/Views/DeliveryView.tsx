@@ -83,7 +83,7 @@ export const DeliveryView = () => {
     setFilter({
       selectedDate: null,
       searchTerm: "",
-      selectedStatus: ["ready for delivery", "out for delivery"],
+      selectedStatus: ["ready for delivery", "out for delivery", "delivered"],
       selectedPaymentStatus: [],
       page: 0,
       limit: DEFAULT_PAGE_LIMIT,
@@ -282,7 +282,8 @@ export const DeliveryView = () => {
         title: t("deliveryView.stats.deliveredToday"),
         value: orders.filter((o) => {
           if (o.status.toLowerCase() !== "delivered") return false;
-          const deliveredDate = new Date(o.id);
+          if (!o.deliveredAt) return false;
+          const deliveredDate = new Date(o.deliveredAt);
           const today = new Date();
           return deliveredDate.toDateString() === today.toDateString();
         }).length,
