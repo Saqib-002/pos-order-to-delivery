@@ -732,13 +732,6 @@ export const DeliveryView = () => {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setIsRadarModalOpen(true)}
-                    className="bg-black hover:bg-zinc-800 text-white border border-zinc-800 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
-                  >
-                    <Compass className="size-4 text-white" />
-                    <span>{t("deliveryView.radar.mapView") || "Ver en Radar / Mapa"}</span>
-                  </button>
                   <FilterControls filter={filter} setFilter={setFilter} />
                 </div>
               </div>
