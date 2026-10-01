@@ -64,7 +64,12 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
                 user: credentials.user,
                 password: credentials.password,
             },
-            pool: { min: 2, max: 10 },
+            pool: {
+                min: 2,
+                max: 30,
+                acquireTimeoutMillis: 30000,
+                idleTimeoutMillis: 30000,
+            },
         };
         if (isPackaged) {
             dynamicConfig.migrations = {
@@ -73,6 +78,9 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
             };
         }
         db = knex(dynamicConfig);
+        db.on("query-error", (error: any, obj: any) => {
+            Logger.error("[Database Query Error]:", error?.message || error, "SQL:", obj?.sql);
+        });
         Logger.info("PostgreSQL database initialized");
 
         // Test connection

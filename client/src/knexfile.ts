@@ -21,7 +21,9 @@ const knexConfig = {
     },
     pool: {
       min: 2,
-      max: 10
+      max: 30,
+      acquireTimeoutMillis: 30000,
+      idleTimeoutMillis: 30000,
     }
   },
   
@@ -43,7 +45,9 @@ const knexConfig = {
     },
     pool: {
       min: 2,
-      max: 10
+      max: 30,
+      acquireTimeoutMillis: 30000,
+      idleTimeoutMillis: 30000,
     }
   }
 };

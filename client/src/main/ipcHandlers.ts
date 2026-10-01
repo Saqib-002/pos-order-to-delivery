@@ -1,4 +1,5 @@
 import { ipcMain } from "electron";
+import Logger from "./utils/logger.js";
 import {
   getSiteContent,
   saveSiteContent,
@@ -265,6 +266,27 @@ const store = new Store<StoreSchema>({
 });
 
 export function registerIpcHandlers() {
+  const originalHandle = ipcMain.handle.bind(ipcMain);
+  (ipcMain as any).handle = (channel: string, listener: (...args: any[]) => any) => {
+    return originalHandle(channel, async (event: any, ...args: any[]) => {
+      try {
+        const result = await listener(event, ...args);
+        if (
+          result &&
+          typeof result === "object" &&
+          (result.status === false || result.success === false) &&
+          result.error
+        ) {
+          Logger.error(`[IPC Error] [${channel}]:`, result.error);
+        }
+        return result;
+      } catch (err: any) {
+        Logger.error(`[IPC Uncaught Exception] [${channel}]:`, err?.message || err);
+        throw err;
+      }
+    });
+  };
+
   // db handlers
   ipcMain.handle("get-db-credentials", async () => {
     return (store as any).get("dbCredentials");
