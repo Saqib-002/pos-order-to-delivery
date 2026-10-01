@@ -10,10 +10,10 @@ import CustomButton from "../ui/CustomButton";
 import {
   ChevronLeftIcon,
   CrossIcon,
-  DeleteIcon,
   EditIcon,
   PrinterIcon,
   CopyIcon,
+  BanIcon,
 } from "@/renderer/public/Svg";
 import { useOrder } from "@/renderer/contexts/OrderContext";
 import {
@@ -29,6 +29,7 @@ import { useTranslation } from "react-i18next";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
 import { StringToComplements } from "@/renderer/utils/order";
 import { formatAddress } from "@/renderer/utils/utils";
+import { CancelOrderModal } from "@/renderer/components/order/modals/CancelOrderModal";
 
 interface OrderCartProps {
   orderId: string;
@@ -70,6 +71,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
   } = useAuth();
 
   const [productsWithVariants, setProductsWithVariants] = React.useState<Record<string, boolean>>({});
+  const [isCancelModalOpen, setIsCancelModalOpen] = React.useState(false);
 
   React.useEffect(() => {
     const checkVariants = async () => {
@@ -131,6 +133,22 @@ const OrderCart: React.FC<OrderCartProps> = ({
       toast.success(t("orderCart.messages.receiptPrintedSuccessfully"));
     }
   };
+  const handleCancelOrderConfirm = async (cancelNote: string) => {
+    const res = await (window as any).electronAPI.deleteOrder(
+      token,
+      orderId,
+      cancelNote,
+    );
+    if (!res.status) {
+      toast.error(t("orderCart.errors.errorClearingOrder"));
+      return;
+    }
+    setIsCancelModalOpen(false);
+    toast.success(t("manageOrders.messages.orderCancelled") || "Order cancelled successfully");
+    onClearOrder();
+    refreshOrdersCallback();
+  };
+
   const handleRemoveItem = async (itemId: string, itemName: string) => {
     const paymentStatusDerive = calculatePaymentStatus(
       order?.paymentType || "",
@@ -299,24 +317,6 @@ const OrderCart: React.FC<OrderCartProps> = ({
     group.items.forEach((item: any) => onUpdateQuantity(item.id, quantity));
   };
 
-  const handleClearOrder = async () => {
-    const ok = await confirm({
-      title: t("orderCart.confirmations.clearOrder.title"),
-      message: t("orderCart.confirmations.clearOrder.message"),
-      type: "danger",
-      confirmText: t("orderCart.confirmations.clearOrder.confirmText"),
-      cancelText: t("common.cancel"),
-    });
-    if (!ok) {
-      return;
-    }
-    const res = await (window as any).electronAPI.deleteOrder(token, orderId);
-    if (!res.status) {
-      toast.error(t("orderCart.errors.errorClearingOrder"));
-      return;
-    }
-    onClearOrder();
-  };
 
   const handleUpdateQuantity = async (
     itemId: string | undefined,
@@ -333,6 +333,10 @@ const OrderCart: React.FC<OrderCartProps> = ({
     }
     onUpdateQuantity(itemId, quantity);
   };
+
+  // True when removing the last item/group would leave the cart empty
+  const isLastItem = orderItems.length === 1 ||
+    (nonMenuItems.length === 0 && groups.length === 1);
 
   if (orderItems.length === 0) {
     return (
@@ -411,9 +415,9 @@ const OrderCart: React.FC<OrderCartProps> = ({
           />
           <CustomButton
             type="button"
-            onClick={handleClearOrder}
-            title={t("orderCart.clearOrder")}
-            Icon={<DeleteIcon className="size-5" />}
+            onClick={() => setIsCancelModalOpen(true)}
+            title={t("cancelOrderModal.title") || "Cancel Order"}
+            Icon={<BanIcon className="size-5" />}
             className="px-2! text-red-600 hover:text-red-700"
             variant="transparent"
           />
@@ -495,7 +499,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
                     </div>
                   )}
                 </div>
-                {!isPlatformOrderItem && (
+                {!isPlatformOrderItem && !isLastItem && (
                   <div className="ml-2 flex gap-2 absolute top-2 right-4">
                     {productsWithVariants[item.productId || ""] !== false && (
                       <CustomButton
@@ -514,6 +518,17 @@ const OrderCart: React.FC<OrderCartProps> = ({
                       className="p-0! text-sm text-red-500 hover:text-red-700"
                       variant="transparent"
                       label="✕"
+                    />
+                  </div>
+                )}
+                {!isPlatformOrderItem && isLastItem && productsWithVariants[item.productId || ""] !== false && (
+                  <div className="ml-2 flex gap-2 absolute top-2 right-4">
+                    <CustomButton
+                      type="button"
+                      onClick={() => handleEditItem(item)}
+                      variant="transparent"
+                      Icon={<EditIcon className="size-4" />}
+                      className="p-0!"
                     />
                   </div>
                 )}
@@ -625,14 +640,16 @@ const OrderCart: React.FC<OrderCartProps> = ({
                       className="p-0! text-blue-600 hover:text-blue-800"
                       title={t("common.duplicate")}
                     />
-                    <CustomButton
-                      type="button"
-                      onClick={() => handleRemoveGroup(group)}
-                      className="p-1! rounded-full! text-sm! bg-red-500 text-white hover:text-gray-100! hover:bg-red-700"
-                      variant="transparent"
-                      Icon={<CrossIcon className="size-4" />}
-                      title={t("common.remove")}
-                    />
+                    {!isLastItem && (
+                      <CustomButton
+                        type="button"
+                        onClick={() => handleRemoveGroup(group)}
+                        className="p-1! rounded-full! text-sm! bg-red-500 text-white hover:text-gray-100! hover:bg-red-700"
+                        variant="transparent"
+                        Icon={<CrossIcon className="size-4" />}
+                        title={t("common.remove")}
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -785,6 +802,14 @@ const OrderCart: React.FC<OrderCartProps> = ({
           disabled={order?.orderType?.toLowerCase().includes("platform")}
         />
       </div>
+
+      <CancelOrderModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={handleCancelOrderConfirm}
+        order={order}
+        orderPrefix={configurations?.orderPrefix || "K"}
+      />
     </div>
   );
 };
