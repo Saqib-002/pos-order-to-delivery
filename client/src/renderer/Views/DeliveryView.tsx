@@ -26,7 +26,9 @@ import { DEFAULT_PAGE_LIMIT, FUNCTIONS } from "@/constants";
 import { CancelOrderModal } from "../components/order/modals/CancelOrderModal";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import DeliveryRouteModal from "../components/order/modals/DeliveryRouteModal";
+import { DeliveryRadarModal } from "../components/order/modals/DeliveryRadarModal";
 import { MapIcon } from "../public/Svg";
+import { Compass } from "lucide-react";
 
 export const DeliveryView = () => {
   const { t } = useTranslation();
@@ -35,14 +37,7 @@ export const DeliveryView = () => {
   const { orders, filter, setFilter, refreshOrdersCallback } =
     useOrderManagementContext();
   const { configurations } = useConfigurations();
-  useEffect(() => {
-    if (!filter.selectedDate) {
-      setFilter({
-        ...filter,
-        selectedDate: new Date(),
-      });
-    }
-  }, [filter.selectedDate, setFilter]);
+  const [isLoading, setIsLoading] = useState(true);
   const [deliveryPerson, setDeliveryPerson] = useState<DeliveryPerson | null>(
     null
   );
@@ -58,6 +53,7 @@ export const DeliveryView = () => {
   const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
   const [selectedOrderForRoute, setSelectedOrderForRoute] =
     useState<Order | null>(null);
+  const [isRadarModalOpen, setIsRadarModalOpen] = useState(false);
 
   const [, setTimerTick] = useState(0);
   useEffect(() => {
@@ -68,40 +64,81 @@ export const DeliveryView = () => {
   }, []);
 
   useEffect(() => {
-    const fetchDeliveryPersons = async () => {
+    let isMounted = true;
+    const init = async () => {
+      setIsLoading(true);
       try {
         const res = await (window as any).electronAPI.getDeliveryPersons(token);
-        if (res.status) {
+        if (res?.status && isMounted) {
           setDeliveryPersons(res.data);
         }
       } catch (error) {
         console.error("Failed to fetch delivery persons:", error);
       }
+
+      setFilter({
+        selectedDate: new Date(),
+        searchTerm: "",
+        selectedStatus: ["sent to kitchen", "ready for delivery", "out for delivery", "delivered"],
+        selectedPaymentStatus: [],
+        page: 0,
+        limit: DEFAULT_PAGE_LIMIT,
+        startDateRange: null,
+        endDateRange: null,
+        selectedDeliveryPerson: "",
+        selectedCustomer: "",
+        selectedOrderType: "",
+      });
+
+      await refreshOrdersCallback();
+      if (isMounted) {
+        setIsLoading(false);
+      }
     };
 
-    fetchDeliveryPersons();
-    setFilter({
-      selectedDate: null,
-      searchTerm: "",
-      selectedStatus: ["ready for delivery", "out for delivery"],
-      selectedPaymentStatus: [],
-      page: 0,
-      limit: DEFAULT_PAGE_LIMIT,
-      startDateRange: null,
-      endDateRange: null,
-      selectedDeliveryPerson: "",
-      selectedCustomer: "",
-      selectedOrderType: "",
-    });
-  }, []);
+    init();
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
+
+  // Ensure orders from other screens (e.g. ManageOrders with status "all") are not shown while switching
+  const isDeliveryFilterActive = useMemo(() => {
+    return (
+      Array.isArray(filter.selectedStatus) &&
+      filter.selectedStatus.includes("ready for delivery") &&
+      filter.selectedStatus.includes("out for delivery") &&
+      !filter.selectedStatus.includes("all")
+    );
+  }, [filter.selectedStatus]);
 
   const readyOrders = useMemo(
-    () => orders.filter((o) => o.status.toLowerCase() === "ready for delivery"),
-    [orders]
+    () =>
+      !isDeliveryFilterActive || isLoading
+        ? []
+        : orders.filter((o) => o.status.toLowerCase() === "ready for delivery"),
+    [orders, isDeliveryFilterActive, isLoading]
   );
   const outForDeliveryOrders = useMemo(
-    () => orders.filter((o) => o.status.toLowerCase() === "out for delivery"),
-    [orders]
+    () =>
+      !isDeliveryFilterActive || isLoading
+        ? []
+        : orders.filter((o) => o.status.toLowerCase() === "out for delivery"),
+    [orders, isDeliveryFilterActive, isLoading]
+  );
+  const kitchenDeliveryOrders = useMemo(
+    () =>
+      !isDeliveryFilterActive || isLoading
+        ? []
+        : orders.filter(
+            (o) =>
+              o.status.toLowerCase() === "sent to kitchen" &&
+              (o.orderType === "delivery" ||
+                o.orderType === "platform:delivery" ||
+                o.orderType === "web:delivery" ||
+                o.orderType === "app:delivery")
+          ),
+    [orders, isDeliveryFilterActive, isLoading]
   );
 
   const assignDelivery = useCallback(
@@ -280,12 +317,20 @@ export const DeliveryView = () => {
       },
       {
         title: t("deliveryView.stats.deliveredToday"),
-        value: orders.filter((o) => {
-          if (o.status.toLowerCase() !== "delivered") return false;
-          const deliveredDate = new Date(o.id);
-          const today = new Date();
-          return deliveredDate.toDateString() === today.toDateString();
-        }).length,
+        value:
+          !isDeliveryFilterActive || isLoading
+            ? 0
+            : orders.filter((o) => {
+                if (o.status?.toLowerCase() !== "delivered") return false;
+                const deliveredDate = new Date(
+                  o.deliveredAt || (o as any).updatedAt || o.createdAt || ""
+                );
+                const today = new Date();
+                return (
+                  !isNaN(deliveredDate.getTime()) &&
+                  deliveredDate.toDateString() === today.toDateString()
+                );
+              }).length,
         icon: <CheckIcon className="text-gray-600 size-6" />,
         bgColor: "bg-gray-100",
       },
@@ -298,7 +343,7 @@ export const DeliveryView = () => {
         bgColor: "bg-purple-100",
       },
     ],
-    [readyOrders, outForDeliveryOrders, orders, t]
+    [readyOrders, outForDeliveryOrders, orders, isDeliveryFilterActive, isLoading, t]
   );
   const renderReadyOrderRow = (order: Order) => {
     const readyTime = new Date(order.readyAt || order.createdAt || "");
@@ -618,6 +663,48 @@ export const DeliveryView = () => {
               />
             ))}
           </div>
+
+          {/* Delivery Radar Banner */}
+          <div className="bg-zinc-900 text-white rounded-xl shadow-md p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4 border border-zinc-800">
+            <div className="flex items-center gap-3.5">
+              <div className="p-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white shadow-inner">
+                <Compass className="size-7" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white tracking-wide">
+                    {t("deliveryView.radar.title") || "Radar de Despacho & Rutas Agrupadas"}
+                  </h3>
+                  <span className="text-[11px] bg-zinc-800 text-zinc-200 border border-zinc-700 px-2 py-0.5 rounded-full font-semibold">
+                    {t("deliveryView.radar.badgeAngle") || "Ángulo & Proximidad"}
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  {t("deliveryView.radar.description") ||
+                    "Visualiza el mapa en vivo de pedidos listos y en cocina. Agrupa entregas en el mismo rumbo angular para un solo repartidor."}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="text-right hidden sm:block">
+                <div className="text-xs font-semibold text-emerald-400">
+                  {readyOrders.length} {t("deliveryView.stats.readyForDelivery") || "Listos"}
+                </div>
+                <div className="text-[11px] text-amber-300">
+                  {kitchenDeliveryOrders.length} {t("deliveryView.radar.inKitchen") || "En Cocina"}
+                </div>
+              </div>
+              <button
+                onClick={() => setIsRadarModalOpen(true)}
+                className="bg-white hover:bg-zinc-200 text-black font-bold text-sm px-5 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2 hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                <Compass className="size-4 text-black" />
+                <span>{t("deliveryView.radar.openRadar") || "Abrir Radar de Reparto"}</span>
+              </button>
+            </div>
+          </div>
+
           <DeliveryPersonInput
             deliveryPerson={deliveryPerson}
             setDeliveryPerson={setDeliveryPerson}
@@ -644,25 +731,43 @@ export const DeliveryView = () => {
                       )}
                   </p>
                 </div>
-                <FilterControls filter={filter} setFilter={setFilter} />
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setIsRadarModalOpen(true)}
+                    className="bg-black hover:bg-zinc-800 text-white border border-zinc-800 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  >
+                    <Compass className="size-4 text-white" />
+                    <span>{t("deliveryView.radar.mapView") || "Ver en Radar / Mapa"}</span>
+                  </button>
+                  <FilterControls filter={filter} setFilter={setFilter} />
+                </div>
               </div>
             </div>
-            <OrderTable
-              data={readyOrders}
-              columns={[
-                t("deliveryView.table.orderId"),
-                t("deliveryView.table.customer"),
-                t("deliveryView.table.contact"),
-                t("deliveryView.table.address"),
-                t("deliveryView.table.items"),
-                t("deliveryView.table.amount"),
-                t("deliveryView.table.readySince"),
-                t("deliveryView.table.actions"),
-              ]}
-              renderRow={renderReadyOrderRow}
-            />
+            {isLoading || !isDeliveryFilterActive ? (
+              <div className="py-16 flex flex-col items-center justify-center gap-3">
+                <div className="size-8 rounded-full border-2 border-zinc-900 border-t-transparent animate-spin" />
+                <span className="text-xs text-zinc-500 font-medium">
+                  {t("common.loading") || "Cargando pedidos..."}
+                </span>
+              </div>
+            ) : (
+              <OrderTable
+                data={readyOrders}
+                columns={[
+                  t("deliveryView.table.orderId"),
+                  t("deliveryView.table.customer"),
+                  t("deliveryView.table.contact"),
+                  t("deliveryView.table.address"),
+                  t("deliveryView.table.items"),
+                  t("deliveryView.table.amount"),
+                  t("deliveryView.table.readySince"),
+                  t("deliveryView.table.actions"),
+                ]}
+                renderRow={renderReadyOrderRow}
+              />
+            )}
           </div>
-          {outForDeliveryOrders.length > 0 && (
+          {!isLoading && isDeliveryFilterActive && outForDeliveryOrders.length > 0 && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -719,6 +824,19 @@ export const DeliveryView = () => {
         destination={formatAddress(selectedOrderForRoute?.customer?.address || "")}
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
         orderId={selectedOrderForRoute?.id}
+      />
+      {/* Delivery Radar Modal (Proximity & Bearing Matching) */}
+      <DeliveryRadarModal
+        isOpen={isRadarModalOpen}
+        onClose={() => setIsRadarModalOpen(false)}
+        readyOrders={readyOrders}
+        kitchenOrders={kitchenDeliveryOrders}
+        restaurantAddress={configurations.address || ""}
+        googleMapsApiKey={configurations.googleMapsApiKey || ""}
+        deliveryPersons={deliveryPersons}
+        token={token}
+        onOrdersAssigned={refreshOrdersCallback}
+        orderPrefix={configurations.orderPrefix || "K"}
       />
     </div>
   );

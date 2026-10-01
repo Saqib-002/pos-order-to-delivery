@@ -104,6 +104,39 @@ const useOrderManagementInternal = (auth: AuthState) => {
     };
   }, [auth.token, filter, t]);
 
+  // Listen for real-time order status updates synced from driver mobile app
+  useEffect(() => {
+    if (!auth.token) return;
+    if (!(window as any).electronAPI?.onOrdersUpdatedFromSync) return;
+
+    const cleanup = (window as any).electronAPI.onOrdersUpdatedFromSync(
+      (updates: any[]) => {
+        if (Array.isArray(updates) && updates.length > 0) {
+          setOrders((prev) =>
+            prev.map((order) => {
+              const match = updates.find((u) => u.id === order.id);
+              if (match) {
+                return {
+                  ...order,
+                  status: match.status,
+                  deliveredAt: match.deliveredAt || order.deliveredAt,
+                };
+              }
+              return order;
+            })
+          );
+          refreshOrdersCallback();
+        }
+      }
+    );
+
+    return () => {
+      if (typeof cleanup === "function") {
+        cleanup();
+      }
+    };
+  }, [auth.token, refreshOrdersCallback]);
+
   return {
     orders,
     setOrders,

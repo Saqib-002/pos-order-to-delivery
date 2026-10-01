@@ -166,6 +166,17 @@ export function startBackgroundSync() {
 
             if (processedIds.length > 0) {
                 await clearWhiteboardOrders(processedIds);
+                try {
+                    const { BrowserWindow } = await import("electron");
+                    const windows = BrowserWindow.getAllWindows();
+                    for (const win of windows) {
+                        if (!win.isDestroyed()) {
+                            win.webContents.send("orders-updated-from-sync", updates);
+                        }
+                    }
+                } catch (bErr) {
+                    Logger.error("SyncManager: Failed to broadcast sync updates to renderer:", bErr);
+                }
             }
         } catch (err) {
             Logger.error("SyncManager: Background sync execution error:", err);
