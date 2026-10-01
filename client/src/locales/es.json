@@ -2861,7 +2861,7 @@
   },
   "orderTypes": {
     "title": "Tipo de Pedido",
-    "pickup": "Para llevar",
+    "pickup": "Recogida",
     "delivery": "Domicilio",
     "dineIn": "Consumo en local",
     "platform": "Plataforma",
