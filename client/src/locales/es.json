@@ -3248,7 +3248,17 @@
       "headlinePlaceholderEs": "¡Volveremos Pronto!",
       "messageLabel": "Mensaje de Mantenimiento",
       "messagePlaceholderEn": "We are performing scheduled maintenance to improve your experience...",
-      "messagePlaceholderEs": "Estamos realizando tareas de mantenimiento programadas para mejorar tu experiencia..."
+      "messagePlaceholderEs": "Estamos realizando tareas de mantenimiento programadas para mejorar tu experiencia...",
+      "webToggleLabel": "Web App",
+      "webToggleSub": "Sitio web de clientes",
+      "mobileToggleLabel": "App Móvil",
+      "mobileToggleSub": "App iOS y Android",
+      "statusBothActive": "La Web y la App Móvil están en Mantenimiento",
+      "statusWebOnly": "El Sitio Web está en Mantenimiento",
+      "statusMobileOnly": "La App Móvil está en Mantenimiento",
+      "statusBothInactive": "El Sitio Web y la App están EN LÍNEA y PÚBLICOS",
+      "statusActiveSub": "Las plataformas afectadas muestran la pantalla de mantenimiento. El personal puede usar la contraseña de acceso.",
+      "statusInactiveSub": "El sitio web y la app de clientes son accesibles para todos los visitantes públicos."
     },
     "allergens": {
       "title": "Declaración y Tabla de Alérgenos",
