@@ -257,7 +257,7 @@ export const ReportView = () => {
       <Header
         title={t("reports.title")}
         subtitle={t("reports.subtitle")}
-        icon={<AnalyticsIcon className="size-8 text-purple-600" />}
+        icon={<img src="./images/reports.png" width={48} height={48} />}
         iconbgClasses="bg-purple-100"
       />
 

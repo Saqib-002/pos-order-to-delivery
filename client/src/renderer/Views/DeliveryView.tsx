@@ -647,7 +647,7 @@ export const DeliveryView = () => {
       <Header
         title={t("deliveryView.title")}
         subtitle={t("deliveryView.subtitle")}
-        icon={<DeliveredIcon className="size-8 text-blue-600" />}
+        icon={<img src="./images/delivery-bike.png" width={48} height={48} />}
         iconbgClasses="bg-blue-100"
       />
       <div className="flex-1">
@@ -825,6 +825,7 @@ export const DeliveryView = () => {
         readyOrders={readyOrders}
         kitchenOrders={kitchenDeliveryOrders}
         restaurantAddress={configurations.address || ""}
+        restaurantLogo={configurations.logo}
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
         deliveryPersons={deliveryPersons}
         token={token}

@@ -76,6 +76,7 @@ interface DeliveryRadarModalProps {
   token: string | null;
   onOrdersAssigned: () => void;
   orderPrefix?: string;
+  restaurantLogo?: string;
 }
 
 export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
@@ -89,6 +90,7 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
   token,
   onOrdersAssigned,
   orderPrefix = "K",
+  restaurantLogo,
 }) => {
   const { t } = useTranslation();
   const { configurations } = useConfigurations();
@@ -132,6 +134,47 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     distanceKm: number;
     durationMin: number;
   } | null>(null);
+
+  // Safe Logo loader with crossOrigin="anonymous" to avoid CORS / CORP canvas blocking
+  const [safeLogoUrl, setSafeLogoUrl] = useState<string>(
+    restaurantLogo || configurations?.logo || "./logo.png"
+  );
+
+  useEffect(() => {
+    const rawLogo = restaurantLogo || configurations?.logo || "./logo.png";
+    if (
+      !rawLogo ||
+      rawLogo.startsWith("data:") ||
+      rawLogo.startsWith("blob:") ||
+      rawLogo.startsWith("./")
+    ) {
+      setSafeLogoUrl(rawLogo || "./logo.png");
+      return;
+    }
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth || 46;
+        canvas.height = img.naturalHeight || 46;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          setSafeLogoUrl(canvas.toDataURL("image/png"));
+        } else {
+          setSafeLogoUrl(rawLogo);
+        }
+      } catch {
+        setSafeLogoUrl(rawLogo);
+      }
+    };
+    img.onerror = () => {
+      setSafeLogoUrl("./logo.png");
+    };
+    img.src = rawLogo;
+  }, [configurations?.logo, restaurantLogo]);
 
   // Timer tick every 15s to keep elapsed preparation & ready times fresh
   const [, setTimerTick] = useState(0);
@@ -263,9 +306,9 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     }
   }, [isOpen, isMapReady, runGeocoding]);
 
-  // Compute smart corridor clusters
+  // Compute smart corridor clusters (55° max angle diff, 1.8km local hop, 0.85km corridor lateral offset)
   const clusters = useMemo(() => {
-    return findDeliveryClusters(geocodedOrders, 55, 1.8);
+    return findDeliveryClusters(geocodedOrders, 55, 1.8, 0.85);
   }, [geocodedOrders]);
 
   // Orders filtered by visibility toggles
@@ -336,16 +379,35 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     const stroke = isSelected ? "#FFFFFF" : "rgba(0,0,0,0.2)";
     const strokeWidth = isSelected ? 2.5 : 1;
 
+    // Dynamically adjust font size so prefixed ticket numbers (P12, W-0001, K4) fit cleanly
+    const fontSize = isKitchen
+      ? label.length > 5
+        ? 6
+        : label.length > 4
+        ? 6.8
+        : label.length > 3
+        ? 7.5
+        : 8.5
+      : label.length > 5
+      ? 6.8
+      : label.length > 4
+      ? 7.5
+      : label.length > 3
+      ? 8.5
+      : label.length > 2
+      ? 9.5
+      : 10.5;
+
     // If kitchen order, embed clean vector chef hat above label
     const content = isKitchen
       ? `<path d="M23 15 C21.5 15 20.5 16.5 21 18 C19.5 18.5 19 20 20 21.5 C19.5 22.5 20 24 21.5 24 L34.5 24 C36 24 36.5 22.5 36 21.5 C37 20 36.5 18.5 35 18 C35.5 16.5 34.5 15 33 15 C32 13 24 13 23 15 Z" fill="${bgColor}"/>
-         <text x="28" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" font-weight="900" fill="${bgColor}" text-anchor="middle">${label}</text>`
-      : `<text x="28" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="bold" fill="${bgColor}" text-anchor="middle" dominant-baseline="middle">${label}</text>`;
+         <text x="28" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="${fontSize}" font-weight="900" fill="${bgColor}" text-anchor="middle" letter-spacing="-0.2px">${label}</text>`
+      : `<text x="28" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="${fontSize}" font-weight="bold" fill="${bgColor}" text-anchor="middle" dominant-baseline="middle" letter-spacing="-0.2px">${label}</text>`;
 
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="56" height="66" viewBox="0 0 56 66">
         <path d="M28 62 C28 62 10 38 10 24 C10 12.95 18.05 4 28 4 C37.95 4 46 12.95 46 24 C46 38 28 62 28 62 Z" fill="${bgColor}" stroke="${stroke}" stroke-width="${strokeWidth}"/>
-        <circle cx="28" cy="24" r="14" fill="#FFFFFF"/>
+        <circle cx="28" cy="24" r="14.5" fill="#FFFFFF"/>
         ${content}
       </svg>
     `;
@@ -357,12 +419,12 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     };
   };
 
-  // Restaurant Icon from Delivery Route Modal
+  // Restaurant Logo Marker
   const createRestaurantIcon = () => {
     return {
-      url: "./images/restaurant.png",
-      scaledSize: new window.google.maps.Size(40, 40),
-      anchor: new window.google.maps.Point(20, 40),
+      url: safeLogoUrl || "./logo.png",
+      scaledSize: new window.google.maps.Size(46, 46),
+      anchor: new window.google.maps.Point(23, 23),
     };
   };
 
@@ -460,7 +522,7 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
       else if (isHighlightedCluster) pinColor = "#3F3F46";
 
       const displayNum = getOrderDisplayNumber(item.order, orderPrefix);
-      const label = displayNum.replace(orderPrefix, "");
+      const label = displayNum;
       const orderLatLng = new window.google.maps.LatLng(
         item.location.lat,
         item.location.lng
@@ -553,6 +615,9 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     clusters,
     t,
     orderPrefix,
+    configurations,
+    restaurantLogo,
+    safeLogoUrl,
   ]);
 
   // Calculate & Draw Driving Route for Selected Orders
@@ -714,7 +779,7 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[96vw] h-[92vh] flex flex-col overflow-hidden border border-zinc-300">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[96vw] h-[92vh] flex flex-col overflow-hidden">
         {/* Top Header Bar: Sleek Black Theme */}
         <div className="px-6 py-4 border-b border-zinc-200 bg-zinc-900 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -780,126 +845,65 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
           <div className="relative flex-1 h-full bg-zinc-100">
             <div ref={mapContainerRef} className="w-full h-full" />
 
-            {/* Floating Compass Rose Widget on Top-Right */}
-            <div className="absolute top-4 right-4 z-10 flex flex-col items-center gap-2">
-              <div
-                className="bg-zinc-950/90 text-white backdrop-blur-md p-3.5 rounded-2xl shadow-2xl border border-zinc-800 flex flex-col items-center select-none"
-                title={t("deliveryView.radar.compassRose")}
+            {/* Top-Right Controls: Touch-friendly Recenter Button */}
+            <div className="absolute top-4 right-4 z-10">
+              <button
+                onClick={handleRecenter}
+                className="flex items-center gap-2 px-3.5 py-2.5 bg-white/95 hover:bg-white text-zinc-800 rounded-xl shadow-lg border border-zinc-200 text-xs font-bold transition-all cursor-pointer backdrop-blur-md hover:shadow-xl active:scale-95 select-none"
+                title={t("deliveryView.radar.recenterMap")}
               >
-                {/* SVG Compass Rose Dial */}
-                <div className="relative size-24 flex items-center justify-center">
-                  <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
-                    {/* Outer Ring with degree ticks */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="46"
-                      fill="#18181B"
-                      stroke="#3F3F46"
-                      strokeWidth="2"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="38"
-                      fill="#09090B"
-                      stroke="#27272A"
-                      strokeWidth="1"
-                    />
-
-                    {/* Diagonal Ordinal lines */}
-                    <line x1="23" y1="23" x2="77" y2="77" stroke="#3F3F46" strokeWidth="0.8" strokeDasharray="1 3" />
-                    <line x1="77" y1="23" x2="23" y2="77" stroke="#3F3F46" strokeWidth="0.8" strokeDasharray="1 3" />
-
-                    {/* Ordinal Labels */}
-                    <text x="73" y="27" fontSize="7" fontWeight="bold" fill="#71717A" textAnchor="middle">NE</text>
-                    <text x="73" y="77" fontSize="7" fontWeight="bold" fill="#71717A" textAnchor="middle">SE</text>
-                    <text x="27" y="77" fontSize="7" fontWeight="bold" fill="#71717A" textAnchor="middle">SW</text>
-                    <text x="27" y="27" fontSize="7" fontWeight="bold" fill="#71717A" textAnchor="middle">NW</text>
-
-                    {/* North Arrow (Vibrant Red) */}
-                    <polygon points="50,14 45,46 50,42" fill="#EF4444" />
-                    <polygon points="50,14 55,46 50,42" fill="#DC2626" />
-
-                    {/* South Arrow (Silver/Zinc) */}
-                    <polygon points="50,86 45,54 50,58" fill="#A1A1AA" />
-                    <polygon points="50,86 55,54 50,58" fill="#71717A" />
-
-                    {/* East Arrow */}
-                    <polygon points="86,50 54,45 58,50" fill="#71717A" />
-                    <polygon points="86,50 54,55 58,50" fill="#52525B" />
-
-                    {/* West Arrow */}
-                    <polygon points="14,50 46,45 42,50" fill="#71717A" />
-                    <polygon points="14,50 46,55 42,50" fill="#52525B" />
-
-                    {/* Center Pivot */}
-                    <circle cx="50" cy="50" r="4.5" fill="#EF4444" stroke="#FFFFFF" strokeWidth="1" />
-
-                    {/* Cardinal Letters */}
-                    <text x="50" y="11" fontSize="9" fontWeight="900" fill="#EF4444" textAnchor="middle">N</text>
-                    <text x="93" y="53" fontSize="8" fontWeight="bold" fill="#E4E4E7" textAnchor="middle">E</text>
-                    <text x="50" y="96" fontSize="8" fontWeight="bold" fill="#E4E4E7" textAnchor="middle">S</text>
-                    <text x="7" y="53" fontSize="8" fontWeight="bold" fill="#E4E4E7" textAnchor="middle">W</text>
-                  </svg>
-                </div>
-
-                {/* Recenter Button */}
-                <button
-                  onClick={handleRecenter}
-                  className="mt-2 w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white rounded-lg text-[10px] font-semibold transition-colors border border-zinc-700 cursor-pointer shadow-sm"
-                  title={t("deliveryView.radar.recenterMap")}
-                >
-                  <Crosshair className="size-3 text-red-400" />
-                  <span>{t("deliveryView.radar.recenter")}</span>
-                </button>
-              </div>
+                <Crosshair className="size-4 text-red-600" />
+                <span>{t("deliveryView.radar.recenter")}</span>
+              </button>
             </div>
 
             {/* Map Floating Legend & Controls on Top-Left */}
             <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-              <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-xl shadow-lg border border-zinc-200 text-xs space-y-2">
-                <div className="font-bold text-zinc-800 uppercase tracking-wider text-[10px]">
+              <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-xl border border-zinc-200 text-xs space-y-2 select-none min-w-[220px]">
+                <div className="font-bold text-zinc-500 uppercase tracking-wider text-[11px] px-1 pb-1 border-b border-zinc-100">
                   {t("deliveryView.radar.visibilityFilters")}
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer hover:opacity-80">
+
+                <label className="flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-zinc-100/80 active:bg-zinc-200 cursor-pointer transition-colors">
                   <input
                     type="checkbox"
                     checked={showReadyOrders}
                     onChange={(e) => setShowReadyOrders(e.target.checked)}
-                    className="rounded text-emerald-600 focus:ring-emerald-500"
+                    className="size-5 rounded-md text-emerald-600 focus:ring-emerald-500 cursor-pointer border-zinc-300"
                   />
-                  <span className="size-2.5 rounded-full bg-emerald-600"></span>
-                  <span className="text-zinc-800 font-medium">
+                  <span className="size-3 rounded-full bg-emerald-600 shrink-0"></span>
+                  <span className="text-zinc-800 font-bold text-xs sm:text-sm">
                     {t("deliveryView.radar.showReady", {
                       count: readyOrders.length,
                     })}
                   </span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer hover:opacity-80">
+
+                <label className="flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-zinc-100/80 active:bg-zinc-200 cursor-pointer transition-colors">
                   <input
                     type="checkbox"
                     checked={showKitchenOrders}
                     onChange={(e) => setShowKitchenOrders(e.target.checked)}
-                    className="rounded text-amber-600 focus:ring-amber-500 cursor-pointer"
+                    className="size-5 rounded-md text-amber-600 focus:ring-amber-500 cursor-pointer border-zinc-300"
                   />
-                  <span className="size-2.5 rounded-full bg-amber-500"></span>
-                  <span className="text-zinc-800 font-medium">
+                  <span className="size-3 rounded-full bg-amber-500 shrink-0"></span>
+                  <span className="text-zinc-800 font-bold text-xs sm:text-sm">
                     {t("deliveryView.radar.showKitchen", {
                       count: kitchenOrders.length,
                     })}
                   </span>
                 </label>
+
                 {deliveryZones.length > 0 && (
-                  <label className="flex items-center gap-2 cursor-pointer hover:opacity-80">
+                  <label className="flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-zinc-100/80 active:bg-zinc-200 cursor-pointer transition-colors">
                     <input
                       type="checkbox"
                       checked={showZones}
                       onChange={(e) => setShowZones(e.target.checked)}
-                      className="rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                      className="size-5 rounded-md text-emerald-600 focus:ring-emerald-500 cursor-pointer border-zinc-300"
                     />
-                    <span className="size-2.5 rounded-sm bg-emerald-500 border border-emerald-700"></span>
-                    <span className="text-zinc-800 font-medium">
+                    <span className="size-3 rounded-sm bg-emerald-500 border border-emerald-700 shrink-0"></span>
+                    <span className="text-zinc-800 font-bold text-xs sm:text-sm">
                       {t("deliveryView.radar.showZones", {
                         count: deliveryZones.length,
                       })}
@@ -1171,7 +1175,7 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
                                   checked={isSelected}
                                   disabled={!isReady}
                                   onChange={() => {}}
-                                  className="rounded text-black focus:ring-black disabled:opacity-30 cursor-pointer"
+                                  className="size-5 rounded-md text-black focus:ring-black disabled:opacity-30 cursor-pointer shrink-0"
                                 />
                                 <div className="truncate">
                                   <div className="flex items-center gap-1.5">

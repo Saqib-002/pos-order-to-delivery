@@ -351,7 +351,7 @@ export const KitchenView = () => {
       <Header
         title={t("kitchenView.title")}
         subtitle={t("kitchenView.subtitle")}
-        icon={<SentToKitchenIcon className="text-orange-600 size-8" />}
+        icon={<img src="./images/kitchen.png" width={48} height={48} />}
         iconbgClasses="bg-orange-100"
       />
       <div className="flex-1">

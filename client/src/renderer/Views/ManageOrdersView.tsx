@@ -631,7 +631,7 @@ export const ManageOrdersView = () => {
       <Header
         title={t("manageOrders.title")}
         subtitle={t("manageOrders.subtitle")}
-        icon={<DocumentIcon className="w-8 h-8" />}
+        icon={<img src="./images/order-management.png" width={48} height={48} />}
       />
 
       {/* Main Content */}

@@ -231,7 +231,8 @@ export const calculateCircularMean = (angles: number[]): number => {
 export const findDeliveryClusters = (
   geocodedOrders: GeocodedDeliveryOrder[],
   maxAngleDiff: number = 55,
-  maxInterDistanceKm: number = 1.8
+  maxInterDistanceKm: number = 1.8,
+  maxCorridorOffsetKm: number = 0.85
 ): DeliveryCluster[] => {
   if (geocodedOrders.length === 0) return [];
 
@@ -283,14 +284,39 @@ export const findDeliveryClusters = (
         );
         if (!fitsAngleSpan) continue;
 
-        // Proximity: Candidate must be within delivery hop distance to at least one order in the cluster
+        // 1. Proximity: Candidate is within delivery hop distance to at least one order in the cluster
         const minDistanceToCluster = Math.min(
           ...clusterOrders.map((existing) =>
             calculateHaversineDistance(existing.location, candidate.location)
           )
         );
+        const isCloseProximity = minDistanceToCluster <= maxInterDistanceKm;
 
-        if (minDistanceToCluster <= maxInterDistanceKm) {
+        // 2. Corridor / En-Route match: candidate is directly on the way to/from this cluster along the arterial route
+        const isAlongCorridor = clusterOrders.some((existing) => {
+          const angleDiff = getAngularDifference(
+            existing.bearing,
+            candidate.bearing
+          );
+
+          // Must align within a focused corridor cone (<= 25 degrees)
+          if (angleDiff > 25) return false;
+
+          // Candidate must be en-route (closer to restaurant than the outer order, with slight margin)
+          const isEnRoute =
+            candidate.distanceFromRestaurantKm <=
+            existing.distanceFromRestaurantKm + 0.5;
+          if (!isEnRoute) return false;
+
+          // Cross-track distance (perpendicular detour offset from the corridor line)
+          const lateralOffsetKm =
+            candidate.distanceFromRestaurantKm *
+            Math.sin((angleDiff * Math.PI) / 180);
+
+          return lateralOffsetKm <= maxCorridorOffsetKm;
+        });
+
+        if (isCloseProximity || isAlongCorridor) {
           clusterOrders.push(candidate);
           assigned.add(candidate.order.id);
           addedAny = true;

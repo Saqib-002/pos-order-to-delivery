@@ -34,6 +34,47 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     const [chatMessages, setChatMessages] = useState<any[]>([]);
     const [newMessageText, setNewMessageText] = useState("");
     const [unreadCount, setUnreadCount] = useState(0);
+
+    // Safe Logo loader with crossOrigin="anonymous" to avoid CORS / CORP canvas blocking
+    const [safeLogoUrl, setSafeLogoUrl] = useState<string>(
+        configurations?.logo || "./logo.png"
+    );
+
+    useEffect(() => {
+        const rawLogo = configurations?.logo || "./logo.png";
+        if (
+            !rawLogo ||
+            rawLogo.startsWith("data:") ||
+            rawLogo.startsWith("blob:") ||
+            rawLogo.startsWith("./")
+        ) {
+            setSafeLogoUrl(rawLogo || "./logo.png");
+            return;
+        }
+
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+            try {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.naturalWidth || 46;
+                canvas.height = img.naturalHeight || 46;
+                const ctx = canvas.getContext("2d");
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0);
+                    setSafeLogoUrl(canvas.toDataURL("image/png"));
+                } else {
+                    setSafeLogoUrl(rawLogo);
+                }
+            } catch {
+                setSafeLogoUrl(rawLogo);
+            }
+        };
+        img.onerror = () => {
+            setSafeLogoUrl("./logo.png");
+        };
+        img.src = rawLogo;
+    }, [configurations?.logo]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const messageListRef = useRef<HTMLDivElement>(null);
@@ -204,11 +245,11 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
 
         if (!mapInstanceRef.current || !window.google) return;
 
-        // Custom PNG for Restaurant (Origin)
+        // Restaurant Logo for Origin Marker
         const restaurantIcon = {
-            url: "./images/restaurant.png",
-            scaledSize: new window.google.maps.Size(40, 40),
-            anchor: new window.google.maps.Point(20, 40),
+            url: safeLogoUrl || "./logo.png",
+            scaledSize: new window.google.maps.Size(46, 46),
+            anchor: new window.google.maps.Point(23, 23),
         };
 
         // Custom PNG for Customer (Destination)

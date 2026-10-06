@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, session } from "electron";
 import { createWindow } from "./window.js";
 import { registerIpcHandlers } from "./ipcHandlers.js";
 import { initDatabase, closeDatabase } from "./database/index.js";
@@ -15,6 +15,13 @@ if (isPackaged) {
 
 app.whenReady().then(async () => {
   try {
+    session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+      const responseHeaders = { ...(details.responseHeaders || {}) };
+      responseHeaders["cross-origin-resource-policy"] = ["cross-origin"];
+      responseHeaders["access-control-allow-origin"] = ["*"];
+      callback({ responseHeaders });
+    });
+
     registerIpcHandlers();
     const iconPath = path.join(app.getAppPath(), "logo.png");
     createWindow(iconPath);

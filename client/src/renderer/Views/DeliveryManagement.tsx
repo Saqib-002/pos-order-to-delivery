@@ -430,7 +430,7 @@ export const DeliveryManagement = () => {
       <Header
         title={t("deliveryManagement.title")}
         subtitle={t("deliveryManagement.subtitle")}
-        icon={<DeliveredIcon className="size-8 text-blue-600" />}
+        icon={<img src="./images/driving-management.png" width={48} height={48} />}
         iconbgClasses="bg-blue-100"
       />
       <div className="pb-6 flex-1">
