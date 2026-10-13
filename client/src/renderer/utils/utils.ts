@@ -100,3 +100,89 @@ export const getOrderDisplayNumber = (
   }
   return `${prefix}${order.orderId ?? ""}`;
 };
+
+export const getCustomerDisplayName = (
+  order?: {
+    customer?: { name?: string | null } | null;
+    customerName?: string | null;
+    platformName?: string | null;
+    platformId?: string | null;
+    platform?: string | null;
+    orderType?: string | null;
+    items?: Array<{ productName?: string | null }>;
+  } | null,
+  platforms?: Array<{ id: string | number; name?: string }>
+): string => {
+  if (!order) return "-";
+
+  const rawCustomerName = (
+    order.customer?.name ||
+    (order as any).customerName ||
+    ""
+  ).trim();
+
+  // Try to determine platform name
+  let platformName = (
+    order.platformName ||
+    (order as any).platform ||
+    ""
+  ).trim();
+
+  const platformId = (order as any).platformId || order.platformId;
+  if (!platformName && platformId && platforms && platforms.length > 0) {
+    const found = platforms.find(
+      (p) => String(p.id).toLowerCase() === String(platformId).toLowerCase()
+    );
+    if (found?.name) {
+      platformName = found.name.trim();
+    }
+  }
+
+  // Fallback: extract platform name from order items if it was created like "Glovo Order"
+  if (!platformName && order.items && order.items.length > 0) {
+    for (const item of order.items) {
+      if (item.productName && /order$/i.test(item.productName.trim())) {
+        const extracted = item.productName.replace(/\s+order$/i, "").trim();
+        if (extracted && extracted.toLowerCase() !== "platform") {
+          platformName = extracted;
+          break;
+        }
+      }
+    }
+  }
+
+  const lowerRaw = rawCustomerName.toLowerCase();
+  const isGenericCustomer =
+    !rawCustomerName ||
+    lowerRaw === "platform customer" ||
+    lowerRaw === "cliente de plataforma" ||
+    lowerRaw === "platform_customer" ||
+    lowerRaw === "platformcustomer";
+
+  const isPlatformOrder =
+    Boolean(platformName) ||
+    Boolean(platformId) ||
+    (order.orderType ? order.orderType.toLowerCase().includes("platform") : false);
+
+  if (isPlatformOrder) {
+    // If no name (or generic "Platform Customer"), show the platform name instead
+    if (isGenericCustomer) {
+      return platformName || rawCustomerName || "-";
+    }
+    // If name exists, show both: Customer Name (Platform Name)
+    if (platformName) {
+      if (lowerRaw.includes(platformName.toLowerCase())) {
+        return rawCustomerName;
+      }
+      return `${rawCustomerName} (${platformName})`;
+    }
+    return rawCustomerName;
+  }
+
+  // Non-platform orders
+  if (isGenericCustomer) {
+    return platformName || "-";
+  }
+
+  return rawCustomerName || "-";
+};

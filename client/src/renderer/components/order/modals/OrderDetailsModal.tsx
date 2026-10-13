@@ -6,7 +6,7 @@ import {
   calculateTaxPercentage,
 } from "../../../utils/orderCalculations";
 import { calculatePaymentStatus } from "../../../utils/paymentStatus";
-import { formatAddress, getOrderDisplayNumber } from "../../../utils/utils";
+import { formatAddress, getOrderDisplayNumber, getCustomerDisplayName } from "../../../utils/utils";
 import {
   translateOrderStatus,
   getOrderStatusStyle,
@@ -535,9 +535,11 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       {t("orderDetailsModal.customerName")}
                     </p>
                     <p className="text-black">
-                      {(order.customer as any)?.name ||
-                        (order as any).customerName ||
-                        "-"}
+                      {(() => {
+                        const raw = (order.customer as any)?.name || (order as any).customerName || "";
+                        const isGen = !raw || raw.toLowerCase() === "platform customer" || raw.toLowerCase() === "cliente de plataforma";
+                        return isGen ? "-" : raw;
+                      })()}
                     </p>
                   </div>
                   <div>
@@ -655,7 +657,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     <p className="text-sm font-medium text-gray-600">
                       {t("orderDetailsModal.name")}
                     </p>
-                    <p className="text-black">{order.customer.name}</p>
+                    <p className="text-black">{getCustomerDisplayName(order, platforms)}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">

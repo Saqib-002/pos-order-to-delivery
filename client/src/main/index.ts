@@ -17,8 +17,24 @@ app.whenReady().then(async () => {
   try {
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
       const responseHeaders = { ...(details.responseHeaders || {}) };
-      responseHeaders["cross-origin-resource-policy"] = ["cross-origin"];
-      responseHeaders["access-control-allow-origin"] = ["*"];
+      let existingOriginHeader: string[] | undefined;
+      for (const key of Object.keys(responseHeaders)) {
+        const lowerKey = key.toLowerCase();
+        if (lowerKey === "access-control-allow-origin") {
+          existingOriginHeader = responseHeaders[key];
+          delete responseHeaders[key];
+        } else if (lowerKey === "cross-origin-resource-policy") {
+          delete responseHeaders[key];
+        }
+      }
+
+      const originValue =
+        existingOriginHeader && existingOriginHeader.length > 0 && existingOriginHeader[0]
+          ? [existingOriginHeader[0].split(",")[0].trim()]
+          : ["*"];
+
+      responseHeaders["Access-Control-Allow-Origin"] = originValue;
+      responseHeaders["Cross-Origin-Resource-Policy"] = ["cross-origin"];
       callback({ responseHeaders });
     });
 

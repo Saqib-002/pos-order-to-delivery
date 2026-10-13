@@ -1561,6 +1561,9 @@
     "changeDeliveryPerson": "Change Delivery Person",
     "selectNewDeliveryPerson": "Select new delivery person",
     "confirmChange": "Confirm Change",
+    "completeByDriver": "Complete by driver:",
+    "completeDriverOrders": "Complete {{name}} ({{count}})",
+    "unassigned": "Unassigned",
     "messages": {
       "pleaseEnterDeliveryPersonName": "Please enter delivery person name",
       "failedToAssignDeliveryPerson": "Failed to assign delivery person",
@@ -1569,6 +1572,7 @@
       "failedToMarkAsDelivered": "Failed to mark as delivered",
       "orderMarkedAsDelivered": "Order marked as delivered",
       "failedToMarkAsDeliveredRetry": "Failed to mark as delivered. Please try again.",
+      "driverOrdersDeliveredSuccess": "{{count}} orders for {{name}} completed",
       "failedToCancelOrder": "Failed to cancel order",
       "orderCancelled": "Order cancelled successfully",
       "deliveryPersonChanged": "Delivery person changed successfully",

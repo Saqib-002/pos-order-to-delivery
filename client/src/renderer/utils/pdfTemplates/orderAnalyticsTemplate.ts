@@ -1,4 +1,5 @@
 import { translateOrderStatus, translateOrderType } from "../orderStatus";
+import { getCustomerDisplayName } from "../utils";
 
 export const generateOrderAnalyticsReportHTML = (
   analytics: any,
@@ -186,7 +187,7 @@ export const generateOrderAnalyticsReportHTML = (
               : `${configurations.orderPrefix || "K"}${order.orderId}`)
           }</td>
           <td>
-            <div style="font-weight: 600; color: #1e293b;">${order.customer?.name || "-"}</div>
+            <div style="font-weight: 600; color: #1e293b;">${getCustomerDisplayName(order)}</div>
             <div style="color: #64748b; font-size: 10px;">${order.customer?.phone || ""}</div>
           </td>
           <td>${itemsText}</td>

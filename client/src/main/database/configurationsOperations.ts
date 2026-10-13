@@ -105,7 +105,7 @@ export class ConfigurationsDatabaseOperations {
 
         if (configurations.logo) {
           const uploadUrl = (store as any).get("cdnUrl");
-          if (uploadUrl) {
+          if (uploadUrl && !configurations.logo.startsWith("http")) {
             configurations.logo = `${uploadUrl}/uploads/${configurations.logo}`;
           }
         }

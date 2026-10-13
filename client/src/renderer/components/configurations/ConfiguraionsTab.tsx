@@ -60,10 +60,11 @@ const ConfigurationsTab = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64 = reader.result as string;
-        setConfigurations({ ...configurations, logo: base64 });
+        setConfigurations((prev: any) => ({ ...prev, logo: base64 }));
         setLogoPreview(base64);
       };
       reader.readAsDataURL(file);
+      e.target.value = "";
     }
   };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

@@ -290,7 +290,14 @@ const PlatformOrdersView = () => {
           {getPlatformName(orderAny.platformId || (order as any).platformId)}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-          {(order.customer as any)?.name || orderAny.customerName || "-"}
+          {(() => {
+            const raw = (order.customer as any)?.name || orderAny.customerName || "";
+            const isGen =
+              !raw ||
+              raw.trim().toLowerCase() === "platform customer" ||
+              raw.trim().toLowerCase() === "cliente de plataforma";
+            return isGen ? "-" : raw;
+          })()}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
           {(order.customer as any)?.phone || orderAny.customerPhone || "-"}

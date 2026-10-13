@@ -1561,6 +1561,9 @@
     "changeDeliveryPerson": "Cambiar Repartidor",
     "selectNewDeliveryPerson": "Seleccionar nuevo repartidor",
     "confirmChange": "Confirmar Cambio",
+    "completeByDriver": "Completar por repartidor:",
+    "completeDriverOrders": "Completar {{name}} ({{count}})",
+    "unassigned": "Sin asignar",
     "messages": {
       "pleaseEnterDeliveryPersonName": "Por favor ingresa el nombre del repartidor",
       "failedToAssignDeliveryPerson": "Error al asignar repartidor",
@@ -1569,6 +1572,7 @@
       "failedToMarkAsDelivered": "Error al marcar como entregado",
       "orderMarkedAsDelivered": "Pedido marcado como entregado",
       "failedToMarkAsDeliveredRetry": "Error al marcar como entregado. Por favor intenta de nuevo.",
+      "driverOrdersDeliveredSuccess": "{{count}} pedidos de {{name}} completados",
       "failedToCancelOrder": "Error al cancelar el pedido",
       "orderCancelled": "Pedido cancelado exitosamente",
       "deliveryPersonChanged": "Repartidor cambiado exitosamente",

@@ -30,7 +30,7 @@ import { useOrderManagementContext } from "@/renderer/contexts/orderManagementCo
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
 import Pagination from "../shared/Pagination";
-import { formatAddress } from "@/renderer/utils/utils";
+import { formatAddress, getCustomerDisplayName } from "@/renderer/utils/utils";
 import { formatShortTimeAgo } from "@/renderer/utils/formatTimeAgo";
 import CustomButton from "../ui/CustomButton";
 
@@ -560,7 +560,7 @@ const OrderComponent = () => {
                                       ? t(
                                         "orderProcessingModal.defaultCustomers.walkInCustomer",
                                       )
-                                      : order.customer.name
+                                      : getCustomerDisplayName(order, platforms)
                                 : order.customer.name === "Dine-in Customer"
                                   ? t(
                                     "orderProcessingModal.defaultCustomers.dineInCustomer",
@@ -569,7 +569,7 @@ const OrderComponent = () => {
                                     ? t(
                                       "orderProcessingModal.defaultCustomers.walkInCustomer",
                                     )
-                                    : order.customer.name}
+                                    : getCustomerDisplayName(order, platforms)}
                             </span>
                             {order.customer.phone && (
                               <span className="ml-1">

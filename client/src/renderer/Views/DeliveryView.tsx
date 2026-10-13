@@ -9,7 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
 import { FilterControls } from "../components/shared/FilterControl.order";
 import { updateOrder } from "../utils/order";
-import { formatAddress, getOrderDisplayNumber } from "../utils/utils";
+import { formatAddress, getOrderDisplayNumber, getCustomerDisplayName } from "../utils/utils";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 import { calculateOrderTotal } from "../utils/orderCalculations";
@@ -42,6 +42,7 @@ export const DeliveryView = () => {
     null
   );
   const [deliveryPersons, setDeliveryPersons] = useState<DeliveryPerson[]>([]);
+  const [platforms, setPlatforms] = useState<any[]>([]);
   const [showDeliverySuggestions, setShowDeliverySuggestions] = useState(false);
   const [isCancelOrderModalOpen, setIsCancelOrderModalOpen] = useState(false);
   const [selectedOrderForCancel, setSelectedOrderForCancel] =
@@ -54,6 +55,9 @@ export const DeliveryView = () => {
   const [selectedOrderForRoute, setSelectedOrderForRoute] =
     useState<Order | null>(null);
   const [isRadarModalOpen, setIsRadarModalOpen] = useState(false);
+  const [deliveringDriverId, setDeliveringDriverId] = useState<string | null>(
+    null
+  );
 
   const [, setTimerTick] = useState(0);
   useEffect(() => {
@@ -68,12 +72,18 @@ export const DeliveryView = () => {
     const init = async () => {
       setIsLoading(true);
       try {
-        const res = await (window as any).electronAPI.getDeliveryPersons(token);
+        const [res, platformsRes] = await Promise.all([
+          (window as any).electronAPI.getDeliveryPersons(token),
+          (window as any).electronAPI.getAllPlatforms(token),
+        ]);
         if (res?.status && isMounted) {
           setDeliveryPersons(res.data);
         }
+        if (platformsRes?.status && isMounted) {
+          setPlatforms(platformsRes.data);
+        }
       } catch (error) {
-        console.error("Failed to fetch delivery persons:", error);
+        console.error("Failed to fetch delivery persons/platforms:", error);
       }
 
       setFilter({
@@ -200,6 +210,81 @@ export const DeliveryView = () => {
     },
     [token, refreshOrdersCallback, t]
   );
+
+  const handleCompleteDriverOrders = async (
+    driverId: string,
+    driverName: string
+  ) => {
+    if (deliveringDriverId) return;
+    setDeliveringDriverId(driverId);
+    try {
+      const ordersToDeliver = outForDeliveryOrders.filter((o) => {
+        if (driverId === "__unassigned__") {
+          return !o.deliveryPerson?.name;
+        }
+        return (o.deliveryPerson?.id || o.deliveryPerson?.name) === driverId;
+      });
+
+      if (ordersToDeliver.length === 0) return;
+
+      const nowIso = new Date().toISOString();
+      const results = await Promise.all(
+        ordersToDeliver.map((o) =>
+          updateOrder(token, o.id, {
+            status: "delivered",
+            deliveredAt: nowIso,
+          })
+        )
+      );
+
+      const successCount = results.filter(Boolean).length;
+      if (successCount > 0) {
+        toast.success(
+          t("deliveryView.messages.driverOrdersDeliveredSuccess", {
+            name: driverName,
+            count: successCount,
+          }) || `${successCount} pedidos de ${driverName} completados`
+        );
+        await refreshOrdersCallback();
+      } else {
+        toast.error(
+          t("deliveryView.messages.failedToMarkAsDelivered") ||
+            "Failed to mark orders as delivered"
+        );
+      }
+    } catch (error) {
+      console.error("Failed to complete driver orders:", error);
+      toast.error(
+        t("deliveryView.messages.failedToMarkAsDeliveredRetry") ||
+          "Failed to mark orders as delivered"
+      );
+    } finally {
+      setDeliveringDriverId(null);
+    }
+  };
+
+  const activeOutDrivers = useMemo(() => {
+    const driverMap = new Map<
+      string,
+      { id: string; name: string; count: number }
+    >();
+    outForDeliveryOrders.forEach((o) => {
+      if (o.deliveryPerson?.name) {
+        const key = o.deliveryPerson.id || o.deliveryPerson.name;
+        const existing = driverMap.get(key);
+        if (existing) {
+          existing.count += 1;
+        } else {
+          driverMap.set(key, {
+            id: key,
+            name: o.deliveryPerson.name,
+            count: 1,
+          });
+        }
+      }
+    });
+    return Array.from(driverMap.values());
+  }, [outForDeliveryOrders]);
 
   const handleCancelOrderClick = (order: Order) => {
     setSelectedOrderForCancel(order);
@@ -359,13 +444,8 @@ export const DeliveryView = () => {
         className="hover:bg-gray-50 transition-colors duration-150"
       >
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-2xl font-bold text-black">
-            {getOrderDisplayNumber(order, configurations.orderPrefix || "K")}
-          </div>
-        </td>
-        <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-sm font-medium text-black">
-            {order.customer.name || "-"}
+            {getCustomerDisplayName(order, platforms)}
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
@@ -407,11 +487,16 @@ export const DeliveryView = () => {
             {readyTime.toLocaleTimeString()}
           </div>
         </td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2 min-w-[140px]">
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="text-2xl font-bold text-black">
+            {getOrderDisplayNumber(order, configurations.orderPrefix || "K")}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2">
           <button
             onClick={() => assignDelivery(order)}
             disabled={!deliveryPerson?.name.trim()}
-            className="bg-black hover:bg-black disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105"
+            className="bg-black hover:bg-zinc-800 disabled:bg-gray-400 text-white px-4 h-9 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 hover:scale-105 active:scale-95 shadow-sm"
           >
             <LightningBoltIcon className="size-4" />
             {t("deliveryView.assignDelivery") || "Assign"}
@@ -420,10 +505,10 @@ export const DeliveryView = () => {
           {hasCancelOrderPermission() && (
             <button
               onClick={() => handleCancelOrderClick(order)}
-              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+              className="bg-red-600 hover:bg-red-700 text-white px-3 h-9 min-w-[38px] rounded-lg font-medium transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
               title={t("deliveryView.cancelOrder") || "Cancel Order"}
             >
-              <CrossIcon className="w-4 h-4" />
+              <CrossIcon className="size-4" />
             </button>
           )}
           {(order.orderType === "delivery" ||
@@ -435,13 +520,13 @@ export const DeliveryView = () => {
                   setSelectedOrderForRoute(order);
                   setIsRouteModalOpen(true);
                 }}
-                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 h-9 min-w-[38px] rounded-lg font-medium transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
                 title={
                   t("orderProcessingModal.customerSearch.viewRoute") ||
                   "View Route"
                 }
               >
-                <MapIcon className="w-4 h-4" />
+                <MapIcon className="size-4" />
               </button>
             )}
         </td>
@@ -461,20 +546,14 @@ export const DeliveryView = () => {
       calculateOrderTotal(order.items || []).orderTotal ||
       (order as any).price ||
       0;
-
     return (
       <tr
         key={order.id}
         className="hover:bg-gray-50 transition-colors duration-150"
       >
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-2xl font-bold text-black">
-            {getOrderDisplayNumber(order, configurations.orderPrefix || "K")}
-          </div>
-        </td>
-        <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-sm font-medium text-black">
-            {order.customer.name || "-"}
+            {getCustomerDisplayName(order, platforms)}
           </div>
         </td>
         <td className="px-6 py-4">
@@ -503,9 +582,9 @@ export const DeliveryView = () => {
               {order.items && order.items.length > 0 ? (
                 order.items.map((item, index) => (
                   <div key={index} className="flex justify-between">
-                    <span className="text-gray-600">{item.productName}</span>
+                    <span className="text-gray-600">{item.productName}{" "}</span>
                     <span className="text-black font-medium">
-                      x{item.quantity}
+                      x {item.quantity}
                     </span>
                   </div>
                 ))
@@ -524,13 +603,18 @@ export const DeliveryView = () => {
             {assignedTime.toLocaleTimeString()}
           </div>
         </td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2 min-w-[280px]">
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="text-2xl font-bold text-black">
+            {getOrderDisplayNumber(order, configurations.orderPrefix || "K")}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end gap-2 items-center">
         {/* Hide Delivered and Cancel buttons when in edit mode */}
         {selectedOrderForChange?.id !== order.id && (
           <>
             <button
               onClick={() => markAsDelivered(order.id)}
-              className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 h-9 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
             >
               <CheckIcon className="size-4" />
               {t("deliveryView.delivered")}
@@ -539,7 +623,7 @@ export const DeliveryView = () => {
             {hasCancelOrderPermission() && (
               <button
                 onClick={() => handleCancelOrderClick(order)}
-                className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white p-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-1 text-sm cursor-pointer"
+                className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-3 h-9 min-w-[38px] rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
                 title={t("deliveryView.cancelOrder") || "Cancel Order"}
               >
                 <CrossIcon className="size-4" />
@@ -554,7 +638,7 @@ export const DeliveryView = () => {
                     setSelectedOrderForRoute(order);
                     setIsRouteModalOpen(true);
                   }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 text-sm cursor-pointer"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 h-9 min-w-[38px] rounded-lg font-medium transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
                   title={
                     t("orderProcessingModal.customerSearch.viewRoute") ||
                     "View Route"
@@ -604,7 +688,7 @@ export const DeliveryView = () => {
                     }
                   }}
                   disabled={!changeDeliveryPerson}
-                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white p-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-1 text-sm cursor-pointer hover:scale-105"
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-3 h-9 min-w-[38px] rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
                   title={t("deliveryView.confirmChange") || "Confirm Change"}
                 >
                   <CheckIcon className="size-4" />
@@ -614,7 +698,7 @@ export const DeliveryView = () => {
                     setSelectedOrderForChange(null);
                     setChangeDeliveryPerson(null);
                   }}
-                  className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white p-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-1 text-sm cursor-pointer hover:scale-105"
+                  className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-3 h-9 min-w-[38px] rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
                   title={t("common.cancel") || "Cancel"}
                 >
                   <CrossIcon className="size-4" />
@@ -626,7 +710,7 @@ export const DeliveryView = () => {
                   setSelectedOrderForChange(order);
                   setChangeDeliveryPerson(null);
                 }}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-2 py-2.5 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-1 text-sm cursor-pointer hover:scale-105"
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-3 h-9 min-w-[38px] rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
                 title={
                   t("deliveryView.changeDeliveryPerson") ||
                   "Change Delivery Person"
@@ -637,7 +721,7 @@ export const DeliveryView = () => {
             )}
           </div>
         )}
-      </td>
+        </td>
     </tr>
   );
 };
@@ -747,13 +831,13 @@ export const DeliveryView = () => {
               <OrderTable
                 data={readyOrders}
                 columns={[
-                  t("deliveryView.table.orderId"),
                   t("deliveryView.table.customer"),
                   t("deliveryView.table.contact"),
                   t("deliveryView.table.address"),
                   t("deliveryView.table.items"),
                   t("deliveryView.table.amount"),
                   t("deliveryView.table.readySince"),
+                  t("deliveryView.table.orderId"),
                   t("deliveryView.table.actions"),
                 ]}
                 renderRow={renderReadyOrderRow}
@@ -763,7 +847,7 @@ export const DeliveryView = () => {
           {!isLoading && isDeliveryFilterActive && outForDeliveryOrders.length > 0 && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
               <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                   <div>
                     <h3 className="text-lg font-semibold text-black">
                       {t("deliveryView.table.outForDelivery")}
@@ -774,18 +858,84 @@ export const DeliveryView = () => {
                       )}
                     </p>
                   </div>
+                  {/* Complete by Driver Controls */}
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="text-xs text-zinc-500 font-medium">
+                      {t("deliveryView.completeByDriver") || "Completar por repartidor:"}
+                    </span>
+                    {activeOutDrivers.map((driver) => {
+                      const isProcessing = deliveringDriverId === driver.id;
+                      return (
+                        <button
+                          key={driver.id}
+                          type="button"
+                          onClick={() =>
+                            handleCompleteDriverOrders(driver.id, driver.name)
+                          }
+                          disabled={Boolean(deliveringDriverId)}
+                          className="bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-3.5 h-9 rounded-lg font-medium text-xs transition-all flex items-center gap-1.5 shadow-sm cursor-pointer hover:scale-105 active:scale-95"
+                          title={
+                            t("deliveryView.completeDriverOrders", {
+                              name: driver.name,
+                              count: driver.count,
+                            }) || `Completar pedidos de ${driver.name}`
+                          }
+                        >
+                          {isProcessing ? (
+                            <div className="size-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <CheckIcon className="size-3.5" />
+                          )}
+                          <span>
+                            {driver.name} ({driver.count})
+                          </span>
+                        </button>
+                      );
+                    })}
+                    {(() => {
+                      const unassignedCount = outForDeliveryOrders.filter(
+                        (o) => !o.deliveryPerson?.name
+                      ).length;
+                      if (unassignedCount === 0) return null;
+                      const isProcessing = deliveringDriverId === "__unassigned__";
+                      return (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleCompleteDriverOrders(
+                              "__unassigned__",
+                              t("deliveryView.unassigned") || "Sin asignar"
+                            )
+                          }
+                          disabled={Boolean(deliveringDriverId)}
+                          className="bg-zinc-700 hover:bg-zinc-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-3.5 h-9 rounded-lg font-medium text-xs transition-all flex items-center gap-1.5 shadow-sm cursor-pointer hover:scale-105 active:scale-95"
+                          title={t("deliveryView.unassigned") || "Sin asignar"}
+                        >
+                          {isProcessing ? (
+                            <div className="size-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <CheckIcon className="size-3.5" />
+                          )}
+                          <span>
+                            {t("deliveryView.unassigned") || "Sin asignar"} (
+                            {unassignedCount})
+                          </span>
+                        </button>
+                      );
+                    })()}
+                  </div>
                 </div>
               </div>
               <OrderTable
                 data={outForDeliveryOrders}
                 columns={[
-                  t("deliveryView.table.orderId"),
                   t("deliveryView.table.customer"),
                   t("deliveryView.table.address"),
                   t("deliveryView.table.driver"),
                   t("deliveryView.table.items"),
                   t("deliveryView.table.amount"),
                   t("deliveryView.table.assignedSince") || "Assigned Since",
+                  t("deliveryView.table.orderId"),
                   t("deliveryView.table.actions"),
                 ]}
                 renderRow={renderOutForDeliveryRow}

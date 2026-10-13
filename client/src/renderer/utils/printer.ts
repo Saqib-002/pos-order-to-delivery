@@ -6,7 +6,7 @@ import {
   calculateTaxPercentage,
 } from "./orderCalculations";
 import { calculatePaymentStatus } from "./paymentStatus";
-import { formatAddress } from "./utils";
+import { formatAddress, getCustomerDisplayName } from "./utils";
 import { StringToComplements } from "./order";
 
 export const fetchConnectedPrinters = async (
@@ -421,8 +421,9 @@ export const generateReceiptHTML = (
             /* Categories & Items */
             .category-title {
                 font-family: 'Roboto Condensed', sans-serif;
-                font-weight: 700;
-                font-size: 15px;
+                font-weight: 400;
+                font-style: italic;
+                font-size: 14px;
                 text-transform: uppercase;
                 margin-top: 4px;
                 margin-bottom: 2px;
@@ -753,10 +754,11 @@ export const generateReceiptHTML = (
                 formattedCompName = `[X] ${displayName}`;
               }
               const isBold = Boolean((comp as any).isBold);
+              const qtyPrefix = isBold && item.quantity > 1 ? `${item.quantity} x ` : "";
               html += `
                 <div class="item-row">
                   <span class="col-cant"></span>
-                  <span class="col-desc item-extra ${isBold ? "bold" : ""}">-  ${formattedCompName}</span>
+                  <span class="col-desc item-extra ${isBold ? "bold" : ""}">-  ${qtyPrefix}${formattedCompName}</span>
                   <span class="col-precio item-price ${isBold ? "bold" : ""}">${compTotal.toFixed(2)}</span>
                 </div>
               `;
@@ -819,10 +821,11 @@ export const generateReceiptHTML = (
                 formattedCompName = `[X] ${displayName}`;
               }
               const isBold = Boolean((comp as any).isBold);
+              const qtyPrefix = isBold && item.quantity > 1 ? `${item.quantity} x ` : "";
               html += `
                 <div class="item-row">
                   <span class="col-cant"></span>
-                  <span class="col-desc item-extra ${isBold ? "bold" : ""}">-  ${formattedCompName}</span>
+                  <span class="col-desc item-extra ${isBold ? "bold" : ""}">-  ${qtyPrefix}${formattedCompName}</span>
                   <span class="col-precio item-price ${isBold ? "bold" : ""}">${compTotal.toFixed(2)}</span>
                 </div>
               `;
@@ -972,6 +975,9 @@ export const generateItemsReceiptHTML = (
         if (normalized === "platform:delivery") orderTypeDisplay = t("orderTypes.platformDelivery");
         else if (normalized === "platform:pickup") orderTypeDisplay = t("orderTypes.platformPickup");
         else if (normalized === "platform") orderTypeDisplay = t("orderTypes.platform");
+        if (order.platformName && !orderTypeDisplay.toLowerCase().includes(order.platformName.toLowerCase())) {
+          orderTypeDisplay = `${order.platformName} - ${orderTypeDisplay}`;
+        }
       }
       break;
   }
@@ -1212,6 +1218,22 @@ export const generateItemsReceiptHTML = (
         <div class="bold">
             ${t("receipt.order")} ${order.ticketNumber ? order.ticketNumber : `${configurations.orderPrefix || ""}${order.orderId}`} - ${dateTimeStr}
         </div>
+        ${(() => {
+          const cust = getCustomerDisplayName(order);
+          return cust && cust !== "-" ? `<div class="bold" style="font-size: 14px;">${t("customer") || "Cliente"}: ${cust}</div>` : "";
+        })()}
+        ${(() => {
+          let addr = order?.customer?.address || order?.customerAddress;
+          if (addr && typeof addr === "string" && addr.trim()) {
+            if (addr.includes("|")) addr = formatAddress(addr);
+            return `<div style="font-size: 13px;">${t("address") || "Dirección"}: ${addr}</div>`;
+          }
+          return "";
+        })()}
+        ${(() => {
+          const phone = order?.customer?.phone || order?.customerPhone;
+          return phone && typeof phone === "string" && phone.trim() ? `<div style="font-size: 13px;">${t("phone") || "Teléfono"}: ${phone}</div>` : "";
+        })()}
         ${order.notes ? `<div class="bold">${t("receipt.notes")}: ${order.notes}</div>` : ""}
         <div class="center bold">
             ${t("receipt.waiter")}: ${order.deliveryPersonName ? order.deliveryPersonName : "N/A"}
@@ -1369,23 +1391,37 @@ export const printOrder = async ({
       ? order.ticketNumber
       : order.orderId;
 
-    const receiptHTML = generateReceiptHTML(
-      formattedItems,
-      configurations,
-      ticketOrOrderId,
-      order.orderType,
-      user?.role || "admin",
-      paymentStatus.status,
-      t,
-      customerAddress,
-      formattedPickupTime,
-      customerPhone,
-      customerName,
-      user?.name || "System",
-      order.notes || order.customerComments,
-      paymentStatus.totalPaid,
-      order.paymentType
-    );
+    const isPlatform =
+      order.orderType?.toLowerCase().includes("platform") ||
+      Boolean(order.platformName) ||
+      Boolean((order as any).platformId);
+
+    const receiptHTML = isPlatform
+      ? generateItemsReceiptHTML(
+          formattedItems,
+          configurations,
+          order,
+          user?.role || "admin",
+          paymentStatus.status,
+          t
+        )
+      : generateReceiptHTML(
+          formattedItems,
+          configurations,
+          ticketOrOrderId,
+          order.orderType,
+          user?.role || "admin",
+          paymentStatus.status,
+          t,
+          customerAddress,
+          formattedPickupTime,
+          customerPhone,
+          customerName,
+          user?.name || "System",
+          order.notes || order.customerComments,
+          paymentStatus.totalPaid,
+          order.paymentType
+        );
 
     if (receiptHTML) {
       const printRes = await (window as any).electronAPI.printToPrinter(

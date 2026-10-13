@@ -199,12 +199,7 @@ const app = express();
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
   filename: (_req, file, cb) => {
-    const parsedName = path.parse(file.originalname);
-    if (parsedName.name === "logo") {
-      cb(null, file.originalname);
-    } else {
-      cb(null, `${uuidv4()}${path.extname(file.originalname)}`);
-    }
+    cb(null, `${uuidv4()}${path.extname(file.originalname)}`);
   },
 });
 
@@ -220,7 +215,11 @@ const upload = multer({
   },
 });
 
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 app.use(compression());
 app.use(
   cors({
@@ -245,9 +244,6 @@ app.use(
   express.static(UPLOAD_DIR, {
     setHeaders: (res) => {
       res.set("Cache-Control", "public, max-age=86400");
-      res.set("Access-Control-Allow-Origin", "*");
-      res.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-      res.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
     },
   })
 );

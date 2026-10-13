@@ -97,7 +97,13 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
         const orderAny = initialOrder as any;
         setSelectedPlatformId(orderAny.platformId || "");
         setTicketNumber(orderAny.ticketNumber || "");
-        setCustomerName(orderAny.customer?.name || orderAny.customerName || "");
+        const rawCustomerName =
+          orderAny.customer?.name || orderAny.customerName || "";
+        const isGenericName =
+          !rawCustomerName ||
+          rawCustomerName.trim().toLowerCase() === "platform customer" ||
+          rawCustomerName.trim().toLowerCase() === "cliente de plataforma";
+        setCustomerName(isGenericName ? "" : rawCustomerName.trim());
         setCustomerPhone(
           orderAny.customer?.phone || orderAny.customerPhone || ""
         );
@@ -260,7 +266,7 @@ const PlatformOrderModal: React.FC<PlatformOrderModalProps> = ({
     const orderData = {
       platformId: selectedPlatformId,
       ticketNumber: ticketNumber.trim(),
-      customerName: customerName.trim() || t("platformOrders.platformCustomer"),
+      customerName: customerName.trim(),
       customerPhone: customerPhone.trim() || "",
       customerAddress: formattedAddress || undefined,
       paymentType: paymentTypeString,

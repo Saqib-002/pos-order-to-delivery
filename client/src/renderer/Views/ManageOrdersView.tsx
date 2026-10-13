@@ -42,7 +42,7 @@ import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 import { DEFAULT_PAGE_LIMIT, FUNCTIONS } from "@/constants";
 import Pagination from "../components/shared/Pagination";
-import { formatAddress, getOrderDisplayNumber } from "../utils/utils";
+import { formatAddress, getOrderDisplayNumber, getCustomerDisplayName } from "../utils/utils";
 import dayjs from "dayjs";
 import { Bike } from "lucide-react";
 
@@ -67,7 +67,6 @@ export const ManageOrdersView = () => {
   // Fetch delivery persons on component mount
   useEffect(() => {
     fetchDeliveryPersons();
-    fetchCustomers();
     fetchPlatforms();
   }, []);
   useEffect(() => {
@@ -98,8 +97,6 @@ export const ManageOrdersView = () => {
   const [isCancelOrderModalOpen, setIsCancelOrderModalOpen] = useState(false);
   const [selectedOrderForCancel, setSelectedOrderForCancel] =
     useState<Order | null>(null);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loadingCustomers, setLoadingCustomers] = useState(false);
   const [platforms, setPlatforms] = useState<
     Array<{ id: string; name: string }>
   >([]);
@@ -122,23 +119,6 @@ export const ManageOrdersView = () => {
       toast.error(t("deliveryManagement.errors.fetchFailed"));
     } finally {
       setLoadingDeliveryPersons(false);
-    }
-  };
-
-  const fetchCustomers = async () => {
-    try {
-      setLoadingCustomers(true);
-      const res = await (window as any).electronAPI.getAllCustomers(token);
-      if (!res.status) {
-        toast.error(t("deliveryManagement.errors.fetchFailed"));
-        return;
-      }
-      setCustomers(res.data.customers || []);
-    } catch (error) {
-      console.error("Error fetching customers:", error);
-      toast.error(t("deliveryManagement.errors.fetchFailed"));
-    } finally {
-      setLoadingCustomers(false);
     }
   };
 
@@ -185,7 +165,7 @@ export const ManageOrdersView = () => {
         window.removeEventListener("resize", checkScrollPosition);
       };
     }
-  }, [orders, customers, deliveryPersons]);
+  }, [orders, deliveryPersons]);
 
   const paymentStatuses = ["PARTIAL", "UNPAID", "PAID"];
 
@@ -466,7 +446,7 @@ export const ManageOrdersView = () => {
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-sm font-medium text-black">
-            {order.customer.name}
+            {getCustomerDisplayName(order, platforms)}
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
@@ -524,24 +504,24 @@ export const ManageOrdersView = () => {
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-          <div className="flex items-center justify-end space-x-2">
+          <div className="flex items-center justify-end gap-2">
             {/* View Order Button */}
             <button
               onClick={() => handleViewOrder(order)}
-              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 cursor-pointer"
+              className="px-3 h-9 min-w-[38px] text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
               title={t("manageOrders.actions.viewOrder")}
             >
-              <EyeIcon className="w-5 h-5" />
+              <EyeIcon className="w-4 h-4" />
             </button>
 
             {/* Print Order Button */}
             {!order.orderType?.toLowerCase().includes("platform") && (
               <button
                 onClick={() => handlePrintOrder(order)}
-                className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200 cursor-pointer"
+                className="px-3 h-9 min-w-[38px] text-green-600 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
                 title={t("manageOrders.actions.printOrder")}
               >
-                <DocumentIcon className="w-5 h-5" />
+                <DocumentIcon className="w-4 h-4" />
               </button>
             )}
 
@@ -572,10 +552,10 @@ export const ManageOrdersView = () => {
                 return (
                   <button
                     onClick={() => handlePaymentClick(order)}
-                    className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors duration-200 cursor-pointer"
+                    className="px-3 h-9 min-w-[38px] text-orange-600 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
                     title={t("manageOrders.actions.processPayment") || "Process Payment"}
                   >
-                    <Euro className="w-5 h-5" />
+                    <Euro className="w-4 h-4" />
                   </button>
                 );
               }
@@ -587,12 +567,12 @@ export const ManageOrdersView = () => {
               order.status?.toLowerCase() !== "cancelled" && (
                 <button
                   onClick={() => handleCancelOrderClick(order)}
-                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 cursor-pointer"
+                  className="px-3 h-9 min-w-[38px] text-white bg-red-600 hover:bg-red-700 rounded-lg transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
                   title={
                     t("manageOrders.actions.cancelOrder") || "Cancel Order"
                   }
                 >
-                  <CrossIcon className="w-5 h-5" />
+                  <CrossIcon className="w-4 h-4" />
                 </button>
               )}
 
@@ -603,10 +583,10 @@ export const ManageOrdersView = () => {
               order.status?.toLowerCase() !== "senttokitchen" && (
                 <button
                   onClick={() => handleChangeDeliveryClick(order)}
-                  className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 cursor-pointer"
+                  className="px-3 h-9 min-w-[38px] text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
                   title={t("deliveryView.changeDeliveryPerson") || "Change Delivery Person"}
                 >
-                  <Bike className="w-5 h-5" />
+                  <Bike className="w-4 h-4" />
                 </button>
               )}
           </div>
@@ -776,41 +756,6 @@ export const ManageOrdersView = () => {
                     "reports.components.orderTypeSelector.types.all",
                   )}
                   className="w-full"
-                />
-              </div>
-
-              {/* Customer Filter */}
-              <div className="w-full lg:w-48">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {/* <PersonIcon className="inline w-4 h-4 mr-1" /> */}
-                  {t("manageOrders.customer")}
-                </label>
-                <CustomSelect
-                  options={[
-                    {
-                      value: "",
-                      label: t("manageOrders.allCustomers"),
-                    },
-                    ...customers.map((customer) => ({
-                      value: customer.id || "",
-                      label: `${customer.name} (${customer.phone})`,
-                    })),
-                  ]}
-                  value={filter.selectedCustomer}
-                  onChange={(value) => {
-                    setFilter((prev) => ({
-                      ...prev,
-                      selectedCustomer: value,
-                      page: 0,
-                    }));
-                  }}
-                  placeholder={
-                    loadingCustomers
-                      ? "Loading..."
-                      : t("manageOrders.allCustomers")
-                  }
-                  className="w-full"
-                  disabled={loadingCustomers}
                 />
               </div>
 

@@ -1,7 +1,7 @@
 import { IpcMainInvokeEvent } from "electron";
 import { verifyToken } from "./auth.js";
 import { ConfigurationsDatabaseOperations } from "../database/configurationsOperations.js";
-import { uploadImg } from "../utils/utils.js";
+import { uploadImg, deleteImg } from "../utils/utils.js";
 import { syncConfigToVPS } from "../utils/sync/configurations.js";
 
 export const createConfigurations = async (
@@ -60,10 +60,16 @@ export const updateConfigurations = async (
     try {
         await verifyToken(event, token);
         if (updates.logo && !updates.logo.startsWith("http")) {
+            const oldConfig = await ConfigurationsDatabaseOperations.getConfigurations();
+            const oldLogo = oldConfig?.logo ? oldConfig.logo.split("/").at(-1) : null;
             updates.logo = await uploadImg(
-                updates.logo,true
+                updates.logo,
+                true
             );
-        }else if (updates.logo){
+            if (oldLogo && oldLogo !== updates.logo && !oldLogo.startsWith("logo.")) {
+                await deleteImg(oldLogo).catch(() => {});
+            }
+        } else if (updates.logo) {
             updates.logo = updates.logo?.split("/").at(-1);
         }
         const result =

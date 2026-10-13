@@ -1,5 +1,5 @@
 import { DeliveredIcon } from "@/renderer/public/Svg";
-import { JSX } from "react";
+import React, { JSX } from "react";
 import { useTranslation } from "react-i18next";
 
 export const OrderTable = <T,>({
@@ -14,7 +14,7 @@ export const OrderTable = <T,>({
   data: T[];
   title?: string;
   subtitle?: string;
-  columns: string[];
+  columns: React.ReactNode[];
   renderRow: (item: T) => JSX.Element;
   emptyStateIcon?: JSX.Element;
   emptyStateTitle?: string;

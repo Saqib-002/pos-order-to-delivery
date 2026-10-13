@@ -32,7 +32,7 @@ import {
   MapIcon,
 } from "../public/Svg";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
-import { formatAddress, getOrderDisplayNumber } from "../utils/utils";
+import { formatAddress, getOrderDisplayNumber, getCustomerDisplayName } from "../utils/utils";
 import DeliveryRouteModal from "../components/order/modals/DeliveryRouteModal";
 
 export const KitchenView = () => {
@@ -48,21 +48,60 @@ export const KitchenView = () => {
   const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
   const [selectedOrderForRoute, setSelectedOrderForRoute] =
     useState<Order | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [platforms, setPlatforms] = useState<any[]>([]);
+
   useEffect(() => {
-    setFilter({
-      selectedDate: new Date(),
-      searchTerm: "",
-      selectedStatus: ["sent to kitchen"],
-      selectedPaymentStatus: [],
-      page: 0,
-      limit: DEFAULT_PAGE_LIMIT,
-      startDateRange: null,
-      endDateRange: null,
-      selectedDeliveryPerson: "",
-      selectedCustomer: "",
-      selectedOrderType: "",
-    });
-  }, [token, setFilter]);
+    let isMounted = true;
+    const init = async () => {
+      setIsLoading(true);
+      try {
+        const platformsRes = await (window as any).electronAPI.getAllPlatforms(token);
+        if (platformsRes?.status && isMounted) {
+          setPlatforms(platformsRes.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch platforms:", error);
+      }
+      setFilter({
+        selectedDate: new Date(),
+        searchTerm: "",
+        selectedStatus: ["sent to kitchen"],
+        selectedPaymentStatus: [],
+        page: 0,
+        limit: DEFAULT_PAGE_LIMIT,
+        startDateRange: null,
+        endDateRange: null,
+        selectedDeliveryPerson: "",
+        selectedCustomer: "",
+        selectedOrderType: "",
+      });
+      await refreshOrdersCallback();
+      if (isMounted) {
+        setIsLoading(false);
+      }
+    };
+    init();
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
+
+  // Ensure orders from other screens (e.g. ManageOrders with status "all") are not shown while switching
+  const isKitchenFilterActive = useMemo(() => {
+    return (
+      Array.isArray(filter.selectedStatus) &&
+      filter.selectedStatus.length === 1 &&
+      filter.selectedStatus[0] === "sent to kitchen"
+    );
+  }, [filter.selectedStatus]);
+
+  const kitchenOrders = useMemo(() => {
+    if (!isKitchenFilterActive || isLoading) return [];
+    return orders.filter(
+      (o) => o.status?.toLowerCase() === "sent to kitchen"
+    );
+  }, [orders, isKitchenFilterActive, isLoading]);
 
   const markAsReady = useCallback(
     async (order: Order) => {
@@ -125,7 +164,7 @@ export const KitchenView = () => {
   };
 
   const stats = useMemo(() => {
-    const highPriorityCount = orders.filter((order) => {
+    const highPriorityCount = kitchenOrders.filter((order) => {
       const orderTime = new Date(order.createdAt || order.id);
       const now = new Date();
       const diffHours =
@@ -136,7 +175,7 @@ export const KitchenView = () => {
     const primaryStats = [
       {
         title: t("kitchenView.stats.ordersInKitchen"),
-        value: orders.length,
+        value: kitchenOrders.length,
         icon: <ClipboardIcon className="size-6 text-blue-600" />,
         bgColor: "bg-blue-100",
         textColor: "text-blue-600",
@@ -160,7 +199,7 @@ export const KitchenView = () => {
     const typeStats = [
       {
         title: t("kitchenView.stats.delivery"),
-        value: orders.filter(
+        value: kitchenOrders.filter(
           (o) =>
             o.orderType === "delivery" ||
             o.orderType === "web:delivery" ||
@@ -172,7 +211,7 @@ export const KitchenView = () => {
       },
       {
         title: t("kitchenView.stats.pickup"),
-        value: orders.filter(
+        value: kitchenOrders.filter(
           (o) =>
             o.orderType === "pickup" ||
             o.orderType === "web:pickup" ||
@@ -184,14 +223,14 @@ export const KitchenView = () => {
       },
       {
         title: t("kitchenView.stats.dineIn"),
-        value: orders.filter((o) => o.orderType === "dine-in").length,
+        value: kitchenOrders.filter((o) => o.orderType === "dine-in").length,
         icon: <PersonIcon className="size-6 text-purple-600" />,
         bgColor: "bg-purple-100",
         textColor: "text-purple-600",
       },
       {
         title: t("kitchenView.stats.platform"),
-        value: orders.filter((o) => o.orderType?.startsWith("platform")).length,
+        value: kitchenOrders.filter((o) => o.orderType?.startsWith("platform")).length,
         icon: <AnalyticsIcon className="size-6 text-pink-600" />,
         bgColor: "bg-pink-100",
         textColor: "text-pink-600",
@@ -199,7 +238,7 @@ export const KitchenView = () => {
     ];
 
     return { primaryStats, typeStats };
-  }, [orders, t]);
+  }, [kitchenOrders, t]);
   const getPriorityLabel = (diffMinutes: number) => {
     const mediumPriority = configurations.mediumKitchenPriorityTime || 60;
     const highPriority = configurations.highKitchenPriorityTime || 120;
@@ -247,11 +286,8 @@ export const KitchenView = () => {
             {label}
           </span>
         </td>
-        <td className="px-6 py-4 whitespace-nowrap text-2xl font-bold text-black">
-          {getOrderDisplayNumber(order, configurations.orderPrefix || "K")}
-        </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
-          {order.customer.name}
+          {getCustomerDisplayName(order, platforms)}
           <div className="max-w-24 whitespace-normal text-xs text-gray-500">
             {formatAddress(order.customer.address)}
           </div>
@@ -307,18 +343,21 @@ export const KitchenView = () => {
             {orderTime.toLocaleTimeString()}
           </div>
         </td>
+        <td className="px-6 py-4 whitespace-nowrap text-2xl font-bold text-black">
+          {getOrderDisplayNumber(order, configurations.orderPrefix || "K")}
+        </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-          <div className="flex items-center gap-2 justify-end min-w-[120px]">
+          <div className="flex items-center gap-2 justify-end">
             <button
               onClick={() => handleViewDetails(order)}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-3 h-9 min-w-[38px] rounded-lg font-medium transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
               title={t("kitchenView.actions.viewOrderDetails")}
             >
               <EyeIcon className="size-4" />
             </button>
             <button
               onClick={() => markAsReady(order)}
-              className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+              className="bg-green-600 hover:bg-green-700 text-white px-3 h-9 min-w-[38px] rounded-lg font-medium transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
               title={t("kitchenView.actions.markAsReady")}
             >
               <CheckIcon className="size-4" />
@@ -332,7 +371,7 @@ export const KitchenView = () => {
                     setSelectedOrderForRoute(order);
                     setIsRouteModalOpen(true);
                   }}
-                  className="bg-teal-600 hover:bg-teal-700 text-white p-2 rounded-lg transition-all duration-200 hover:scale-105 cursor-pointer"
+                  className="bg-teal-600 hover:bg-teal-700 text-white px-3 h-9 min-w-[38px] rounded-lg font-medium transition-all duration-200 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
                   title={
                     t("orderProcessingModal.customerSearch.viewRoute") ||
                     "View Route"
@@ -406,7 +445,7 @@ export const KitchenView = () => {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                   <h3 className="text-lg font-semibold text-black">
-                    {orders.length > 0
+                    {kitchenOrders.length > 0
                       ? t("kitchenView.table.kitchenOrders")
                       : t("kitchenView.table.noOrdersMatch")}
                   </h3>
@@ -414,19 +453,28 @@ export const KitchenView = () => {
                 <FilterControls filter={filter} setFilter={setFilter} />
               </div>
             </div>
-            <OrderTable
-              data={orders}
-              columns={[
-                t("kitchenView.table.priority"),
-                t("kitchenView.table.orderId"),
-                t("kitchenView.table.customer"),
-                t("kitchenView.table.orderType"),
-                t("kitchenView.table.items"),
-                t("kitchenView.table.timeInKitchen"),
-                t("kitchenView.table.actions"),
-              ]}
-              renderRow={OrderRowRenderer}
-            />
+            {isLoading || !isKitchenFilterActive ? (
+              <div className="py-16 flex flex-col items-center justify-center gap-3">
+                <div className="size-8 rounded-full border-2 border-zinc-900 border-t-transparent animate-spin" />
+                <span className="text-xs text-zinc-500 font-medium">
+                  {t("common.loading") || "Cargando pedidos de cocina..."}
+                </span>
+              </div>
+            ) : (
+              <OrderTable
+                data={kitchenOrders}
+                columns={[
+                  t("kitchenView.table.priority"),
+                  t("kitchenView.table.customer"),
+                  t("kitchenView.table.orderType"),
+                  t("kitchenView.table.items"),
+                  t("kitchenView.table.timeInKitchen"),
+                  t("kitchenView.table.orderId"),
+                  t("kitchenView.table.actions"),
+                ]}
+                renderRow={OrderRowRenderer}
+              />
+            )}
           </div>
         </div>
       </div>
