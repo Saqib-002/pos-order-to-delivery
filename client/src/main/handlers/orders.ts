@@ -40,6 +40,23 @@ export const addItemToOrder = async (
     };
   }
 };
+export const replaceMenuInOrder = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  orderId: string,
+  menuId: string,
+  menuSecondaryId: number,
+  items: any[]
+) => {
+  try {
+    const result = await OrderDatabaseOperations.replaceMenuInOrder(
+      orderId, menuId, menuSecondaryId, items
+    );
+    return { status: true, data: result };
+  } catch (error) {
+    return { status: false, error: (error as Error).message };
+  }
+};
 export const removeItemFromOrder = async (
   event: IpcMainInvokeEvent,
   token: string,

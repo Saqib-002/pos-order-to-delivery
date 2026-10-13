@@ -25,6 +25,7 @@ interface OrderContextType {
     }>
   ) => OrderItem | null;
   removeMenuFromOrder: (menuId: string, menuSecondaryId: number) => void;
+  replaceMenuInOrder: (menuId: string, menuSecondaryId: number, items: OrderItem[]) => void;
   removeMenuItemFromOrder: (
     menuId: string,
     menuSecondaryId: number,
@@ -182,6 +183,18 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     );
     setOrderItems(newOrderItems);
   };
+  const replaceMenuInOrder = (
+    menuId: string,
+    menuSecondaryId: number,
+    items: OrderItem[]
+  ) => {
+    setOrderItems((prev) => [
+      ...prev.filter((item) =>
+        !(item.menuId === menuId && item.menuSecondaryId === menuSecondaryId)
+      ),
+      ...items,
+    ]);
+  };
   const removeMenuItemFromOrder = async (
     menuId: string,
     menuSecondaryId: number,
@@ -293,6 +306,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     updateQuantity,
     findExactProductMatch,
     removeMenuFromOrder,
+    replaceMenuInOrder,
     removeMenuItemFromOrder,
     clearOrder,
     clearOrderItems,

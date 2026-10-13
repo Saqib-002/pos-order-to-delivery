@@ -26,6 +26,7 @@ import {
   createPlatformOrder,
   removeItemFromOrder,
   removeMenuFromOrder,
+  replaceMenuInOrder,
   removeMenuItemFromOrder,
   saveOrder,
   updateItemQuantity,
@@ -489,6 +490,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("add-item-to-order", addItemToOrder);
   ipcMain.handle("remove-item-from-order", removeItemFromOrder);
   ipcMain.handle("remove-menu-from-order", removeMenuFromOrder);
+  ipcMain.handle("replace-menu-in-order", replaceMenuInOrder);
   ipcMain.handle("remove-menu-item-from-order", removeMenuItemFromOrder);
   ipcMain.handle("delete-order", deleteOrder);
   ipcMain.handle("update-item-quantity", updateItemQuantity);

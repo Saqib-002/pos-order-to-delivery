@@ -265,6 +265,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
       menuId,
       menuSecondaryId
     ),
+  replaceMenuInOrder: (
+    token: string,
+    orderId: string,
+    menuId: string,
+    menuSecondaryId: number,
+    items: any[],
+  ) => ipcRenderer.invoke(
+    "replace-menu-in-order", token, orderId, menuId, menuSecondaryId, items,
+  ),
   removeMenuItemFromOrder: (
     token: string,
     orderId: string,

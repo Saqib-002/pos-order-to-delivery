@@ -60,7 +60,7 @@ const MenuOrderTakingForm = ({
     order,
     addToOrder,
     setOrder,
-    removeMenuFromOrder,
+    replaceMenuInOrder,
     setSelectedProduct,
     processedMenuOrderItems,
     removeProcessedMenuOrderItem,
@@ -358,7 +358,7 @@ const MenuOrderTakingForm = ({
     });
   };
   const handleCompleteMenu = async () => {
-    if (!selectedMenu) {
+    if (!selectedMenu || isCompleting) {
       return;
     }
     if (processedMenuOrderItems.length === 0) {
@@ -385,19 +385,34 @@ const MenuOrderTakingForm = ({
     try {
       setIsCompleting(true);
       if (editingGroup && order) {
-        const res = await (window as any).electronAPI.removeMenuFromOrder(
+        const res = await (window as any).electronAPI.replaceMenuInOrder(
           token,
           order.id,
           selectedMenu.id,
-          secondaryId
+          secondaryId,
+          stagedItems.map((item) => ({
+            ...item,
+            menuSecondaryId: secondaryId,
+            complements: ComplementsToString(item.complements),
+          }))
         );
         if (!res.status) {
           toast.error(
-            t("menuOrderTakingForm.errors.errorRemovingMenuFromOrder")
+            t("orderTakingForm.errors.unableToSaveOrder")
           );
           return;
         }
-        removeMenuFromOrder(selectedMenu.id, secondaryId);
+        replaceMenuInOrder(selectedMenu.id, secondaryId, stagedItems.map((item, index) => ({
+          ...item,
+          id: res.data.itemIds[index],
+          menuSecondaryId: secondaryId,
+          isKitchenPrinted: false,
+        })));
+        toast.success(
+          t("menuOrderTakingForm.completeMenu", { count: stagedItems.length })
+        );
+        resetMenuProcessing();
+        return;
       }
 
       for (const item of stagedItems) {

@@ -344,6 +344,50 @@ export class OrderDatabaseOperations {
       throw error;
     }
   }
+  static async replaceMenuInOrder(
+    orderId: string,
+    menuId: string,
+    menuSecondaryId: number,
+    items: any[]
+  ): Promise<{ itemIds: string[] }> {
+    if (!Array.isArray(items) || items.length === 0) {
+      throw new Error("A replacement menu must contain items");
+    }
+    return db.transaction(async (trx) => {
+      const order = await trx("orders").where("id", orderId).forUpdate().first();
+      if (!order) throw new Error("Order no longer exists");
+      const existingItems = await trx("order_items")
+        .where({ orderId, menuId, menuSecondaryId });
+      if (existingItems.length === 0) {
+        throw new Error("Menu no longer exists in this order");
+      }
+      await trx("order_items").where({ orderId, menuId, menuSecondaryId }).delete();
+      const now = new Date().toISOString();
+      const itemIds: string[] = [];
+      for (const item of items) {
+        const { subCategoryName, subCategoryPriority } =
+          await this.resolveItemSubCategory(item, trx);
+        const id = randomUUID();
+        await trx("order_items").insert({
+          ...item,
+          id,
+          orderId,
+          menuId,
+          menuSecondaryId,
+          subCategoryName,
+          subCategoryPriority,
+          printers: item.printers
+            ? (Array.isArray(item.printers) ? item.printers.join("=") : item.printers)
+            : "",
+          createdAt: now,
+          updatedAt: now,
+          isKitchenPrinted: false,
+        });
+        itemIds.push(id);
+      }
+      return { itemIds };
+    });
+  }
   static async removeItemFromOrder(
     orderId: string,
     itemId: string

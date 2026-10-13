@@ -130,8 +130,8 @@ const OrderComponent = () => {
       setPostProcessOrderData(null);
       return;
     }
-    //if (shouldPrintMainReceipt === "cancel") 
-    if (shouldPrintMainReceipt === "cancel" || !shouldPrintMainReceipt) {
+    // Declining the customer receipt still sends new items to the kitchen.
+    if (shouldPrintMainReceipt === "cancel") {
       clearOrder();
       setPostProcessOrderData(null);
       return;
@@ -189,6 +189,7 @@ const OrderComponent = () => {
         toast.info(t("orderCart.messages.preparingForPrinting") || "Preparing for printing...");
 
         let receiptHTML = "";
+        let kitchenItems: OrderItem[] = [];
         if (isMainPrinter) {
           let customerAddress: string | undefined = undefined;
           if (
@@ -291,14 +292,14 @@ const OrderComponent = () => {
             );
           }
         } else {
-          const unprintedItems = items.filter(
+          kitchenItems = items.filter(
             (item: OrderItem) => !item.isKitchenPrinted,
           );
-          if (unprintedItems.length === 0) {
+          if (kitchenItems.length === 0) {
             continue;
           }
           receiptHTML = generateItemsReceiptHTML(
-            unprintedItems,
+            kitchenItems,
             configs,
             { ...order, ...orderData },
             user!.role,
@@ -325,13 +326,15 @@ const OrderComponent = () => {
           }
           // continue printing to other printers
         } else {
-          const updateRes = await (window as any).electronAPI.updateOrderItems(
-            token,
-            items.map((item: OrderItem) => ({
-              itemId: item.id,
-              itemData: { isKitchenPrinted: true },
-            })),
-          );
+          if (!isMainPrinter) {
+            await (window as any).electronAPI.updateOrderItems(
+              token,
+              kitchenItems.map((item: OrderItem) => ({
+                itemId: item.id,
+                itemData: { isKitchenPrinted: true },
+              })),
+            );
+          }
           anyPrintSuccessful = true;
         }
       }
