@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import { getPendingKitchenItems } from "../utils/kitchenPrinting";
 import { Order, Customer } from "@/types/order";
 import { DeliveryPerson } from "@/types/delivery";
 import CustomInput from "../components/shared/CustomInput";
@@ -320,9 +321,7 @@ export const ManageOrdersView = () => {
           }
         } else {
           // Kitchen printing
-          const unprintedItems = items.filter(
-            (item: any) => !item.isKitchenPrinted,
-          );
+          const unprintedItems = getPendingKitchenItems(items);
           if (unprintedItems.length === 0) {
             continue;
           }
@@ -351,7 +350,7 @@ export const ManageOrdersView = () => {
               token,
               unprintedItems.map((item: any) => ({
                 itemId: item.id,
-                itemData: { isKitchenPrinted: true },
+                itemData: { isKitchenPrinted: true, kitchenPrintedQuantity: item.kitchenPrintedQuantity },
               })),
             );
           }

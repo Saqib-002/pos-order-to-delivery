@@ -80,6 +80,7 @@ export class OrderDatabaseOperations {
           ? parseInt(item.subCategoryPriority)
           : 0,
         isKitchenPrinted: item.isKitchenPrinted === 1 || item.isKitchenPrinted === true,
+        kitchenPrintedQuantity: Number(item.kitchenPrintedQuantity ?? 0),
         productNote: item.productNote || "",
         printers: item.printers
           ? typeof item.printers === "string"
@@ -337,6 +338,7 @@ export class OrderDatabaseOperations {
         createdAt: now,
         updatedAt: now,
         isKitchenPrinted: false,
+        kitchenPrintedQuantity: 0,
       };
       await db("order_items").insert(orderItem);
       return { itemId: orderItem.id };
@@ -382,6 +384,7 @@ export class OrderDatabaseOperations {
           createdAt: now,
           updatedAt: now,
           isKitchenPrinted: false,
+          kitchenPrintedQuantity: 0,
         });
         itemIds.push(id);
       }
@@ -557,6 +560,7 @@ export class OrderDatabaseOperations {
         .update({
           ...itemData,
           isKitchenPrinted: false,
+          kitchenPrintedQuantity: 0,
           updatedAt: now,
         });
       return { itemId };
@@ -1078,6 +1082,8 @@ export class OrderDatabaseOperations {
           ...itemData,
           id: randomUUID(),
           menuSecondaryId: newSecondaryId,
+          isKitchenPrinted: false,
+          kitchenPrintedQuantity: 0,
           createdAt: now,
           updatedAt: now,
         });
@@ -1561,6 +1567,7 @@ export class OrderDatabaseOperations {
             subCategoryName: subCategoryName,
             subCategoryPriority: subCategoryPriority,
             isKitchenPrinted: item.isKitchenPrinted === 1 || item.isKitchenPrinted === true,
+            kitchenPrintedQuantity: Number(item.kitchenPrintedQuantity ?? (item.isKitchenPrinted ? item.quantity : 0)),
             createdAt: item.createdAt || nowObj,
             updatedAt: nowObj,
           };

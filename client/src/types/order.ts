@@ -37,6 +37,7 @@ export interface OrderItem {
   subCategoryName?: string;
   subCategoryPriority?: number;
   isKitchenPrinted?: boolean;
+  kitchenPrintedQuantity?: number;
   productNote?: string;
 }
 export interface Customer {

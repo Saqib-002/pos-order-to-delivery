@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getPendingKitchenItems } from "../../utils/kitchenPrinting";
 import OrderCart from "./OrderCart";
 import OrderProcessingModal from "./OrderProcessingModal";
 import RefundProcessingModal from "./modals/RefundProcessingModal";
@@ -292,9 +293,7 @@ const OrderComponent = () => {
             );
           }
         } else {
-          kitchenItems = items.filter(
-            (item: OrderItem) => !item.isKitchenPrinted,
-          );
+          kitchenItems = getPendingKitchenItems(items);
           if (kitchenItems.length === 0) {
             continue;
           }
@@ -331,7 +330,7 @@ const OrderComponent = () => {
               token,
               kitchenItems.map((item: OrderItem) => ({
                 itemId: item.id,
-                itemData: { isKitchenPrinted: true },
+                itemData: { isKitchenPrinted: true, kitchenPrintedQuantity: item.kitchenPrintedQuantity },
               })),
             );
           }

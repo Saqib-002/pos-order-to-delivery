@@ -1132,7 +1132,7 @@ export const generateItemsReceiptHTML = (
   categorizedGroups.forEach((category) => {
     if (category.name) {
       html += `
-            <div style="border-bottom: 1px solid #000; padding: 5px 0; margin-top: 10px; font-weight: bold; font-size: 17px; text-transform: uppercase;">
+            <div style="border-bottom: 1px solid #000; padding: 5px 0; margin-top: 10px; font-weight: normal; font-style: italic; font-size: 17px; text-transform: uppercase;">
                 ${category.name}
             </div>
       `;

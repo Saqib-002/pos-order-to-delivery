@@ -246,6 +246,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
             ...orderItem,
             ...item,
             id: itemId,
+            isKitchenPrinted: false,
+            kitchenPrintedQuantity: 0,
           };
         }
         return orderItem;
