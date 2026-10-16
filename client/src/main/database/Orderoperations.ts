@@ -627,7 +627,7 @@ export class OrderDatabaseOperations {
     const trx = await db.transaction();
     try {
       const now = new Date().toISOString();
-      let { price, customer, deliveryPerson, ...fieldsToUpdate } = orderData as any;
+      let { price, customer, deliveryPerson, createdAt: _createdAt, ...fieldsToUpdate } = orderData as any;
 
       if (customer) {
         if (customer.name) fieldsToUpdate.customerName = customer.name;
