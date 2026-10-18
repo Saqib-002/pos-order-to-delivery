@@ -287,7 +287,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
                     url: `${vpsUrl}/api/v1/orders/${payload.id}/status`,
                     init: {
                         method: "PUT",
-                        headers: { "Content-Type": "application/json" },
+                        headers: { "Content-Type": "application/json", ...authHeader },
                         body: JSON.stringify(payload),
                     },
                 };
@@ -366,9 +366,13 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
  * - Network error  → keep in queue, increment attempts, retry next tick
  * - Unknown job    → drop (bad data, would never succeed)
  */
+let processorInterval: NodeJS.Timeout | null = null;
 let processing = false;
 export async function processQueue(): Promise<void> {
-    if (processing) return;
+    if (processing) {
+        Logger.info("SyncQueue: tick already in progress, skipping overlapping run");
+        return;
+    }
     processing = true;
     try {
         await processPendingQueue();
@@ -431,9 +435,13 @@ async function processPendingQueue(): Promise<void> {
  * Called once from main/database/index.ts after the DB is ready.
  */
 export function startQueueProcessor(): void {
+    if (processorInterval) {
+        Logger.info("SyncQueue: processor already running, skipping start");
+        return;
+    }
     Logger.info(`SyncQueue: processor started (interval ${PROCESSOR_INTERVAL_MS / 1000}s)`);
 
-    setInterval(async () => {
+    processorInterval = setInterval(async () => {
         try {
             const online = await isOnline();
             if (!online) {
@@ -445,4 +453,15 @@ export function startQueueProcessor(): void {
             Logger.error("SyncQueue: processor tick error:", err);
         }
     }, PROCESSOR_INTERVAL_MS);
+}
+
+/**
+ * Stop the background processor loop.
+ */
+export function stopQueueProcessor(): void {
+    if (processorInterval) {
+        clearInterval(processorInterval);
+        processorInterval = null;
+        Logger.info("SyncQueue: processor stopped");
+    }
 }

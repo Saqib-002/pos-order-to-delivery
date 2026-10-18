@@ -38,25 +38,34 @@ export function deleteAllergenFromVPS(allergenId: string): void {
  * Enqueue product allergens sync to the VPS.
  * Called after product allergens update in productAllergenOperations.
  */
-export async function syncProductAllergensToVPS(productId: string): Promise<void> {
+export async function syncProductAllergensToVPS(
+    productId: string,
+    providedAllergens?: Array<{ allergenId: string; type?: string }>
+): Promise<void> {
     try {
-        const rows = await db("products_allergens").where({ productId }).select("allergenId", "type");
-        
-        for (const r of rows) {
-            if (r.allergenId) {
-                await syncAllergenToVPS(r.allergenId);
+        let allergens = providedAllergens;
+        if (!allergens) {
+            const rows = await db("products_allergens").where({ productId }).select("allergenId", "type");
+            allergens = rows.map((r: any) => ({
+                allergenId: r.allergenId,
+                type: r.type || "contains",
+            }));
+        }
+
+        for (const a of allergens) {
+            if (a.allergenId) {
+                await syncAllergenToVPS(a.allergenId);
             }
         }
 
-        const allergens = rows.map((r: any) => ({
-            allergenId: r.allergenId,
-            type: r.type || "contains",
-        }));
-        const allergenIds = rows.map((r: any) => r.allergenId);
+        const allergenIds = allergens.map((a: any) => a.allergenId);
 
         enqueue("product_allergen", "upsert", {
             productId,
-            allergens,
+            allergens: allergens.map((a: any) => ({
+                allergenId: a.allergenId,
+                type: a.type || "contains",
+            })),
             allergenIds,
         });
     } catch (err) {

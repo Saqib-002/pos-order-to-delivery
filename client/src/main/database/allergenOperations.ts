@@ -207,7 +207,7 @@ export class AllergenDatabaseOperations {
       });
 
       // Queue VPS sync
-      await syncProductAllergensToVPS(productId);
+      await syncProductAllergensToVPS(productId, allergens);
 
       return { success: true };
     } catch (error) {

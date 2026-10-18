@@ -1,6 +1,7 @@
 import { db } from "../../database/index.js";
 import { enqueue } from "./queue/index.js";
 import { syncLogger as Logger } from "../logger.js";
+import { syncProductAllergensToVPS } from "./allergens.js";
 
 /**
  * Enqueue a product upsert to the VPS.
@@ -144,6 +145,7 @@ export async function syncProductAssociationsToVPS(productId: string): Promise<v
                 updatedAt: row.updatedAt,
             });
         }
+        await syncProductAllergensToVPS(productId);
     } catch (err) {
         Logger.error(`SyncManager [products]: error queuing association upserts for product ${productId}:`, err);
     }

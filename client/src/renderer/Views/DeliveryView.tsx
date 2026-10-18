@@ -286,6 +286,15 @@ export const DeliveryView = () => {
     return Array.from(driverMap.values());
   }, [outForDeliveryOrders]);
 
+  const driverOrderCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    activeOutDrivers.forEach((d) => {
+      map[d.id] = d.count;
+      map[d.name] = d.count;
+    });
+    return map;
+  }, [activeOutDrivers]);
+
   const handleCancelOrderClick = (order: Order) => {
     setSelectedOrderForCancel(order);
     setIsCancelOrderModalOpen(true);
@@ -797,6 +806,7 @@ export const DeliveryView = () => {
             setShowSuggestions={setShowDeliverySuggestions}
             onAssign={() => readyOrders[0] && assignDelivery(readyOrders[0])}
             disabled={!deliveryPerson?.name.trim() || readyOrders.length === 0}
+            activeDeliveryCounts={driverOrderCounts}
           />
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
             <div className="px-6 py-4 border-b border-gray-200">

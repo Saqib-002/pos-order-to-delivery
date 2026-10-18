@@ -1448,7 +1448,12 @@
     "chooseDeliveryPerson": "Elige un repartidor...",
     "quickAssign": "Asignación Rápida",
     "clearSelection": "Limpiar selección",
-    "selectedPerson": "Seleccionado: {{name}}. Haz clic en \"Asignar\" en cualquier pedido para asignar este repartidor."
+    "selectedPerson": "Seleccionado: {{name}}. Haz clic en \"Asignar\" en cualquier pedido para asignar este repartidor.",
+    "clickToAssign": "Haz clic en \"Asignar\" en cualquier pedido para despacharlo con este repartidor.",
+    "activeSelection": "Repartidor seleccionado:",
+    "readyToAssignHint": "Listo: pulsa el botón \"Asignar\" en la fila del pedido deseado",
+    "selectPrompt": "Selecciona un repartidor para asignarle pedidos.",
+    "noDeliveryPersons": "No hay repartidores disponibles. Puedes agregarlos en Configuración > Repartidores."
   },
   "deliveryView": {
     "title": "Registro de Repartidores",

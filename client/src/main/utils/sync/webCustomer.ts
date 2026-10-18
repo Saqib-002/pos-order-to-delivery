@@ -83,21 +83,32 @@ async function syncWebCustomers(): Promise<void> {
   }
 }
 
+let customerInterval: NodeJS.Timeout | null = null;
+
 /**
- * Starts the dedicated web-customer sync loop on a 30-second interval.
+ * Starts the dedicated web-customer sync loop on a 120-second interval.
  * Kept separate from the 10-second order-status poll intentionally.
  */
 export function startWebCustomerSync(): void {
-  Logger.info("WebCustomerSync: starting background sync loop (30s interval)...");
+  if (customerInterval) return;
+  Logger.info("WebCustomerSync: starting background sync loop (120s interval)...");
 
   // Run once immediately on startup so the table is populated without waiting
   syncWebCustomers().catch((err) =>
     Logger.error("WebCustomerSync: initial sync error:", err)
   );
 
-  setInterval(() => {
+  customerInterval = setInterval(() => {
     syncWebCustomers().catch((err) =>
       Logger.error("WebCustomerSync: sync tick error:", err)
     );
   }, 120_000);
+}
+
+export function stopWebCustomerSync(): void {
+  if (customerInterval) {
+    clearInterval(customerInterval);
+    customerInterval = null;
+    Logger.info("WebCustomerSync: stopped background sync loop.");
+  }
 }

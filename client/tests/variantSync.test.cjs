@@ -13,6 +13,24 @@ function load(file, mocks, globals = {}) {
   return exports;
 }
 const plain = value => JSON.parse(JSON.stringify(value));
+test('queue timer starts once, stops safely, and can restart', () => {
+  const timers = [], cleared = [];
+  const processor = load('utils/sync/queue/processor.ts', {
+    '../../logger.js': { syncLogger: logger }, './connectivity.js': { isOnline: async () => true },
+    './db.js': { readQueue: () => [], writeQueue() {} },
+  }, {
+    setInterval(callback, interval) { const timer = { callback, interval }; timers.push(timer); return timer; },
+    clearInterval(timer) { cleared.push(timer); },
+  });
+  processor.startQueueProcessor(); processor.startQueueProcessor();
+  assert.equal(timers.length, 1);
+  processor.stopQueueProcessor(); processor.stopQueueProcessor();
+  assert.deepEqual(cleared, [timers[0]]);
+  processor.startQueueProcessor();
+  assert.equal(timers.length, 2);
+  processor.stopQueueProcessor();
+  assert.deepEqual(cleared, timers);
+});
 test('variant edit queues option metadata before product links and their current prices', async () => {
   const jobs = [];
   const items = [{ id: 'old', name: 'Renamed', variantId: 'size' }, { id: 'new', name: 'New', variantId: 'size' }];
