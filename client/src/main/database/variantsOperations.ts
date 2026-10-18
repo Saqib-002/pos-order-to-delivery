@@ -140,6 +140,12 @@ export class VariantsDatabaseOperations {
             const itemsToDelete = existingItems.filter(
                 (item) => !providedItemIds.has(item.id)
             );
+            // Capture attachments before deleting the last old option in a group.
+            const existingAttachedProducts = await trx("products_variants")
+                .leftJoin("variant_items", "products_variants.variantId", "variant_items.id")
+                .where("variant_items.variantId", variantData.id)
+                .distinct("products_variants.productId")
+                .select("products_variants.productId as productId");
             if (itemsToDelete.length > 0) {
                 const itemIdsToDelete = itemsToDelete.map((item) => item.id);
                 for (const item of itemsToDelete) {
@@ -155,15 +161,6 @@ export class VariantsDatabaseOperations {
                     .whereIn("variantId", itemIdsToDelete)
                     .delete();
             }
-            const existingAttachedProducts = await trx("products_variants")
-                .leftJoin(
-                    "variant_items",
-                    "products_variants.variantId",
-                    "variant_items.id"
-                )
-                .where("variant_items.variantId", variantData.id)
-                .distinct("products_variants.productId")
-                .select("products_variants.productId as productId");
             for (const item of variantItems) {
                 const existingItem = await trx("variant_items")
                     .where("variantId", variantData.id)
@@ -204,6 +201,7 @@ export class VariantsDatabaseOperations {
                             id: randomUUID(),
                             productId: p.productId,
                             variantId: newItemId,
+                            price: 0,
                             createdAt: now,
                             updatedAt: now,
                         });

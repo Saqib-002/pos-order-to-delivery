@@ -366,16 +366,29 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
  * - Network error  → keep in queue, increment attempts, retry next tick
  * - Unknown job    → drop (bad data, would never succeed)
  */
+let processing = false;
 export async function processQueue(): Promise<void> {
+    if (processing) return;
+    processing = true;
+    try {
+        await processPendingQueue();
+    } finally {
+        processing = false;
+    }
+}
+
+async function processPendingQueue(): Promise<void> {
     const jobs = readQueue();
     if (jobs.length === 0) return;
 
     Logger.info(`SyncQueue: processing ${jobs.length} pending job(s)...`);
 
     const remaining: SyncJob[] = [];
+    const attempted = new Set<string>();
     let succeeded = 0;
 
     for (const job of jobs) {
+        attempted.add(job.id);
         const request = buildRequest(job);
 
         // Unknown entity — drop and move on
@@ -395,6 +408,7 @@ export async function processQueue(): Promise<void> {
                     attempts: job.attempts + 1,
                     lastAttemptAt: new Date().toISOString(),
                 });
+                break; // Keep dependencies and newer updates behind the failed job.
             }
         } catch (err) {
             Logger.warn(`SyncQueue: job ${job.id} attempt ${job.attempts + 1} failed — ${String(err)} — will retry`);
@@ -403,10 +417,12 @@ export async function processQueue(): Promise<void> {
                 attempts: job.attempts + 1,
                 lastAttemptAt: new Date().toISOString(),
             });
+            break;
         }
     }
 
-    writeQueue(remaining);
+    // Enqueue can run while fetch is pending. Preserve all unattempted/new jobs.
+    writeQueue([...remaining, ...readQueue().filter(job => !attempted.has(job.id))]);
     Logger.info(`SyncQueue: done — ${succeeded} completed, ${remaining.length} still pending`);
 }
 

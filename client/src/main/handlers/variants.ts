@@ -84,14 +84,12 @@ export const updateVariant = async (
     try {
         await verifyToken(event, token);
         
-        // Find deleted variant items before update commits
+        // Record deletions now; publish them only after the local transaction commits.
+        let deletedItems: { id: string }[] = [];
         if (variantData && variantData.id) {
             const existingItems = await db("variant_items").where({ variantId: variantData.id }).select("id");
             const providedIds = new Set(variantItems.map((item: any) => item.id).filter((id: any) => id));
-            const deletedItems = existingItems.filter(item => !providedIds.has(item.id));
-            for (const item of deletedItems) {
-                deleteVariantItemFromVPS(item.id);
-            }
+            deletedItems = existingItems.filter(item => !providedIds.has(item.id));
         }
 
         const result = await VariantsDatabaseOperations.updateVariant(
@@ -100,8 +98,9 @@ export const updateVariant = async (
         );
 
         if (variantData && variantData.id) {
-            syncVariantToVPS(variantData.id);
-            syncVariantItemsForVariant(variantData.id);
+            for (const item of deletedItems) deleteVariantItemFromVPS(item.id);
+            await syncVariantToVPS(variantData.id);
+            await syncVariantItemsForVariant(variantData.id);
         }
 
         return {

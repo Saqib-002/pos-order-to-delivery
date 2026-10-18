@@ -77,6 +77,13 @@ export async function syncVariantItemsForVariant(variantId: string): Promise<voi
                 variantId: item.variantId,
             });
         }
+        // Options alone are not selectable online: sync their per-product prices too.
+        const links = items.length ? await db("products_variants").whereIn("variantId", items.map(item => item.id)) : [];
+        for (const row of links) {
+            enqueue("productvariant", "upsert", {
+                id: row.id, productId: row.productId, variantId: row.variantId, price: row.price,
+            });
+        }
     } catch (err) {
         Logger.error(`SyncManager [variants]: error queuing items upsert for variant ${variantId}:`, err);
     }
