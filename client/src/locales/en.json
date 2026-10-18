@@ -1448,7 +1448,12 @@
     "chooseDeliveryPerson": "Choose a delivery person...",
     "quickAssign": "Quick Assign",
     "clearSelection": "Clear selection",
-    "selectedPerson": "Selected: {{name}}. Click \"Assign\" on any order to assign this delivery person."
+    "selectedPerson": "Selected: {{name}}. Click \"Assign\" on any order to assign this delivery person.",
+    "clickToAssign": "Click \"Assign\" on any order to dispatch it with this delivery person.",
+    "activeSelection": "Selected delivery person:",
+    "readyToAssignHint": "Ready: click the \"Assign\" button on the order row",
+    "selectPrompt": "Select a delivery person to assign orders.",
+    "noDeliveryPersons": "No delivery persons available. You can add them in Settings > Delivery Persons."
   },
   "deliveryView": {
     "title": "Delivery Management",

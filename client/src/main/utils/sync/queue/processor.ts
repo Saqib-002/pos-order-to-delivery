@@ -366,48 +366,61 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
  * - Network error  → keep in queue, increment attempts, retry next tick
  * - Unknown job    → drop (bad data, would never succeed)
  */
+let isProcessingQueue = false;
+let processorInterval: NodeJS.Timeout | null = null;
+
 export async function processQueue(): Promise<void> {
-    const jobs = readQueue();
-    if (jobs.length === 0) return;
+    if (isProcessingQueue) {
+        Logger.info("SyncQueue: tick already in progress, skipping overlapping run");
+        return;
+    }
+    isProcessingQueue = true;
 
-    Logger.info(`SyncQueue: processing ${jobs.length} pending job(s)...`);
+    try {
+        const jobs = readQueue();
+        if (jobs.length === 0) return;
 
-    const remaining: SyncJob[] = [];
-    let succeeded = 0;
+        Logger.info(`SyncQueue: processing ${jobs.length} pending job(s)...`);
 
-    for (const job of jobs) {
-        const request = buildRequest(job);
+        const remaining: SyncJob[] = [];
+        let succeeded = 0;
 
-        // Unknown entity — drop and move on
-        if (!request) continue;
+        for (const job of jobs) {
+            const request = buildRequest(job);
 
-        try {
-            const response = await fetch(request.url, request.init);
+            // Unknown entity — drop and move on
+            if (!request) continue;
 
-            if (response.ok) {
-                Logger.info(`SyncQueue: job ${job.id} (${job.entity}:${job.operation}) succeeded after ${job.attempts + 1} attempt(s)`);
-                succeeded++;
-                // Not pushed to remaining — job is done
-            } else {
-                Logger.warn(`SyncQueue: job ${job.id} attempt ${job.attempts + 1} failed — HTTP ${response.status} — will retry`);
+            try {
+                const response = await fetch(request.url, request.init);
+
+                if (response.ok) {
+                    Logger.info(`SyncQueue: job ${job.id} (${job.entity}:${job.operation}) succeeded after ${job.attempts + 1} attempt(s)`);
+                    succeeded++;
+                    // Not pushed to remaining — job is done
+                } else {
+                    Logger.warn(`SyncQueue: job ${job.id} attempt ${job.attempts + 1} failed — HTTP ${response.status} — will retry`);
+                    remaining.push({
+                        ...job,
+                        attempts: job.attempts + 1,
+                        lastAttemptAt: new Date().toISOString(),
+                    });
+                }
+            } catch (err) {
+                Logger.warn(`SyncQueue: job ${job.id} attempt ${job.attempts + 1} failed — ${String(err)} — will retry`);
                 remaining.push({
                     ...job,
                     attempts: job.attempts + 1,
                     lastAttemptAt: new Date().toISOString(),
                 });
             }
-        } catch (err) {
-            Logger.warn(`SyncQueue: job ${job.id} attempt ${job.attempts + 1} failed — ${String(err)} — will retry`);
-            remaining.push({
-                ...job,
-                attempts: job.attempts + 1,
-                lastAttemptAt: new Date().toISOString(),
-            });
         }
-    }
 
-    writeQueue(remaining);
-    Logger.info(`SyncQueue: done — ${succeeded} completed, ${remaining.length} still pending`);
+        writeQueue(remaining);
+        Logger.info(`SyncQueue: done — ${succeeded} completed, ${remaining.length} still pending`);
+    } finally {
+        isProcessingQueue = false;
+    }
 }
 
 /**
@@ -415,9 +428,13 @@ export async function processQueue(): Promise<void> {
  * Called once from main/database/index.ts after the DB is ready.
  */
 export function startQueueProcessor(): void {
+    if (processorInterval) {
+        Logger.info("SyncQueue: processor already running, skipping start");
+        return;
+    }
     Logger.info(`SyncQueue: processor started (interval ${PROCESSOR_INTERVAL_MS / 1000}s)`);
 
-    setInterval(async () => {
+    processorInterval = setInterval(async () => {
         try {
             const online = await isOnline();
             if (!online) {
@@ -429,4 +446,15 @@ export function startQueueProcessor(): void {
             Logger.error("SyncQueue: processor tick error:", err);
         }
     }, PROCESSOR_INTERVAL_MS);
+}
+
+/**
+ * Stop the background processor loop.
+ */
+export function stopQueueProcessor(): void {
+    if (processorInterval) {
+        clearInterval(processorInterval);
+        processorInterval = null;
+        Logger.info("SyncQueue: processor stopped");
+    }
 }

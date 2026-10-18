@@ -150,11 +150,13 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
                 : isLocalDatabaseHost(credentials.host);
 
         if (isMaster) {
+            await stopCloudSyncServices();
             Logger.info(
                 `Server/Master POS active (host: "${credentials.host}", isSyncMaster: ${credentials.isSyncMaster ?? "auto"}). Starting background cloud sync services...`
             );
             await startCloudSyncServices();
         } else {
+            await stopCloudSyncServices();
             Logger.info(
                 `Client POS active (connected to database at "${credentials.host}"). Background cloud sync services are delegated to the Server POS.`
             );
@@ -224,6 +226,12 @@ export async function stopCloudSyncServices(): Promise<void> {
         stopKitchenStatusSync();
     } catch (err) {
         Logger.error("Failed to stop kitchen status sync:", err);
+    }
+    try {
+        const { stopQueueProcessor } = await import("../utils/sync/index.js");
+        stopQueueProcessor();
+    } catch (err) {
+        Logger.error("Failed to stop sync queue processor:", err);
     }
 }
 export async function closeDatabase(): Promise<void> {
