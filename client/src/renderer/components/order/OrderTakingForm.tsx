@@ -68,6 +68,9 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
   const getVariantAndGroups = async () => {
     try {
       setIsLoading(true);
+      setVariantItems(null);
+      setSelectedVariant(null);
+      setAutoAddPending(false);
 
       // Get variants
       const res = await (window as any).electronAPI.getVariantsByProductId(
@@ -152,9 +155,7 @@ const OrderTakingForm = ({ token, currentOrderItem }: OrderTakingFormProps) => {
           const variant = res.data.find(
             (v: any) => v.id === editingProduct.variantId,
           );
-          if (variant) {
-            setSelectedVariant(variant);
-          }
+          setSelectedVariant(variant || null);
         } else {
           setSelectedVariant(res.data[0]);
         }

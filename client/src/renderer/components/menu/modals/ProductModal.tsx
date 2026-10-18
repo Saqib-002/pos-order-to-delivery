@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { CustomSelect } from "../../ui/CustomSelect";
 import { getGroups, getVariants } from "@/renderer/utils/menu";
+import { filterVariantPrices } from "@/renderer/utils/variantSelection";
 import { Variant } from "../VariantView";
 import { Group } from "../GroupView";
 // import CrossIcon from "../../../public/icons/cross.svg?react";
@@ -186,16 +187,20 @@ const ProductModal: React.FC<ProductModalProps> = ({
           );
           return;
         }
-        const newPrices = res.data.reduce((obj: any, item: any) => {
+        // Read the saved group directly; the separate group-list request may still be loading.
+        const savedGroupId = res.data[0]?.variantId || "";
+        const savedItems = res.data.filter((item: any) => item.variantId === savedGroupId);
+        const newPrices = savedItems.reduce((obj: any, item: any) => {
           obj[item.id] = item.price;
           return obj;
         }, {});
-        const newPricesRaw = res.data.reduce((obj: any, item: any) => {
+        const newPricesRaw = savedItems.reduce((obj: any, item: any) => {
           obj[item.id] = item.price?.toString() || "0";
           return obj;
         }, {});
         setVariantPricesRaw(newPricesRaw);
-        handleVariantChange(res.data[0]?.variantId, newPrices);
+        setSelectedVariant(savedGroupId);
+        setVariantPrices(newPrices);
         const groupRes = await (
           window as any
         ).electronAPI.getAddOnPagesByProductId(token, product.id);
@@ -362,29 +367,17 @@ const ProductModal: React.FC<ProductModalProps> = ({
   };
 
   // Handle variant selection
-  const handleVariantChange = (variantId: string, newVariantPrices?: any) => {
+  const handleVariantChange = (variantId: string) => {
     setSelectedVariant(variantId);
     if (!variantId) {
       setVariantPrices({});
+      setVariantPricesRaw({});
       return;
     }
-    const newPrices = newVariantPrices
-      ? { ...newVariantPrices }
-      : { ...variantPrices };
     const variant = variants.find((v) => v.id === variantId);
-    if (variant) {
-      variant.items.forEach((item) => {
-        const itemKey = item.id;
-        if (!(itemKey in newPrices)) {
-          newPrices[itemKey] = 0;
-          setVariantPricesRaw((prev) => ({
-            ...prev,
-            [itemKey]: "0",
-          }));
-        }
-      });
-    }
+    const newPrices = filterVariantPrices(variant?.items || [], variantPrices);
     setVariantPrices(newPrices);
+    setVariantPricesRaw(Object.fromEntries(Object.entries(newPrices).map(([id, price]) => [id, String(price)])));
   };
 
   // Handle variant item price change
@@ -695,6 +688,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
         return;
       }
     }
+    const selectedGroup = variants.find((variant) => variant.id === selectedVariant);
+    if (selectedVariant && !selectedGroup) {
+      toast.error(t("menuComponents.modals.productModal.errors.unableToGetVariant"));
+      return;
+    }
+    const currentVariantPrices = filterVariantPrices(selectedGroup?.items || [], variantPrices);
     setIsSubmitting(true);
     try {
       // Simulate API call
@@ -713,7 +712,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
         res = await (window as any).electronAPI.createProduct(
           token,
           newFormData,
-          variantPrices,
+          currentVariantPrices,
           validAddonPages,
           selectedPrinterIds
         );
@@ -721,7 +720,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
         res = await (window as any).electronAPI.updateProduct(
           token,
           { id: product.id, ...newFormData },
-          variantPrices,
+          currentVariantPrices,
           validAddonPages,
           selectedPrinterIds
         );
