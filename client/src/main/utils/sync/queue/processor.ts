@@ -2,7 +2,7 @@ import { syncLogger as Logger } from "../../logger.js";
 import { readQueue, writeQueue, SyncJob } from "./db.js";
 import { isOnline } from "./connectivity.js";
 
-const PROCESSOR_INTERVAL_MS = 15_000; // 15 seconds
+const PROCESSOR_INTERVAL_MS = 5_000; // 15 seconds
 
 /**
  * Build the fetch options for a given job.
