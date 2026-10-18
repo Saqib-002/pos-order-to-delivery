@@ -228,6 +228,12 @@ export async function stopCloudSyncServices(): Promise<void> {
         Logger.error("Failed to stop kitchen status sync:", err);
     }
     try {
+        const { stopWebCustomerSync } = await import("../utils/sync/webCustomer.js");
+        stopWebCustomerSync();
+    } catch (err) {
+        Logger.error("Failed to stop web customer sync:", err);
+    }
+    try {
         const { stopQueueProcessor } = await import("../utils/sync/index.js");
         stopQueueProcessor();
     } catch (err) {

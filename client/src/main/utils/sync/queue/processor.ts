@@ -287,7 +287,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
                     url: `${vpsUrl}/api/v1/orders/${payload.id}/status`,
                     init: {
                         method: "PUT",
-                        headers: { "Content-Type": "application/json" },
+                        headers: { "Content-Type": "application/json", ...authHeader },
                         body: JSON.stringify(payload),
                     },
                 };
