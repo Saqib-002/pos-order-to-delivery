@@ -1,5 +1,6 @@
 import { ipcMain } from "electron";
 import Logger from "./utils/logger.js";
+import os from "os";
 import {
   getSiteContent,
   saveSiteContent,
@@ -287,6 +288,13 @@ export function registerIpcHandlers() {
       }
     });
   };
+
+  ipcMain.handle("get-device-info", async () => {
+    return {
+      hostname: os.hostname(),
+      username: os.userInfo().username,
+    };
+  });
 
   // db handlers
   ipcMain.handle("get-db-credentials", async () => {

@@ -197,6 +197,12 @@ export class ProductsDatabaseOperations {
             await trx("products")
                 .where("id", productData.id)
                 .update(productData);
+            // 1. Preserve existing variant IDs
+            const existingVariants = await trx("products_variants")
+                .where("productId", productData.id)
+                .select("id", "variantId");
+            const variantIdToExistingId = new Map(existingVariants.map((v) => [v.variantId, v.id]));
+
             await trx("products_variants")
                 .where("productId", productData.id)
                 .delete();
@@ -204,7 +210,7 @@ export class ProductsDatabaseOperations {
                 variantPrices
             )) {
                 const newVariantPrice = {
-                    id: randomUUID(),
+                    id: variantIdToExistingId.get(variantItemId) || randomUUID(),
                     variantId: variantItemId,
                     productId: productData.id,
                     price,
@@ -213,13 +219,25 @@ export class ProductsDatabaseOperations {
                 };
                 await trx("products_variants").insert(newVariantPrice);
             }
+
+            // 2. Preserve existing group IDs
+            const existingGroups = await trx("products_groups")
+                .where("productId", productData.id)
+                .select("id", "groupId", "pageNo");
+            const groupIdToExistingId = new Map(
+                existingGroups.map((g) => [`${g.groupId}_${g.pageNo}`, g.id])
+            );
+
             await trx("products_groups")
                 .where("productId", productData.id)
                 .delete();
             const newAddonPages = [];
             for (const addonPage of addonPages) {
+                const existingId =
+                    groupIdToExistingId.get(`${addonPage.selectedGroup}_${addonPage.pageNo}`) ||
+                    existingGroups.find((g) => g.groupId === addonPage.selectedGroup)?.id;
                 newAddonPages.push({
-                    id: randomUUID(),
+                    id: existingId || randomUUID(),
                     productId: productData.id,
                     minComplements: addonPage.minComplements,
                     maxComplements: addonPage.maxComplements,
@@ -235,13 +253,20 @@ export class ProductsDatabaseOperations {
             if (newAddonPages.length > 0) {
                 await trx("products_groups").insert(newAddonPages);
             }
+
+            // 3. Preserve existing printer IDs
+            const existingPrinters = await trx("printers_products")
+                .where("productId", productData.id)
+                .select("id", "printerId");
+            const printerIdToExistingId = new Map(existingPrinters.map((p) => [p.printerId, p.id]));
+
             await trx("printers_products")
                 .where("productId", productData.id)
                 .delete();
             if (printerIds.length > 0) {
                 await trx("printers_products").insert(
                     printerIds.map((printerId) => ({
-                        id: randomUUID(),
+                        id: printerIdToExistingId.get(printerId) || randomUUID(),
                         printerId,
                         productId: productData.id,
                         createdAt: now,

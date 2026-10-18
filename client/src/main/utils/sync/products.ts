@@ -49,19 +49,54 @@ export function deleteProductFromVPS(productId: string): void {
  * Query existing product-variant and product-group links for a product
  * and enqueue delete jobs for them (called before updating a product).
  */
-export async function deleteProductAssociationsFromVPS(productId: string): Promise<void> {
+/**
+ * Query existing product-variant, product-group, and printer links for a product
+ * and enqueue delete jobs for any that have been removed.
+ * If new state parameters are omitted (e.g. on full product delete), deletes all.
+ */
+export async function deleteProductAssociationsFromVPS(
+    productId: string,
+    variantPrices?: any,
+    addonPages?: any,
+    printerIds?: string[]
+): Promise<void> {
     try {
-        const oldVariants = await db("products_variants").where({ productId }).select("id");
-        const oldGroups = await db("products_groups").where({ productId }).select("id");
-        const oldPrinters = await db("printers_products").where({ productId }).select("id");
+        const oldVariants = await db("products_variants").where({ productId }).select("id", "variantId");
+        const oldGroups = await db("products_groups").where({ productId }).select("id", "groupId", "pageNo");
+        const oldPrinters = await db("printers_products").where({ productId }).select("id", "printerId");
 
-        for (const row of oldVariants) {
+        // 1. Variants to delete
+        let variantsToDelete = oldVariants;
+        if (variantPrices !== undefined && variantPrices !== null) {
+            const currentVariantIds = new Set(Object.keys(variantPrices));
+            variantsToDelete = oldVariants.filter((v) => !currentVariantIds.has(v.variantId));
+        }
+        for (const row of variantsToDelete) {
             enqueue("productvariant", "delete", { id: row.id });
         }
-        for (const row of oldGroups) {
+
+        // 2. Groups to delete
+        let groupsToDelete = oldGroups;
+        if (addonPages !== undefined && addonPages !== null) {
+            const currentGroupKeys = new Set(
+                addonPages.map((p: any) => `${p.selectedGroup}_${p.pageNo}`)
+            );
+            const currentGroupIds = new Set(addonPages.map((p: any) => p.selectedGroup));
+            groupsToDelete = oldGroups.filter(
+                (g) => !currentGroupKeys.has(`${g.groupId}_${g.pageNo}`) && !currentGroupIds.has(g.groupId)
+            );
+        }
+        for (const row of groupsToDelete) {
             enqueue("productgroup", "delete", { id: row.id });
         }
-        for (const row of oldPrinters) {
+
+        // 3. Printers to delete
+        let printersToDelete = oldPrinters;
+        if (printerIds !== undefined && printerIds !== null) {
+            const currentPrinterIds = new Set(printerIds);
+            printersToDelete = oldPrinters.filter((p) => !currentPrinterIds.has(p.printerId));
+        }
+        for (const row of printersToDelete) {
             enqueue("printerproduct", "delete", { id: row.id });
         }
     } catch (err) {

@@ -93,7 +93,12 @@ export const updateProduct = async (
     try {
         await verifyToken(event, token);
         if (productData && productData.id) {
-            await deleteProductAssociationsFromVPS(productData.id);
+            await deleteProductAssociationsFromVPS(
+                productData.id,
+                variantPrices,
+                addonPages,
+                printerIds
+            );
         }
         const result = await ProductsDatabaseOperations.updateProduct(
             productData,

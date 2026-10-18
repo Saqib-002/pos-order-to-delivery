@@ -15,7 +15,8 @@
       "@/*": ["*"]
     },
     "allowImportingTsExtensions": true,
-    "noEmit": true
+    "noEmit": true,
+    "types": ["vite/client"]
   },
   "include": ["src/**/*","src/**/*.d.ts"],
   "exclude": ["node_modules", "dist"]

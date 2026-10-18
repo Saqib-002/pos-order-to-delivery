@@ -1,5 +1,24 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
+// Sentry Electron sandboxed IPC bridge
+try {
+  const namespace = "sentry-ipc";
+  const sentryIpc = {
+    sendRendererStart: () => ipcRenderer.send(`${namespace}.start`),
+    sendScope: (scopeJson: any) => ipcRenderer.send(`${namespace}.scope`, scopeJson),
+    sendEnvelope: (envelope: any) => ipcRenderer.send(`${namespace}.envelope`, envelope),
+    sendFeedback: (envelope: any) => ipcRenderer.invoke(`${namespace}.feedback`, envelope),
+    sendStatus: (status: any) => ipcRenderer.send(`${namespace}.status`, status),
+    sendStructuredLog: (log: any) => ipcRenderer.send(`${namespace}.structured-log`, log),
+    sendMetric: (metric: any) => ipcRenderer.send(`${namespace}.metric`, metric),
+  };
+  if (contextBridge) {
+    contextBridge.exposeInMainWorld("__SENTRY_IPC__", { [namespace]: sentryIpc });
+  }
+} catch {
+  // Sentry IPC setup fallback
+}
+
 interface User {
   id?: string;
   username: string;
@@ -29,6 +48,7 @@ const syncStatusCallbacks = new Set<(status: any) => void>();
 const orderChangeCallbacks = new Set<(change: any, event: any) => void>();
 
 contextBridge.exposeInMainWorld("electronAPI", {
+  getDeviceInfo: () => ipcRenderer.invoke("get-device-info"),
   // db
   getDbCredentials: () => ipcRenderer.invoke("get-db-credentials"),
   saveAndInitDb: (credentials: any) =>

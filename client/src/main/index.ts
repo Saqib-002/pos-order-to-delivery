@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/electron/main";
 import { app, BrowserWindow, session } from "electron";
 import { createWindow } from "./window.js";
 import { registerIpcHandlers } from "./ipcHandlers.js";
@@ -5,12 +6,44 @@ import { initDatabase, closeDatabase } from "./database/index.js";
 import Logger from "electron-log";
 import path from "path";
 import dotenv from "dotenv";
+import os from "os";
 
 const isPackaged = app.isPackaged;
 if (isPackaged) {
   dotenv.config({ path: path.join(process.resourcesPath, ".env") });
 } else {
   dotenv.config();
+}
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN || "https://c4a321d596ed8726ce01949d87dc0d84@o4508920124276736.ingest.us.sentry.io/4512271446900736",
+  environment: process.env.NODE_ENV || (isPackaged ? "production" : "development"),
+  tracesSampleRate: 0,
+  ignoreErrors: [
+    "fetch failed",
+    "ECONNRESET",
+    "ENOTFOUND",
+    "ETIMEDOUT",
+    "aborted",
+    "NetworkError",
+    "Failed to fetch",
+  ],
+});
+
+try {
+  const hostname = os.hostname();
+  const username = os.userInfo().username;
+  Sentry.setTag("hostname", hostname);
+  Sentry.setTag("os_user", username);
+  Sentry.setContext("device", {
+    name: hostname,
+    os_user: username,
+    platform: process.platform,
+    arch: process.arch,
+    release: os.release(),
+  });
+} catch {
+  // Ignore device info error
 }
 
 app.whenReady().then(async () => {
