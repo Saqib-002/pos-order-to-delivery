@@ -91,7 +91,7 @@ export const updateMenu = async (
 ) => {
     try {
         await verifyToken(event, token);
-        await deleteMenuAssociationsFromVPS(id);
+        await deleteMenuAssociationsFromVPS(id, MenuPageAssociations);
         const res = await MenusOperations.updateMenu(id, updates, MenuPageAssociations);
         if (res && res.id) {
             syncMenuToVPS(res.id);

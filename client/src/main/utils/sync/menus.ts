@@ -114,10 +114,19 @@ export async function syncMenuAssociationsToVPS(menuId: string): Promise<void> {
 /**
  * Delete associations for a menu.
  */
-export async function deleteMenuAssociationsFromVPS(menuId: string): Promise<void> {
+export async function deleteMenuAssociationsFromVPS(
+    menuId: string,
+    currentAssociations?: Array<{ id?: string; menuPageId?: string }>
+): Promise<void> {
     try {
-        const oldAssoc = await db("menu_page_associations").where({ menuId }).select("id");
-        for (const row of oldAssoc) {
+        const oldAssoc = await db("menu_page_associations").where({ menuId }).select("id", "menuPageId");
+        let toDelete = oldAssoc;
+        if (currentAssociations !== undefined && currentAssociations !== null) {
+            const currentIds = new Set(currentAssociations.map((a) => a.id).filter(Boolean));
+            const currentPageIds = new Set(currentAssociations.map((a) => a.menuPageId).filter(Boolean));
+            toDelete = oldAssoc.filter((a) => !currentIds.has(a.id) && !currentPageIds.has(a.menuPageId));
+        }
+        for (const row of toDelete) {
             enqueue("menupageassociation", "delete", { id: row.id });
         }
     } catch (err) {
