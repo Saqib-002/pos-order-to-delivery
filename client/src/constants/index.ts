@@ -71,6 +71,7 @@ export const CATEGORY_LABELS = {
   [MENU_CATEGORIES.SANDWICHES]: "Sandwiches",
 } as const;
 export const DEFAULT_PAGE_LIMIT = 25;
+export const OPERATIONAL_PAGE_LIMIT = 50;
 
 // Module Permissions Configuration
 export const MODULES = {

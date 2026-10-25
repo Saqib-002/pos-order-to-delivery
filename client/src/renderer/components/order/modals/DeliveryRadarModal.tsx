@@ -21,6 +21,7 @@ import { Order, DeliveryPerson } from "@/types/order";
 import { CustomSelect } from "../../ui/CustomSelect";
 import {
   geocodeAddress,
+  getOsrmBaseUrl,
   calculateBearing,
   getCompassDirection,
   getCompassCode,
@@ -33,6 +34,8 @@ import { formatAddress, getOrderDisplayNumber } from "../../../utils/utils";
 import { updateOrder } from "../../../utils/order";
 import { calculateOrderTotal } from "../../../utils/orderCalculations";
 import { useConfigurations } from "../../../contexts/configurationContext";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 const formatElapsedTime = (minutes: number) => {
   if (minutes < 1) return "< 1m";
@@ -71,12 +74,13 @@ interface DeliveryRadarModalProps {
   readyOrders: Order[];
   kitchenOrders: Order[];
   restaurantAddress: string;
-  googleMapsApiKey: string;
+  googleMapsApiKey?: string;
   deliveryPersons: DeliveryPerson[];
   token: string | null;
   onOrdersAssigned: () => void;
   orderPrefix?: string;
   restaurantLogo?: string;
+  restaurantCoords?: { lat: number; lng: number };
 }
 
 export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
@@ -85,6 +89,7 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
   readyOrders,
   kitchenOrders,
   restaurantAddress,
+  restaurantCoords,
   googleMapsApiKey,
   deliveryPersons,
   token,
@@ -97,17 +102,16 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
   const deliveryZones = configurations?.deliveryZones || [];
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
-  const corridorPolylinesRef = useRef<any[]>([]);
-  const zonePolygonsRef = useRef<any[]>([]);
-  const directionsRendererRef = useRef<any>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<L.Marker[]>([]);
+  const corridorPolylinesRef = useRef<L.Polyline[]>([]);
+  const zonePolygonsRef = useRef<L.Polygon[]>([]);
+  const osrmRoutePolylineRef = useRef<L.Polyline | null>(null);
   const geocodeCache = useRef<Map<string, { lat: number; lng: number }>>(
     new Map()
   );
   const hasFittedInitialBounds = useRef(false);
 
-  const [isMapReady, setIsMapReady] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [showZones, setShowZones] = useState(false);
   const [restaurantCoord, setRestaurantCoord] = useState<{
@@ -186,46 +190,17 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     return () => clearInterval(interval);
   }, [isOpen]);
 
-  // Load Google Maps script once
-  useEffect(() => {
-    if (!isOpen || !googleMapsApiKey) return;
-
-    const scriptId = "google-maps-script-delivery-radar";
-    if (document.getElementById(scriptId)) {
-      if (window.google?.maps) {
-        setIsMapReady(true);
-      }
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=geometry`;
-    script.async = true;
-    script.onload = () => setIsMapReady(true);
-    document.head.appendChild(script);
-  }, [isOpen, googleMapsApiKey]);
-
   // Clean up when modal closes or unmounts
   useEffect(() => {
     if (!isOpen) {
-      if (markersRef.current) {
-        markersRef.current.forEach((m) => m.setMap(null));
-        markersRef.current = [];
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
       }
-      if (corridorPolylinesRef.current) {
-        corridorPolylinesRef.current.forEach((l) => l.setMap(null));
-        corridorPolylinesRef.current = [];
-      }
-      if (zonePolygonsRef.current) {
-        zonePolygonsRef.current.forEach((p) => p.setMap(null));
-        zonePolygonsRef.current = [];
-      }
-      if (directionsRendererRef.current) {
-        directionsRendererRef.current.setMap(null);
-        directionsRendererRef.current = null;
-      }
-      mapInstanceRef.current = null;
+      markersRef.current = [];
+      corridorPolylinesRef.current = [];
+      zonePolygonsRef.current = [];
+      osrmRoutePolylineRef.current = null;
       hasFittedInitialBounds.current = false;
       setRouteInfo(null);
       setSelectedOrderIds([]);
@@ -235,12 +210,15 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
 
   // Geocode Restaurant and Delivery Orders
   const runGeocoding = useCallback(async () => {
-    if (!restaurantAddress || !googleMapsApiKey) return;
+    if (!restaurantAddress) return;
     setIsGeocoding(true);
 
     try {
-      // 1. Geocode restaurant address if not already cached
-      let restLoc = geocodeCache.current.get(restaurantAddress);
+      // 1. Use explicit coordinates if provided in configurations, otherwise geocode restaurant address
+      let restLoc = restaurantCoords && restaurantCoords.lat && restaurantCoords.lng
+        ? restaurantCoords
+        : geocodeCache.current.get(restaurantAddress);
+
       if (!restLoc) {
         const res = await geocodeAddress(restaurantAddress, googleMapsApiKey);
         if (res) {
@@ -298,13 +276,13 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     } finally {
       setIsGeocoding(false);
     }
-  }, [restaurantAddress, googleMapsApiKey, readyOrders, kitchenOrders]);
+  }, [restaurantAddress, restaurantCoords, googleMapsApiKey, readyOrders, kitchenOrders]);
 
   useEffect(() => {
-    if (isOpen && isMapReady) {
+    if (isOpen) {
       runGeocoding();
     }
-  }, [isOpen, isMapReady, runGeocoding]);
+  }, [isOpen, runGeocoding]);
 
   // Compute smart corridor clusters (55° max angle diff, 1.8km local hop, 0.85km corridor lateral offset)
   const clusters = useMemo(() => {
@@ -329,45 +307,33 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
       .map((g) => g.order);
   }, [geocodedOrders, selectedOrderIds]);
 
-  // Initialize Map whenever modal opens and container is in the DOM
+  // Initialize Leaflet Map whenever modal opens and container is in the DOM
   useEffect(() => {
-    if (!isOpen || !isMapReady || !mapContainerRef.current) return;
+    if (!isOpen || !mapContainerRef.current) return;
 
-    if (!mapInstanceRef.current && window.google?.maps) {
-      const center = restaurantCoord
-        ? new window.google.maps.LatLng(restaurantCoord.lat, restaurantCoord.lng)
-        : new window.google.maps.LatLng(40.4168, -3.7038); // Madrid fallback
+    if (!mapInstanceRef.current) {
+      const initialCenter: [number, number] = restaurantCoord
+        ? [restaurantCoord.lat, restaurantCoord.lng]
+        : [40.4168, -3.7038]; // Madrid fallback
 
-      const map = new window.google.maps.Map(mapContainerRef.current, {
-        center,
-        zoom: 14,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false,
-        styles: [
-          {
-            featureType: "poi",
-            elementType: "labels",
-            stylers: [{ visibility: "off" }],
-          },
-        ],
-      });
+      const map = L.map(mapContainerRef.current, {
+        zoomControl: false,
+      }).setView(initialCenter, 14);
+
+      L.control.zoom({ position: "bottomright" }).addTo(map);
+
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
+
       mapInstanceRef.current = map;
 
-      directionsRendererRef.current = new window.google.maps.DirectionsRenderer(
-        {
-          map,
-          suppressMarkers: true,
-          preserveViewport: true,
-          polylineOptions: {
-            strokeColor: "#3B82F6",
-            strokeWeight: 5,
-            strokeOpacity: 0.95,
-          },
-        }
-      );
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 250);
     }
-  }, [isOpen, isMapReady, restaurantCoord]);
+  }, [isOpen, restaurantCoord]);
 
   // Crisp Vector Pin Generator (NO emojis, NO dotted circular border)
   const createPinIcon = (
@@ -412,96 +378,80 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
       </svg>
     `;
 
-    return {
-      url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-      scaledSize: new window.google.maps.Size(56, 66),
-      anchor: new window.google.maps.Point(28, 62),
-    };
+    return L.icon({
+      iconUrl: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+      iconSize: [56, 66],
+      iconAnchor: [28, 62],
+      popupAnchor: [0, -62],
+    });
   };
 
   // Restaurant Logo Marker
   const createRestaurantIcon = () => {
-    return {
-      url: safeLogoUrl || "./logo.png",
-      scaledSize: new window.google.maps.Size(46, 46),
-      anchor: new window.google.maps.Point(23, 23),
-    };
+    return L.icon({
+      iconUrl: safeLogoUrl || "./logo.png",
+      iconSize: [46, 46],
+      iconAnchor: [23, 23],
+      className: "rounded-full shadow-lg border-2 border-white bg-white",
+    });
   };
 
   // Render Delivery Zones
   useEffect(() => {
-    zonePolygonsRef.current.forEach((p) => p.setMap(null));
+    zonePolygonsRef.current.forEach((p) => p.remove());
     zonePolygonsRef.current = [];
 
-    if (!isOpen || !mapInstanceRef.current || !window.google?.maps || !showZones) return;
+    if (!isOpen || !mapInstanceRef.current || !showZones) return;
 
     deliveryZones.forEach((zone: any) => {
       if (!zone.points || zone.points.length === 0) return;
-      const polygon = new window.google.maps.Polygon({
-        paths: zone.points,
-        fillColor: "#10B981",
-        fillOpacity: 0.15,
-        strokeColor: "#059669",
-        strokeWeight: 1.5,
-        map: mapInstanceRef.current,
-        clickable: false,
-      });
-      zonePolygonsRef.current.push(polygon);
+      const poly = L.polygon(
+        zone.points.map((p: any) => [p.lat, p.lng]),
+        {
+          color: "#059669",
+          fillColor: "#10B981",
+          fillOpacity: 0.15,
+          weight: 1.5,
+        }
+      ).addTo(mapInstanceRef.current!);
+      zonePolygonsRef.current.push(poly);
     });
   }, [isOpen, showZones, deliveryZones]);
 
-  // Recenter Map Helper (Centering explicitly on Restaurant or fitting active markers)
+  // Recenter Map Helper
   const handleRecenter = () => {
-    if (!mapInstanceRef.current || !window.google?.maps) return;
-    const bounds = new window.google.maps.LatLngBounds();
-    if (restaurantCoord) {
-      bounds.extend(
-        new window.google.maps.LatLng(restaurantCoord.lat, restaurantCoord.lng)
-      );
-    }
-    visibleGeocodedOrders.forEach((item) => {
-      bounds.extend(
-        new window.google.maps.LatLng(item.location.lat, item.location.lng)
-      );
-    });
-    if (!bounds.isEmpty()) {
-      mapInstanceRef.current.fitBounds(bounds, 60);
+    if (!mapInstanceRef.current) return;
+    if (markersRef.current.length > 0) {
+      const group = L.featureGroup(markersRef.current);
+      mapInstanceRef.current.fitBounds(group.getBounds(), {
+        padding: [60, 60],
+        maxZoom: 16,
+      });
     } else if (restaurantCoord) {
-      mapInstanceRef.current.panTo(
-        new window.google.maps.LatLng(restaurantCoord.lat, restaurantCoord.lng)
-      );
-      mapInstanceRef.current.setZoom(14);
+      mapInstanceRef.current.setView([restaurantCoord.lat, restaurantCoord.lng], 14);
     }
   };
 
   // Draw Markers & Cluster Radar Lines
   useEffect(() => {
-    if (!isOpen || !mapInstanceRef.current || !window.google?.maps) return;
+    if (!isOpen || !mapInstanceRef.current) return;
 
     // Clear old markers
-    markersRef.current.forEach((m) => m.setMap(null));
+    markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
     // Clear old corridor lines
-    corridorPolylinesRef.current.forEach((l) => l.setMap(null));
+    corridorPolylinesRef.current.forEach((l) => l.remove());
     corridorPolylinesRef.current = [];
-
-    const bounds = new window.google.maps.LatLngBounds();
 
     // 1. Restaurant marker
     if (restaurantCoord) {
-      const restLatLng = new window.google.maps.LatLng(
-        restaurantCoord.lat,
-        restaurantCoord.lng
-      );
-      const restMarker = new window.google.maps.Marker({
-        position: restLatLng,
-        map: mapInstanceRef.current,
+      const restMarker = L.marker([restaurantCoord.lat, restaurantCoord.lng], {
         title: t("deliveryView.radar.restaurantBase"),
         icon: createRestaurantIcon(),
-        zIndex: 100,
-      });
-      bounds.extend(restLatLng);
+        zIndexOffset: 1000,
+      }).addTo(mapInstanceRef.current);
+
       markersRef.current.push(restMarker);
     }
 
@@ -523,30 +473,23 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
 
       const displayNum = getOrderDisplayNumber(item.order, orderPrefix);
       const label = displayNum;
-      const orderLatLng = new window.google.maps.LatLng(
-        item.location.lat,
-        item.location.lng
-      );
 
-      const marker = new window.google.maps.Marker({
-        position: orderLatLng,
-        map: mapInstanceRef.current,
+      const marker = L.marker([item.location.lat, item.location.lng], {
         title: t("deliveryView.radar.customerTitle", {
           displayNum,
           name: item.order.customer?.name || "Cliente",
         }),
         icon: createPinIcon(label, pinColor, isKitchen, isSelected),
-        zIndex: isSelected ? 50 : isReady ? 30 : 20,
-      });
+        zIndexOffset: isSelected ? 500 : isReady ? 300 : 200,
+      }).addTo(mapInstanceRef.current!);
 
-      marker.addListener("click", () => {
+      marker.on("click", () => {
         setInspectedOrder(item);
         if (isReady) {
           toggleOrderSelection(item.order.id);
         }
       });
 
-      bounds.extend(orderLatLng);
       markersRef.current.push(marker);
     });
 
@@ -558,53 +501,36 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
         const strokeOpacity = isClusterActive ? 0.85 : 0.35;
         const strokeWeight = isClusterActive ? 3 : 2;
 
-        const restLatLng = new window.google.maps.LatLng(
-          restaurantCoord.lat,
-          restaurantCoord.lng
-        );
-
         cluster.orders.forEach((o) => {
-          const line = new window.google.maps.Polyline({
-            path: [
-              restLatLng,
-              new window.google.maps.LatLng(o.location.lat, o.location.lng),
+          const line = L.polyline(
+            [
+              [restaurantCoord.lat, restaurantCoord.lng],
+              [o.location.lat, o.location.lng],
             ],
-            map: mapInstanceRef.current,
-            strokeColor,
-            strokeOpacity,
-            strokeWeight,
-            icons: [
-              {
-                icon: {
-                  path: "M 0,-1 0,1",
-                  strokeOpacity: 1,
-                  scale: 3,
-                },
-                offset: "0",
-                repeat: "14px",
-              },
-            ],
-            clickable: false,
-          });
+            {
+              color: strokeColor,
+              opacity: strokeOpacity,
+              weight: strokeWeight,
+              dashArray: "5, 8",
+            }
+          ).addTo(mapInstanceRef.current!);
           corridorPolylinesRef.current.push(line);
         });
       }
     });
 
-    // ONLY adjust zoom/bounds automatically ONCE upon initial load so user can freely pan away!
-    if (!hasFittedInitialBounds.current && !bounds.isEmpty() && mapInstanceRef.current) {
-      mapInstanceRef.current.fitBounds(bounds, 50);
+    // ONLY adjust zoom/bounds automatically ONCE upon initial load
+    if (
+      !hasFittedInitialBounds.current &&
+      markersRef.current.length > 0 &&
+      mapInstanceRef.current
+    ) {
+      const group = L.featureGroup(markersRef.current);
+      mapInstanceRef.current.fitBounds(group.getBounds(), {
+        padding: [50, 50],
+        maxZoom: 15,
+      });
       hasFittedInitialBounds.current = true;
-      const listener = window.google.maps.event.addListener(
-        mapInstanceRef.current,
-        "idle",
-        () => {
-          if (mapInstanceRef.current && mapInstanceRef.current.getZoom() > 16) {
-            mapInstanceRef.current.setZoom(15);
-          }
-          window.google.maps.event.removeListener(listener);
-        }
-      );
     }
   }, [
     isOpen,
@@ -620,15 +546,16 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     safeLogoUrl,
   ]);
 
-  // Calculate & Draw Driving Route for Selected Orders
+  // Calculate & Draw Driving Route for Selected Orders (OSRM 100% Free)
   useEffect(() => {
-    if (!isOpen || !mapInstanceRef.current || !window.google?.maps || !restaurantCoord) {
+    if (!isOpen || !mapInstanceRef.current || !restaurantCoord) {
       return;
     }
 
     if (selectedOrderIds.length === 0) {
-      if (directionsRendererRef.current) {
-        directionsRendererRef.current.setDirections({ routes: [] });
+      if (osrmRoutePolylineRef.current) {
+        osrmRoutePolylineRef.current.remove();
+        osrmRoutePolylineRef.current = null;
       }
       setRouteInfo(null);
       return;
@@ -641,48 +568,48 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
         (a, b) => a.distanceFromRestaurantKm - b.distanceFromRestaurantKm
       );
 
-    const origin = new window.google.maps.LatLng(
-      restaurantCoord.lat,
-      restaurantCoord.lng
-    );
-    const destination = new window.google.maps.LatLng(
-      selectedGeocoded[selectedGeocoded.length - 1].location.lat,
-      selectedGeocoded[selectedGeocoded.length - 1].location.lng
-    );
-    const waypoints = selectedGeocoded
-      .slice(0, -1)
-      .map((g) => ({
-        location: new window.google.maps.LatLng(g.location.lat, g.location.lng),
-        stopover: true,
-      }));
+    // OSRM free multi-stop route
+    const coordsList = [
+      `${restaurantCoord.lng},${restaurantCoord.lat}`,
+      ...selectedGeocoded.map((g) => `${g.location.lng},${g.location.lat}`),
+    ].join(";");
 
-    const directionsService = new window.google.maps.DirectionsService();
-    directionsService.route(
-      {
-        origin,
-        destination,
-        waypoints,
-        travelMode: window.google.maps.TravelMode.DRIVING,
-        optimizeWaypoints: false,
-      },
-      (result: any, status: string) => {
-        if (status === "OK" && directionsRendererRef.current) {
-          directionsRendererRef.current.setDirections(result);
-
-          let totalDistMeters = 0;
-          let totalSecs = 0;
-          result.routes[0].legs.forEach((leg: any) => {
-            totalDistMeters += leg.distance?.value || 0;
-            totalSecs += leg.duration?.value || 0;
-          });
-
+    fetch(
+      `${getOsrmBaseUrl("car")}/route/v1/driving/${coordsList}?overview=full&geometries=geojson`
+    )
+      .then((res) => (res.ok ? res.json() : null))
+      .then((osrmData) => {
+        if (osrmData?.code === "Ok" && osrmData.routes?.[0]) {
+          const route = osrmData.routes[0];
           setRouteInfo({
-            distanceKm: Math.round((totalDistMeters / 1000) * 10) / 10,
-            durationMin: Math.round(totalSecs / 60),
+            distanceKm: Math.round((route.distance / 1000) * 10) / 10,
+            durationMin: Math.round(route.duration / 60),
           });
+
+          if (osrmRoutePolylineRef.current) {
+            osrmRoutePolylineRef.current.remove();
+            osrmRoutePolylineRef.current = null;
+          }
+
+          if (mapInstanceRef.current) {
+            const path: [number, number][] = route.geometry.coordinates.map(
+              (pt: [number, number]) => [pt[1], pt[0]]
+            );
+            const poly = L.polyline(path, {
+              color: "#10B981",
+              weight: 5,
+              opacity: 0.9,
+              lineJoin: "round",
+            }).addTo(mapInstanceRef.current);
+            osrmRoutePolylineRef.current = poly;
+          }
+          return;
         }
-      }
-    );
+        throw new Error("OSRM failed");
+      })
+      .catch((err) => {
+        console.warn("OSRM radar route calculation failed:", err);
+      });
   }, [isOpen, selectedOrderIds, geocodedOrders, restaurantCoord]);
 
   const toggleOrderSelection = (orderId: string) => {
@@ -846,7 +773,7 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
             <div ref={mapContainerRef} className="w-full h-full" />
 
             {/* Top-Right Controls: Touch-friendly Recenter Button */}
-            <div className="absolute top-4 right-4 z-10">
+            <div className="absolute top-4 right-4 z-[1100]">
               <button
                 onClick={handleRecenter}
                 className="flex items-center gap-2 px-3.5 py-2.5 bg-white/95 hover:bg-white text-zinc-800 rounded-xl shadow-lg border border-zinc-200 text-xs font-bold transition-all cursor-pointer backdrop-blur-md hover:shadow-xl active:scale-95 select-none"
@@ -858,7 +785,7 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
             </div>
 
             {/* Map Floating Legend & Controls on Top-Left */}
-            <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+            <div className="absolute top-4 left-4 z-[1100] flex flex-col gap-2">
               <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-xl border border-zinc-200 text-xs space-y-2 select-none min-w-[220px]">
                 <div className="font-bold text-zinc-500 uppercase tracking-wider text-[11px] px-1 pb-1 border-b border-zinc-100">
                   {t("deliveryView.radar.visibilityFilters")}
@@ -934,7 +861,7 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
 
             {/* Floating Order Inspector Card (if order clicked) */}
             {inspectedOrder && (
-              <div className="absolute bottom-4 left-4 z-10 bg-white/95 backdrop-blur-md p-4 rounded-xl shadow-2xl border border-zinc-300 max-w-sm text-xs animate-in fade-in slide-in-from-bottom-2">
+              <div className="absolute bottom-4 left-4 z-[1100] bg-white/95 backdrop-blur-md p-4 rounded-xl shadow-2xl border border-zinc-300 max-w-sm text-xs animate-in fade-in slide-in-from-bottom-2">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <span

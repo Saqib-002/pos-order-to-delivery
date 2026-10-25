@@ -1,16 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CrossIcon, CarIcon, BikeIcon, LocationIcon } from "@/renderer/public/Svg";
+import { CrossIcon, CarIcon, BikeIcon } from "@/renderer/public/Svg";
 import { MessageSquare, ChevronDown } from "lucide-react";
 import CustomButton from "../../ui/CustomButton";
 import { useConfigurations } from "../../../contexts/configurationContext";
+import { geocodeAddress, getOsrmBaseUrl } from "../../../utils/googleMaps";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface DeliveryRouteModalProps {
     isOpen: boolean;
     onClose: () => void;
     origin: string;
     destination: string;
-    googleMapsApiKey: string;
+    googleMapsApiKey?: string;
     orderId?: string;
 }
 
@@ -25,7 +28,6 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     const { t } = useTranslation();
     const { configurations } = useConfigurations();
     const mapRef = useRef<HTMLDivElement>(null);
-    const [isLoaded, setIsLoaded] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [routes, setRoutes] = useState<any[]>([]);
     const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
@@ -35,7 +37,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     const [newMessageText, setNewMessageText] = useState("");
     const [unreadCount, setUnreadCount] = useState(0);
 
-    // Safe Logo loader with crossOrigin="anonymous" to avoid CORS / CORP canvas blocking
+    // Safe Logo loader
     const [safeLogoUrl, setSafeLogoUrl] = useState<string>(
         configurations?.logo || "./logo.png"
     );
@@ -75,8 +77,8 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
         };
         img.src = rawLogo;
     }, [configurations?.logo]);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    const messagesEndRef = useRef<HTMLDivElement>(null);
     const messageListRef = useRef<HTMLDivElement>(null);
     const [showScrollDownBtn, setShowScrollDownBtn] = useState(false);
 
@@ -92,7 +94,6 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
         }
     };
 
-    // Keep a ref of isChatOpen so socket handler doesn't read stale state
     const isChatOpenRef = useRef(isChatOpen);
     useEffect(() => {
         isChatOpenRef.current = isChatOpen;
@@ -112,14 +113,16 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     }, [isChatOpen, orderId]);
 
     // Toggles for visibility
-    const [showTraffic, setShowTraffic] = useState(false);
     const [showZones, setShowZones] = useState(false);
 
-    const mapInstanceRef = useRef<any>(null);
-    const polylinesRef = useRef<any[]>([]);
-    const markersRef = useRef<any[]>([]);
-    const zonePolygonsRef = useRef<any[]>([]);
-    const driverMarkerRef = useRef<any>(null);
+    const mapInstanceRef = useRef<L.Map | null>(null);
+    const polylinesRef = useRef<L.Polyline[]>([]);
+    const markersRef = useRef<L.Marker[]>([]);
+    const zonePolygonsRef = useRef<L.Polygon[]>([]);
+    const driverMarkerRef = useRef<L.Marker | null>(null);
+    // Incremented per fetch so a slow response for a previous travel mode
+    // can't overwrite the route of the mode selected afterwards
+    const routeRequestSeqRef = useRef(0);
 
     const formatDuration = (durationStr: string) => {
         if (!durationStr) return "";
@@ -131,27 +134,6 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
         return `${hours} ${t("deliveryRouteModal.estimation.hours")} ${remainingMinutes} ${t("deliveryRouteModal.estimation.minutes")}`;
     };
 
-    const animateMarker = (marker: any, startLat: number, startLng: number, endLat: number, endLng: number) => {
-        const startTime = Date.now();
-        const duration = 2800;  
-
-        const step = () => {
-            const elapsed = Date.now() - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-
-            const currentLat = startLat + (endLat - startLat) * progress;
-            const currentLng = startLng + (endLng - startLng) * progress;
-
-            marker.setPosition({ lat: currentLat, lng: currentLng });
-
-            if (progress < 1) {
-                requestAnimationFrame(step);
-            }
-        };
-
-        requestAnimationFrame(step);
-    };
-
     const fetchChatMessages = async () => {
         if (!orderId) return;
         try {
@@ -160,7 +142,6 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
             if (response.ok) {
                 const data = await response.json();
                 setChatMessages(data);
-                // Calculate unread count on load if the chat drawer is closed
                 if (!isChatOpenRef.current) {
                     const unread = data.filter((m: any) => m.sender === "driver" && !m.read).length;
                     setUnreadCount(unread);
@@ -178,13 +159,18 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     }, [isOpen, orderId]);
 
     useEffect(() => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-    }, [chatMessages]);
+        const timer = setTimeout(() => {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.invalidateSize();
+            }
+        }, 320);
+        return () => clearTimeout(timer);
+    }, [isChatOpen]);
 
-    const handleSendMessage = async () => {
+    const handleSendMessage = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         if (!newMessageText.trim() || !orderId) return;
+
         const text = newMessageText.trim();
         setNewMessageText("");
 
@@ -192,9 +178,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
             const apiUrl = (import.meta as any).env.VITE_DRIVER_API_URL || "http://localhost:3002/api";
             const response = await fetch(`${apiUrl}/driver/orders/${orderId}/messages`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     sender: "pos",
                     senderName: "POS Manager",
@@ -214,214 +198,187 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
         }
     };
 
-    // Load Google Maps Core
-    useEffect(() => {
-        if (!isOpen) {
-            mapInstanceRef.current = null;
-            polylinesRef.current = [];
-            markersRef.current = [];
-            zonePolygonsRef.current = [];
-            return;
-        }
-
-        if (!googleMapsApiKey) return;
-        const scriptId = "google-maps-script-delivery-route";
-        if (document.getElementById(scriptId)) {
-            setIsLoaded(true);
-            return;
-        }
-        const script = document.createElement("script");
-        script.id = scriptId;
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=geometry`;
-        script.async = true;
-        script.onload = () => setIsLoaded(true);
-        document.head.appendChild(script);
-    }, [isOpen, googleMapsApiKey]);
-
     // Update Markers (Origin & Destination)
-    const updateMarkers = (originPos: any, destPos: any) => {
-        markersRef.current.forEach(m => m.setMap(null));
+    const updateMarkers = (originPos: { lat: number; lng: number }, destPos: { lat: number; lng: number }) => {
+        markersRef.current.forEach(m => m.remove());
         markersRef.current = [];
 
-        if (!mapInstanceRef.current || !window.google) return;
+        if (!mapInstanceRef.current) return;
 
         // Restaurant Logo for Origin Marker
-        const restaurantIcon = {
-            url: safeLogoUrl || "./logo.png",
-            scaledSize: new window.google.maps.Size(46, 46),
-            anchor: new window.google.maps.Point(23, 23),
-        };
+        const restaurantIcon = L.icon({
+            iconUrl: safeLogoUrl || "./logo.png",
+            iconSize: [46, 46],
+            iconAnchor: [23, 23],
+            className: "rounded-full shadow-lg border-2 border-white bg-white",
+        });
 
-        // Custom PNG for Customer (Destination)
-        const customerIcon = {
-            url: "./images/cutlery.png",
-            scaledSize: new window.google.maps.Size(40, 40),
-            anchor: new window.google.maps.Point(20, 40),
-        };
+        // Cutlery icon for Customer (Destination)
+        const customerIcon = L.icon({
+            iconUrl: "./images/cutlery.png",
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+        });
 
-        // Origin Marker (Restaurant)
-        const originMarker = new window.google.maps.Marker({
-            position: originPos,
-            map: mapInstanceRef.current,
-            title: "Restaurant",
+        const originMarker = L.marker([originPos.lat, originPos.lng], {
             icon: restaurantIcon,
-            animation: window.google.maps.Animation.DROP
-        });
+            title: "Restaurant",
+        }).addTo(mapInstanceRef.current);
 
-        // Destination Marker (Customer)
-        const destMarker = new window.google.maps.Marker({
-            position: destPos,
-            map: mapInstanceRef.current,
-            title: "Customer",
+        const destMarker = L.marker([destPos.lat, destPos.lng], {
             icon: customerIcon,
-            animation: window.google.maps.Animation.DROP
-        });
+            title: "Customer",
+        }).addTo(mapInstanceRef.current);
 
         markersRef.current.push(originMarker, destMarker);
     };
 
-    // Update Zones
+    // Update Delivery Zones
     const updateZones = () => {
-        zonePolygonsRef.current.forEach(p => p.setMap(null));
+        zonePolygonsRef.current.forEach(p => p.remove());
         zonePolygonsRef.current = [];
 
-        if (!mapInstanceRef.current || !window.google || !showZones) return;
+        if (!mapInstanceRef.current || !showZones) return;
 
-        const zones = configurations.deliveryZones || [];
+        const zones = configurations?.deliveryZones || [];
         zones.forEach(zone => {
-            const polygon = new window.google.maps.Polygon({
-                paths: zone.points,
-                fillColor: "#10B981",
-                fillOpacity: 0.15,
-                strokeColor: "#059669",
-                strokeWeight: 1,
-                map: mapInstanceRef.current,
-                clickable: false
-            });
+            const polygon = L.polygon(
+                zone.points.map((p: any) => [p.lat, p.lng]),
+                {
+                    color: "#059669",
+                    fillColor: "#10B981",
+                    fillOpacity: 0.15,
+                    weight: 1.5,
+                }
+            ).addTo(mapInstanceRef.current!);
             zonePolygonsRef.current.push(polygon);
         });
     };
 
-    // Fetch from Routes API
+    // Fetch routes with OSRM (100% Free Open Source)
     const fetchRoutes = async () => {
+        const seq = ++routeRequestSeqRef.current;
         try {
             setError(null);
 
-            const requestBody: any = {
-                origin: { address: origin },
-                destination: { address: destination },
-                travelMode: travelMode,
-                computeAlternativeRoutes: true,
-            };
+            const [origCoords, destCoords] = await Promise.all([
+                configurations?.latitude && configurations?.longitude
+                    ? Promise.resolve({ lat: configurations.latitude, lng: configurations.longitude })
+                    : geocodeAddress(origin, googleMapsApiKey),
+                geocodeAddress(destination, googleMapsApiKey),
+            ]);
 
-            if (travelMode === "DRIVE") {
-                requestBody.routingPreference = "TRAFFIC_AWARE";
-                requestBody.extraComputations = ["TRAFFIC_ON_POLYLINE"];
+            if (origCoords && destCoords) {
+                const osrmBase = getOsrmBaseUrl(travelMode === "BICYCLE" ? "bike" : "car");
+                const osrmUrl = `${osrmBase}/route/v1/driving/${origCoords.lng},${origCoords.lat};${destCoords.lng},${destCoords.lat}?overview=full&geometries=geojson&alternatives=true`;
+                const osrmRes = await fetch(osrmUrl);
+                if (osrmRes.ok) {
+                    const osrmData = await osrmRes.json();
+                    if (seq !== routeRequestSeqRef.current) return;
+                    if (osrmData.code === "Ok" && Array.isArray(osrmData.routes) && osrmData.routes.length > 0) {
+                        const formattedRoutes = osrmData.routes.map((r: any) => ({
+                            duration: `${Math.round(r.duration)}s`,
+                            distanceMeters: r.distance,
+                            coordinates: r.geometry.coordinates.map((pt: [number, number]) => ({
+                                lat: pt[1],
+                                lng: pt[0],
+                            })),
+                            isOSRM: true,
+                        }));
+                        setRoutes(formattedRoutes);
+                        setSelectedRouteIndex(0);
+                        drawTrafficRoute(formattedRoutes[0]);
+                        return;
+                    }
+                }
             }
 
-            const response = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Goog-Api-Key": googleMapsApiKey,
-                    "X-Goog-FieldMask": "routes.duration,routes.distanceMeters,routes.polyline,routes.travelAdvisory.speedReadingIntervals,routes.viewport"
-                },
-                body: JSON.stringify(requestBody)
-            });
-
-            const data = await response.json();
-            if (data.routes && data.routes.length > 0) {
-                setRoutes(data.routes);
-                setSelectedRouteIndex(0);
-                drawTrafficRoute(data.routes[0]);
-            } else {
-                setError(t("deliveryRouteModal.errors.routeNotFound"));
-            }
+            if (seq !== routeRequestSeqRef.current) return;
+            setError(t("deliveryRouteModal.errors.routeNotFound"));
         } catch (e) {
+            console.error("Failed to fetch routes:", e);
+            if (seq !== routeRequestSeqRef.current) return;
             setError("Failed to fetch routes.");
         }
     };
 
-    // Draw the color-coded polyline
+    // Draw the color-coded polyline using Leaflet
     const drawTrafficRoute = (route: any) => {
-        if (!mapInstanceRef.current || !window.google) return;
+        if (!mapInstanceRef.current || !route?.coordinates || route.coordinates.length === 0) return;
 
-        polylinesRef.current.forEach(p => p.setMap(null));
+        polylinesRef.current.forEach(p => p.remove());
         polylinesRef.current = [];
 
-        const fullPath = window.google.maps.geometry.encoding.decodePath(route.polyline.encodedPolyline);
-        const originPos = fullPath[0];
-        const destPos = fullPath[fullPath.length - 1];
+        const latLngs: [number, number][] = route.coordinates.map((c: any) => [c.lat, c.lng]);
+        const originPos = { lat: latLngs[0][0], lng: latLngs[0][1] };
+        const destPos = { lat: latLngs[latLngs.length - 1][0], lng: latLngs[latLngs.length - 1][1] };
 
         updateMarkers(originPos, destPos);
 
-        const intervals = route.travelAdvisory?.speedReadingIntervals || [];
+        const poly = L.polyline(latLngs, {
+            color: "#10B981",
+            weight: 5,
+            opacity: 0.9,
+            lineJoin: "round",
+        }).addTo(mapInstanceRef.current);
 
-        if (!showTraffic || intervals.length === 0) {
-            const poly = new window.google.maps.Polyline({
-                path: fullPath,
-                strokeColor: "#3B82F6",
-                strokeWeight: 4,
-                strokeOpacity: 0.8,
-                map: mapInstanceRef.current
-            });
-            polylinesRef.current.push(poly);
-        } else {
-            intervals.forEach((interval: any) => {
-                const segmentPath = fullPath.slice(interval.startPolylinePointIndex, (interval.endPolylinePointIndex || fullPath.length - 1) + 1);
-
-                let color = "#4ADE80"; // Normal
-                if (interval.speed === "SLOW") color = "#FACC15"; // Slow
-                if (interval.speed === "TRAFFIC_JAM") color = "#F87171"; // Jam
-
-                const poly = new window.google.maps.Polyline({
-                    path: segmentPath,
-                    strokeColor: color,
-                    strokeWeight: 4,
-                    strokeOpacity: 1,
-                    map: mapInstanceRef.current
-                });
-                polylinesRef.current.push(poly);
-            });
-        }
-
-        const bounds = new window.google.maps.LatLngBounds();
-        fullPath.forEach((point: any) => bounds.extend(point));
-        mapInstanceRef.current.fitBounds(bounds, { top: 50, bottom: 50, left: 50, right: 50 });
+        polylinesRef.current.push(poly);
+        mapInstanceRef.current.fitBounds(poly.getBounds(), { padding: [50, 50] });
     };
 
+    // Initialize Leaflet Map
     useEffect(() => {
-        if (isLoaded && isOpen && mapRef.current) {
-            if (!mapInstanceRef.current) {
-                setRoutes([]);
-                setSelectedRouteIndex(0);
-                mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
-                    center: { lat: 0, lng: 0 },
-                    zoom: 12,
-                    mapId: "DELIVERY_ROUTE_MAP",
-                    disableDefaultUI: true,
-                });
+        if (!isOpen) {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.remove();
+                mapInstanceRef.current = null;
             }
-            fetchRoutes();
+            polylinesRef.current = [];
+            markersRef.current = [];
+            zonePolygonsRef.current = [];
+            driverMarkerRef.current = null;
+            return;
+        }
+
+        if (mapRef.current && !mapInstanceRef.current) {
+            const map = L.map(mapRef.current, {
+                zoomControl: false,
+            }).setView([40.345, -3.521], 13);
+
+            L.control.zoom({ position: "bottomright" }).addTo(map);
+
+            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            }).addTo(map);
+
+            mapInstanceRef.current = map;
+
+            // Invalidate size once DOM finishes rendering modal
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 250);
+
             updateZones();
         }
-    }, [isLoaded, isOpen, origin, destination, travelMode]);
 
-    // Handle toggles
-    useEffect(() => {
-        if (routes[selectedRouteIndex]) {
-            drawTrafficRoute(routes[selectedRouteIndex]);
+        // Refetch on open and whenever the route inputs or travel mode change
+        if (mapInstanceRef.current) {
+            setRoutes([]);
+            setSelectedRouteIndex(0);
+            fetchRoutes();
         }
-    }, [showTraffic]);
+    }, [isOpen, origin, destination, travelMode]);
 
     useEffect(() => {
         updateZones();
-    }, [showZones, isLoaded]);
+    }, [showZones]);
 
+    // Real-time Driver Tracking via WebSocket
     useEffect(() => {
         if (!isOpen || !orderId) {
             if (driverMarkerRef.current) {
-                driverMarkerRef.current.setMap(null);
+                driverMarkerRef.current.remove();
                 driverMarkerRef.current = null;
             }
             return;
@@ -429,32 +386,29 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
 
         const wsUrl = (import.meta as any).env.VITE_DRIVER_WS_URL || "ws://localhost:3002";
         const socket = new WebSocket(wsUrl);
-        
+
         socket.onopen = () => {
-            console.log("POS Map WebSocket connected");
+            console.log("POS Map WebSocket connected (Leaflet)");
         };
 
         socket.onmessage = (event) => {
             try {
                 const message = JSON.parse(event.data);
-                
-                // Handle initial locations download
+
                 if (message.type === "init_locations") {
                     const matched = message.locations.find((l: any) => l.orderId === orderId);
-                    if (matched && mapInstanceRef.current && window.google) {
+                    if (matched && mapInstanceRef.current) {
                         updateDriverMarker(matched.latitude, matched.longitude, matched.driverName);
                     }
                 }
-                
-                // Handle real-time updates
+
                 if (message.type === "location_update" && message.data && message.data.orderId === orderId) {
                     const { latitude, longitude, driverName } = message.data;
-                    if (mapInstanceRef.current && window.google) {
+                    if (mapInstanceRef.current) {
                         updateDriverMarker(latitude, longitude, driverName);
                     }
                 }
 
-                // Handle real-time chat messages
                 if (message.type === "chat_message" && message.data && message.data.orderId === orderId) {
                     setChatMessages((prev) => {
                         if (prev.some((m) => m.id === message.data.id)) return prev;
@@ -478,39 +432,33 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
         };
 
         const updateDriverMarker = (lat: number, lng: number, driverName: string) => {
-            if (!mapInstanceRef.current || !window.google) return;
+            if (!mapInstanceRef.current) return;
 
-            const bikeIcon = {
-                url: "./images/delivery.png",
-                scaledSize: new window.google.maps.Size(40, 40),
-                anchor: new window.google.maps.Point(20, 20),
-            };
+            const bikeIcon = L.icon({
+                iconUrl: "./images/delivery.png",
+                iconSize: [40, 40],
+                iconAnchor: [20, 20],
+                className: "drop-shadow-lg",
+            });
 
             if (!driverMarkerRef.current) {
-                driverMarkerRef.current = new window.google.maps.Marker({
-                    position: { lat, lng },
-                    map: mapInstanceRef.current,
+                driverMarkerRef.current = L.marker([lat, lng], {
+                    icon: bikeIcon,
                     title: `${driverName} (Driver)`,
-                    icon: bikeIcon
-                });
+                }).addTo(mapInstanceRef.current);
             } else {
-                const oldPos = driverMarkerRef.current.getPosition();
-                if (oldPos) {
-                    animateMarker(driverMarkerRef.current, oldPos.lat(), oldPos.lng(), lat, lng);
-                } else {
-                    driverMarkerRef.current.setPosition({ lat, lng });
-                }
+                driverMarkerRef.current.setLatLng([lat, lng]);
             }
         };
 
         return () => {
             socket.close();
             if (driverMarkerRef.current) {
-                driverMarkerRef.current.setMap(null);
+                driverMarkerRef.current.remove();
                 driverMarkerRef.current = null;
             }
         };
-    }, [isOpen, orderId, isLoaded]);
+    }, [isOpen, orderId]);
 
     if (!isOpen) return null;
 
@@ -563,7 +511,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
 
                         {error && <div className="text-red-500 text-sm p-4 bg-red-50 rounded-xl mb-4">{error}</div>}
 
-                        <div className="mt-auto space-y-6">
+                        <div className="mt-auto space-y-4">
                             {/* Layer Toggles Section */}
                             <div className="space-y-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
                                 <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
@@ -571,19 +519,6 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
                                 </h5>
 
                                 <div className="space-y-4">
-                                    {/* Traffic Toggle */}
-                                    <div
-                                        onClick={() => setShowTraffic(!showTraffic)}
-                                        className="flex items-center justify-between cursor-pointer group"
-                                    >
-                                        <span className={`text-sm font-bold transition-colors ${showTraffic ? 'text-gray-900' : 'text-gray-400'}`}>
-                                            {t("deliveryRouteModal.layers.traffic")}
-                                        </span>
-                                        <div className={`w-10 h-5 rounded-full p-1 transition-all duration-300 ${showTraffic ? 'bg-emerald-500' : 'bg-gray-300'}`}>
-                                            <div className={`size-3 bg-white rounded-full transition-all duration-300 transform ${showTraffic ? 'translate-x-5' : 'translate-x-0'}`} />
-                                        </div>
-                                    </div>
-
                                     {/* Zones Toggle */}
                                     <div
                                         onClick={() => setShowZones(!showZones)}
@@ -618,18 +553,20 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
                             </div>
 
                             {/* Chat Button */}
-                            <button
-                                onClick={() => setIsChatOpen(!isChatOpen)}
-                                className={`relative w-full py-3 rounded-xl text-xs font-black transition-all border mt-2 flex items-center justify-center gap-2 ${isChatOpen ? "bg-emerald-500 border-emerald-500 text-white shadow-xl scale-[1.02]" : "bg-white border-gray-200 text-gray-800 hover:bg-gray-50 hover:border-gray-300"}`}
-                            >
-                                <MessageSquare className="size-4" />
-                                {isChatOpen ? t("deliveryRouteModal.chat.closeChat") : t("deliveryRouteModal.chat.chatWithDriver")}
-                                {unreadCount > 0 && !isChatOpen && (
-                                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full text-[10px] size-5 flex items-center justify-center font-bold animate-bounce shadow-md">
-                                        {unreadCount}
-                                    </span>
-                                )}
-                            </button>
+                            {orderId && (
+                                <button
+                                    onClick={() => setIsChatOpen(!isChatOpen)}
+                                    className={`relative w-full py-3 rounded-xl text-xs font-black transition-all border mt-2 flex items-center justify-center gap-2 cursor-pointer ${isChatOpen ? "bg-emerald-500 border-emerald-500 text-white shadow-xl scale-[1.02]" : "bg-white border-gray-200 text-gray-800 hover:bg-gray-50 hover:border-gray-300"}`}
+                                >
+                                    <MessageSquare className="size-4" />
+                                    {isChatOpen ? t("deliveryRouteModal.chat.closeChat") : t("deliveryRouteModal.chat.chatWithDriver")}
+                                    {unreadCount > 0 && !isChatOpen && (
+                                        <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full text-[10px] size-5 flex items-center justify-center font-bold animate-bounce shadow-md">
+                                            {unreadCount}
+                                        </span>
+                                    )}
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -637,7 +574,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
                     <div className="flex-1 relative flex overflow-hidden">
                         {/* Info Overlay */}
                         {selectedRoute && (
-                            <div className="absolute top-4 left-4 z-10 bg-black/90 text-white px-5 py-3 rounded-2xl flex items-center gap-4 text-sm font-black backdrop-blur-xl shadow-2xl border border-white/10">
+                            <div className="absolute top-4 left-4 z-[1000] bg-black/90 text-white px-5 py-3 rounded-2xl flex items-center gap-4 text-sm font-black backdrop-blur-xl shadow-2xl border border-white/10">
                                 <div className="flex flex-col">
                                     <span className="text-[10px] text-teal-400 uppercase tracking-tighter">
                                         {t("deliveryRouteModal.estimation.duration")}
@@ -657,7 +594,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
                         <div ref={mapRef} className="flex-1 h-full" />
 
                         {/* Chat Panel side drawer */}
-                        <div className={`border-l border-gray-200 bg-white flex flex-col h-full shadow-2xl relative z-10 transition-all duration-300 ease-in-out ${isChatOpen ? "w-80 opacity-100" : "w-0 opacity-0 overflow-hidden pointer-events-none border-l-0"}`}>
+                        <div className={`border-l border-gray-200 bg-white flex flex-col h-full shadow-2xl relative z-[1000] transition-all duration-300 ease-in-out ${isChatOpen ? "w-80 opacity-100" : "w-0 opacity-0 overflow-hidden pointer-events-none border-l-0"}`}>
                             {/* Chat Header */}
                             <div className="p-4 border-b border-gray-200 bg-black text-white flex items-center justify-between flex-shrink-0 min-w-[320px]">
                                 <span className="font-bold text-sm">{t("deliveryRouteModal.chat.chatWithDriver")}</span>
@@ -668,7 +605,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
                                     ✕
                                 </button>
                             </div>
-                             {/* Message List */}
+                            {/* Message List */}
                             <div className="flex-1 relative flex flex-col min-h-0 bg-gray-50 min-w-[320px]">
                                 <div 
                                     ref={messageListRef}
@@ -717,7 +654,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
                                 className="p-3 border-t border-gray-200 flex gap-2 items-center bg-white flex-shrink-0 min-w-[320px]"
                             >
                                 <input 
-                                    type="text"
+                                    type="text" 
                                     placeholder={t("deliveryRouteModal.chat.typeMessagePlaceholder")}
                                     value={newMessageText}
                                     onChange={(e) => setNewMessageText(e.target.value)}

@@ -178,6 +178,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [customerDistance, setCustomerDistance] = useState<number | null>(null);
+  const [customerCoords, setCustomerCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     setCustomerSearch(order?.customer?.name || "");
@@ -217,6 +218,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       setCustomCustomerPhone("");
       setCustomCustomerAddress("");
     }
+    setCustomerCoords(null);
   }, [order]);
 
   const { orderTotal, nonMenuItems, groups } = calculateOrderTotal(orderItems);
@@ -294,7 +296,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   }, [showSearchResults]);
 
   useEffect(() => {
-    const updateDistance = async () => {
+    const timer = setTimeout(async () => {
       const customerAddress = selectedCustomer
         ? selectedCustomer.address
         : customCustomerAddress;
@@ -302,20 +304,25 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       const restaurantAddress = configurations?.address;
       const apiKey = configurations?.googleMapsApiKey;
 
-      if (!customerAddress || !customerAddress.trim() || !restaurantAddress || !apiKey) {
+      if (!customerAddress || !customerAddress.trim() || !restaurantAddress) {
         setCustomerDistance(null);
         return;
       }
 
+      const originParam =
+        configurations?.latitude && configurations?.longitude
+          ? { lat: configurations.latitude, lng: configurations.longitude }
+          : restaurantAddress;
+
       const distance = await calculateDistance(
-        restaurantAddress,
+        originParam,
         formatAddress(customerAddress),
         apiKey
       );
       setCustomerDistance(distance);
-    };
+    }, 400);
 
-    updateDistance();
+    return () => clearTimeout(timer);
   }, [selectedCustomer, customCustomerAddress, configurations?.address, configurations?.googleMapsApiKey]);
 
   const handlePaymentConfirm = (paymentData: {
@@ -491,12 +498,16 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         const restaurantAddress = configurations.address;
         const apiKey = configurations.googleMapsApiKey;
 
-        if (!restaurantAddress || !apiKey) {
-          console.warn("Restaurant address or Google Maps API key missing. Skipping distance check.");
+        if (!restaurantAddress) {
+          console.warn("Restaurant address missing. Skipping distance check.");
           return true;
         }
 
-        const customerLocation = await geocodeAddress(formatAddress(customerAddress), apiKey);
+        // Picked-suggestion coords only describe the custom address, never a
+        // selected saved customer's address
+        const customerLocation =
+          (!selectedCustomer && customerCoords) ||
+          (await geocodeAddress(formatAddress(customerAddress), apiKey));
         if (!customerLocation) {
           console.warn("Could not geocode customer address. Proceeding without zone check.");
           return true;
@@ -1020,6 +1031,13 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                           addressString += `|apartment=${components.apartment}`;
                         }
                         setCustomCustomerAddress(addressString);
+                        if (components.lat !== undefined) {
+                          setCustomerCoords(
+                            components.lat != null && components.lng != null
+                              ? { lat: components.lat, lng: components.lng }
+                              : null
+                          );
+                        }
                       }}
                       apartmentValue={customAddressFields.apartment}
                       postalCodeValue={customAddressFields.postalCode}
@@ -1451,7 +1469,11 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       <DeliveryRouteModal
         isOpen={isRouteModalOpen}
         onClose={() => setIsRouteModalOpen(false)}
-        origin={configurations.address}
+        origin={
+          [configurations.address, configurations.city, configurations.province]
+            .filter(Boolean)
+            .join(", ") || configurations.address
+        }
         destination={formatAddress(selectedCustomer?.address || customCustomerAddress)}
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
       />

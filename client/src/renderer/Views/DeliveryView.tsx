@@ -22,8 +22,9 @@ import {
   CrossIcon,
   EditIcon,
 } from "../public/Svg";
-import { DEFAULT_PAGE_LIMIT, FUNCTIONS } from "@/constants";
+import { OPERATIONAL_PAGE_LIMIT, FUNCTIONS } from "@/constants";
 import { CancelOrderModal } from "../components/order/modals/CancelOrderModal";
+import Pagination from "../components/shared/Pagination";
 import { CustomSelect } from "../components/ui/CustomSelect";
 import DeliveryRouteModal from "../components/order/modals/DeliveryRouteModal";
 import { DeliveryRadarModal } from "../components/order/modals/DeliveryRadarModal";
@@ -34,7 +35,7 @@ export const DeliveryView = () => {
   const { t } = useTranslation();
   const { auth } = useAuth();
   const { token, user } = auth;
-  const { orders, filter, setFilter, refreshOrdersCallback } =
+  const { orders, totalOrders, filter, setFilter, refreshOrdersCallback } =
     useOrderManagementContext();
   const { configurations } = useConfigurations();
   const [isLoading, setIsLoading] = useState(true);
@@ -92,7 +93,7 @@ export const DeliveryView = () => {
         selectedStatus: ["sent to kitchen", "ready for delivery", "out for delivery", "delivered"],
         selectedPaymentStatus: [],
         page: 0,
-        limit: DEFAULT_PAGE_LIMIT,
+        limit: OPERATIONAL_PAGE_LIMIT,
         startDateRange: null,
         endDateRange: null,
         selectedDeliveryPerson: "",
@@ -150,6 +151,18 @@ export const DeliveryView = () => {
           ),
     [orders, isDeliveryFilterActive, isLoading]
   );
+
+  const totalPages =
+    totalOrders > 0
+      ? Math.ceil(totalOrders / (filter.limit || OPERATIONAL_PAGE_LIMIT))
+      : 0;
+
+  const handlePageChange = (newPage: number) => {
+    setFilter((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
+  };
 
   const assignDelivery = useCallback(
     async (order: Order) => {
@@ -952,6 +965,11 @@ export const DeliveryView = () => {
               />
             </div>
           )}
+          <Pagination
+            currentPage={filter.page || 0}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       </div>
 
@@ -973,7 +991,11 @@ export const DeliveryView = () => {
           setIsRouteModalOpen(false);
           setSelectedOrderForRoute(null);
         }}
-        origin={configurations.address}
+        origin={
+          [configurations.address, configurations.city, configurations.province]
+            .filter(Boolean)
+            .join(", ") || configurations.address
+        }
         destination={formatAddress(selectedOrderForRoute?.customer?.address || "")}
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
         orderId={selectedOrderForRoute?.id}
@@ -984,13 +1006,22 @@ export const DeliveryView = () => {
         onClose={() => setIsRadarModalOpen(false)}
         readyOrders={readyOrders}
         kitchenOrders={kitchenDeliveryOrders}
-        restaurantAddress={configurations.address || ""}
+        restaurantAddress={
+          [configurations.address, configurations.city, configurations.province]
+            .filter(Boolean)
+            .join(", ") || configurations.address || ""
+        }
         restaurantLogo={configurations.logo}
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
         deliveryPersons={deliveryPersons}
         token={token}
         onOrdersAssigned={refreshOrdersCallback}
         orderPrefix={configurations.orderPrefix || "K"}
+        restaurantCoords={
+          configurations.latitude && configurations.longitude
+            ? { lat: configurations.latitude, lng: configurations.longitude }
+            : undefined
+        }
       />
     </div>
   );

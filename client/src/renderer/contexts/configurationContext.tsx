@@ -34,6 +34,8 @@ interface ConfigurationType {
   postalCode?: string;
   city?: string;
   province?: string;
+  latitude?: number | null;
+  longitude?: number | null;
   authorName?: string;
   authorWebsite?: string;
   authorEmail?: string;

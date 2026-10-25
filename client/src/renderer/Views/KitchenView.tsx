@@ -31,16 +31,17 @@ import {
   AnalyticsIcon,
   MapIcon,
 } from "../public/Svg";
-import { DEFAULT_PAGE_LIMIT } from "@/constants";
+import { OPERATIONAL_PAGE_LIMIT } from "@/constants";
 import { formatAddress, getOrderDisplayNumber, getCustomerDisplayName } from "../utils/utils";
 import DeliveryRouteModal from "../components/order/modals/DeliveryRouteModal";
+import Pagination from "../components/shared/Pagination";
 
 export const KitchenView = () => {
   const { t } = useTranslation();
   const {
     auth: { token },
   } = useAuth();
-  const { orders, filter, setFilter, refreshOrdersCallback } =
+  const { orders, totalOrders, filter, setFilter, refreshOrdersCallback } =
     useOrderManagementContext();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
@@ -69,7 +70,7 @@ export const KitchenView = () => {
         selectedStatus: ["sent to kitchen"],
         selectedPaymentStatus: [],
         page: 0,
-        limit: DEFAULT_PAGE_LIMIT,
+        limit: OPERATIONAL_PAGE_LIMIT,
         startDateRange: null,
         endDateRange: null,
         selectedDeliveryPerson: "",
@@ -102,6 +103,18 @@ export const KitchenView = () => {
       (o) => o.status?.toLowerCase() === "sent to kitchen"
     );
   }, [orders, isKitchenFilterActive, isLoading]);
+
+  const totalPages =
+    totalOrders > 0
+      ? Math.ceil(totalOrders / (filter.limit || OPERATIONAL_PAGE_LIMIT))
+      : 0;
+
+  const handlePageChange = (newPage: number) => {
+    setFilter((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
+  };
 
   const markAsReady = useCallback(
     async (order: Order) => {
@@ -475,6 +488,11 @@ export const KitchenView = () => {
                 renderRow={OrderRowRenderer}
               />
             )}
+            <Pagination
+              currentPage={filter.page || 0}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </div>
         </div>
       </div>
@@ -498,7 +516,11 @@ export const KitchenView = () => {
           setIsRouteModalOpen(false);
           setSelectedOrderForRoute(null);
         }}
-        origin={configurations.address}
+        origin={
+          [configurations.address, configurations.city, configurations.province]
+            .filter(Boolean)
+            .join(", ") || configurations.address
+        }
         destination={formatAddress(
           selectedOrderForRoute?.customer?.address || "",
         )}

@@ -1,87 +1,174 @@
+// In-memory caches to prevent duplicate network calls
+const geocodeMemoryCache = new Map<string, { lat: number; lng: number } | null>();
+const distanceMemoryCache = new Map<string, number>();
+
+// FOSSGIS OSRM instance (HTTPS, real car/bike profiles — the project-osrm.org
+// demo server only routes cars and ignores the profile segment)
+export const getOsrmBaseUrl = (profile: "car" | "bike" = "car") =>
+  `https://routing.openstreetmap.de/routed-${profile}`;
+
 export const calculateDistance = async (
-  origin: string,
-  destination: string,
-  apiKey: string
+  origin: string | { lat: number; lng: number },
+  destination: string | { lat: number; lng: number },
+  apiKey?: string
 ): Promise<number | null> => {
-  if (!origin || !destination || !apiKey) return null;
+  if (!origin || !destination) return null;
+
+  const originKey = typeof origin === "string" ? origin : `${origin.lat},${origin.lng}`;
+  const destKey = typeof destination === "string" ? destination : `${destination.lat},${destination.lng}`;
+  const cacheKey = `${originKey.toLowerCase()}_to_${destKey.toLowerCase()}`;
+  if (distanceMemoryCache.has(cacheKey)) {
+    return distanceMemoryCache.get(cacheKey)!;
+  }
 
   try {
-    if (window.google && window.google.maps && window.google.maps.importLibrary) {
-      const { DistanceMatrixService } = (await window.google.maps.importLibrary(
-        "routes"
-      )) as any;
-      const service = new DistanceMatrixService();
+    // 1. Resolve coordinates for origin and destination
+    const [origCoords, destCoords] = await Promise.all([
+      typeof origin === "object" && "lat" in origin
+        ? Promise.resolve(origin)
+        : geocodeAddress(origin, apiKey || ""),
+      typeof destination === "object" && "lat" in destination
+        ? Promise.resolve(destination)
+        : geocodeAddress(destination, apiKey || ""),
+    ]);
 
-      return new Promise((resolve) => {
-        service.getDistanceMatrix(
-          {
-            origins: [origin],
-            destinations: [destination],
-            travelMode: window.google.maps.TravelMode.DRIVING,
-            unitSystem: window.google.maps.UnitSystem.METRIC,
-          },
-          (response: any, status: string) => {
-            if (status === "OK" && response.rows[0].elements[0].status === "OK") {
-              const distanceInMeters = response.rows[0].elements[0].distance.value;
-              resolve(distanceInMeters / 1000); 
-            } else {
-              console.error("Distance Matrix failed:", status);
-              resolve(null);
-            }
+    if (origCoords && destCoords) {
+      // 2. Query OSRM Table Service (100% Free Open Source Routing)
+      try {
+        const osrmUrl = `${getOsrmBaseUrl("car")}/table/v1/driving/${origCoords.lng},${origCoords.lat};${destCoords.lng},${destCoords.lat}?annotations=distance`;
+        const res = await fetch(osrmUrl);
+        if (res.ok) {
+          const data: any = await res.json();
+          if (data.code === "Ok" && data.distances && data.distances[0] && typeof data.distances[0][1] === "number") {
+            const distanceInKm = Math.round((data.distances[0][1] / 1000) * 10) / 10;
+            distanceMemoryCache.set(cacheKey, distanceInKm);
+            return distanceInKm;
           }
-        );
-      });
+        }
+      } catch (osrmErr) {
+        console.warn("OSRM table distance check failed, using fallback:", osrmErr);
+      }
+
+      // Fallback road estimate: Haversine distance * 1.3 (road network curvature factor).
+      // Not cached, so the real road distance is retried once OSRM is reachable again.
+      const straightLineKm = calculateHaversineDistance(origCoords, destCoords);
+      return Math.round(straightLineKm * 1.3 * 10) / 10;
     }
 
-    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
-      origin
-    )}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
-
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (data.status === "OK" && data.rows[0].elements[0].status === "OK") {
-      const distanceInMeters = data.rows[0].elements[0].distance.value;
-      return distanceInMeters / 1000; 
-    }
     return null;
   } catch (error) {
     console.error("Error calculating distance:", error);
     return null;
   }
 };
+
 export const geocodeAddress = async (
   address: string,
-  apiKey: string
+  apiKey?: string
 ): Promise<{ lat: number; lng: number } | null> => {
-  if (!address || !apiKey) return null;
+  if (!address || !address.trim()) return null;
+
+  const cleanAddr = address.trim();
+  const cacheKey = cleanAddr.toLowerCase();
+
+  // Return from cache (including cached null to prevent infinite retry loops on invalid addresses)
+  if (geocodeMemoryCache.has(cacheKey)) {
+    return geocodeMemoryCache.get(cacheKey) ?? null;
+  }
 
   try {
-    if (window.google && window.google.maps && window.google.maps.Geocoder) {
-      const geocoder = new window.google.maps.Geocoder();
-      return new Promise((resolve) => {
-        geocoder.geocode({ address }, (results: any, status: any) => {
-          if (status === "OK" && results && results[0]) {
-            const location = results[0].geometry.location;
-            resolve({ lat: location.lat(), lng: location.lng() });
-          } else {
-            console.error("Geocoder failed:", status);
-            resolve(null);
+    // Generate normalized query variations to handle duplicate prefixes (e.g. CALLE CALLE)
+    // or parenthetical administrative text (e.g. "Vaciamadrid (Rivas-Vaciamadrid)")
+    const queryCandidates: string[] = [cleanAddr];
+
+    const deduped = cleanAddr
+      .replace(
+        /\b(calle|avenida|paseo|plaza|ronda|carretera|camino|travesia)\s+\1\b/gi,
+        (match, p1) => p1
+      )
+      .trim();
+    if (deduped !== cleanAddr && !queryCandidates.includes(deduped)) {
+      queryCandidates.push(deduped);
+    }
+
+    const cleanedAdmin = deduped
+      .replace(/,\s*[^,()]*\(([^)]+)\)/g, (match, p1) => `, ${p1}`)
+      .trim();
+    if (!queryCandidates.includes(cleanedAdmin)) {
+      queryCandidates.push(cleanedAdmin);
+    }
+
+    // Set when any provider is unreachable or errors, so a transient outage
+    // isn't cached as "address not found" for the rest of the session
+    let hadFailure = false;
+
+    // 1. Try CartoCiudad (Official Spain National Geographic Institute - 100% Free)
+    for (const q of queryCandidates) {
+      try {
+        const ccUrl = `https://www.cartociudad.es/geocoder/api/geocoder/candidates?q=${encodeURIComponent(q)}&limit=1`;
+        const ccRes = await fetch(ccUrl, { headers: { Accept: "application/json" } });
+        if (!ccRes.ok) {
+          hadFailure = true;
+        } else {
+          const ccData: any = await ccRes.json();
+          if (Array.isArray(ccData) && ccData.length > 0 && ccData[0].lat && ccData[0].lng) {
+            const loc = { lat: Number(ccData[0].lat), lng: Number(ccData[0].lng) };
+            geocodeMemoryCache.set(cacheKey, loc);
+            return loc;
           }
-        });
-      });
+        }
+      } catch {
+        hadFailure = true;
+      }
     }
 
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-      address
-    )}&key=${apiKey}`;
-
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (data.status === "OK" && data.results[0]) {
-      return data.results[0].geometry.location;
+    // 2. Try Photon (OpenStreetMap geocoder - 100% Free)
+    for (const q of queryCandidates) {
+      try {
+        const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=1`;
+        const pRes = await fetch(photonUrl, { headers: { Accept: "application/json" } });
+        if (!pRes.ok) {
+          hadFailure = true;
+        } else {
+          const pData: any = await pRes.json();
+          const feat = pData?.features?.[0];
+          if (feat?.geometry?.coordinates) {
+            const loc = {
+              lat: Number(feat.geometry.coordinates[1]),
+              lng: Number(feat.geometry.coordinates[0]),
+            };
+            geocodeMemoryCache.set(cacheKey, loc);
+            return loc;
+          }
+        }
+      } catch {
+        hadFailure = true;
+      }
     }
+
+    // 3. Try Nominatim (OpenStreetMap standard geocoder - 100% Free fallback)
+    for (const q of queryCandidates) {
+      try {
+        const nomUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`;
+        const nRes = await fetch(nomUrl, { headers: { "User-Agent": "ThunderJawPOS/1.0" } });
+        if (!nRes.ok) {
+          hadFailure = true;
+        } else {
+          const nData: any = await nRes.json();
+          if (Array.isArray(nData) && nData.length > 0 && nData[0].lat && nData[0].lon) {
+            const loc = { lat: Number(nData[0].lat), lng: Number(nData[0].lon) };
+            geocodeMemoryCache.set(cacheKey, loc);
+            return loc;
+          }
+        }
+      } catch {
+        hadFailure = true;
+      }
+    }
+
+    // Cache negative lookup so invalid addresses aren't queried repeatedly,
+    // but only when every provider actually answered
+    if (!hadFailure) geocodeMemoryCache.set(cacheKey, null);
     return null;
   } catch (error) {
     console.error("Error geocoding address:", error);
@@ -93,23 +180,16 @@ export const isPointInPolygon = (
   point: { lat: number; lng: number },
   polygon: { lat: number; lng: number }[]
 ): boolean => {
-  if (!window.google || !window.google.maps || !window.google.maps.geometry) {
-    // Fallback ray casting algorithm if google maps geometry library is not loaded
-    const x = point.lat, y = point.lng;
-    let inside = false;
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-      const xi = polygon[i].lat, yi = polygon[i].lng;
-      const xj = polygon[j].lat, yj = polygon[j].lng;
-      const intersect = ((yi > y) !== (yj > y)) &&
-        (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-      if (intersect) inside = !inside;
-    }
-    return inside;
+  const x = point.lat, y = point.lng;
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].lat, yi = polygon[i].lng;
+    const xj = polygon[j].lat, yj = polygon[j].lng;
+    const intersect = ((yi > y) !== (yj > y)) &&
+      (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
   }
-
-  const googlePolygon = new window.google.maps.Polygon({ paths: polygon });
-  const googlePoint = new window.google.maps.LatLng(point.lat, point.lng);
-  return window.google.maps.geometry.poly.containsLocation(googlePoint, googlePolygon);
+  return inside;
 };
 
 export const calculateHaversineDistance = (

@@ -296,6 +296,14 @@ const ConfigurationsTab = () => {
                   postalCode: components.postalCode,
                   city: components.city,
                   province: components.province,
+                  // null clears stale coords after a manual edit, so the
+                  // address is geocoded again instead of using the old pin
+                  ...(components.lat !== undefined
+                    ? {
+                        latitude: components.lat ?? null,
+                        longitude: components.lng ?? null,
+                      }
+                    : {}),
                 }));
               }}
               label={t("configurations.companyAddress")}
@@ -759,10 +767,23 @@ const ConfigurationsTab = () => {
         isOpen={isZoneModalOpen}
         onClose={() => setIsZoneModalOpen(false)}
         initialZones={configurations.deliveryZones || []}
-        onSave={(zones) =>
-          setConfigurations({ ...configurations, deliveryZones: zones })
+        onSave={(zones, coords) =>
+          setConfigurations((prev) => ({
+            ...prev,
+            deliveryZones: zones,
+            ...(coords ? { latitude: coords.lat, longitude: coords.lng } : {}),
+          }))
         }
-        restaurantAddress={configurations.address || ""}
+        restaurantAddress={
+          [configurations.address, configurations.city, configurations.province]
+            .filter(Boolean)
+            .join(", ") || configurations.address || ""
+        }
+        restaurantCoords={
+          configurations.latitude && configurations.longitude
+            ? { lat: configurations.latitude, lng: configurations.longitude }
+            : undefined
+        }
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
       />
     </div>

@@ -4,12 +4,9 @@ import { CrossIcon, LocationIcon } from "@/renderer/public/Svg";
 import CustomButton from "../../ui/CustomButton";
 import CustomInput from "../../shared/CustomInput";
 import { toast } from "react-toastify";
-
-declare global {
-    interface Window {
-        google: any;
-    }
-}
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { geocodeAddress } from "../../../utils/googleMaps";
 
 interface DeliveryZone {
     id: string;
@@ -21,10 +18,11 @@ interface DeliveryZone {
 interface DeliveryZoneMapModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (zones: DeliveryZone[]) => void;
+    onSave: (zones: DeliveryZone[], coords?: { lat: number; lng: number }) => void;
     initialZones: DeliveryZone[];
     restaurantAddress: string;
-    googleMapsApiKey: string;
+    restaurantCoords?: { lat: number; lng: number };
+    googleMapsApiKey?: string;
 }
 
 const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
@@ -33,6 +31,7 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
     onSave,
     initialZones,
     restaurantAddress,
+    restaurantCoords,
     googleMapsApiKey,
 }) => {
     const { t } = useTranslation();
@@ -41,15 +40,19 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
     const [error, setError] = useState<string | null>(null);
     const [zones, setZones] = useState<DeliveryZone[]>(initialZones || []);
     const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
-    const polygonsRef = useRef<{ [key: string]: any }>({});
-    const mapInstanceRef = useRef<any>(null);
+    const [currentCoords, setCurrentCoords] = useState<{ lat: number; lng: number } | null>(
+        restaurantCoords || null
+    );
+    const polygonsRef = useRef<{ [key: string]: L.Polygon }>({});
+    const mapInstanceRef = useRef<L.Map | null>(null);
+    const restaurantMarkerRef = useRef<L.Marker | null>(null);
 
     const [isDrawing, setIsDrawing] = useState(false);
-    const [tempPoints, setTempPoints] = useState<any[]>([]);
+    const [tempPoints, setTempPoints] = useState<{ lat: number; lng: number }[]>([]);
 
-    const tempPolylineRef = useRef<any>(null);
-    const tempMarkersRef = useRef<any[]>([]);
-    const mapClickListenerRef = useRef<any>(null);
+    const tempPolylineRef = useRef<L.Polyline | null>(null);
+    const tempMarkersRef = useRef<L.CircleMarker[]>([]);
+    const tempPointsRef = useRef<{ lat: number; lng: number }[]>([]);
 
     // Sync zones state when modal opens
     useEffect(() => {
@@ -60,332 +63,237 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
         }
     }, [isOpen, initialZones]);
 
-    // Load Google Maps Script
-    useEffect(() => {
-        if (!isOpen || !googleMapsApiKey) return;
-
-        if (window.google?.maps?.importLibrary) {
-            setIsLoaded(true);
-            return;
-        }
-
-        const scriptId = "google-maps-script-delivery-zones";
-        if (document.getElementById(scriptId)) {
-            const checkLoaded = setInterval(() => {
-                if (window.google?.maps?.importLibrary) {
-                    setIsLoaded(true);
-                    clearInterval(checkLoaded);
-                }
-            }, 100);
-            return () => clearInterval(checkLoaded);
-        }
-
-        const script = document.createElement("script");
-        script.id = scriptId;
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=geometry,places`;
-        script.async = true;
-        script.defer = true;
-        script.onload = () => setIsLoaded(true);
-        script.onerror = () => setError(t("configurations.deliveryZones.errors.loadFailed"));
-        document.head.appendChild(script);
-    }, [isOpen, googleMapsApiKey, t]);
-
-    const updateZonePoints = useCallback((zoneId: string, polygon: any) => {
-        if (!polygon) return;
-        const path = polygon.getPath();
-        const points: { lat: number; lng: number }[] = [];
-        for (let i = 0; i < path.getLength(); i++) {
-            points.push({ lat: path.getAt(i).lat(), lng: path.getAt(i).lng() });
-        }
-
-        setZones(prev => prev.map(z => z.id === zoneId ? { ...z, points } : z));
-    }, []);
-
-    const tempPointsRef = useRef<any[]>([]);
-    const mapMousemoveListenerRef = useRef<any>(null);
-    const finishDrawingRef = useRef<any>(null);
-
     const cleanupDrawingState = useCallback(() => {
-        if (mapClickListenerRef.current) {
-            window.google.maps.event.removeListener(mapClickListenerRef.current);
-            mapClickListenerRef.current = null;
-        }
-        if (mapMousemoveListenerRef.current) {
-            window.google.maps.event.removeListener(mapMousemoveListenerRef.current);
-            mapMousemoveListenerRef.current = null;
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.off("click", handleMapClick);
+            mapInstanceRef.current.off("mousemove", handleMapMouseMove);
+            const container = mapInstanceRef.current.getContainer();
+            if (container) container.style.cursor = "";
         }
         if (tempPolylineRef.current) {
-            tempPolylineRef.current.setMap(null);
+            tempPolylineRef.current.remove();
             tempPolylineRef.current = null;
         }
-        tempMarkersRef.current.forEach(m => m.setMap(null));
+        tempMarkersRef.current.forEach(m => m.remove());
         tempMarkersRef.current = [];
-
-        if (mapInstanceRef.current) {
-            mapInstanceRef.current.setOptions({ draggableCursor: null });
-        }
+        tempPointsRef.current = [];
+        setTempPoints([]);
+        setIsDrawing(false);
     }, []);
 
-    const startDrawing = () => {
-        if (!mapInstanceRef.current || !window.google) return;
-        cleanupDrawingState();
-        setIsDrawing(true);
-        setTempPoints([]);
-        tempPointsRef.current = [];
-
-        mapInstanceRef.current.setOptions({ draggableCursor: "crosshair" });
-
-        tempPolylineRef.current = new window.google.maps.Polyline({
-            strokeColor: "#10B981",
-            strokeOpacity: 0.8,
-            strokeWeight: 3,
-            map: mapInstanceRef.current,
-            clickable: false, // Prevents intercepting map clicks!
-        });
-
-        // Click listener on map to add points
-        mapClickListenerRef.current = mapInstanceRef.current.addListener("click", (e: any) => {
-            const newPoint = e.latLng;
-            if (!newPoint) return;
-
-            const prevPoints = tempPointsRef.current;
-            const updated = [...prevPoints, newPoint];
-            tempPointsRef.current = updated;
-
-            if (tempPolylineRef.current) {
-                tempPolylineRef.current.setPath(updated);
-            }
-
-            const isFirstPoint = prevPoints.length === 0;
-            const marker = new window.google.maps.Marker({
-                position: newPoint,
-                map: mapInstanceRef.current,
-                cursor: "crosshair", // Shows cross cursor when hovering over the dot
-                icon: {
-                    path: window.google.maps.SymbolPath.CIRCLE,
-                    scale: isFirstPoint ? 8 : 5,
-                    fillColor: isFirstPoint ? "#059669" : "#10B981",
-                    fillOpacity: 1,
-                    strokeColor: "#ffffff",
-                    strokeWeight: 2,
-                },
-            });
-
-            marker.addListener("click", (evt: any) => {
-                if (evt && evt.stop) evt.stop();
-
-                if (isFirstPoint) {
-                    // Click first point -> Connect/Close polygon
-                    finishDrawingRef.current?.();
-                } else {
-                    // Click other points -> Remove this point!
-                    const pos = marker.getPosition();
-                    if (!pos) return;
-
-                    const currentPoints = tempPointsRef.current;
-                    const filtered = currentPoints.filter(p => 
-                        !(p.lat() === pos.lat() && p.lng() === pos.lng())
-                    );
-                    tempPointsRef.current = filtered;
-
-                    if (tempPolylineRef.current) {
-                        tempPolylineRef.current.setPath(filtered);
-                    }
-
-                    marker.setMap(null);
-                    tempMarkersRef.current = tempMarkersRef.current.filter(m => m !== marker);
-
-                    setTempPoints(filtered);
-                }
-            });
-
-            tempMarkersRef.current.push(marker);
-            setTempPoints(updated);
-        });
-
-        // Mousemove listener for rubber-band stretching line
-        mapMousemoveListenerRef.current = mapInstanceRef.current.addListener("mousemove", (e: any) => {
-            const mouseLatLng = e.latLng;
-            if (!mouseLatLng || tempPointsRef.current.length === 0) return;
-
-            // Draw line from last point to current mouse position
-            tempPolylineRef.current.setPath([...tempPointsRef.current, mouseLatLng]);
-        });
-    };
-
-    const finishDrawing = () => {
+    const finishDrawing = useCallback(() => {
         const currentPoints = tempPointsRef.current;
         if (currentPoints.length < 3) return;
 
         cleanupDrawingState();
 
-        const polygon = new window.google.maps.Polygon({
-            paths: currentPoints,
-            fillColor: "#10B981",
-            fillOpacity: 0.3,
-            strokeWeight: 2,
-            strokeColor: "#059669",
-            map: mapInstanceRef.current,
-            editable: true,
-            clickable: true,
-        });
-
         const zoneId = Math.random().toString(36).substring(2, 11);
+        const newZone: DeliveryZone = {
+            id: zoneId,
+            name: `${t("configurations.deliveryZones.zoneNamePlaceholder")} ${zones.length + 1}`,
+            points: currentPoints,
+            minOrderAmount: 0,
+        };
 
-        setZones((prev) => {
-            const newZone: DeliveryZone = {
-                id: zoneId,
-                name: `${t("configurations.deliveryZones.zoneNamePlaceholder")} ${prev.length + 1}`,
-                points: currentPoints.map(p => ({ lat: p.lat(), lng: p.lng() })),
-                minOrderAmount: 0,
-            };
-            return [...prev, newZone];
-        });
-
+        setZones((prev) => [...prev, newZone]);
         setSelectedZoneId(zoneId);
-        polygonsRef.current[zoneId] = polygon;
+    }, [cleanupDrawingState, t, zones.length]);
 
-        window.google.maps.event.addListener(polygon, 'click', () => {
-            setSelectedZoneId(zoneId);
-        });
+    const handleMapClick = useCallback((e: L.LeafletMouseEvent) => {
+        const newPt = { lat: e.latlng.lat, lng: e.latlng.lng };
+        const updated = [...tempPointsRef.current, newPt];
+        tempPointsRef.current = updated;
+        setTempPoints(updated);
 
-        const path = polygon.getPath();
-        const updateEvents = ['set_at', 'insert_at', 'remove_at'];
-        updateEvents.forEach(eventName => {
-            window.google.maps.event.addListener(path, eventName, () => updateZonePoints(zoneId, polygon));
-        });
+        if (tempPolylineRef.current) {
+            tempPolylineRef.current.setLatLngs(updated.map(p => [p.lat, p.lng]));
+        }
 
-        setIsDrawing(false);
+        const isFirst = updated.length === 1;
+
+        if (mapInstanceRef.current) {
+            const circle = L.circleMarker([newPt.lat, newPt.lng], {
+                radius: isFirst ? 8 : 6,
+                color: "#ffffff",
+                weight: 2,
+                fillColor: isFirst ? "#059669" : "#10B981",
+                fillOpacity: 1,
+            }).addTo(mapInstanceRef.current);
+
+            circle.on("click", (evt) => {
+                L.DomEvent.stopPropagation(evt);
+                if (isFirst && tempPointsRef.current.length >= 3) {
+                    finishDrawing();
+                } else if (!isFirst) {
+                    const filtered = tempPointsRef.current.filter(
+                        p => !(p.lat === newPt.lat && p.lng === newPt.lng)
+                    );
+                    tempPointsRef.current = filtered;
+                    setTempPoints(filtered);
+                    if (tempPolylineRef.current) {
+                        tempPolylineRef.current.setLatLngs(filtered.map(p => [p.lat, p.lng]));
+                    }
+                    circle.remove();
+                    tempMarkersRef.current = tempMarkersRef.current.filter(m => m !== circle);
+                }
+            });
+
+            tempMarkersRef.current.push(circle);
+        }
+    }, [finishDrawing]);
+
+    const handleMapMouseMove = useCallback((e: L.LeafletMouseEvent) => {
+        if (tempPointsRef.current.length === 0 || !tempPolylineRef.current) return;
+        const currentLatLngs: [number, number][] = tempPointsRef.current.map(p => [p.lat, p.lng]);
+        currentLatLngs.push([e.latlng.lat, e.latlng.lng]);
+        tempPolylineRef.current.setLatLngs(currentLatLngs);
+    }, []);
+
+    const startDrawing = () => {
+        if (!mapInstanceRef.current) return;
+        cleanupDrawingState();
+        setIsDrawing(true);
+        setSelectedZoneId(null);
+
+        const container = mapInstanceRef.current.getContainer();
+        if (container) container.style.cursor = "crosshair";
+
+        tempPolylineRef.current = L.polyline([], {
+            color: "#10B981",
+            opacity: 0.8,
+            weight: 3,
+        }).addTo(mapInstanceRef.current);
+
+        mapInstanceRef.current.on("click", handleMapClick);
+        mapInstanceRef.current.on("mousemove", handleMapMouseMove);
     };
 
     const cancelDrawing = () => {
         cleanupDrawingState();
-        setIsDrawing(false);
-        setTempPoints([]);
-        tempPointsRef.current = [];
     };
 
+    // Initialize Leaflet Map
     useEffect(() => {
-        finishDrawingRef.current = finishDrawing;
-    });
-
-    useEffect(() => {
-        if (!isLoaded || !isOpen || !mapRef.current || !window.google?.maps?.importLibrary) return;
+        if (!isOpen) {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.remove();
+                mapInstanceRef.current = null;
+            }
+            polygonsRef.current = {};
+            restaurantMarkerRef.current = null;
+            cleanupDrawingState();
+            setIsLoaded(false);
+            return;
+        }
 
         let active = true;
 
         const initMap = async () => {
+            if (!mapRef.current || mapInstanceRef.current) return;
+
             try {
-                // Ensure core namespaces exist
-                const [mapsLib, geocodingLib, markerLib] = await Promise.all([
-                    window.google.maps.importLibrary("maps"),
-                    window.google.maps.importLibrary("geocoding"),
-                    window.google.maps.importLibrary("marker"),
-                ]);
+                // Use explicit coordinates if provided in configurations, otherwise geocode
+                let resolvedCoords: { lat: number; lng: number } | null =
+                    (restaurantCoords && restaurantCoords.lat && restaurantCoords.lng)
+                        ? restaurantCoords
+                        : null;
+
+                if (!resolvedCoords && restaurantAddress) {
+                    resolvedCoords = await geocodeAddress(restaurantAddress);
+                }
+                // The hardcoded center is only for framing the map; it must never be
+                // saved as the restaurant location (only real or dragged coords are)
+                const centerCoords = resolvedCoords || { lat: 40.3450255, lng: -3.5214149 };
+                setCurrentCoords(resolvedCoords);
 
                 if (!active || !mapRef.current) return;
 
-                const { Map } = mapsLib;
-                const { Geocoder } = geocodingLib;
+                const map = L.map(mapRef.current, {
+                    zoomControl: false,
+                }).setView([centerCoords.lat, centerCoords.lng], 15);
 
-                // Safe access to constants which are global after importLibrary
-                const ControlPosition = window.google.maps.ControlPosition;
+                L.control.zoom({ position: "bottomright" }).addTo(map);
 
-                if (!Map || !Geocoder || !ControlPosition) {
-                    console.error("Missing Google Maps components:", { Map, Geocoder, ControlPosition });
-                    setError(t("configurations.deliveryZones.errors.mapInitError"));
-                    return;
-                }
+                L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                }).addTo(map);
 
-                const geocoder = new Geocoder();
+                mapInstanceRef.current = map;
+                setIsLoaded(true);
 
-                geocoder.geocode({ address: restaurantAddress || "Madrid, Spain" }, (results: any, status: any) => {
-                    if (!active || !mapRef.current) return;
-
-                    if (status === "OK" && results && results[0]) {
-                        const center = results[0].geometry.location;
-
-                        const newMap = new Map(mapRef.current, {
-                            center: center,
-                            zoom: 13,
-                            mapId: "DELIVERY_ZONE_MAP",
-                            mapTypeControl: true,
-                            streetViewControl: true,
-                            fullscreenControl: true,
-                            clickableIcons: false,
-                        });
-
-                        mapInstanceRef.current = newMap;
-
-                        // Add Restaurant Marker
-                        const Marker = markerLib.AdvancedMarkerElement || markerLib.Marker;
-                        if (markerLib.AdvancedMarkerElement) {
-                            new Marker({
-                                position: center,
-                                map: newMap,
-                                title: restaurantAddress,
-                            });
-                        } else if (markerLib.Marker) {
-                            new (markerLib.Marker as any)({
-                                position: center,
-                                map: newMap,
-                                title: restaurantAddress,
-                                zIndex: 1000,
-                            });
-                        }
-
-                        // Render Initial Zones
-                        initialZones.forEach(zone => {
-                            if (!zone.points || zone.points.length === 0) return;
-
-                            const polygon = new window.google.maps.Polygon({
-                                paths: zone.points,
-                                fillColor: "#10B981",
-                                fillOpacity: 0.3,
-                                strokeWeight: 2,
-                                strokeColor: "#059669",
-                                map: newMap,
-                                editable: true,
-                                clickable: true,
-                            });
-
-                            polygonsRef.current[zone.id] = polygon;
-
-                            window.google.maps.event.addListener(polygon, 'click', () => {
-                                setSelectedZoneId(zone.id);
-                            });
-
-                            const path = polygon.getPath();
-                            const updateEvents = ['set_at', 'insert_at', 'remove_at'];
-                            updateEvents.forEach(eventName => {
-                                window.google.maps.event.addListener(path, eventName, () => updateZonePoints(zone.id, polygon));
-                            });
-                        });
-                    } else {
-                        console.error("Geocoding failed:", status);
-                        setError(t("configurations.deliveryZones.errors.couldNotLocateRestaurant"));
-                    }
+                // Add Restaurant Marker (Draggable to pinpoint exact restaurant building or entrance)
+                const restIcon = L.divIcon({
+                    html: `<div style="background-color: #000; color: #fff; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 2px solid #fff;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>`,
+                    className: "",
+                    iconSize: [34, 34],
+                    iconAnchor: [17, 17],
                 });
-            } catch (e) {
-                console.error("Map init error:", e);
+
+                const restMarker = L.marker([centerCoords.lat, centerCoords.lng], {
+                    icon: restIcon,
+                    title: restaurantAddress || "Restaurant",
+                    draggable: true,
+                    zIndexOffset: 1000,
+                }).addTo(map);
+
+                restMarker.on("dragend", () => {
+                    const pos = restMarker.getLatLng();
+                    setCurrentCoords({ lat: pos.lat, lng: pos.lng });
+                });
+
+                restaurantMarkerRef.current = restMarker;
+
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 250);
+            } catch (err) {
+                console.error("Map init error:", err);
                 setError(t("configurations.deliveryZones.errors.mapInitError"));
             }
         };
 
-        if (isLoaded) initMap();
+        initMap();
 
         return () => {
             active = false;
-            cleanupDrawingState();
-            Object.values(polygonsRef.current).forEach(p => p.setMap(null));
-            polygonsRef.current = {};
-            mapInstanceRef.current = null;
         };
-    }, [isLoaded, isOpen, restaurantAddress, t, updateZonePoints, cleanupDrawingState]);
+    }, [isOpen, restaurantAddress, t, cleanupDrawingState]);
+
+    // Render polygons for zones on map
+    useEffect(() => {
+        if (!mapInstanceRef.current || !isLoaded) return;
+
+        // Clear existing polygons
+        Object.values(polygonsRef.current).forEach(p => p.remove());
+        polygonsRef.current = {};
+
+        zones.forEach(zone => {
+            if (!zone.points || zone.points.length === 0) return;
+            const isSelected = selectedZoneId === zone.id;
+
+            const polygon = L.polygon(
+                zone.points.map(p => [p.lat, p.lng]),
+                {
+                    color: isSelected ? "#2563EB" : "#059669",
+                    fillColor: isSelected ? "#3B82F6" : "#10B981",
+                    fillOpacity: isSelected ? 0.45 : 0.25,
+                    weight: isSelected ? 3 : 2,
+                }
+            ).addTo(mapInstanceRef.current!);
+
+            polygon.on("click", (e) => {
+                L.DomEvent.stopPropagation(e);
+                setSelectedZoneId(zone.id);
+            });
+
+            polygonsRef.current[zone.id] = polygon;
+        });
+    }, [zones, selectedZoneId, isLoaded]);
 
     const handleDeleteZone = (zoneId: string) => {
         if (polygonsRef.current[zoneId]) {
-            polygonsRef.current[zoneId].setMap(null);
+            polygonsRef.current[zoneId].remove();
             delete polygonsRef.current[zoneId];
         }
         setZones(prev => prev.filter(z => z.id !== zoneId));
@@ -397,7 +305,7 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
             toast.warn(t("configurations.deliveryZones.validation.atLeastOneZone"));
             return;
         }
-        onSave(zones);
+        onSave(zones, currentCoords || undefined);
         onClose();
     };
 
@@ -430,7 +338,7 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
                                 className="text-red-500 text-xs"
                                 type="button"
                                 onClick={() => {
-                                    Object.values(polygonsRef.current).forEach(p => p.setMap(null));
+                                    Object.values(polygonsRef.current).forEach(p => p.remove());
                                     polygonsRef.current = {};
                                     setZones([]);
                                     setSelectedZoneId(null);
@@ -535,7 +443,7 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
 
                     <div className="flex-1 relative bg-gray-100">
                         {error && (
-                            <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/80 backdrop-blur-sm">
+                            <div className="absolute inset-0 flex items-center justify-center z-[1000] bg-white/80 backdrop-blur-sm">
                                 <div className="text-center p-6">
                                     <p className="text-red-500 font-bold mb-2">{t("common.error")}</p>
                                     <p className="text-gray-700">{error}</p>
@@ -543,7 +451,7 @@ const DeliveryZoneMapModal: React.FC<DeliveryZoneMapModalProps> = ({
                             </div>
                         )}
                         {!isLoaded && !error && (
-                            <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/80 backdrop-blur-sm">
+                            <div className="absolute inset-0 flex items-center justify-center z-[1000] bg-white/80 backdrop-blur-sm">
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
                             </div>
                         )}
