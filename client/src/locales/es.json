@@ -937,16 +937,16 @@
     "newOrderReceived": "¡Nuevo pedido recibido! {{ticketNumber}}",
     "filters": {
       "allOrders": "Todos los Pedidos",
-      "pending": "📋 Pendiente",
-      "sentToKitchen": "👨‍🍳 Enviado a Cocina",
-      "readyForDelivery": "✅ Listo para Entrega",
-      "outForDelivery": "🚚 En Camino",
-      "completed": "✅ Completado",
-      "delivered": "📦 Entregado",
-      "cancelled": "❌ Cancelado",
-      "paid": "💚 Pagado",
-      "unpaid": "🔴 No Pagado",
-      "partialPayment": "🟡 Pago Parcial",
+      "pending": "Pendiente",
+      "sentToKitchen": "Enviado a Cocina",
+      "readyForDelivery": "Listo para Entrega",
+      "outForDelivery": "En Camino",
+      "completed": "Completado",
+      "delivered": "Entregado",
+      "cancelled": "Cancelado",
+      "paid": "Pagado",
+      "unpaid": "No Pagado",
+      "partialPayment": "Pago Parcial",
       "filterOrders": "Filtrar Pedidos"
     }
   },
@@ -3322,7 +3322,10 @@
       "appStoreLabel": "URL App Store (iOS)",
       "appStorePlaceholder": "https://apps.apple.com/app/your-app-id",
       "playStoreLabel": "URL Play Store (Android)",
-      "playStorePlaceholder": "https://play.google.com/store/apps/details?id=your.app"
+      "playStorePlaceholder": "https://play.google.com/store/apps/details?id=your.app",
+      "minAppVersionLabel": "Versión mínima de la app (actualización obligatoria)",
+      "appVersionHint": "Los usuarios con una versión anterior verán la pantalla \"Actualización necesaria\" y no podrán usar la app hasta actualizar. Indica una versión solo cuando esté publicada en App Store y Google Play. Déjalo vacío para desactivarlo.",
+      "invalidVersion": "Las versiones de la app deben tener el formato 1.2.0"
     },
     "customers": {
       "title": "Clientes Web y App",

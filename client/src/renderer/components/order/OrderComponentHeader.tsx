@@ -3,8 +3,8 @@ import { OrderContext } from "@/renderer/contexts/OrderContext";
 import { FilterType } from "@/types/order";
 import { ChevronLeftIcon } from "@/renderer/public/Svg";
 import CustomButton from "../ui/CustomButton";
-import { CustomSelect } from "../ui/CustomSelect";
 import { DateRangePicker } from "../ui/DateRangePicker";
+import { OrderStatusFilterDropdown } from "./OrderStatusFilterDropdown";
 import { useOrderManagementContext } from "@/renderer/contexts/orderManagementContext";
 import { useTranslation } from "react-i18next";
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
@@ -145,24 +145,20 @@ const OrderComponentHeader = () => {
       {!(orderItems.length > 0) && (
         <div>
           <div className="flex justify-between items-center p-2 gap-2">
-            <>
-              <DateRangePicker
-                startDate={filter.startDateRange}
-                endDate={filter.endDateRange}
-                selectedDate={filter.selectedDate}
-                onChange={handleDateRangeChange}
-                className="flex-1"
-              />
-              <CustomSelect
-                options={combinedFilterOptions}
-                value={getCurrentFilterValue()}
-                onChange={handleCombinedFilterChange}
-                placeholder={t("orderManagement.filters.filterOrders")}
-                className="text-sm flex-1"
-              />
-            </>
+            <DateRangePicker
+              startDate={filter.startDateRange}
+              endDate={filter.endDateRange}
+              selectedDate={filter.selectedDate}
+              onChange={handleDateRangeChange}
+              className="flex-1"
+            />
+            <OrderStatusFilterDropdown
+              value={getCurrentFilterValue()}
+              onChange={handleCombinedFilterChange}
+              className="flex-1"
+            />
           </div>
-          <div className="h-[1px] bg-gray-400"></div>
+          <div className="h-[1px] bg-gray-300"></div>
         </div>
       )}
     </>

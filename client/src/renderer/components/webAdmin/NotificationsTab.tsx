@@ -29,6 +29,8 @@ interface SystemData {
 interface AppLinksData {
   appStoreUrl: string;
   playStoreUrl: string;
+  // Mobile installs below this version are blocked until they update
+  minAppVersion: string;
 }
 
 // ── Defaults ─────────────────────────────────────────────────────────────────
@@ -46,7 +48,11 @@ const EMPTY_SYSTEM: SystemData = {
 const EMPTY_APP_LINKS: AppLinksData = {
   appStoreUrl: "",
   playStoreUrl: "",
+  minAppVersion: "",
 };
+
+// Same format the mobile app compares: "1", "1.2" or "1.2.3"
+const VERSION_PATTERN = /^\d+(\.\d+){0,2}$/;
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -121,9 +127,13 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({
 
     const links = initialContent["app-links"];
     if (links) {
+      // Keep every stored field: the save replaces the whole entry, so
+      // dropping one here would erase it (it's also edited from the admin panel)
       setAppLinks({
+        ...links,
         appStoreUrl: links.appStoreUrl || "",
         playStoreUrl: links.playStoreUrl || "",
+        minAppVersion: links.minAppVersion || "",
       });
     }
   }, [initialContent]);
@@ -179,9 +189,18 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({
   };
 
   const handleSaveAppLinks = async () => {
+    const payload = {
+      ...appLinks,
+      minAppVersion: appLinks.minAppVersion.trim(),
+    };
+    if (payload.minAppVersion && !VERSION_PATTERN.test(payload.minAppVersion)) {
+      toast.error(t("webAdmin.notifications.invalidVersion"));
+      return;
+    }
+
     setSavingAppLinks(true);
     try {
-      const ok = await saveKey("app-links", appLinks);
+      const ok = await saveKey("app-links", payload);
       if (ok) {
         toast.success(t("webAdmin.messages.saveSuccess"));
         onSaveSuccess?.();
@@ -248,7 +267,20 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({
               setAppLinks({ ...appLinks, playStoreUrl: e.target.value })
             }
           />
+          <CustomInput
+            type="text"
+            name="minAppVersion"
+            label={t("webAdmin.notifications.minAppVersionLabel")}
+            value={appLinks.minAppVersion}
+            placeholder="1.2.0"
+            onChange={(e) =>
+              setAppLinks({ ...appLinks, minAppVersion: e.target.value })
+            }
+          />
         </div>
+        <p className="text-xs text-gray-500">
+          {t("webAdmin.notifications.appVersionHint")}
+        </p>
       </div>
 
       {/* ── Announcement Bar Card ── */}

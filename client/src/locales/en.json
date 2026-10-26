@@ -937,16 +937,16 @@
     "newOrderReceived": "New order received! {{ticketNumber}}",
     "filters": {
       "allOrders": "All Orders",
-      "pending": "📋 Pending",
-      "sentToKitchen": "👨‍🍳 Sent to Kitchen",
-      "readyForDelivery": "✅ Ready for Delivery",
-      "outForDelivery": "🚚 Out for Delivery",
-      "completed": "✅ Completed",
-      "delivered": "📦 Delivered",
-      "cancelled": "❌ Cancelled",
-      "paid": "💚 Paid",
-      "unpaid": "🔴 Unpaid",
-      "partialPayment": "🟡 Partial Payment",
+      "pending": "Pending",
+      "sentToKitchen": "Sent to Kitchen",
+      "readyForDelivery": "Ready for Delivery",
+      "outForDelivery": "Out for Delivery",
+      "completed": "Completed",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "paid": "Paid",
+      "unpaid": "Unpaid",
+      "partialPayment": "Partial Payment",
       "filterOrders": "Filter Orders"
     }
   },
@@ -3322,7 +3322,10 @@
       "appStoreLabel": "App Store URL (iOS)",
       "appStorePlaceholder": "https://apps.apple.com/app/your-app-id",
       "playStoreLabel": "Play Store URL (Android)",
-      "playStorePlaceholder": "https://play.google.com/store/apps/details?id=your.app"
+      "playStorePlaceholder": "https://play.google.com/store/apps/details?id=your.app",
+      "minAppVersionLabel": "Minimum app version (forced update)",
+      "appVersionHint": "Users on an older app version see an \"Update required\" screen and can't use the app until they update. Only set a version once it is live in both the App Store and Google Play. Leave empty to disable.",
+      "invalidVersion": "App versions must look like 1.2.0"
     },
     "customers": {
       "title": "Web & App Customers",

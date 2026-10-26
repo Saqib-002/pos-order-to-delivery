@@ -576,7 +576,7 @@ export const ManageOrdersView = () => {
               )}
 
             {/* Change Delivery Person Button - Show for all delivery orders that are not cancelled and already have a delivery person assigned */}
-            {(order.orderType === "delivery" || order.orderType?.toLowerCase().includes("platform:delivery")) &&
+            {(order.orderType === "delivery" || order.orderType?.toLowerCase().includes("platform:delivery") || order.orderType === "app:delivery" || order.orderType === "web:delivery") &&
               (order.deliveryPerson?.id || order.deliveryPerson?.name) &&
               order.status?.toLowerCase() !== "cancelled" &&
               order.status?.toLowerCase() !== "senttokitchen" && (
