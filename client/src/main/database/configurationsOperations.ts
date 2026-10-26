@@ -25,6 +25,16 @@ export class ConfigurationsDatabaseOperations {
           processedData.contactTypes || []
         );
       }
+      if (processedData.kitchenOverflowMessage !== undefined) {
+        if (
+          typeof processedData.kitchenOverflowMessage === "object" &&
+          processedData.kitchenOverflowMessage !== null
+        ) {
+          processedData.kitchenOverflowMessage = JSON.stringify(
+            processedData.kitchenOverflowMessage
+          );
+        }
+      }
 
       await db("configurations").insert({
         ...processedData,
@@ -103,6 +113,24 @@ export class ConfigurationsDatabaseOperations {
           configurations.contactTypes = [];
         }
 
+        if (configurations.kitchenOverflowMessage) {
+          if (
+            typeof configurations.kitchenOverflowMessage === "string" &&
+            configurations.kitchenOverflowMessage.trim().startsWith("{")
+          ) {
+            try {
+              configurations.kitchenOverflowMessage = JSON.parse(
+                configurations.kitchenOverflowMessage
+              );
+            } catch (parseError) {
+              console.warn(
+                "Failed to parse kitchenOverflowMessage:",
+                parseError
+              );
+            }
+          }
+        }
+
         if (configurations.logo) {
           const uploadUrl = (store as any).get("cdnUrl");
           if (uploadUrl && !configurations.logo.startsWith("http")) {
@@ -134,6 +162,16 @@ export class ConfigurationsDatabaseOperations {
         processedUpdates.contactTypes = JSON.stringify(
           processedUpdates.contactTypes || []
         );
+      }
+      if (processedUpdates.kitchenOverflowMessage !== undefined) {
+        if (
+          typeof processedUpdates.kitchenOverflowMessage === "object" &&
+          processedUpdates.kitchenOverflowMessage !== null
+        ) {
+          processedUpdates.kitchenOverflowMessage = JSON.stringify(
+            processedUpdates.kitchenOverflowMessage
+          );
+        }
       }
 
       const updatedConfig = await db("configurations")

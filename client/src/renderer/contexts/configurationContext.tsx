@@ -16,6 +16,52 @@ interface DeliveryZone {
   minOrderAmount: number;
 }
 
+export interface KitchenOverflowMessage {
+  es: string;
+  en: string;
+}
+
+export function normalizeOverflowMessage(
+  msg: any
+): { es: string; en: string } {
+  if (!msg) return { es: "", en: "" };
+  if (typeof msg === "object") {
+    return {
+      es: typeof msg.es === "string" ? msg.es : "",
+      en: typeof msg.en === "string" ? msg.en : "",
+    };
+  }
+  if (typeof msg === "string") {
+    const trimmed = msg.trim();
+    if (trimmed.startsWith("{")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (parsed && typeof parsed === "object") {
+          return {
+            es: typeof parsed.es === "string" ? parsed.es : "",
+            en: typeof parsed.en === "string" ? parsed.en : "",
+          };
+        }
+      } catch {}
+    }
+    return { es: trimmed, en: "" };
+  }
+  return { es: "", en: "" };
+}
+
+export function getKitchenOverflowMessage(
+  msg: any,
+  lang: string = "es"
+): string {
+  const normalized = normalizeOverflowMessage(msg);
+  const primary = lang === "en" ? normalized.en : normalized.es;
+  if (primary && primary.trim()) {
+    return primary.trim();
+  }
+  const secondary = lang === "en" ? normalized.es : normalized.en;
+  return (secondary || "").trim();
+}
+
 interface ConfigurationType {
   name?: string;
   logo: string;
@@ -26,7 +72,7 @@ interface ConfigurationType {
   mediumKitchenPriorityTime?: number;
   highKitchenPriorityTime?: number;
   kitchenTimeEstimationRanges?: KitchenTimeEstimationRange[];
-  kitchenOverflowMessage?: string;
+  kitchenOverflowMessage?: string | KitchenOverflowMessage;
   deliveryZones?: DeliveryZone[];
   googleMapsApiKey?: string;
   address: string;
@@ -77,7 +123,7 @@ export const ConfigurationsProvider = ({
     mediumKitchenPriorityTime: 0,
     highKitchenPriorityTime: 0,
     googleMapsApiKey: "",
-    kitchenOverflowMessage: "",
+    kitchenOverflowMessage: { es: "", en: "" },
     deliveryZones: [],
     address: "",
     apartment: "",

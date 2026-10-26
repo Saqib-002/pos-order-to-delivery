@@ -28,7 +28,9 @@ export async function syncConfigToVPS(configId: string): Promise<void> {
             province: config.province,
             googleMapsApiKey: config.googleMapsApiKey,
             kitchenTimeEstimationRanges: config.kitchenTimeEstimationRanges,
-            kitchenOverflowMessage: config.kitchenOverflowMessage || "",
+            kitchenOverflowMessage: typeof config.kitchenOverflowMessage === "object" && config.kitchenOverflowMessage !== null
+                ? JSON.stringify(config.kitchenOverflowMessage)
+                : (config.kitchenOverflowMessage || ""),
             authorName: config.authorName,
             authorWebsite: config.authorWebsite,
             authorEmail: config.authorEmail,

@@ -4,7 +4,7 @@ import CustomButton from "../ui/CustomButton";
 import { CustomSelect } from "../ui/CustomSelect";
 import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
-import { useConfigurations } from "@/renderer/contexts/configurationContext";
+import { useConfigurations, normalizeOverflowMessage } from "@/renderer/contexts/configurationContext";
 import { useTranslation } from "react-i18next";
 import { EyeIcon, ImgIcon, LocationIcon } from "@/renderer/public/Svg";
 import { AddressAutocomplete } from "../shared/AddressAutocomplete";
@@ -139,9 +139,15 @@ const ConfigurationsTab = () => {
         }));
     }
 
+    const overflow = normalizeOverflowMessage(
+      configurations.kitchenOverflowMessage
+    );
     const cleanedConfigurations = {
       ...configurations,
-      kitchenOverflowMessage: (configurations.kitchenOverflowMessage || "").trim(),
+      kitchenOverflowMessage: {
+        es: overflow.es.trim(),
+        en: overflow.en.trim(),
+      },
       kitchenTimeEstimationRanges: cleanedRanges,
       deliveryZones: cleanedDeliveryZones,
     };
@@ -450,22 +456,70 @@ const ConfigurationsTab = () => {
                 />
               </div>
 
-              {/* High Volume Overflow Message Input */}
-              <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-4">
-                <CustomInput
-                  type="text"
-                  value={configurations.kitchenOverflowMessage || ""}
-                  onChange={(e) =>
-                    setConfigurations({
-                      ...configurations,
-                      kitchenOverflowMessage: e.target.value,
-                    })
-                  }
-                  label={t("configurations.kitchenOverflowMessage")}
-                  name="kitchenOverflowMessage"
-                  placeholder={t("configurations.kitchenOverflowMessagePlaceholder")}
-                  inputClasses="bg-white"
-                />
+              {/* High Volume Overflow Message Inputs */}
+              <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-4 flex flex-col gap-3">
+                <div>
+                  <h4 className="text-sm font-semibold text-amber-900">
+                    {t("configurations.kitchenOverflowMessage")}
+                  </h4>
+                  <p className="text-xs text-amber-700/80 mt-0.5">
+                    {t("configurations.kitchenOverflowMessageHelp")}
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CustomInput
+                    type="text"
+                    value={
+                      normalizeOverflowMessage(
+                        configurations.kitchenOverflowMessage
+                      ).es
+                    }
+                    onChange={(e) => {
+                      const current = normalizeOverflowMessage(
+                        configurations.kitchenOverflowMessage
+                      );
+                      setConfigurations({
+                        ...configurations,
+                        kitchenOverflowMessage: {
+                          ...current,
+                          es: e.target.value,
+                        },
+                      });
+                    }}
+                    label={t("configurations.kitchenOverflowMessageEs")}
+                    name="kitchenOverflowMessageEs"
+                    placeholder={t(
+                      "configurations.kitchenOverflowMessagePlaceholderEs"
+                    )}
+                    inputClasses="bg-white"
+                  />
+                  <CustomInput
+                    type="text"
+                    value={
+                      normalizeOverflowMessage(
+                        configurations.kitchenOverflowMessage
+                      ).en
+                    }
+                    onChange={(e) => {
+                      const current = normalizeOverflowMessage(
+                        configurations.kitchenOverflowMessage
+                      );
+                      setConfigurations({
+                        ...configurations,
+                        kitchenOverflowMessage: {
+                          ...current,
+                          en: e.target.value,
+                        },
+                      });
+                    }}
+                    label={t("configurations.kitchenOverflowMessageEn")}
+                    name="kitchenOverflowMessageEn"
+                    placeholder={t(
+                      "configurations.kitchenOverflowMessagePlaceholderEn"
+                    )}
+                    inputClasses="bg-white"
+                  />
+                </div>
               </div>
 
               {(configurations.kitchenTimeEstimationRanges || []).length ===

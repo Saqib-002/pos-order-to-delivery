@@ -47,7 +47,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   order,
   onProcessOrder,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { auth } = useAuth();
   const { configurations } = useConfigurations();
   const [sentToKitchenCount, setSentToKitchenCount] = useState(0);
@@ -105,7 +105,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const getKitchenEstimates = (orderCount: number) => {
     const ranges = configurations?.kitchenTimeEstimationRanges;
     if (!ranges || ranges.length === 0) {
-      return { pickup: null, delivery: null, overflow: null };
+      return { pickup: null, delivery: null };
     }
 
     const applicable = ranges.find(
@@ -118,7 +118,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       return {
         pickup: pickup > 0 ? String(pickup) : null,
         delivery: delivery > 0 ? String(delivery) : null,
-        overflow: null,
       };
     }
 
@@ -126,16 +125,11 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     const highest = sorted[0];
 
     if (highest && orderCount > highest.maxOrders) {
-      const overflowMsg = configurations?.kitchenOverflowMessage?.trim();
-      if (overflowMsg) {
-        return { pickup: null, delivery: null, overflow: overflowMsg };
-      }
       const pickup = highest.pickupTime ?? highest.estimatedTime ?? 0;
       const delivery = highest.deliveryTime ?? highest.estimatedTime ?? 0;
       return {
         pickup: pickup > 0 ? `+${pickup}` : null,
         delivery: delivery > 0 ? `+${delivery}` : null,
-        overflow: null,
       };
     }
 
@@ -146,11 +140,10 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       return {
         pickup: pickup > 0 ? String(pickup) : null,
         delivery: delivery > 0 ? String(delivery) : null,
-        overflow: null,
       };
     }
 
-    return { pickup: null, delivery: null, overflow: null };
+    return { pickup: null, delivery: null };
   };
 
   const kitchenEstimates = getKitchenEstimates(sentToKitchenCount);
@@ -581,12 +574,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           {sentToKitchenCount > 0 && (
             <div className="absolute inset-x-0 top-8 w-fit left-1/2 -translate-x-1/2 flex flex-col items-center">
               <p className="text-white text-xs bg-black/30 px-4 py-2 rounded-full backdrop-blur-sm border border-white/20 shadow-lg mb-2">
-                {kitchenEstimates.overflow
-                  ? t("orderProcessingModal.sentToKitchenWithOverflow", {
-                      count: sentToKitchenCount,
-                      message: kitchenEstimates.overflow,
-                    })
-                  : kitchenEstimates.pickup && kitchenEstimates.delivery
+                {kitchenEstimates.pickup && kitchenEstimates.delivery
                   ? t("orderProcessingModal.sentToKitchenWithSeparateTimes", {
                       count: sentToKitchenCount,
                       pickupTime: kitchenEstimates.pickup,
