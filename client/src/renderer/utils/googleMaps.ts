@@ -1,5 +1,5 @@
 // In-memory caches to prevent duplicate network calls
-const geocodeMemoryCache = new Map<string, { lat: number; lng: number } | null>();
+const geocodeMemoryCache = new Map<string, GeocodeHit | null>();
 const distanceMemoryCache = new Map<string, number>();
 
 // FOSSGIS OSRM instance (HTTPS, real car/bike profiles — the project-osrm.org
@@ -62,21 +62,141 @@ export const calculateDistance = async (
   }
 };
 
-export const geocodeAddress = async (
-  address: string,
-  apiKey?: string
-): Promise<{ lat: number; lng: number } | null> => {
-  if (!address || !address.trim()) return null;
+export type GeocodeStatus = "found" | "not_found" | "error";
+export type GeocodeSource = "cartociudad" | "photon" | "nominatim" | "manual";
+// How exactly the provider matched the address
+export type GeocodePrecision = "building" | "street" | "town" | "unknown";
+
+export interface GeocodeHit {
+  lat: number;
+  lng: number;
+  source: GeocodeSource;
+  precision: GeocodePrecision;
+  // Postcode of the matched place according to the provider (for sanity checks)
+  postcode: string | null;
+}
+
+export interface GeocodeResult {
+  location: { lat: number; lng: number } | null;
+  // Present when found: where it came from, precision and provider postcode
+  hit: GeocodeHit | null;
+  // not_found: every provider answered and none knew the address
+  // error: a provider timed out / failed / rate-limited, so it may work on retry
+  status: GeocodeStatus;
+}
+
+// Same address text => same key. Only whitespace, Unicode form (accents) and
+// letter case are normalised, which can never make two different addresses equal.
+export const normalizeAddressKey = (address: string) =>
+  address.normalize("NFC").replace(/\s+/g, " ").trim().toLowerCase();
+
+// A stalled provider must not block the lookup (fetch has no timeout of its own)
+const GEOCODE_TIMEOUT_MS = 6000;
+
+const fetchJsonWithTimeout = async (
+  url: string,
+  headers: Record<string, string>
+): Promise<{ ok: boolean; data: any }> => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), GEOCODE_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, { headers, signal: controller.signal });
+    if (!res.ok) return { ok: false, data: null };
+    return { ok: true, data: await res.json() };
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+// Nominatim's usage policy allows 1 request/second per connection. Calls are
+// queued within this POS, and — when a reserver is registered — each call also
+// reserves a slot in the shared database so all POS together stay within it.
+const NOMINATIM_INTERVAL_MS = 1100;
+let nominatimQueue: Promise<void> = Promise.resolve();
+let nominatimSlotReserver: ((intervalMs: number) => Promise<number>) | null =
+  null;
+export const setNominatimSlotReserver = (
+  reserver: ((intervalMs: number) => Promise<number>) | null
+) => {
+  nominatimSlotReserver = reserver;
+};
+const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+const scheduleNominatim = <T>(task: () => Promise<T>): Promise<T> => {
+  const run = nominatimQueue.then(async () => {
+    if (nominatimSlotReserver) {
+      try {
+        const waitMs = await nominatimSlotReserver(NOMINATIM_INTERVAL_MS);
+        if (waitMs > 0) await wait(waitMs);
+      } catch {
+        // Shared slot unavailable: the local queue still spaces requests
+      }
+    }
+    return task();
+  });
+  nominatimQueue = run.then(
+    () => wait(NOMINATIM_INTERVAL_MS),
+    () => wait(NOMINATIM_INTERVAL_MS)
+  );
+  return run;
+};
+
+// "building" only when the provider matched an actual house number. Anything
+// else that isn't a street — towns, postcodes, named places (a station, a
+// shopping centre…) — counts as "town" so it's flagged as approximate.
+// e.g. Photon answers "28521 Rivas-Vaciamadrid" with the railway station.
+const cartoCiudadPrecision = (type: unknown): GeocodePrecision => {
+  const t = String(type || "").toLowerCase();
+  if (t === "portal" || t === "refcatastral") return "building";
+  if (t === "callejero" || t === "carretera") return "street";
+  return t ? "town" : "unknown";
+};
+
+const photonPrecision = (props: any): GeocodePrecision => {
+  if (props?.housenumber) return "building";
+  if (props?.type === "street") return "street";
+  return props ? "town" : "unknown";
+};
+
+const nominatimPrecision = (item: any): GeocodePrecision => {
+  if (item?.address?.house_number) return "building";
+  if (item?.class === "highway" || item?.addresstype === "road") return "street";
+  return item ? "town" : "unknown";
+};
+
+const cleanPostcode = (value: unknown): string | null => {
+  const match = String(value ?? "").match(/\d{5}/);
+  return match ? match[0] : null;
+};
+
+// Concurrent lookups of the same address share one request
+const geocodeInFlight = new Map<string, Promise<GeocodeResult>>();
+
+// Drops an address from this session's cache (used by "look up again")
+export const forgetGeocodedAddress = (address: string) => {
+  if (address) geocodeMemoryCache.delete(normalizeAddressKey(address));
+};
+
+export const geocodeAddressDetailed = async (
+  address: string
+): Promise<GeocodeResult> => {
+  if (!address || !address.trim()) {
+    return { location: null, hit: null, status: "not_found" };
+  }
 
   const cleanAddr = address.trim();
-  const cacheKey = cleanAddr.toLowerCase();
+  const cacheKey = normalizeAddressKey(cleanAddr);
 
   // Return from cache (including cached null to prevent infinite retry loops on invalid addresses)
   if (geocodeMemoryCache.has(cacheKey)) {
-    return geocodeMemoryCache.get(cacheKey) ?? null;
+    const cached = geocodeMemoryCache.get(cacheKey) ?? null;
+    return cached
+      ? { location: { lat: cached.lat, lng: cached.lng }, hit: cached, status: "found" }
+      : { location: null, hit: null, status: "not_found" };
   }
+  const inFlight = geocodeInFlight.get(cacheKey);
+  if (inFlight) return inFlight;
 
-  try {
+  const lookup = (async (): Promise<GeocodeResult> => {
     // Generate normalized query variations to handle duplicate prefixes (e.g. CALLE CALLE)
     // or parenthetical administrative text (e.g. "Vaciamadrid (Rivas-Vaciamadrid)")
     const queryCandidates: string[] = [cleanAddr];
@@ -98,24 +218,45 @@ export const geocodeAddress = async (
       queryCandidates.push(cleanedAdmin);
     }
 
+    // CartoCiudad often returns nothing when the postcode is in the text
+    // ("Calle Mayor 5, 28013 Madrid" fails, "Calle Mayor 5, Madrid" finds the
+    // building), so also try without it. The postcode check on the result still
+    // catches a match in the wrong town.
+    const withoutPostcode = cleanedAdmin
+      .replace(/\b\d{5}\b/g, "")
+      .replace(/\s+/g, " ")
+      .replace(/\s*,\s*(,\s*)*/g, ", ")
+      .replace(/^[,\s]+|[,\s]+$/g, "")
+      .trim();
+    if (withoutPostcode && !queryCandidates.includes(withoutPostcode)) {
+      queryCandidates.push(withoutPostcode);
+    }
+
     // Set when any provider is unreachable or errors, so a transient outage
     // isn't cached as "address not found" for the rest of the session
     let hadFailure = false;
+    const found = (hit: GeocodeHit): GeocodeResult => {
+      geocodeMemoryCache.set(cacheKey, hit);
+      return { location: { lat: hit.lat, lng: hit.lng }, hit, status: "found" };
+    };
 
     // 1. Try CartoCiudad (Official Spain National Geographic Institute - 100% Free)
     for (const q of queryCandidates) {
       try {
-        const ccUrl = `https://www.cartociudad.es/geocoder/api/geocoder/candidates?q=${encodeURIComponent(q)}&limit=1`;
-        const ccRes = await fetch(ccUrl, { headers: { Accept: "application/json" } });
-        if (!ccRes.ok) {
+        const { ok, data } = await fetchJsonWithTimeout(
+          `https://www.cartociudad.es/geocoder/api/geocoder/candidates?q=${encodeURIComponent(q)}&limit=1`,
+          { Accept: "application/json" }
+        );
+        if (!ok) {
           hadFailure = true;
-        } else {
-          const ccData: any = await ccRes.json();
-          if (Array.isArray(ccData) && ccData.length > 0 && ccData[0].lat && ccData[0].lng) {
-            const loc = { lat: Number(ccData[0].lat), lng: Number(ccData[0].lng) };
-            geocodeMemoryCache.set(cacheKey, loc);
-            return loc;
-          }
+        } else if (Array.isArray(data) && data.length > 0 && data[0].lat && data[0].lng) {
+          return found({
+            lat: Number(data[0].lat),
+            lng: Number(data[0].lng),
+            source: "cartociudad",
+            precision: cartoCiudadPrecision(data[0].type),
+            postcode: cleanPostcode(data[0].postalCode),
+          });
         }
       } catch {
         hadFailure = true;
@@ -125,21 +266,21 @@ export const geocodeAddress = async (
     // 2. Try Photon (OpenStreetMap geocoder - 100% Free)
     for (const q of queryCandidates) {
       try {
-        const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=1`;
-        const pRes = await fetch(photonUrl, { headers: { Accept: "application/json" } });
-        if (!pRes.ok) {
+        const { ok, data } = await fetchJsonWithTimeout(
+          `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=1`,
+          { Accept: "application/json" }
+        );
+        const feat = data?.features?.[0];
+        if (!ok) {
           hadFailure = true;
-        } else {
-          const pData: any = await pRes.json();
-          const feat = pData?.features?.[0];
-          if (feat?.geometry?.coordinates) {
-            const loc = {
-              lat: Number(feat.geometry.coordinates[1]),
-              lng: Number(feat.geometry.coordinates[0]),
-            };
-            geocodeMemoryCache.set(cacheKey, loc);
-            return loc;
-          }
+        } else if (feat?.geometry?.coordinates) {
+          return found({
+            lat: Number(feat.geometry.coordinates[1]),
+            lng: Number(feat.geometry.coordinates[0]),
+            source: "photon",
+            precision: photonPrecision(feat.properties),
+            postcode: cleanPostcode(feat.properties?.postcode),
+          });
         }
       } catch {
         hadFailure = true;
@@ -149,17 +290,22 @@ export const geocodeAddress = async (
     // 3. Try Nominatim (OpenStreetMap standard geocoder - 100% Free fallback)
     for (const q of queryCandidates) {
       try {
-        const nomUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`;
-        const nRes = await fetch(nomUrl, { headers: { "User-Agent": "ThunderJawPOS/1.0" } });
-        if (!nRes.ok) {
+        const { ok, data } = await scheduleNominatim(() =>
+          fetchJsonWithTimeout(
+            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=1`,
+            { "User-Agent": "ThunderJawPOS/1.0" }
+          )
+        );
+        if (!ok) {
           hadFailure = true;
-        } else {
-          const nData: any = await nRes.json();
-          if (Array.isArray(nData) && nData.length > 0 && nData[0].lat && nData[0].lon) {
-            const loc = { lat: Number(nData[0].lat), lng: Number(nData[0].lon) };
-            geocodeMemoryCache.set(cacheKey, loc);
-            return loc;
-          }
+        } else if (Array.isArray(data) && data.length > 0 && data[0].lat && data[0].lon) {
+          return found({
+            lat: Number(data[0].lat),
+            lng: Number(data[0].lon),
+            source: "nominatim",
+            precision: nominatimPrecision(data[0]),
+            postcode: cleanPostcode(data[0].address?.postcode),
+          });
         }
       } catch {
         hadFailure = true;
@@ -169,12 +315,25 @@ export const geocodeAddress = async (
     // Cache negative lookup so invalid addresses aren't queried repeatedly,
     // but only when every provider actually answered
     if (!hadFailure) geocodeMemoryCache.set(cacheKey, null);
-    return null;
+    return { location: null, hit: null, status: hadFailure ? "error" : "not_found" };
+  })();
+
+  geocodeInFlight.set(cacheKey, lookup);
+  try {
+    return await lookup;
   } catch (error) {
     console.error("Error geocoding address:", error);
-    return null;
+    return { location: null, hit: null, status: "error" };
+  } finally {
+    geocodeInFlight.delete(cacheKey);
   }
 };
+
+export const geocodeAddress = async (
+  address: string,
+  _apiKey?: string
+): Promise<{ lat: number; lng: number } | null> =>
+  (await geocodeAddressDetailed(address)).location;
 
 export const isPointInPolygon = (
   point: { lat: number; lng: number },
@@ -273,6 +432,9 @@ export const getCompassDirection = (bearing: number): string => {
   return "Norte";
 };
 
+// Why a found location may be wrong (shown as a warning on the pin)
+export type LocationWarning = "postcode_mismatch" | "outside_zones" | "approximate";
+
 export interface GeocodedDeliveryOrder {
   order: any;
   location: { lat: number; lng: number };
@@ -280,6 +442,10 @@ export interface GeocodedDeliveryOrder {
   bearing: number;
   compassDir: string;
   compassCode: string;
+  // Shared geocode cache key of the address (used to fix / re-look-up the location)
+  addressKey?: string;
+  locationSource?: GeocodeSource;
+  locationWarnings?: LocationWarning[];
 }
 
 export interface DeliveryCluster {

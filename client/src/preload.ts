@@ -98,6 +98,48 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("update-vehicle-maintenance", token, id, data),
   deleteVehicleMaintenance: (token: string, id: string) =>
     ipcRenderer.invoke("delete-vehicle-maintenance", token, id),
+  // Delivery radar custom groups
+  getDeliveryRadarGroups: (token: string) =>
+    ipcRenderer.invoke("get-delivery-radar-groups", token),
+  createDeliveryRadarGroup: (
+    token: string,
+    data: { name?: string; nameTemplate?: string; color: string }
+  ) => ipcRenderer.invoke("create-delivery-radar-group", token, data),
+  updateDeliveryRadarGroup: (
+    token: string,
+    id: string,
+    updates: { name?: string; color?: string }
+  ) => ipcRenderer.invoke("update-delivery-radar-group", token, id, updates),
+  deleteDeliveryRadarGroup: (token: string, id: string) =>
+    ipcRenderer.invoke("delete-delivery-radar-group", token, id),
+  addOrdersToDeliveryRadarGroup: (
+    token: string,
+    groupId: string,
+    orderIds: string[]
+  ) =>
+    ipcRenderer.invoke(
+      "add-orders-to-delivery-radar-group",
+      token,
+      groupId,
+      orderIds
+    ),
+  removeOrdersFromDeliveryRadarGroups: (token: string, orderIds: string[]) =>
+    ipcRenderer.invoke(
+      "remove-orders-from-delivery-radar-groups",
+      token,
+      orderIds
+    ),
+  // Shared geocode cache
+  getGeocodeCache: (token: string, addressKeys: string[]) =>
+    ipcRenderer.invoke("get-geocode-cache", token, addressKeys),
+  saveGeocodeCache: (token: string, entries: any[]) =>
+    ipcRenderer.invoke("save-geocode-cache", token, entries),
+  setManualGeocode: (token: string, addressKey: string, lat: number, lng: number) =>
+    ipcRenderer.invoke("set-manual-geocode", token, addressKey, lat, lng),
+  deleteGeocodeCacheEntry: (token: string, addressKey: string) =>
+    ipcRenderer.invoke("delete-geocode-cache-entry", token, addressKey),
+  reserveGeocodeSlot: (token: string, provider: string, intervalMs: number) =>
+    ipcRenderer.invoke("reserve-geocode-slot", token, provider, intervalMs),
   // Worker operations
   createWorker: (token: string, data: any) =>
     ipcRenderer.invoke("create-worker", token, data),
@@ -704,6 +746,22 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.removeListener("new-web-order", newWebOrderCallback);
     };
   },
+  // Web/app orders that still need their sound and/or receipt (master POS,
+  // repeated every sync tick until recorded as done)
+  onWebOrderAlert: (callback: (pending: any[]) => void) => {
+    const webOrderAlertCallback = (_event: any, pending: any[]) => {
+      callback(pending);
+    };
+    ipcRenderer.on("web-order-alert", webOrderAlertCallback);
+    return () => {
+      ipcRenderer.removeListener("web-order-alert", webOrderAlertCallback);
+    };
+  },
+  markWebOrderAlert: (
+    token: string,
+    orderId: string,
+    result: { notified?: boolean; printed?: boolean; error?: string }
+  ) => ipcRenderer.invoke("mark-web-order-alert", token, orderId, result),
   onOrdersUpdatedFromSync: (callback: (data: any) => void) => {
     const ordersUpdatedCallback = (_event: any, data: any) => {
       callback(data);

@@ -15,7 +15,7 @@ export const OrderTable = <T,>({
   title?: string;
   subtitle?: string;
   columns: React.ReactNode[];
-  renderRow: (item: T) => JSX.Element;
+  renderRow: (item: T, index: number) => JSX.Element;
   emptyStateIcon?: JSX.Element;
   emptyStateTitle?: string;
 }) => {
@@ -54,7 +54,7 @@ export const OrderTable = <T,>({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {data.map(renderRow)}
+              {data.map((item, index) => renderRow(item, index))}
             </tbody>
           </table>
         </div>

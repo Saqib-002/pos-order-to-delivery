@@ -1,72 +1,68 @@
 import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import {
-  Compass,
-  MapPin,
-  Route,
-  Navigation,
-  Sparkles,
-  ChefHat,
-  RefreshCw,
-  X,
-  CheckCircle2,
-  Check,
-  Phone,
-  Crosshair,
-  Store,
-  Clock,
-} from "lucide-react";
+import { Compass, Layers } from "lucide-react";
 import { Order, DeliveryPerson } from "@/types/order";
-import { CustomSelect } from "../../ui/CustomSelect";
 import {
   geocodeAddress,
+  geocodeAddressDetailed,
   getOsrmBaseUrl,
   calculateBearing,
   getCompassDirection,
   getCompassCode,
   calculateHaversineDistance,
   findDeliveryClusters,
+  isPointInPolygon,
+  setNominatimSlotReserver,
+  forgetGeocodedAddress,
   GeocodedDeliveryOrder,
   DeliveryCluster,
+  type GeocodeHit,
+  type LocationWarning,
 } from "../../../utils/googleMaps";
-import { formatAddress, getOrderDisplayNumber } from "../../../utils/utils";
+import {
+  formatAddressForGeocoding,
+  extractPostcode,
+  getOrderDisplayNumber,
+} from "../../../utils/utils";
 import { updateOrder } from "../../../utils/order";
-import { calculateOrderTotal } from "../../../utils/orderCalculations";
 import { useConfigurations } from "../../../contexts/configurationContext";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-const formatElapsedTime = (minutes: number) => {
-  if (minutes < 1) return "< 1m";
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
-};
+import {
+  getAddressCacheKey,
+  loadCachedCoordinates,
+  saveCachedCoordinates,
+  saveManualLocation,
+  deleteCachedLocation,
+  reserveNominatimSlot,
+} from "./radar/geocodeCacheApi";
+import {
+  type CustomRadarGroup,
+  type UnlocatedRadarOrder,
+  removeOrderIdsFromGroups,
+  GROUP_NUMBER_TOKEN,
+  getNextGroupColor,
+} from "./radar/radarTypes";
+import {
+  fetchRadarGroups,
+  createRadarGroup,
+  updateRadarGroup,
+  deleteRadarGroup,
+  addOrdersToRadarGroup,
+  removeOrdersFromRadarGroups,
+} from "./radar/radarGroupsApi";
+import { RadarHeader } from "./radar/RadarHeader";
+import { RadarMapControls } from "./radar/RadarMapControls";
+import { RadarOrderInspector } from "./radar/RadarOrderInspector";
+import { RadarMoveOrderModal } from "./radar/RadarMoveOrderModal";
+import { RadarAutoSidebar } from "./radar/RadarAutoSidebar";
+import { RadarCustomSidebar } from "./radar/RadarCustomSidebar";
 
-const getOrderElapsedTime = (order: Order) => {
-  const isReady = order.status?.toLowerCase() === "ready for delivery";
-  const timestamp = isReady
-    ? order.readyAt || order.createdAt
-    : order.createdAt;
-
-  if (!timestamp) return { text: "-", minutes: 0, timeStr: "-" };
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffMinutes = Math.max(
-    0,
-    Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-  );
-  return {
-    text: formatElapsedTime(diffMinutes),
-    minutes: diffMinutes,
-    timeStr: date.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-  };
-};
+// Addresses looked up online at the same time (Nominatim is queued separately
+// to respect its 1 request/second limit)
+const GEOCODE_CONCURRENCY = 4;
 
 interface DeliveryRadarModalProps {
   isOpen: boolean;
@@ -99,7 +95,14 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const { configurations } = useConfigurations();
-  const deliveryZones = configurations?.deliveryZones || [];
+  // Memoised so a missing config doesn't create a new array every render
+  const deliveryZones = useMemo(
+    () => configurations?.deliveryZones || [],
+    [configurations?.deliveryZones]
+  );
+  // Read inside geocoding without re-running it when zones change
+  const deliveryZonesRef = useRef(deliveryZones);
+  deliveryZonesRef.current = deliveryZones;
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -107,12 +110,26 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
   const corridorPolylinesRef = useRef<L.Polyline[]>([]);
   const zonePolygonsRef = useRef<L.Polygon[]>([]);
   const osrmRoutePolylineRef = useRef<L.Polyline | null>(null);
-  const geocodeCache = useRef<Map<string, { lat: number; lng: number }>>(
-    new Map()
-  );
+  // Order address locations for this session, keyed by normalised address
+  const geocodeCache = useRef<Map<string, GeocodeHit>>(new Map());
+  const restaurantLocRef = useRef<{
+    address: string;
+    loc: { lat: number; lng: number };
+  } | null>(null);
   const hasFittedInitialBounds = useRef(false);
+  // Incremented per geocoding run so a slow, older run can't overwrite newer results
+  const geocodeRunIdRef = useRef(0);
 
   const [isGeocoding, setIsGeocoding] = useState(false);
+  // Online lookups of new addresses: done / total (null when idle)
+  const [geocodeProgress, setGeocodeProgress] = useState<{
+    done: number;
+    total: number;
+  } | null>(null);
+  // Orders that couldn't be placed on the map (shown in the header)
+  const [unlocatedOrders, setUnlocatedOrders] = useState<UnlocatedRadarOrder[]>(
+    []
+  );
   const [showZones, setShowZones] = useState(false);
   const [restaurantCoord, setRestaurantCoord] = useState<{
     lat: number;
@@ -126,6 +143,25 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
   const [selectedDriverId, setSelectedDriverId] = useState<string>("");
   const [isAssigning, setIsAssigning] = useState(false);
 
+  // Custom Groups Mode State
+  const [radarMode, setRadarMode] = useState<"auto" | "custom">("auto");
+  // Groups are stored in the shared local database (visible on every POS)
+  const [customGroups, setCustomGroups] = useState<CustomRadarGroup[]>([]);
+  // Last server payload, so polling only re-renders when something changed
+  const lastGroupsJsonRef = useRef<string>("");
+  // While > 0, poll results are ignored so they can't undo an optimistic update
+  const pendingGroupMutationsRef = useRef(0);
+  const [selectedCustomGroupId, setSelectedCustomGroupId] = useState<string | null>(null);
+  const [checkedUnassignedOrderIds, setCheckedUnassignedOrderIds] = useState<string[]>([]);
+  const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
+  const [editingGroupName, setEditingGroupName] = useState<string>("");
+  const [colorPickerGroupId, setColorPickerGroupId] = useState<string | null>(null);
+  const [movingOrderState, setMovingOrderState] = useState<{
+    orderId: string;
+    currentGroupId: string;
+  } | null>(null);
+  const [customGroupDriverId, setCustomGroupDriverId] = useState<string>("");
+
   // Filters & display toggles
   const [showKitchenOrders, setShowKitchenOrders] = useState(true);
   const [showReadyOrders, setShowReadyOrders] = useState(true);
@@ -137,6 +173,7 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
   const [routeInfo, setRouteInfo] = useState<{
     distanceKm: number;
     durationMin: number;
+    stops: number;
   } | null>(null);
 
   // Safe Logo loader with crossOrigin="anonymous" to avoid CORS / CORP canvas blocking
@@ -190,6 +227,67 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     return () => clearInterval(interval);
   }, [isOpen]);
 
+  const applyServerGroups = useCallback((groups: CustomRadarGroup[]) => {
+    const json = JSON.stringify(groups);
+    if (json === lastGroupsJsonRef.current) return;
+    lastGroupsJsonRef.current = json;
+    setCustomGroups(groups);
+  }, []);
+
+  // Local change shown immediately; the next server result always replaces it
+  const setGroupsOptimistic = useCallback(
+    (update: (prev: CustomRadarGroup[]) => CustomRadarGroup[]) => {
+      lastGroupsJsonRef.current = "";
+      setCustomGroups(update);
+    },
+    []
+  );
+
+  // The server also drops orders that were dispatched / delivered / cancelled
+  // anywhere (other screens or POS), so groups never keep stale orders
+  const loadCustomGroups = useCallback(async () => {
+    if (pendingGroupMutationsRef.current > 0) return;
+    try {
+      const groups = await fetchRadarGroups(token);
+      if (pendingGroupMutationsRef.current > 0) return;
+      applyServerGroups(groups);
+    } catch (err) {
+      console.warn("Failed to load delivery radar groups:", err);
+    }
+  }, [token, applyServerGroups]);
+
+  // Load on open and poll while open so changes from other POS show up
+  useEffect(() => {
+    if (!isOpen) return;
+    loadCustomGroups();
+    const interval = setInterval(loadCustomGroups, 5000);
+    return () => clearInterval(interval);
+  }, [isOpen, loadCustomGroups]);
+
+  // Optimistically applies a group change, saves it, then shows the server state.
+  // Returns false (after an error toast and a reload) if saving failed.
+  const runGroupMutation = async (
+    optimistic: (prev: CustomRadarGroup[]) => CustomRadarGroup[],
+    request: () => Promise<CustomRadarGroup[]>
+  ) => {
+    pendingGroupMutationsRef.current += 1;
+    setGroupsOptimistic(optimistic);
+    try {
+      const groups = await request();
+      pendingGroupMutationsRef.current -= 1;
+      // A later mutation still in flight will apply its own (newer) result
+      if (pendingGroupMutationsRef.current === 0) applyServerGroups(groups);
+      return true;
+    } catch (err) {
+      pendingGroupMutationsRef.current -= 1;
+      console.error("Delivery radar group update failed:", err);
+      toast.error(t("deliveryView.radar.messages.groupSaveError"));
+      lastGroupsJsonRef.current = "";
+      loadCustomGroups();
+      return false;
+    }
+  };
+
   // Clean up when modal closes or unmounts
   useEffect(() => {
     if (!isOpen) {
@@ -205,78 +303,312 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
       setRouteInfo(null);
       setSelectedOrderIds([]);
       setInspectedOrder(null);
+      setCheckedUnassignedOrderIds([]);
+      setEditingGroupId(null);
+      setColorPickerGroupId(null);
+      setMovingOrderState(null);
     }
   }, [isOpen]);
 
-  // Geocode Restaurant and Delivery Orders
+  // Geocode Restaurant and Delivery Orders.
+  // Order: in-memory cache -> shared DB cache (instant) -> online lookup for new
+  // addresses, a few in parallel. The map updates as orders are found instead
+  // of waiting for all of them; orders that can't be placed are reported.
+  // Several POS can run this at once: each works through the addresses in a
+  // random order, re-checks the shared cache right before each online lookup and
+  // saves every result immediately, so they split the work instead of repeating it.
   const runGeocoding = useCallback(async () => {
     if (!restaurantAddress) return;
+    const runId = ++geocodeRunIdRef.current;
+    const isStale = () => runId !== geocodeRunIdRef.current;
     setIsGeocoding(true);
+    let publishTimer: ReturnType<typeof setTimeout> | null = null;
 
     try {
-      // 1. Use explicit coordinates if provided in configurations, otherwise geocode restaurant address
-      let restLoc = restaurantCoords && restaurantCoords.lat && restaurantCoords.lng
-        ? restaurantCoords
-        : geocodeCache.current.get(restaurantAddress);
+      let restLoc: { lat: number; lng: number } | null =
+        restaurantCoords && restaurantCoords.lat && restaurantCoords.lng
+          ? restaurantCoords
+          : restaurantLocRef.current?.address === restaurantAddress
+          ? restaurantLocRef.current.loc
+          : null;
 
       if (!restLoc) {
         const res = await geocodeAddress(restaurantAddress, googleMapsApiKey);
         if (res) {
           restLoc = res;
-          geocodeCache.current.set(restaurantAddress, res);
+          restaurantLocRef.current = { address: restaurantAddress, loc: res };
         }
       }
 
+      if (isStale()) return;
       if (!restLoc) {
         console.warn("Could not geocode restaurant address");
-        setIsGeocoding(false);
         return;
       }
-      setRestaurantCoord(restLoc);
+      const origin = restLoc;
+      setRestaurantCoord(origin);
 
-      // 2. Geocode delivery orders
       const allOrdersToGeocode = [...readyOrders, ...kitchenOrders];
-      const results: GeocodedDeliveryOrder[] = [];
-
+      const unlocated: UnlocatedRadarOrder[] = [];
+      // Geocoded without the apartment: same building, same location
+      const withAddress: { order: Order; address: string; key: string }[] = [];
       for (const order of allOrdersToGeocode) {
-        const rawAddr = order.customer?.address
-          ? formatAddress(order.customer.address)
+        const address = order.customer?.address
+          ? formatAddressForGeocoding(order.customer.address)
           : "";
-        if (!rawAddr.trim()) continue;
-
-        let loc: { lat: number; lng: number } | null | undefined =
-          geocodeCache.current.get(rawAddr);
-        if (!loc) {
-          loc = await geocodeAddress(rawAddr, googleMapsApiKey);
-          if (loc) {
-            geocodeCache.current.set(rawAddr, loc);
-          }
-        }
-
-        if (loc) {
-          const bearing = calculateBearing(restLoc, loc);
-          const compassDir = getCompassDirection(bearing);
-          const compassCode = getCompassCode(bearing);
-          const distKm = calculateHaversineDistance(restLoc, loc);
-
-          results.push({
-            order,
-            location: loc,
-            distanceFromRestaurantKm: Math.round(distKm * 10) / 10,
-            bearing: Math.round(bearing),
-            compassDir,
-            compassCode,
-          });
+        if (!address.trim()) {
+          unlocated.push({ order, address: "", reason: "no_address" });
+        } else {
+          withAddress.push({ order, address, key: getAddressCacheKey(address) });
         }
       }
 
-      setGeocodedOrders(results);
+      // The shared DB is the source of truth (one local query): it brings in
+      // locations found or manually fixed by other POS since the last load
+      const allKeys = Array.from(new Set(withAddress.map((w) => w.key)));
+      const dbCached = await loadCachedCoordinates(token, allKeys);
+      dbCached.forEach((hit, key) => geocodeCache.current.set(key, hit));
+      if (isStale()) return;
+
+      const zones = (deliveryZonesRef.current || []).filter(
+        (z: any) => Array.isArray(z?.points) && z.points.length >= 3
+      );
+      // Sanity checks on automatic locations; a manual location is trusted
+      const getWarnings = (order: Order, hit: GeocodeHit): LocationWarning[] => {
+        if (hit.source === "manual") return [];
+        const warnings: LocationWarning[] = [];
+        // Only the first 3 digits (province + town/area): neighbouring postcodes
+        // of the same town (Rivas 28521/28522/28523) often disagree between
+        // providers, but a different prefix means a match in the wrong town.
+        const orderPostcode = extractPostcode(order.customer?.address || "");
+        if (
+          orderPostcode &&
+          hit.postcode &&
+          orderPostcode.slice(0, 3) !== hit.postcode.slice(0, 3)
+        ) {
+          warnings.push("postcode_mismatch");
+        }
+        if (
+          zones.length > 0 &&
+          !zones.some((z: any) => isPointInPolygon(hit, z.points))
+        ) {
+          warnings.push("outside_zones");
+        }
+        if (hit.precision === "town") warnings.push("approximate");
+        return warnings;
+      };
+
+      const toGeocoded = (
+        order: Order,
+        key: string,
+        hit: GeocodeHit
+      ): GeocodedDeliveryOrder => {
+        const loc = { lat: hit.lat, lng: hit.lng };
+        const bearing = calculateBearing(origin, loc);
+        return {
+          order,
+          location: loc,
+          distanceFromRestaurantKm:
+            Math.round(calculateHaversineDistance(origin, loc) * 10) / 10,
+          bearing: Math.round(bearing),
+          compassDir: getCompassDirection(bearing),
+          compassCode: getCompassCode(bearing),
+          addressKey: key,
+          locationSource: hit.source,
+          locationWarnings: getWarnings(order, hit),
+        };
+      };
+
+      const resultsByOrderId = new Map<string, GeocodedDeliveryOrder>();
+      const pendingByKey = new Map<
+        string,
+        { key: string; address: string; orders: Order[] }
+      >();
+      for (const w of withAddress) {
+        const hit = geocodeCache.current.get(w.key);
+        if (hit) {
+          resultsByOrderId.set(w.order.id, toGeocoded(w.order, w.key, hit));
+        } else {
+          const entry = pendingByKey.get(w.key) || {
+            key: w.key,
+            address: w.address,
+            orders: [],
+          };
+          entry.orders.push(w.order);
+          pendingByKey.set(w.key, entry);
+        }
+      }
+
+      // Keeps the original order sequence; coalesced so the map isn't redrawn per address
+      const publishNow = () => {
+        if (publishTimer) {
+          clearTimeout(publishTimer);
+          publishTimer = null;
+        }
+        if (isStale()) return;
+        setGeocodedOrders(
+          allOrdersToGeocode
+            .map((o) => resultsByOrderId.get(o.id))
+            .filter((g): g is GeocodedDeliveryOrder => !!g)
+        );
+      };
+      const schedulePublish = () => {
+        if (!publishTimer) publishTimer = setTimeout(publishNow, 500);
+      };
+
+      // Cached orders appear straight away
+      publishNow();
+
+      // Random order so POS running at the same time work on different addresses
+      const queue = Array.from(pendingByKey.values());
+      for (let i = queue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [queue[i], queue[j]] = [queue[j], queue[i]];
+      }
+      const total = queue.length;
+      let done = 0;
+      if (total > 0) setGeocodeProgress({ done: 0, total });
+
+      const placeOrders = (item: { key: string; orders: Order[] }, hit: GeocodeHit) => {
+        geocodeCache.current.set(item.key, hit);
+        item.orders.forEach((o) =>
+          resultsByOrderId.set(o.id, toGeocoded(o, item.key, hit))
+        );
+        schedulePublish();
+      };
+
+      const worker = async () => {
+        while (queue.length > 0 && !isStale()) {
+          const item = queue.shift()!;
+          // Another POS may have found it since this run started
+          const shared = (await loadCachedCoordinates(token, [item.key])).get(
+            item.key
+          );
+          if (shared) {
+            placeOrders(item, shared);
+          } else {
+            const { hit, status } = await geocodeAddressDetailed(item.address);
+            if (hit) {
+              // Saved right away so other POS can reuse it immediately
+              saveCachedCoordinates(token, [{ addressKey: item.key, hit }]);
+              placeOrders(item, hit);
+            } else {
+              item.orders.forEach((o) =>
+                unlocated.push({
+                  order: o,
+                  address: item.address,
+                  addressKey: item.key,
+                  reason: status === "error" ? "lookup_failed" : "not_found",
+                })
+              );
+            }
+          }
+          done += 1;
+          if (!isStale()) setGeocodeProgress({ done, total });
+        }
+      };
+      await Promise.all(
+        Array.from({ length: Math.min(GEOCODE_CONCURRENCY, total) }, worker)
+      );
+
+      if (isStale()) return;
+      publishNow();
+      setUnlocatedOrders(unlocated);
     } catch (err) {
-      console.error("Error geocoding radar orders:", err);
+      console.error("Geocoding failed in Radar:", err);
     } finally {
-      setIsGeocoding(false);
+      if (publishTimer) clearTimeout(publishTimer);
+      if (!isStale()) {
+        setIsGeocoding(false);
+        setGeocodeProgress(null);
+      }
     }
-  }, [restaurantAddress, restaurantCoords, googleMapsApiKey, readyOrders, kitchenOrders]);
+  }, [
+    readyOrders,
+    kitchenOrders,
+    restaurantAddress,
+    restaurantCoords,
+    googleMapsApiKey,
+    token,
+  ]);
+
+  // Shared Nominatim rate limit across every POS on this database
+  useEffect(() => {
+    if (!token) return;
+    setNominatimSlotReserver((intervalMs) =>
+      reserveNominatimSlot(token, intervalMs)
+    );
+    return () => setNominatimSlotReserver(null);
+  }, [token]);
+
+  // Manual location placement: the next tap on the map sets the location
+  const [placingLocation, setPlacingLocation] = useState<{
+    addressKey: string;
+    label: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) setPlacingLocation(null);
+  }, [isOpen]);
+
+  // Saves a location as manual (placed on the map, or a flagged pin confirmed
+  // as correct). Manual locations win over automatic lookups on every POS.
+  const applyManualLocation = useCallback(
+    async (addressKey: string, lat: number, lng: number) => {
+      const ok = await saveManualLocation(token, addressKey, lat, lng);
+      if (!ok) {
+        toast.error(t("deliveryView.radar.messages.locationSaveError"));
+        return;
+      }
+      geocodeCache.current.set(addressKey, {
+        lat,
+        lng,
+        source: "manual",
+        precision: "building",
+        postcode: null,
+      });
+      forgetGeocodedAddress(addressKey);
+      setInspectedOrder(null);
+      toast.success(t("deliveryView.radar.messages.locationSaved"));
+      runGeocoding();
+    },
+    [token, t, runGeocoding]
+  );
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!isOpen || !map || !placingLocation) return;
+    const container = map.getContainer();
+    container.style.cursor = "crosshair";
+    const handleClick = (e: L.LeafletMouseEvent) => {
+      const { addressKey } = placingLocation;
+      setPlacingLocation(null);
+      applyManualLocation(addressKey, e.latlng.lat, e.latlng.lng);
+    };
+    map.on("click", handleClick);
+    return () => {
+      map.off("click", handleClick);
+      container.style.cursor = "";
+    };
+  }, [isOpen, placingLocation, applyManualLocation]);
+
+  const handleStartPlaceLocation = (addressKey: string, label: string) => {
+    setPlacingLocation({ addressKey, label });
+  };
+
+  // "Look up again": forget the stored location everywhere and re-geocode
+  const handleLookUpAgain = async (addressKey: string) => {
+    const ok = await deleteCachedLocation(token, addressKey);
+    if (!ok) {
+      toast.error(t("deliveryView.radar.messages.locationSaveError"));
+      return;
+    }
+    geocodeCache.current.delete(addressKey);
+    forgetGeocodedAddress(addressKey);
+    setInspectedOrder(null);
+    toast.info(t("deliveryView.radar.messages.lookUpAgainStarted"));
+    runGeocoding();
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -285,11 +617,11 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
   }, [isOpen, runGeocoding]);
 
   // Compute smart corridor clusters (55° max angle diff, 1.8km local hop, 0.85km corridor lateral offset)
-  const clusters = useMemo(() => {
+  const clusters: DeliveryCluster[] = useMemo(() => {
     return findDeliveryClusters(geocodedOrders, 55, 1.8, 0.85);
   }, [geocodedOrders]);
 
-  // Orders filtered by visibility toggles
+  // Filter geocoded orders based on visibility toggles
   const visibleGeocodedOrders = useMemo(() => {
     return geocodedOrders.filter((item) => {
       const isReady = item.order.status?.toLowerCase() === "ready for delivery";
@@ -300,12 +632,63 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     });
   }, [geocodedOrders, showReadyOrders, showKitchenOrders]);
 
-  // Selected orders as full objects
+  // Orders on the map whose location failed a sanity check
+  const warnedOrders = useMemo(
+    () => geocodedOrders.filter((g) => (g.locationWarnings?.length ?? 0) > 0),
+    [geocodedOrders]
+  );
+
+  // Selected orders as full objects (for auto mode)
   const selectedOrders = useMemo(() => {
     return geocodedOrders
       .filter((g) => selectedOrderIds.includes(g.order.id))
       .map((g) => g.order);
   }, [geocodedOrders, selectedOrderIds]);
+
+  // Set of all order IDs that are currently assigned to any custom group
+  const allCustomGroupedOrderIds = useMemo(() => {
+    return new Set(customGroups.flatMap((g) => g.orderIds));
+  }, [customGroups]);
+
+  // Unassigned Geocoded Orders for Custom Mode (visible orders not in any custom group)
+  const unassignedGeocodedOrders = useMemo(() => {
+    return visibleGeocodedOrders.filter(
+      (g) => !allCustomGroupedOrderIds.has(g.order.id)
+    );
+  }, [visibleGeocodedOrders, allCustomGroupedOrderIds]);
+
+  // Drop checked orders that are no longer listed (hidden by a filter, grouped or gone)
+  useEffect(() => {
+    const listedIds = new Set(unassignedGeocodedOrders.map((g) => g.order.id));
+    setCheckedUnassignedOrderIds((prev) => {
+      const next = prev.filter((id) => listedIds.has(id));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [unassignedGeocodedOrders]);
+
+  // Currently selected custom group object
+  const selectedCustomGroup = useMemo(() => {
+    return customGroups.find((g) => g.id === selectedCustomGroupId) || null;
+  }, [customGroups, selectedCustomGroupId]);
+
+  // Active Routing Order IDs (used for OSRM multi-stop road polyline)
+  const activeRoutingOrderIds = useMemo(() => {
+    if (radarMode === "auto") {
+      return selectedOrderIds;
+    }
+    if (!selectedCustomGroupId) return [];
+    const group = customGroups.find((g) => g.id === selectedCustomGroupId);
+    return group ? group.orderIds : [];
+  }, [radarMode, selectedOrderIds, selectedCustomGroupId, customGroups]);
+
+  // Active Routing Color (matches custom group color or emerald for auto)
+  const activeRouteColor = useMemo(() => {
+    if (radarMode === "custom" && selectedCustomGroupId) {
+      const group = customGroups.find((g) => g.id === selectedCustomGroupId);
+      if (group?.color) return group.color;
+    }
+    return "#10B981";
+  }, [radarMode, selectedCustomGroupId, customGroups]);
 
   // Initialize Leaflet Map whenever modal opens and container is in the DOM
   useEffect(() => {
@@ -314,7 +697,7 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     if (!mapInstanceRef.current) {
       const initialCenter: [number, number] = restaurantCoord
         ? [restaurantCoord.lat, restaurantCoord.lng]
-        : [40.4168, -3.7038]; // Madrid fallback
+        : [40.4168, -3.7038];
 
       const map = L.map(mapContainerRef.current, {
         zoomControl: false,
@@ -335,17 +718,18 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     }
   }, [isOpen, restaurantCoord]);
 
-  // Crisp Vector Pin Generator (NO emojis, NO dotted circular border)
+  // Crisp Vector Pin Generator
   const createPinIcon = (
     label: string,
     bgColor: string,
     isKitchen: boolean,
-    isSelected: boolean
+    isSelected: boolean,
+    // Location may be wrong: adds a red "!" badge to the pin
+    hasWarning = false
   ) => {
     const stroke = isSelected ? "#FFFFFF" : "rgba(0,0,0,0.2)";
     const strokeWidth = isSelected ? 2.5 : 1;
 
-    // Dynamically adjust font size so prefixed ticket numbers (P12, W-0001, K4) fit cleanly
     const fontSize = isKitchen
       ? label.length > 5
         ? 6
@@ -364,7 +748,6 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
       ? 9.5
       : 10.5;
 
-    // If kitchen order, embed clean vector chef hat above label
     const content = isKitchen
       ? `<path d="M23 15 C21.5 15 20.5 16.5 21 18 C19.5 18.5 19 20 20 21.5 C19.5 22.5 20 24 21.5 24 L34.5 24 C36 24 36.5 22.5 36 21.5 C37 20 36.5 18.5 35 18 C35.5 16.5 34.5 15 33 15 C32 13 24 13 23 15 Z" fill="${bgColor}"/>
          <text x="28" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="${fontSize}" font-weight="900" fill="${bgColor}" text-anchor="middle" letter-spacing="-0.2px">${label}</text>`
@@ -375,6 +758,12 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
         <path d="M28 62 C28 62 10 38 10 24 C10 12.95 18.05 4 28 4 C37.95 4 46 12.95 46 24 C46 38 28 62 28 62 Z" fill="${bgColor}" stroke="${stroke}" stroke-width="${strokeWidth}"/>
         <circle cx="28" cy="24" r="14.5" fill="#FFFFFF"/>
         ${content}
+        ${
+          hasWarning
+            ? `<circle cx="45" cy="10" r="8" fill="#DC2626" stroke="#FFFFFF" stroke-width="2"/>
+               <text x="45" y="10.5" font-family="system-ui, sans-serif" font-size="11" font-weight="900" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">!</text>`
+            : ""
+        }
       </svg>
     `;
 
@@ -432,15 +821,44 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     }
   };
 
+  // Zooms the map to an order's pin and opens its card (e.g. from the
+  // location-problems list). Turns its status filter back on if it was hidden.
+  const handleFocusOrder = (item: GeocodedDeliveryOrder) => {
+    const status = item.order.status?.toLowerCase();
+    if (status === "ready for delivery" && !showReadyOrders) setShowReadyOrders(true);
+    if (status === "sent to kitchen" && !showKitchenOrders) setShowKitchenOrders(true);
+    setInspectedOrder(item);
+    mapInstanceRef.current?.flyTo([item.location.lat, item.location.lng], 17, {
+      duration: 0.8,
+    });
+  };
+
+  // "Not on map" orders have no location yet: start placement and show the
+  // restaurant's area so the right spot can be tapped nearby
+  const handlePlaceUnlocatedOrder = (addressKey: string, label: string) => {
+    handleStartPlaceLocation(addressKey, label);
+    if (restaurantCoord) {
+      mapInstanceRef.current?.flyTo([restaurantCoord.lat, restaurantCoord.lng], 15, {
+        duration: 0.8,
+      });
+    }
+  };
+
+  const toggleOrderSelection = (orderId: string) => {
+    setSelectedOrderIds((prev) =>
+      prev.includes(orderId)
+        ? prev.filter((id) => id !== orderId)
+        : [...prev, orderId]
+    );
+  };
+
   // Draw Markers & Cluster Radar Lines
   useEffect(() => {
     if (!isOpen || !mapInstanceRef.current) return;
 
-    // Clear old markers
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
-    // Clear old corridor lines
     corridorPolylinesRef.current.forEach((l) => l.remove());
     corridorPolylinesRef.current = [];
 
@@ -459,17 +877,29 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     visibleGeocodedOrders.forEach((item) => {
       const isReady = item.order.status?.toLowerCase() === "ready for delivery";
       const isKitchen = item.order.status?.toLowerCase() === "sent to kitchen";
-      const isSelected = selectedOrderIds.includes(item.order.id);
-      const isHighlightedCluster =
-        activeClusterId &&
-        clusters
-          .find((c) => c.id === activeClusterId)
-          ?.orders.some((o) => o.order.id === item.order.id);
-
-      // Black Theme: Selected orders are solid black, Ready are emerald, Kitchen are amber
+      
+      let isSelected = false;
       let pinColor = isReady ? "#16A34A" : "#D97706";
-      if (isSelected) pinColor = "#000000";
-      else if (isHighlightedCluster) pinColor = "#3F3F46";
+
+      if (radarMode === "auto") {
+        isSelected = selectedOrderIds.includes(item.order.id);
+        const isHighlightedCluster =
+          activeClusterId &&
+          clusters
+            .find((c) => c.id === activeClusterId)
+            ?.orders.some((o) => o.order.id === item.order.id);
+
+        if (isSelected) pinColor = "#000000";
+        else if (isHighlightedCluster) pinColor = "#3F3F46";
+      } else {
+        const group = customGroups.find((g) => g.orderIds.includes(item.order.id));
+        if (group) {
+          pinColor = group.color;
+          isSelected = selectedCustomGroupId === group.id;
+        } else {
+          pinColor = isReady ? "#10B981" : "#D97706";
+        }
+      }
 
       const displayNum = getOrderDisplayNumber(item.order, orderPrefix);
       const label = displayNum;
@@ -479,13 +909,19 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
           displayNum,
           name: item.order.customer?.name || "Cliente",
         }),
-        icon: createPinIcon(label, pinColor, isKitchen, isSelected),
+        icon: createPinIcon(
+          label,
+          pinColor,
+          isKitchen,
+          isSelected,
+          (item.locationWarnings?.length ?? 0) > 0
+        ),
         zIndexOffset: isSelected ? 500 : isReady ? 300 : 200,
       }).addTo(mapInstanceRef.current!);
 
       marker.on("click", () => {
         setInspectedOrder(item);
-        if (isReady) {
+        if (radarMode === "auto" && isReady) {
           toggleOrderSelection(item.order.id);
         }
       });
@@ -493,36 +929,39 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
       markersRef.current.push(marker);
     });
 
-    // 3. Draw faint corridor connectors for multi-order clusters
-    clusters.forEach((cluster) => {
-      if (cluster.orders.length > 1 && restaurantCoord) {
-        const isClusterActive = activeClusterId === cluster.id;
-        const strokeColor = isClusterActive ? "#000000" : "#A1A1AA";
-        const strokeOpacity = isClusterActive ? 0.85 : 0.35;
-        const strokeWeight = isClusterActive ? 3 : 2;
+    // 3. Draw faint corridor connectors for multi-order clusters (AUTO MODE ONLY)
+    if (radarMode === "auto") {
+      clusters.forEach((cluster) => {
+        if (cluster.orders.length > 1 && restaurantCoord) {
+          const isClusterActive = activeClusterId === cluster.id;
+          const strokeColor = isClusterActive ? "#000000" : "#A1A1AA";
+          const strokeOpacity = isClusterActive ? 0.85 : 0.35;
+          const strokeWeight = isClusterActive ? 3 : 2;
 
-        cluster.orders.forEach((o) => {
-          const line = L.polyline(
-            [
-              [restaurantCoord.lat, restaurantCoord.lng],
-              [o.location.lat, o.location.lng],
-            ],
-            {
-              color: strokeColor,
-              opacity: strokeOpacity,
-              weight: strokeWeight,
-              dashArray: "5, 8",
-            }
-          ).addTo(mapInstanceRef.current!);
-          corridorPolylinesRef.current.push(line);
-        });
-      }
-    });
+          cluster.orders.forEach((o) => {
+            const line = L.polyline(
+              [
+                [restaurantCoord.lat, restaurantCoord.lng],
+                [o.location.lat, o.location.lng],
+              ],
+              {
+                color: strokeColor,
+                opacity: strokeOpacity,
+                weight: strokeWeight,
+                dashArray: "5, 8",
+              }
+            ).addTo(mapInstanceRef.current!);
+            corridorPolylinesRef.current.push(line);
+          });
+        }
+      });
+    }
 
     // ONLY adjust zoom/bounds automatically ONCE upon initial load
     if (
       !hasFittedInitialBounds.current &&
-      markersRef.current.length > 0 &&
+      // Wait for at least one order (orders now load progressively), not just the restaurant
+      visibleGeocodedOrders.length > 0 &&
       mapInstanceRef.current
     ) {
       const group = L.featureGroup(markersRef.current);
@@ -541,9 +980,10 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     clusters,
     t,
     orderPrefix,
-    configurations,
-    restaurantLogo,
     safeLogoUrl,
+    radarMode,
+    customGroups,
+    selectedCustomGroupId,
   ]);
 
   // Calculate & Draw Driving Route for Selected Orders (OSRM 100% Free)
@@ -552,7 +992,7 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
       return;
     }
 
-    if (selectedOrderIds.length === 0) {
+    if (activeRoutingOrderIds.length === 0) {
       if (osrmRoutePolylineRef.current) {
         osrmRoutePolylineRef.current.remove();
         osrmRoutePolylineRef.current = null;
@@ -561,29 +1001,42 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
       return;
     }
 
-    // Sort selected stops by distance from restaurant to optimize drop-off progression
     const selectedGeocoded = geocodedOrders
-      .filter((g) => selectedOrderIds.includes(g.order.id))
+      .filter((g) => activeRoutingOrderIds.includes(g.order.id))
       .sort(
         (a, b) => a.distanceFromRestaurantKm - b.distanceFromRestaurantKm
       );
 
-    // OSRM free multi-stop route
+    if (selectedGeocoded.length === 0) {
+      if (osrmRoutePolylineRef.current) {
+        osrmRoutePolylineRef.current.remove();
+        osrmRoutePolylineRef.current = null;
+      }
+      setRouteInfo(null);
+      return;
+    }
+
     const coordsList = [
       `${restaurantCoord.lng},${restaurantCoord.lat}`,
       ...selectedGeocoded.map((g) => `${g.location.lng},${g.location.lat}`),
     ].join(";");
 
+    // Abort when selection/group changes so a late response can't draw the wrong route
+    const controller = new AbortController();
+
     fetch(
-      `${getOsrmBaseUrl("car")}/route/v1/driving/${coordsList}?overview=full&geometries=geojson`
+      `${getOsrmBaseUrl("car")}/route/v1/driving/${coordsList}?overview=full&geometries=geojson`,
+      { signal: controller.signal }
     )
       .then((res) => (res.ok ? res.json() : null))
       .then((osrmData) => {
+        if (controller.signal.aborted) return;
         if (osrmData?.code === "Ok" && osrmData.routes?.[0]) {
           const route = osrmData.routes[0];
           setRouteInfo({
             distanceKm: Math.round((route.distance / 1000) * 10) / 10,
             durationMin: Math.round(route.duration / 60),
+            stops: selectedGeocoded.length,
           });
 
           if (osrmRoutePolylineRef.current) {
@@ -596,7 +1049,7 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
               (pt: [number, number]) => [pt[1], pt[0]]
             );
             const poly = L.polyline(path, {
-              color: "#10B981",
+              color: activeRouteColor,
               weight: 5,
               opacity: 0.9,
               lineJoin: "round",
@@ -608,20 +1061,20 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
         throw new Error("OSRM failed");
       })
       .catch((err) => {
+        if (controller.signal.aborted) return;
         console.warn("OSRM radar route calculation failed:", err);
+        // Don't leave the previous route on screen labelled as the new selection
+        if (osrmRoutePolylineRef.current) {
+          osrmRoutePolylineRef.current.remove();
+          osrmRoutePolylineRef.current = null;
+        }
+        setRouteInfo(null);
       });
-  }, [isOpen, selectedOrderIds, geocodedOrders, restaurantCoord]);
 
-  const toggleOrderSelection = (orderId: string) => {
-    setSelectedOrderIds((prev) =>
-      prev.includes(orderId)
-        ? prev.filter((id) => id !== orderId)
-        : [...prev, orderId]
-    );
-  };
+    return () => controller.abort();
+  }, [isOpen, activeRoutingOrderIds, activeRouteColor, geocodedOrders, restaurantCoord]);
 
   const selectClusterOrders = (cluster: DeliveryCluster) => {
-    // Only select the ready orders from this cluster (kitchen orders aren't packed yet)
     const readyIds = cluster.orders
       .filter((o) => o.order.status?.toLowerCase() === "ready for delivery")
       .map((o) => o.order.id);
@@ -631,7 +1084,6 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
       return;
     }
 
-    // Replace or add to selection
     setSelectedOrderIds((prev) => Array.from(new Set([...prev, ...readyIds])));
     const translatedDir = t(
       `deliveryView.radar.directions.${cluster.compassCode}`
@@ -644,7 +1096,7 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     );
   };
 
-  // Batch Assign selected orders to chosen driver
+  // Batch Assign selected orders to chosen driver (Auto Mode)
   const handleBatchAssign = async () => {
     if (selectedOrders.length === 0) {
       toast.error(t("deliveryView.radar.messages.selectAtLeastOne"));
@@ -655,7 +1107,10 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
       return;
     }
 
-    const driver = deliveryPersons.find((d) => d.id === selectedDriverId);
+    // Dropdown values are `p.id || p.name`, so match the same way
+    const driver = deliveryPersons.find(
+      (d) => (d.id || d.name) === selectedDriverId
+    );
     if (!driver) {
       toast.error(t("deliveryView.radar.messages.driverNotFound"));
       return;
@@ -680,6 +1135,20 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
       const results = await Promise.all(updatePromises);
       const allSuccess = results.every(Boolean);
 
+      // Dispatched orders must not linger inside custom groups
+      const assignedIds = selectedOrders
+        .filter((_, i) => results[i])
+        .map((o) => o.id);
+      if (assignedIds.some((id) => allCustomGroupedOrderIds.has(id))) {
+        runGroupMutation(
+          (prev) => removeOrderIdsFromGroups(prev, assignedIds),
+          () => removeOrdersFromRadarGroups(token, assignedIds)
+        );
+      }
+      setSelectedOrderIds((prev) =>
+        prev.filter((id) => !assignedIds.includes(id))
+      );
+
       if (allSuccess) {
         toast.success(
           t("deliveryView.radar.messages.assignSuccess", {
@@ -687,7 +1156,6 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
             name: driver.name,
           })
         );
-        setSelectedOrderIds([]);
         onOrdersAssigned();
         onClose();
       } else {
@@ -702,566 +1170,434 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
     }
   };
 
+  // Custom Groups Operations (saved to the shared local database)
+  const handleCreateGroup = async (customName?: string) => {
+    const name =
+      typeof customName === "string" && customName.trim() ? customName.trim() : undefined;
+    // Default names get the next number of the day from the shared database
+    // ("Group 6" even if 1–5 were deleted; back to 1 the next day). The token is
+    // filled in by the server; a literal "{{num}}" can't be used because i18next
+    // would try to interpolate it again.
+    const nameTemplate = t("deliveryView.radar.groupDefaultName", {
+      num: GROUP_NUMBER_TOKEN,
+    });
+    const color = getNextGroupColor(customGroups);
+
+    // Not optimistic: the new group's id and number come from the database
+    pendingGroupMutationsRef.current += 1;
+    try {
+      const { group, groups } = await createRadarGroup(token, {
+        name,
+        nameTemplate,
+        color,
+      });
+      pendingGroupMutationsRef.current -= 1;
+      lastGroupsJsonRef.current = "";
+      applyServerGroups(groups);
+      setSelectedCustomGroupId(group.id);
+      toast.success(
+        t("deliveryView.radar.messages.groupCreated", { name: group.name })
+      );
+    } catch (err) {
+      pendingGroupMutationsRef.current -= 1;
+      console.error("Failed to create delivery radar group:", err);
+      toast.error(t("deliveryView.radar.messages.groupSaveError"));
+    }
+  };
+
+  const handleDeleteGroup = async (groupId: string) => {
+    if (selectedCustomGroupId === groupId) {
+      setSelectedCustomGroupId(null);
+    }
+    const ok = await runGroupMutation(
+      (prev) => prev.filter((g) => g.id !== groupId),
+      () => deleteRadarGroup(token, groupId)
+    );
+    if (ok) toast.info(t("deliveryView.radar.messages.groupDeleted"));
+  };
+
+  const handleStartRenameGroup = (group: CustomRadarGroup) => {
+    setEditingGroupId(group.id);
+    setEditingGroupName(group.name);
+  };
+
+  const handleSaveRenameGroup = (groupId: string) => {
+    // Rename can fire twice (Enter, then blur as the input unmounts)
+    if (editingGroupId !== groupId) return;
+    const newName = editingGroupName.trim();
+    const current = customGroups.find((g) => g.id === groupId);
+    setEditingGroupId(null);
+    if (!newName || !current || current.name === newName) return;
+    runGroupMutation(
+      (prev) =>
+        prev.map((g) => (g.id === groupId ? { ...g, name: newName } : g)),
+      () => updateRadarGroup(token, groupId, { name: newName })
+    );
+  };
+
+  const handleChangeGroupColor = (groupId: string, newColor: string) => {
+    runGroupMutation(
+      (prev) =>
+        prev.map((g) => (g.id === groupId ? { ...g, color: newColor } : g)),
+      () => updateRadarGroup(token, groupId, { color: newColor })
+    );
+  };
+
+  const handleAddOrdersToGroup = async (
+    groupId: string,
+    orderIdsToAdd: string[]
+  ) => {
+    const group = customGroups.find((g) => g.id === groupId);
+    if (!group || orderIdsToAdd.length === 0) return;
+    setCheckedUnassignedOrderIds((prev) =>
+      prev.filter((id) => !orderIdsToAdd.includes(id))
+    );
+    // An order lives in one group only, so it leaves any other group
+    const ok = await runGroupMutation(
+      (prev) =>
+        prev.map((g) =>
+          g.id === groupId
+            ? {
+                ...g,
+                orderIds: Array.from(
+                  new Set([...g.orderIds, ...orderIdsToAdd])
+                ),
+              }
+            : {
+                ...g,
+                orderIds: g.orderIds.filter(
+                  (id) => !orderIdsToAdd.includes(id)
+                ),
+              }
+        ),
+      () => addOrdersToRadarGroup(token, groupId, orderIdsToAdd)
+    );
+    if (ok) {
+      toast.success(
+        t("deliveryView.radar.messages.orderAdded", { name: group.name })
+      );
+    }
+  };
+
+  // An order is in at most one group, so groupId only matters for the UI call
+  const handleRemoveOrderFromGroup = async (_groupId: string, orderId: string) => {
+    const ok = await runGroupMutation(
+      (prev) => removeOrderIdsFromGroups(prev, [orderId]),
+      () => removeOrdersFromRadarGroups(token, [orderId])
+    );
+    if (ok) toast.info(t("deliveryView.radar.messages.orderRemoved"));
+  };
+
+  const handleMoveOrderToGroup = async (
+    orderId: string,
+    fromGroupId: string,
+    toGroupId: string
+  ) => {
+    const targetGroup = customGroups.find((g) => g.id === toGroupId);
+    if (!targetGroup) return;
+    setMovingOrderState(null);
+    const ok = await runGroupMutation(
+      (prev) =>
+        prev.map((g) => {
+          if (g.id === fromGroupId) {
+            return { ...g, orderIds: g.orderIds.filter((id) => id !== orderId) };
+          }
+          if (g.id === toGroupId) {
+            return {
+              ...g,
+              orderIds: Array.from(new Set([...g.orderIds, orderId])),
+            };
+          }
+          return g;
+        }),
+      () => addOrdersToRadarGroup(token, toGroupId, [orderId])
+    );
+    if (ok) {
+      toast.success(
+        t("deliveryView.radar.messages.orderMoved", { name: targetGroup.name })
+      );
+    }
+  };
+
+  const handleDispatchCustomGroup = async (group: CustomRadarGroup) => {
+    if (!customGroupDriverId) {
+      toast.error(t("deliveryView.radar.messages.pleaseSelectDriver"));
+      return;
+    }
+    const driver = deliveryPersons.find(
+      (d) => (d.id || d.name) === customGroupDriverId
+    );
+    if (!driver) {
+      toast.error(t("deliveryView.radar.messages.driverNotFound"));
+      return;
+    }
+
+    const readyOrdersInGroup = geocodedOrders
+      .filter(
+        (g) =>
+          group.orderIds.includes(g.order.id) &&
+          g.order.status?.toLowerCase() === "ready for delivery"
+      )
+      .map((g) => g.order);
+
+    if (readyOrdersInGroup.length === 0) {
+      toast.info(t("deliveryView.radar.messages.customOnlyKitchen"));
+      return;
+    }
+
+    setIsAssigning(true);
+    try {
+      const nowIso = new Date().toISOString();
+      const updatePromises = readyOrdersInGroup.map((order) =>
+        updateOrder(token, order.id, {
+          deliveryPersonId: driver.id,
+          deliveryPersonPhone: driver.phone,
+          deliveryPersonName: driver.name,
+          deliveryPersonEmail: driver.email,
+          deliveryPersonVehicleType: driver.vehicleType,
+          deliveryPersonLicenseNo: driver.licenseNo,
+          status: "out for delivery",
+          assignedAt: nowIso,
+        })
+      );
+
+      const results = await Promise.all(updatePromises);
+      const allSuccess = results.every(Boolean);
+
+      // Remove every successfully dispatched order (also on partial failure).
+      // The dispatched group itself is deleted once emptied; other empty groups stay.
+      const assignedIds = readyOrdersInGroup
+        .filter((_, i) => results[i])
+        .map((o) => o.id);
+      const remainingIds = group.orderIds.filter(
+        (id) => !assignedIds.includes(id)
+      );
+      if (remainingIds.length === 0) {
+        runGroupMutation(
+          (prev) => prev.filter((g) => g.id !== group.id),
+          () => deleteRadarGroup(token, group.id)
+        );
+      } else if (assignedIds.length > 0) {
+        runGroupMutation(
+          (prev) => removeOrderIdsFromGroups(prev, assignedIds),
+          () => removeOrdersFromRadarGroups(token, assignedIds)
+        );
+      }
+
+      if (allSuccess) {
+        toast.success(
+          t("deliveryView.radar.messages.assignCustomSuccess", {
+            count: readyOrdersInGroup.length,
+            group: group.name,
+            name: driver.name,
+          })
+        );
+        if (selectedCustomGroupId === group.id) {
+          setSelectedCustomGroupId(null);
+        }
+        onOrdersAssigned();
+        onClose();
+      } else {
+        toast.warn(t("deliveryView.radar.messages.assignPartialWarning"));
+        onOrdersAssigned();
+      }
+    } catch (err) {
+      console.error("Custom group dispatch error:", err);
+      toast.error(t("deliveryView.radar.messages.assignError"));
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[96vw] h-[92vh] flex flex-col overflow-hidden">
-        {/* Top Header Bar: Sleek Black Theme */}
-        <div className="px-6 py-4 border-b border-zinc-200 bg-zinc-900 text-white flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-white shadow-md">
-              <Compass className="size-6 animate-pulse" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-white tracking-wide">
-                  {t("deliveryView.radar.title")}
-                </h2>
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-zinc-800 text-zinc-200 border border-zinc-700">
-                  {t("deliveryView.radar.badgeAngle")}
-                </span>
-              </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                {t("deliveryView.radar.subtitle")}
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Stats & Controls */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-zinc-800 border border-zinc-700 px-3 py-1.5 rounded-lg text-xs shadow-sm">
-              <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-400">
-                <span className="size-2 rounded-full bg-emerald-500 animate-ping"></span>
-                {t("deliveryView.radar.readyOrdersBadge", {
-                  count: readyOrders.length,
-                })}
-              </span>
-              <span className="text-zinc-600">|</span>
-              <span className="inline-flex items-center gap-1.5 font-semibold text-amber-300">
-                <ChefHat className="size-3.5 text-amber-400" />
-                {t("deliveryView.radar.kitchenOrdersBadge", {
-                  count: kitchenOrders.length,
-                })}
-              </span>
-            </div>
-
-            <button
-              onClick={runGeocoding}
-              disabled={isGeocoding}
-              className="p-2 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors border border-zinc-700 shadow-sm cursor-pointer"
-              title={t("deliveryView.radar.refreshLocations")}
-            >
-              <RefreshCw
-                className={`size-4 ${isGeocoding ? "animate-spin" : ""}`}
-              />
-            </button>
-
-            <button
-              onClick={onClose}
-              className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
-            >
-              <X className="size-5" />
-            </button>
-          </div>
-        </div>
+        {/* Top Header Bar */}
+        <RadarHeader
+          readyOrdersCount={readyOrders.length}
+          kitchenOrdersCount={kitchenOrders.length}
+          isGeocoding={isGeocoding}
+          geocodeProgress={geocodeProgress}
+          unlocatedOrders={unlocatedOrders}
+          warnedOrders={warnedOrders}
+          onInspectOrder={handleFocusOrder}
+          onPlaceOnMap={handlePlaceUnlocatedOrder}
+          orderPrefix={orderPrefix}
+          onRefresh={runGeocoding}
+          onClose={onClose}
+        />
 
         {/* Modal Body: Map + Smart Dispatch Side Panel */}
         <div className="flex-1 flex overflow-hidden">
-          {/* Left Column: Interactive Google Map */}
+          {/* Left Column: Interactive Map */}
           <div className="relative flex-1 h-full bg-zinc-100">
             <div ref={mapContainerRef} className="w-full h-full" />
 
-            {/* Top-Right Controls: Touch-friendly Recenter Button */}
-            <div className="absolute top-4 right-4 z-[1100]">
-              <button
-                onClick={handleRecenter}
-                className="flex items-center gap-2 px-3.5 py-2.5 bg-white/95 hover:bg-white text-zinc-800 rounded-xl shadow-lg border border-zinc-200 text-xs font-bold transition-all cursor-pointer backdrop-blur-md hover:shadow-xl active:scale-95 select-none"
-                title={t("deliveryView.radar.recenterMap")}
-              >
-                <Crosshair className="size-4 text-red-600" />
-                <span>{t("deliveryView.radar.recenter")}</span>
-              </button>
-            </div>
-
-            {/* Map Floating Legend & Controls on Top-Left */}
-            <div className="absolute top-4 left-4 z-[1100] flex flex-col gap-2">
-              <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-xl border border-zinc-200 text-xs space-y-2 select-none min-w-[220px]">
-                <div className="font-bold text-zinc-500 uppercase tracking-wider text-[11px] px-1 pb-1 border-b border-zinc-100">
-                  {t("deliveryView.radar.visibilityFilters")}
-                </div>
-
-                <label className="flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-zinc-100/80 active:bg-zinc-200 cursor-pointer transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={showReadyOrders}
-                    onChange={(e) => setShowReadyOrders(e.target.checked)}
-                    className="size-5 rounded-md text-emerald-600 focus:ring-emerald-500 cursor-pointer border-zinc-300"
-                  />
-                  <span className="size-3 rounded-full bg-emerald-600 shrink-0"></span>
-                  <span className="text-zinc-800 font-bold text-xs sm:text-sm">
-                    {t("deliveryView.radar.showReady", {
-                      count: readyOrders.length,
-                    })}
-                  </span>
-                </label>
-
-                <label className="flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-zinc-100/80 active:bg-zinc-200 cursor-pointer transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={showKitchenOrders}
-                    onChange={(e) => setShowKitchenOrders(e.target.checked)}
-                    className="size-5 rounded-md text-amber-600 focus:ring-amber-500 cursor-pointer border-zinc-300"
-                  />
-                  <span className="size-3 rounded-full bg-amber-500 shrink-0"></span>
-                  <span className="text-zinc-800 font-bold text-xs sm:text-sm">
-                    {t("deliveryView.radar.showKitchen", {
-                      count: kitchenOrders.length,
-                    })}
-                  </span>
-                </label>
-
-                {deliveryZones.length > 0 && (
-                  <label className="flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-zinc-100/80 active:bg-zinc-200 cursor-pointer transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={showZones}
-                      onChange={(e) => setShowZones(e.target.checked)}
-                      className="size-5 rounded-md text-emerald-600 focus:ring-emerald-500 cursor-pointer border-zinc-300"
-                    />
-                    <span className="size-3 rounded-sm bg-emerald-500 border border-emerald-700 shrink-0"></span>
-                    <span className="text-zinc-800 font-bold text-xs sm:text-sm">
-                      {t("deliveryView.radar.showZones", {
-                        count: deliveryZones.length,
-                      })}
-                    </span>
-                  </label>
-                )}
-              </div>
-
-              {routeInfo && (
-                <div className="bg-zinc-950 text-white p-3.5 rounded-xl shadow-2xl border border-zinc-800 text-xs animate-in slide-in-from-top-2">
-                  <div className="font-bold flex items-center gap-1.5 uppercase tracking-wider text-[10px] text-zinc-400">
-                    <Route className="size-3.5 text-white" /> {t("deliveryView.radar.multiStopRoute")}
-                  </div>
-                  <div className="mt-1 text-sm font-semibold">
-                    {t("deliveryView.radar.deliveriesDistance", {
-                      count: selectedOrders.length,
-                      dist: routeInfo.distanceKm,
-                    })}
-                  </div>
-                  <div className="text-zinc-400 text-[11px] mt-0.5">
-                    {t("deliveryView.radar.estimatedDriveTime", {
-                      min: routeInfo.durationMin,
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Floating Order Inspector Card (if order clicked) */}
-            {inspectedOrder && (
-              <div className="absolute bottom-4 left-4 z-[1100] bg-white/95 backdrop-blur-md p-4 rounded-xl shadow-2xl border border-zinc-300 max-w-sm text-xs animate-in fade-in slide-in-from-bottom-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                        inspectedOrder.order.status?.toLowerCase() ===
-                        "ready for delivery"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-amber-100 text-amber-800"
-                      }`}
-                    >
-                      {inspectedOrder.order.status?.toLowerCase() ===
-                      "ready for delivery"
-                        ? t("deliveryView.radar.statusReady")
-                        : t("deliveryView.radar.statusKitchen")}
-                    </span>
-                    <h4 className="text-sm font-bold text-zinc-900 mt-1">
-                      {t("deliveryView.radar.orderTitle", {
-                        displayNum: getOrderDisplayNumber(
-                          inspectedOrder.order,
-                          orderPrefix
-                        ),
-                      })}
-                    </h4>
-                  </div>
-                  <button
-                    onClick={() => setInspectedOrder(null)}
-                    className="text-zinc-400 hover:text-zinc-700 p-1 cursor-pointer"
-                  >
-                    <X className="size-4" />
-                  </button>
-                </div>
-
-                <div className="mt-2 space-y-1.5 text-zinc-600">
-                  <div className="flex items-center gap-1.5 text-zinc-900 font-medium">
-                    <MapPin className="size-3.5 text-red-500 shrink-0" />
-                    <span className="truncate">
-                      {inspectedOrder.order.customer?.address
-                        ? formatAddress(inspectedOrder.order.customer.address)
-                        : t("deliveryView.radar.noAddress")}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span>
-                      {t("deliveryView.radar.client", {
-                        name: inspectedOrder.order.customer?.name || "-",
-                      })}
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Phone className="size-3 text-zinc-400" />
-                      {inspectedOrder.order.customer?.phone || "-"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between bg-zinc-100 p-2.5 rounded-lg border border-zinc-200 mt-1">
-                    <div>
-                      <span className="text-zinc-500">
-                        {t("deliveryView.radar.bearing")}{" "}
-                      </span>
-                      <strong className="text-zinc-900">
-                        {t(
-                          `deliveryView.radar.directions.${inspectedOrder.compassCode}`
-                        )}{" "}
-                        ({inspectedOrder.bearing}°)
-                      </strong>
-                    </div>
-                    <div>
-                      <span className="text-zinc-500">
-                        {t("deliveryView.radar.distance")}{" "}
-                      </span>
-                      <strong className="text-zinc-900">
-                        {inspectedOrder.distanceFromRestaurantKm} km
-                      </strong>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between bg-zinc-50 px-2.5 py-1.5 rounded-lg border border-zinc-200 mt-1.5">
-                    <span className="text-zinc-600 flex items-center gap-1 font-medium">
-                      <Clock className="size-3 text-zinc-500" />
-                      {inspectedOrder.order.status?.toLowerCase() ===
-                      "ready for delivery"
-                        ? t("deliveryView.radar.elapsedReady")
-                        : t("deliveryView.radar.elapsedKitchen")}
-                    </span>
-                    <span className="font-bold text-zinc-900">
-                      {getOrderElapsedTime(inspectedOrder.order).text}
-                      <span className="text-zinc-400 font-normal ml-1">
-                        ({getOrderElapsedTime(inspectedOrder.order).timeStr})
-                      </span>
-                    </span>
-                  </div>
-                </div>
-
-                {inspectedOrder.order.status?.toLowerCase() ===
-                  "ready for delivery" && (
-                  <button
-                    onClick={() =>
-                      toggleOrderSelection(inspectedOrder.order.id)
-                    }
-                    className={`w-full mt-3 py-2 px-3 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                      selectedOrderIds.includes(inspectedOrder.order.id)
-                        ? "bg-zinc-100 hover:bg-zinc-200 text-red-600 border border-zinc-300"
-                        : "bg-black hover:bg-zinc-800 text-white shadow-md"
-                    }`}
-                  >
-                    {selectedOrderIds.includes(inspectedOrder.order.id)
-                      ? t("deliveryView.radar.removeFromRoute")
-                      : t("deliveryView.radar.addToRoute")}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Right Column: Smart Suggestions & Batch Assign Panel */}
-          <div className="w-[420px] h-full flex flex-col bg-white border-l border-zinc-200">
-            {/* Suggestions Header: Dark/Zinc Theme */}
-            <div className="p-4 border-b border-zinc-200 bg-zinc-50">
-              <div className="flex items-center gap-2 text-zinc-900 font-bold text-sm">
-                <Sparkles className="size-4 text-zinc-700" />
-                {t("deliveryView.radar.corridorSuggestions")}
-              </div>
-              <p className="text-[11px] text-zinc-500 mt-0.5">
-                {t("deliveryView.radar.corridorDescription")}
-              </p>
-            </div>
-
-            {/* Clusters & Orders Scrollable Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {clusters.length === 0 ? (
-                <div className="text-center py-12 text-zinc-400">
-                  <Compass className="size-10 mx-auto stroke-1 mb-2 text-zinc-300" />
-                  <p className="text-sm font-medium">
-                    {t("deliveryView.radar.noActiveOrders")}
-                  </p>
-                  <p className="text-xs text-zinc-400 mt-1">
-                    {t("deliveryView.radar.noActiveOrdersSub")}
-                  </p>
-                </div>
-              ) : (
-                clusters.map((cluster) => {
-                  const isHovered = activeClusterId === cluster.id;
-                  const allReadySelected =
-                    cluster.readyCount > 0 &&
-                    cluster.orders
-                      .filter(
-                        (o) =>
-                          o.order.status?.toLowerCase() === "ready for delivery"
-                      )
-                      .every((o) => selectedOrderIds.includes(o.order.id));
-
-                  const translatedDir = t(
-                    `deliveryView.radar.directions.${cluster.compassCode}`
-                  );
-                  const clusterTitle = t("deliveryView.radar.heading", {
-                    dir: translatedDir,
-                    deg: Math.round(cluster.averageBearing),
-                  });
-
-                  return (
-                    <div
-                      key={cluster.id}
-                      onMouseEnter={() => setActiveClusterId(cluster.id)}
-                      onMouseLeave={() => setActiveClusterId(null)}
-                      className={`p-3.5 rounded-xl border transition-all ${
-                        isHovered
-                          ? "border-zinc-800 bg-zinc-50 shadow-md"
-                          : "border-zinc-200 bg-white hover:border-zinc-300 shadow-sm"
-                      }`}
-                    >
-                      {/* Cluster Header */}
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="flex items-center gap-1.5 font-bold text-sm text-zinc-900">
-                            <Navigation className="size-3.5 text-zinc-900 rotate-45" />
-                            {clusterTitle}
-                          </div>
-                          <div className="text-[11px] text-zinc-500 mt-0.5">
-                            {t("deliveryView.radar.corridorStats", {
-                              count: cluster.orders.length,
-                              dist: cluster.maxDistanceBetweenKm,
-                            })}
-                          </div>
-                        </div>
-
-                        {cluster.readyCount > 0 && (
-                          <button
-                            onClick={() => selectClusterOrders(cluster)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer ${
-                              allReadySelected
-                                ? "bg-zinc-100 text-zinc-900 border border-zinc-300"
-                                : "bg-black text-white hover:bg-zinc-800 shadow-sm"
-                            }`}
-                          >
-                            {allReadySelected ? (
-                              <>
-                                <Check className="size-3 text-emerald-600" />
-                                {t("deliveryView.radar.selected")}
-                              </>
-                            ) : (
-                              t("deliveryView.radar.groupReady")
-                            )}
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Orders in this cluster */}
-                      <div className="mt-3 space-y-1.5">
-                        {cluster.orders.map((item) => {
-                          const isReady =
-                            item.order.status?.toLowerCase() ===
-                            "ready for delivery";
-                          const isSelected = selectedOrderIds.includes(
-                            item.order.id
-                          );
-                          const total = calculateOrderTotal(
-                            item.order.items || []
-                          ).orderTotal;
-
-                          return (
-                            <div
-                              key={item.order.id}
-                              onClick={() => {
-                                setInspectedOrder(item);
-                                if (isReady) {
-                                  toggleOrderSelection(item.order.id);
-                                }
-                              }}
-                              className={`p-2.5 rounded-lg border text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                                isSelected
-                                  ? "border-black bg-zinc-100 font-semibold text-black shadow-sm"
-                                  : isReady
-                                  ? "border-emerald-200/60 bg-emerald-50/40 hover:bg-emerald-50"
-                                  : "border-amber-200/60 bg-amber-50/40 hover:bg-amber-50"
-                              }`}
-                            >
-                              <div className="flex items-center gap-2 overflow-hidden pr-2">
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  disabled={!isReady}
-                                  onChange={() => {}}
-                                  className="size-5 rounded-md text-black focus:ring-black disabled:opacity-30 cursor-pointer shrink-0"
-                                />
-                                <div className="truncate">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="font-bold text-zinc-900">
-                                      {getOrderDisplayNumber(
-                                        item.order,
-                                        orderPrefix
-                                      )}
-                                    </span>
-                                    <span
-                                      className={`text-[10px] px-1.5 py-0.2 rounded font-semibold inline-flex items-center gap-1 ${
-                                        isReady
-                                          ? "bg-emerald-100 text-emerald-800"
-                                          : "bg-amber-100 text-amber-800"
-                                      }`}
-                                    >
-                                      {!isReady && (
-                                        <ChefHat className="size-3 text-amber-600" />
-                                      )}
-                                      {isReady
-                                        ? t("deliveryView.radar.statusTagReady")
-                                        : t("deliveryView.radar.statusTagKitchen")}
-                                    </span>
-                                  </div>
-                                  <div className="text-zinc-500 truncate text-[11px] mt-0.5">
-                                    {item.order.customer?.address
-                                      ? formatAddress(
-                                          item.order.customer.address
-                                        )
-                                      : "-"}
-                                  </div>
-                                  <div className="flex items-center gap-1.5 mt-1">
-                                    <span
-                                      className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-                                        isReady
-                                          ? "bg-emerald-100/70 text-emerald-800"
-                                          : "bg-amber-100/70 text-amber-900"
-                                      }`}
-                                    >
-                                      <Clock className="size-2.5" />
-                                      {isReady
-                                        ? t("deliveryView.radar.readySinceLabel", {
-                                            time: getOrderElapsedTime(item.order).text,
-                                          })
-                                        : t("deliveryView.radar.kitchenSinceLabel", {
-                                            time: getOrderElapsedTime(item.order).text,
-                                          })}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="text-right shrink-0">
-                                <div className="font-bold text-zinc-900">
-                                  €{total.toFixed(2)}
-                                </div>
-                                <div className="text-[10px] text-zinc-400">
-                                  {item.distanceFromRestaurantKm} km
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Hint if there's a cooking order on the same path with cooking duration */}
-                      {cluster.kitchenCount > 0 && cluster.readyCount > 0 && (() => {
-                        const kitchenOrdersList = cluster.orders
-                          .filter(
-                            (o) =>
-                              o.order.status?.toLowerCase() ===
-                              "sent to kitchen"
-                          )
-                          .map((o) => getOrderElapsedTime(o.order))
-                          .sort((a, b) => b.minutes - a.minutes);
-                        const longestKitchenTime = kitchenOrdersList[0]?.text;
-
-                        return (
-                          <div className="mt-2.5 p-2.5 rounded-lg bg-amber-50 border border-amber-200/80 text-[11px] text-amber-950 flex items-start gap-1.5 shadow-sm">
-                            <ChefHat className="size-4 text-amber-600 shrink-0 mt-0.5" />
-                            <span>
-                              {longestKitchenTime
-                                ? t(
-                                    "deliveryView.radar.kitchenAlertWithTime",
-                                    {
-                                      count: cluster.kitchenCount,
-                                      time: longestKitchenTime,
-                                    }
-                                  )
-                                : t("deliveryView.radar.kitchenAlert", {
-                                    count: cluster.kitchenCount,
-                                  })}
-                            </span>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            {/* Bottom Dispatch / Assignment Bar: Sleek Black/Zinc */}
-            <div className="p-4 border-t border-zinc-200 bg-zinc-50 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-zinc-800 uppercase tracking-wider">
-                  {t("deliveryView.radar.dispatchHeader")}
-                </span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-black text-white font-bold">
-                  {t("deliveryView.radar.selectedCount", {
-                    count: selectedOrders.length,
+            {/* Manual location placement: next tap on the map sets the location */}
+            {placingLocation && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1150] flex items-center gap-3 bg-zinc-900 text-white px-4 py-2.5 rounded-xl shadow-2xl text-sm font-semibold">
+                <span>
+                  {t("deliveryView.radar.placingBanner", {
+                    order: placingLocation.label,
                   })}
                 </span>
+                <button
+                  type="button"
+                  onClick={() => setPlacingLocation(null)}
+                  className="min-h-8 px-3 rounded-lg bg-white/15 hover:bg-white/25 text-xs font-bold cursor-pointer touch-manipulation"
+                >
+                  {t("deliveryView.radar.cancel")}
+                </button>
               </div>
+            )}
 
-              {/* Delivery Person Dropdown */}
-              <div>
-                <CustomSelect
-                  options={deliveryPersons
-                    .filter((p) => p.isActive !== false)
-                    .map((p) => ({
-                      value: p.id || p.name,
-                      label: `${p.name} (${p.vehicleType || "Vehículo"})`,
-                    }))}
-                  value={selectedDriverId}
-                  onChange={(val) => setSelectedDriverId(val)}
-                  placeholder={t("deliveryView.radar.selectDriverPlaceholder")}
-                  className="w-full"
-                  portalClassName="delivery-radar-driver-portal"
-                />
+            {/* Recenter, Filters, and Route Summary controls overlay */}
+            <RadarMapControls
+              showReadyOrders={showReadyOrders}
+              setShowReadyOrders={setShowReadyOrders}
+              showKitchenOrders={showKitchenOrders}
+              setShowKitchenOrders={setShowKitchenOrders}
+              showZones={showZones}
+              setShowZones={setShowZones}
+              readyOrdersCount={readyOrders.length}
+              kitchenOrdersCount={kitchenOrders.length}
+              deliveryZonesCount={deliveryZones.length}
+              onRecenter={handleRecenter}
+              routeInfo={routeInfo}
+              radarMode={radarMode}
+              selectedCustomGroup={selectedCustomGroup}
+            />
+
+            {/* Floating Order Inspector Card */}
+            <RadarOrderInspector
+              inspectedOrder={inspectedOrder}
+              onClose={() => setInspectedOrder(null)}
+              orderPrefix={orderPrefix}
+              radarMode={radarMode}
+              selectedOrderIds={selectedOrderIds}
+              onToggleOrderSelection={toggleOrderSelection}
+              customGroups={customGroups}
+              selectedCustomGroup={selectedCustomGroup}
+              onRemoveOrderFromGroup={handleRemoveOrderFromGroup}
+              onAddOrdersToGroup={handleAddOrdersToGroup}
+              onStartMoveOrder={(orderId, currentGroupId) =>
+                setMovingOrderState({ orderId, currentGroupId })
+              }
+              onFixLocation={handleStartPlaceLocation}
+              onLookUpAgain={handleLookUpAgain}
+              onConfirmLocation={applyManualLocation}
+            />
+          </div>
+
+          {/* Right Column: Dispatch Panel with Segmented Tabs */}
+          <div className="w-[430px] border-l border-zinc-200 bg-white flex flex-col h-full shrink-0 shadow-lg z-10">
+            {/* Tab Switcher */}
+            <div className="p-3 border-b border-zinc-200 bg-white">
+              <div className="flex bg-zinc-100 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRadarMode("auto");
+                    setInspectedOrder(null);
+                  }}
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    radarMode === "auto"
+                      ? "bg-white text-zinc-900 shadow-sm"
+                      : "text-zinc-500 hover:text-zinc-800"
+                  }`}
+                >
+                  <Compass className="size-3.5" />
+                  <span>{t("deliveryView.radar.tabAuto", "Automático")}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRadarMode("custom");
+                    setInspectedOrder(null);
+                  }}
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    radarMode === "custom"
+                      ? "bg-white text-zinc-900 shadow-sm"
+                      : "text-zinc-500 hover:text-zinc-800"
+                  }`}
+                >
+                  <Layers className="size-3.5" />
+                  <span>{t("deliveryView.radar.tabCustom", "Personalizado")}</span>
+                  {customGroups.length > 0 && (
+                    <span className="size-2 rounded-full bg-black ml-0.5" />
+                  )}
+                </button>
               </div>
-
-              {/* Dispatch Button */}
-              <button
-                onClick={handleBatchAssign}
-                disabled={
-                  isAssigning ||
-                  selectedOrders.length === 0 ||
-                  !selectedDriverId
-                }
-                className="w-full py-2.5 px-4 bg-black hover:bg-zinc-800 disabled:bg-zinc-300 text-white rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:cursor-not-allowed hover:scale-[1.01] cursor-pointer"
-              >
-                {isAssigning ? (
-                  <>
-                    <RefreshCw className="size-4 animate-spin" />
-                    {t("deliveryView.radar.assigning")}
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="size-4" />
-                    {t("deliveryView.radar.assignButton", {
-                      count: selectedOrders.length,
-                    })}
-                  </>
-                )}
-              </button>
             </div>
+
+            {/* TAB 1: AUTO CLUSTERS */}
+            {radarMode === "auto" && (
+              <RadarAutoSidebar
+                clusters={clusters}
+                activeClusterId={activeClusterId}
+                setActiveClusterId={setActiveClusterId}
+                selectedOrderIds={selectedOrderIds}
+                selectedOrders={selectedOrders}
+                toggleOrderSelection={toggleOrderSelection}
+                selectClusterOrders={selectClusterOrders}
+                setInspectedOrder={setInspectedOrder}
+                deliveryPersons={deliveryPersons}
+                selectedDriverId={selectedDriverId}
+                setSelectedDriverId={setSelectedDriverId}
+                handleBatchAssign={handleBatchAssign}
+                isAssigning={isAssigning}
+                orderPrefix={orderPrefix}
+              />
+            )}
+
+            {/* TAB 2: CUSTOM GROUPS */}
+            {radarMode === "custom" && (
+              <RadarCustomSidebar
+                customGroups={customGroups}
+                selectedCustomGroupId={selectedCustomGroupId}
+                setSelectedCustomGroupId={setSelectedCustomGroupId}
+                selectedCustomGroup={selectedCustomGroup}
+                geocodedOrders={geocodedOrders}
+                unassignedGeocodedOrders={unassignedGeocodedOrders}
+                checkedUnassignedOrderIds={checkedUnassignedOrderIds}
+                setCheckedUnassignedOrderIds={setCheckedUnassignedOrderIds}
+                editingGroupId={editingGroupId}
+                editingGroupName={editingGroupName}
+                setEditingGroupName={setEditingGroupName}
+                colorPickerGroupId={colorPickerGroupId}
+                setColorPickerGroupId={setColorPickerGroupId}
+                onCreateGroup={handleCreateGroup}
+                onDeleteGroup={handleDeleteGroup}
+                onStartRenameGroup={handleStartRenameGroup}
+                onSaveRenameGroup={handleSaveRenameGroup}
+                onCancelRenameGroup={() => setEditingGroupId(null)}
+                onChangeGroupColor={handleChangeGroupColor}
+                onAddOrdersToGroup={handleAddOrdersToGroup}
+                onRemoveOrderFromGroup={handleRemoveOrderFromGroup}
+                onStartMoveOrder={(orderId, currentGroupId) =>
+                  setMovingOrderState({ orderId, currentGroupId })
+                }
+                setInspectedOrder={setInspectedOrder}
+                deliveryPersons={deliveryPersons}
+                customGroupDriverId={customGroupDriverId}
+                setCustomGroupDriverId={setCustomGroupDriverId}
+                onDispatchCustomGroup={handleDispatchCustomGroup}
+                isAssigning={isAssigning}
+                orderPrefix={orderPrefix}
+              />
+            )}
           </div>
         </div>
+
+        {/* Modal Popover for Moving Order between Groups */}
+        <RadarMoveOrderModal
+          movingOrderState={movingOrderState}
+          customGroups={customGroups}
+          onClose={() => setMovingOrderState(null)}
+          onMoveOrder={handleMoveOrderToGroup}
+        />
       </div>
     </div>
   );

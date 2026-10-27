@@ -2,7 +2,9 @@ import { NOTIFICATION_VOLUME } from "@/constants";
 
 let audioInstance: HTMLAudioElement | null = null;
 
-export const playNotificationSound = (): Promise<void> => {
+// Resolves true when the sound actually started playing, false if it couldn't
+// (missing file, audio device error, playback blocked)
+export const playNotificationSound = (): Promise<boolean> => {
   return new Promise((resolve) => {
     try {
       if (!audioInstance) {
@@ -12,6 +14,7 @@ export const playNotificationSound = (): Promise<void> => {
       audioInstance.volume = NOTIFICATION_VOLUME;
 
       let resolved = false;
+      let started = false;
       const onDone = () => {
         if (!resolved) {
           resolved = true;
@@ -19,7 +22,7 @@ export const playNotificationSound = (): Promise<void> => {
             audioInstance.onended = null;
             audioInstance.onerror = null;
           }
-          resolve();
+          resolve(started);
         }
       };
 
@@ -28,13 +31,18 @@ export const playNotificationSound = (): Promise<void> => {
 
       setTimeout(onDone, 5000);
 
-      audioInstance.play().catch((err) => {
-        console.warn("Could not play notification sound:", err);
-        onDone();
-      });
+      audioInstance
+        .play()
+        .then(() => {
+          started = true;
+        })
+        .catch((err) => {
+          console.warn("Could not play notification sound:", err);
+          onDone();
+        });
     } catch (error) {
       console.error("Failed to initialize notification audio:", error);
-      resolve();
+      resolve(false);
     }
   });
 };

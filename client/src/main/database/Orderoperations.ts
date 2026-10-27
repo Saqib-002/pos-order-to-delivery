@@ -3,6 +3,7 @@ import { db } from "./index.js";
 import { FilterType, Order, OrderItem } from "@/types/order.js";
 import { randomUUID } from "crypto";
 import { calculatePaymentStatus } from "../../renderer/utils/paymentStatus.js";
+import { WEB_ORDER_ALERT_COLUMNS } from "./webOrderAlertsOperations.js";
 
 const stringToComplements = (complementStr: any): any[] => {
   if (Array.isArray(complementStr)) {
@@ -628,6 +629,9 @@ export class OrderDatabaseOperations {
     try {
       const now = new Date().toISOString();
       let { price, customer, deliveryPerson, createdAt: _createdAt, ...fieldsToUpdate } = orderData as any;
+      // Sound/auto-print flags are written only by the web-order alert flow;
+      // a whole order object saved from a screen could carry stale values
+      for (const column of WEB_ORDER_ALERT_COLUMNS) delete fieldsToUpdate[column];
 
       if (customer) {
         if (customer.name) fieldsToUpdate.customerName = customer.name;

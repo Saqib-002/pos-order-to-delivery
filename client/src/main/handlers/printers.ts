@@ -128,11 +128,14 @@ export const printToPrinter = async (
   printerName: string,
   printData: { html: string; options?: any }
 ) => {
+  // Declared outside the try so it's closed on every path (a failed print
+  // used to leave the hidden window open)
+  let printWindow: BrowserWindow | null = null;
   try {
     await verifyToken(event, token);
 
     // Create a new hidden BrowserWindow for printing
-    const printWindow = new BrowserWindow({
+    const win = new BrowserWindow({
       width: 800,
       height: 600,
       show: false,
@@ -141,6 +144,7 @@ export const printToPrinter = async (
         contextIsolation: true,
       },
     });
+    printWindow = win;
     const printers = await event.sender.getPrintersAsync();
     const targetPrinter = printers.find((p) => p.name === printerName);
     if (!targetPrinter) {
@@ -150,7 +154,7 @@ export const printToPrinter = async (
       };
     }
     // Load the HTML content and wait for it to finish loading
-    await printWindow.webContents.loadURL(
+    await win.webContents.loadURL(
       `data:text/html;charset=utf-8,${encodeURIComponent(printData.html)}`
     );
     const printOptions = {
@@ -166,7 +170,7 @@ export const printToPrinter = async (
 
     // Print silently to the specific printer
     const printPromise = new Promise((resolve, reject) => {
-      printWindow.webContents.print(printOptions, (success, errorType) => {
+      win.webContents.print(printOptions, (success, errorType) => {
         if (success) {
           resolve(success);
         } else {
@@ -177,9 +181,6 @@ export const printToPrinter = async (
 
     await printPromise;
 
-    // Close the window
-    printWindow.close();
-
     return {
       status: true,
       data: { message: "Print job sent successfully" },
@@ -189,6 +190,8 @@ export const printToPrinter = async (
       status: false,
       error: (error as Error).message,
     };
+  } finally {
+    if (printWindow && !printWindow.isDestroyed()) printWindow.close();
   }
 };
 

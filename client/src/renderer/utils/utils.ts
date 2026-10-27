@@ -60,6 +60,72 @@ export const formatAddress = (address: string) => {
   return address;
 };
 
+const parseStructuredAddress = (address: string) => {
+  const addressObj: Record<string, string> = {};
+  address.split("|").forEach((part) => {
+    const [key, value] = part.split("=");
+    if (key && value) addressObj[key] = value;
+  });
+  return addressObj;
+};
+
+// A comma-separated part that is flat/door details or a delivery note rather
+// than location, e.g. "portal 2", "escalera izq", "piso 3", "timbre roto".
+// The negative lookahead stops prefixes of real words ("local" ≠ "localidad").
+const EXTRA_ADDRESS_PART =
+  /^(portal|ptal|escalera|esc|piso|planta|pl(?=\.?\s*\d)|puerta|pta|bloque|blq|timbre|llamar|interfono|portero|bajo|ático|atico|entresuelo|izquierda|izq|izda|derecha|dcha|dcho|local|apto|apartamento)(?![a-záéíóúñü])/i;
+// A part that is only a floor/door, e.g. "3ºB", "1ª", "2º izq"
+const FLOOR_DOOR_PART = /^\d+\s*[ºª°]\s*[a-z]?\.?(\s*(izquierda|izq|izda|derecha|dcha)\.?)?$/i;
+// A floor/door stuck to the end of the street part: "Calle Luna 3 2ºB"
+// (only at the end, so street names like "Calle 1º de Mayo 5" are untouched)
+const TRAILING_FLOOR_DOOR = /\s+\d+\s*[ºª°]\s*[a-z]?\.?$/i;
+
+// Removes flat details and notes that make geocoders find nothing, e.g.
+// "Calle Lago Ontario 3, portal 2, escalera izq, 3ºB, timbre roto, Rivas"
+// -> "Calle Lago Ontario 3, Rivas". The first part (the street) is never
+// dropped, so "Pl. Mayor" (Plaza) stays intact.
+export const stripAddressExtras = (text: string) => {
+  const parts = text
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (parts.length === 0) return "";
+  const [street, ...rest] = parts;
+  const kept = rest.filter(
+    (p) => !EXTRA_ADDRESS_PART.test(p) && !FLOOR_DOOR_PART.test(p)
+  );
+  return [street.replace(TRAILING_FLOOR_DOOR, ""), ...kept].join(", ");
+};
+
+// Address text sent to geocoders: like formatAddress but without the
+// apartment (floor/door) and other flat details, which geocoders can't match
+// and which don't change the building's location. Only used for the lookup —
+// the address shown to staff and drivers is unchanged.
+export const formatAddressForGeocoding = (address: string) => {
+  if (!address || !address.trim()) return "";
+  if (!(address.includes("|") && address.includes("="))) {
+    return stripAddressExtras(address);
+  }
+
+  const addressObj = parseStructuredAddress(address);
+  const location = [addressObj.postal, addressObj.city, addressObj.province]
+    .filter(Boolean)
+    .join(" ");
+  const street = addressObj.address ? stripAddressExtras(addressObj.address) : "";
+  return [street, location].filter(Boolean).join(", ");
+};
+
+// Spanish 5-digit postcode of an order address, if present
+export const extractPostcode = (address: string): string | null => {
+  if (!address) return null;
+  if (address.includes("|") && address.includes("=")) {
+    const postal = parseStructuredAddress(address).postal?.trim();
+    if (postal && /^\d{5}$/.test(postal)) return postal;
+  }
+  const match = formatAddress(address).match(/\b(\d{5})\b/);
+  return match ? match[1] : null;
+};
+
 export const colorOptions = [
   { value: "red", label: "Red", color: "bg-red-500" },
   { value: "blue", label: "Blue", color: "bg-blue-500" },

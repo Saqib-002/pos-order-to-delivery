@@ -158,6 +158,22 @@ import {
   addMultipleVehicleMaintenance,
   updateMultipleVehicleMaintenancePayments,
 } from "./handlers/vehicles.js";
+import {
+  getDeliveryRadarGroups,
+  createDeliveryRadarGroup,
+  updateDeliveryRadarGroup,
+  deleteDeliveryRadarGroup,
+  addOrdersToDeliveryRadarGroup,
+  removeOrdersFromDeliveryRadarGroups,
+} from "./handlers/deliveryRadarGroups.js";
+import {
+  getGeocodeCache,
+  saveGeocodeCache,
+  setManualGeocode,
+  deleteGeocodeCacheEntry,
+  reserveGeocodeSlot,
+} from "./handlers/geocodeCache.js";
+import { markWebOrderAlert } from "./handlers/webOrderAlerts.js";
 import Store from "electron-store";
 import { initDatabase, startCloudSyncServices, stopCloudSyncServices } from "./database/index.js";
 import {
@@ -388,6 +404,21 @@ export function registerIpcHandlers() {
   ipcMain.handle("update-vehicle-maintenance", updateVehicleMaintenance);
   ipcMain.handle("delete-vehicle-maintenance", deleteVehicleMaintenance);
   ipcMain.handle("get-vehicle-maintenance", getVehicleMaintenance);
+  // Delivery radar custom groups (shared by all POS on the local database)
+  ipcMain.handle("get-delivery-radar-groups", getDeliveryRadarGroups);
+  ipcMain.handle("create-delivery-radar-group", createDeliveryRadarGroup);
+  ipcMain.handle("update-delivery-radar-group", updateDeliveryRadarGroup);
+  ipcMain.handle("delete-delivery-radar-group", deleteDeliveryRadarGroup);
+  ipcMain.handle("add-orders-to-delivery-radar-group", addOrdersToDeliveryRadarGroup);
+  ipcMain.handle("remove-orders-from-delivery-radar-groups", removeOrdersFromDeliveryRadarGroups);
+  // Shared geocode cache (delivery address coordinates)
+  ipcMain.handle("get-geocode-cache", getGeocodeCache);
+  ipcMain.handle("save-geocode-cache", saveGeocodeCache);
+  ipcMain.handle("set-manual-geocode", setManualGeocode);
+  ipcMain.handle("delete-geocode-cache-entry", deleteGeocodeCacheEntry);
+  ipcMain.handle("reserve-geocode-slot", reserveGeocodeSlot);
+  // Web/app order sound + auto-print bookkeeping (master POS)
+  ipcMain.handle("mark-web-order-alert", markWebOrderAlert);
   // Worker handlers
   ipcMain.handle("create-worker", createWorker);
   ipcMain.handle("get-workers", getWorkers);

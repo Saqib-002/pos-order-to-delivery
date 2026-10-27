@@ -1249,6 +1249,8 @@ export interface PrintOrderParams {
   token: string | null;
   user?: any;
   t: (key: string, options?: any) => string;
+  // Optional: receives the reason when printing fails (e.g. to record it)
+  onError?: (message: string) => void;
 }
 
 export const printOrder = async ({
@@ -1257,8 +1259,12 @@ export const printOrder = async ({
   token,
   user,
   t,
+  onError,
 }: PrintOrderParams): Promise<boolean> => {
-  if (!order || !token) return false;
+  if (!order || !token) {
+    onError?.("Missing order or session");
+    return false;
+  }
 
   try {
     let configurations = {
@@ -1280,6 +1286,7 @@ export const printOrder = async ({
         : [];
     if (allPrinters.length === 0) {
       toast.warn(t("orderCart.warnings.noPrintersAttached") || "No printers attached.");
+      onError?.("No printers configured");
       return false;
     }
 
@@ -1350,6 +1357,7 @@ export const printOrder = async ({
 
     if (!mainPrinterName) {
       toast.warn(t("orderCart.warnings.noPrintersAttached") || "No printers attached.");
+      onError?.("No main printer configured");
       return false;
     }
 
@@ -1435,14 +1443,17 @@ export const printOrder = async ({
         } else {
           toast.error(t("orderCart.errors.errorPrintingReceipt"));
         }
+        onError?.(`${mainPrinterName}: ${printRes?.error || "print failed"}`);
         return false;
       }
       return true;
     }
 
+    onError?.("Receipt could not be generated");
     return false;
   } catch (err) {
     console.error("Error in printOrder:", err);
+    onError?.((err as Error)?.message || String(err));
     return false;
   }
 };

@@ -1,6 +1,7 @@
 import { BrowserWindow } from "electron";
 import { OrderDatabaseOperations } from "../database/Orderoperations.js";
 import { WebCustomerDatabaseOperations } from "../database/webCustomerOperations.js";
+import { WebOrderAlertsOperations } from "../database/webOrderAlertsOperations.js";
 import { syncLogger as Logger } from "./logger.js";
 
 function notifyWindowsNewOrder(order: any, items: any[]) {
@@ -17,6 +18,22 @@ function notifyWindowsNewOrder(order: any, items: any[]) {
     }
   } catch (err) {
     Logger.error("WebOrderSync: failed to broadcast new order to renderer:", err);
+  }
+}
+
+// Sends the screen every web/app order that still needs its sound or receipt.
+// Repeated after every sync tick until the screen records them as done, so an
+// alert missed while starting up / logged out / printer unreachable is retried
+// instead of lost. Only runs on the master POS (where this sync runs).
+async function dispatchPendingAlerts(): Promise<void> {
+  try {
+    const pending = await WebOrderAlertsOperations.getPending();
+    if (pending.length === 0) return;
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (!win.isDestroyed()) win.webContents.send("web-order-alert", pending);
+    }
+  } catch (err) {
+    Logger.error("WebOrderSync: failed to dispatch pending order alerts:", err);
   }
 }
 
@@ -81,14 +98,14 @@ export function startWebOrderSync(): void {
   Logger.info("WebOrderSync: starting background sync loop (10s interval)...");
 
   // Run once immediately on startup
-  syncWebOrders().catch((err) =>
-    Logger.error("WebOrderSync: initial sync error:", err)
-  );
+  syncWebOrders()
+    .catch((err) => Logger.error("WebOrderSync: initial sync error:", err))
+    .finally(() => dispatchPendingAlerts());
 
   syncInterval = setInterval(() => {
-    syncWebOrders().catch((err) =>
-      Logger.error("WebOrderSync: sync tick error:", err)
-    );
+    syncWebOrders()
+      .catch((err) => Logger.error("WebOrderSync: sync tick error:", err))
+      .finally(() => dispatchPendingAlerts());
   }, 10_000);
 }
 

@@ -1,5 +1,5 @@
 import { DeliveryPerson, Order } from "@/types/order";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { DeliveryPersonInput } from "../components/delivery/DeliveryPersonInput.view";
@@ -8,7 +8,7 @@ import { StatsCard } from "../components/shared/StatsCard.order";
 import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
 import { FilterControls } from "../components/shared/FilterControl.order";
-import { updateOrder } from "../utils/order";
+import { updateOrder, StringToComplements } from "../utils/order";
 import { formatAddress, getOrderDisplayNumber, getCustomerDisplayName } from "../utils/utils";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
@@ -35,7 +35,7 @@ export const DeliveryView = () => {
   const { t } = useTranslation();
   const { auth } = useAuth();
   const { token, user } = auth;
-  const { orders, totalOrders, filter, setFilter, refreshOrdersCallback } =
+  const { filter, setFilter, refreshOrdersCallback } =
     useOrderManagementContext();
   const { configurations } = useConfigurations();
   const [isLoading, setIsLoading] = useState(true);
@@ -90,7 +90,7 @@ export const DeliveryView = () => {
       setFilter({
         selectedDate: new Date(),
         searchTerm: "",
-        selectedStatus: ["sent to kitchen", "ready for delivery", "out for delivery", "delivered"],
+        selectedStatus: ["ready for delivery", "out for delivery"],
         selectedPaymentStatus: [],
         page: 0,
         limit: OPERATIONAL_PAGE_LIMIT,
@@ -113,56 +113,308 @@ export const DeliveryView = () => {
     };
   }, [token]);
 
-  // Ensure orders from other screens (e.g. ManageOrders with status "all") are not shown while switching
-  const isDeliveryFilterActive = useMemo(() => {
-    return (
-      Array.isArray(filter.selectedStatus) &&
-      filter.selectedStatus.includes("ready for delivery") &&
-      filter.selectedStatus.includes("out for delivery") &&
-      !filter.selectedStatus.includes("all")
-    );
-  }, [filter.selectedStatus]);
+  // Independent state for Ready for Delivery table
+  const [readyOrdersState, setReadyOrdersState] = useState<{
+    orders: Order[];
+    totalCount: number;
+  }>({
+    orders: [],
+    totalCount: 0,
+  });
+  const [readyPage, setReadyPage] = useState<number>(0);
 
-  const readyOrders = useMemo(
-    () =>
-      !isDeliveryFilterActive || isLoading
-        ? []
-        : orders.filter((o) => o.status.toLowerCase() === "ready for delivery"),
-    [orders, isDeliveryFilterActive, isLoading]
-  );
-  const outForDeliveryOrders = useMemo(
-    () =>
-      !isDeliveryFilterActive || isLoading
-        ? []
-        : orders.filter((o) => o.status.toLowerCase() === "out for delivery"),
-    [orders, isDeliveryFilterActive, isLoading]
-  );
-  const kitchenDeliveryOrders = useMemo(
-    () =>
-      !isDeliveryFilterActive || isLoading
-        ? []
-        : orders.filter(
-            (o) =>
-              o.status.toLowerCase() === "sent to kitchen" &&
-              (o.orderType === "delivery" ||
-                o.orderType === "platform:delivery" ||
-                o.orderType === "web:delivery" ||
-                o.orderType === "app:delivery")
-          ),
-    [orders, isDeliveryFilterActive, isLoading]
-  );
+  // Independent state for Out for Delivery table
+  const [outOrdersState, setOutOrdersState] = useState<{
+    orders: Order[];
+    totalCount: number;
+  }>({
+    orders: [],
+    totalCount: 0,
+  });
+  const [outPage, setOutPage] = useState<number>(0);
 
-  const totalPages =
-    totalOrders > 0
-      ? Math.ceil(totalOrders / (filter.limit || OPERATIONAL_PAGE_LIMIT))
+  // Accurate count of orders delivered today
+  const [deliveredTodayCount, setDeliveredTodayCount] = useState<number>(0);
+
+  // Dedicated state for radar orders: caps at 100 and respects the active filter
+  const [radarData, setRadarData] = useState<{
+    readyOrders: Order[];
+    kitchenOrders: Order[];
+  }>({
+    readyOrders: [],
+    kitchenOrders: [],
+  });
+
+  // Fetch up to 50 ready orders with independent pagination
+  const fetchReadyOrders = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await (window as any).electronAPI.getOrdersByFilter(token, {
+        selectedDate: filter.selectedDate,
+        startDateRange: filter.startDateRange,
+        endDateRange: filter.endDateRange,
+        searchTerm: filter.searchTerm,
+        selectedStatus: ["ready for delivery"],
+        selectedPaymentStatus: [],
+        selectedDeliveryPerson: "",
+        selectedCustomer: "",
+        selectedOrderType: "",
+        page: readyPage,
+        limit: OPERATIONAL_PAGE_LIMIT,
+      });
+
+      if (res?.status && res?.data) {
+        const formattedOrders: Order[] = (res.data.orders || []).map(
+          (order: Order) => ({
+            ...order,
+            items:
+              order.items?.map((item) => ({
+                ...item,
+                complements: StringToComplements(item.complements),
+              })) || [],
+          })
+        );
+        setReadyOrdersState({
+          orders: formattedOrders,
+          totalCount: res.data.totalCount || 0,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch ready orders:", err);
+    }
+  }, [
+    token,
+    filter.selectedDate,
+    filter.startDateRange,
+    filter.endDateRange,
+    filter.searchTerm,
+    readyPage,
+  ]);
+
+  // Fetch up to 50 out for delivery orders with independent pagination
+  const fetchOutOrders = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await (window as any).electronAPI.getOrdersByFilter(token, {
+        selectedDate: filter.selectedDate,
+        startDateRange: filter.startDateRange,
+        endDateRange: filter.endDateRange,
+        searchTerm: filter.searchTerm,
+        selectedStatus: ["out for delivery"],
+        selectedPaymentStatus: [],
+        selectedDeliveryPerson: "",
+        selectedCustomer: "",
+        selectedOrderType: "",
+        page: outPage,
+        limit: OPERATIONAL_PAGE_LIMIT,
+      });
+
+      if (res?.status && res?.data) {
+        const formattedOrders: Order[] = (res.data.orders || []).map(
+          (order: Order) => ({
+            ...order,
+            items:
+              order.items?.map((item) => ({
+                ...item,
+                complements: StringToComplements(item.complements),
+              })) || [],
+          })
+        );
+        setOutOrdersState({
+          orders: formattedOrders,
+          totalCount: res.data.totalCount || 0,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch out-for-delivery orders:", err);
+    }
+  }, [
+    token,
+    filter.selectedDate,
+    filter.startDateRange,
+    filter.endDateRange,
+    filter.searchTerm,
+    outPage,
+  ]);
+
+  // Fetch count of delivered orders (respecting active date and search filter)
+  const fetchDeliveredTodayCount = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await (window as any).electronAPI.getOrdersByFilter(token, {
+        selectedDate: filter.selectedDate,
+        startDateRange: filter.startDateRange,
+        endDateRange: filter.endDateRange,
+        searchTerm: filter.searchTerm,
+        selectedStatus: ["delivered"],
+        selectedPaymentStatus: [],
+        selectedDeliveryPerson: "",
+        selectedCustomer: "",
+        selectedOrderType: "",
+        page: 0,
+        limit: 1,
+      });
+
+      if (res?.status && res?.data) {
+        setDeliveredTodayCount(res.data.totalCount || 0);
+      }
+    } catch (err) {
+      console.error("Failed to fetch delivered today count:", err);
+    }
+  }, [
+    token,
+    filter.selectedDate,
+    filter.startDateRange,
+    filter.endDateRange,
+    filter.searchTerm,
+  ]);
+
+  // Last radar payload, so polling only updates state when orders actually change
+  // (new arrays every 5s would make the open radar re-geocode and redraw)
+  const lastRadarDataJsonRef = useRef<string>("");
+
+  // Dedicated queries for radar orders (up to 100 each).
+  // Kitchen orders are filtered by delivery type server-side, so dine-in /
+  // takeaway kitchen orders can't use up the limit and push delivery orders out.
+  const fetchRadarOrders = useCallback(async () => {
+    if (!token) return;
+    const fetchRadarPage = async (
+      selectedStatus: string[],
+      selectedOrderType: string
+    ): Promise<Order[] | null> => {
+      const res = await (window as any).electronAPI.getOrdersByFilter(token, {
+        selectedDate: filter.selectedDate,
+        startDateRange: filter.startDateRange,
+        endDateRange: filter.endDateRange,
+        searchTerm: filter.searchTerm,
+        selectedStatus,
+        selectedPaymentStatus: [],
+        selectedDeliveryPerson: "",
+        selectedCustomer: "",
+        selectedOrderType,
+        page: 0,
+        limit: 100,
+      });
+      if (!res?.status || !Array.isArray(res?.data?.orders)) return null;
+      return res.data.orders.map((order: Order) => ({
+        ...order,
+        items:
+          order.items?.map((item) => ({
+            ...item,
+            complements: StringToComplements(item.complements),
+          })) || [],
+      }));
+    };
+
+    try {
+      const [readyRes, kitchenDeliveryRes, kitchenPlatformRes] =
+        await Promise.all([
+          fetchRadarPage(["ready for delivery"], ""),
+          // "delivery" covers delivery, web:delivery, app:delivery
+          fetchRadarPage(["sent to kitchen"], "delivery"),
+          // "platform" covers every platform:* type, narrowed below
+          fetchRadarPage(["sent to kitchen"], "platform"),
+        ]);
+      if (!readyRes || !kitchenDeliveryRes || !kitchenPlatformRes) return;
+
+      const ready = readyRes.filter(
+        (o) => o.status?.toLowerCase() === "ready for delivery"
+      );
+      const kitchen = [
+        ...kitchenDeliveryRes,
+        ...kitchenPlatformRes.filter((o) => o.orderType === "platform:delivery"),
+      ].filter((o) => o.status?.toLowerCase() === "sent to kitchen");
+
+      const nextData = { readyOrders: ready, kitchenOrders: kitchen };
+      const nextJson = JSON.stringify(nextData);
+      if (nextJson === lastRadarDataJsonRef.current) return;
+      lastRadarDataJsonRef.current = nextJson;
+      setRadarData(nextData);
+    } catch (err) {
+      console.error("Failed to fetch radar orders:", err);
+    }
+  }, [
+    token,
+    filter.selectedDate,
+    filter.startDateRange,
+    filter.endDateRange,
+    filter.searchTerm,
+  ]);
+
+  // Refresh all independent delivery queries simultaneously
+  const refreshAllDeliveryData = useCallback(async () => {
+    await Promise.all([
+      fetchReadyOrders(),
+      fetchOutOrders(),
+      fetchRadarOrders(),
+      fetchDeliveredTodayCount(),
+    ]);
+  }, [
+    fetchReadyOrders,
+    fetchOutOrders,
+    fetchRadarOrders,
+    fetchDeliveredTodayCount,
+  ]);
+
+  // Reset pagination when date filter or search filter changes
+  useEffect(() => {
+    setReadyPage(0);
+    setOutPage(0);
+  }, [
+    filter.selectedDate,
+    filter.startDateRange,
+    filter.endDateRange,
+    filter.searchTerm,
+  ]);
+
+  // Real-time polling every 5s for delivery queries
+  useEffect(() => {
+    refreshAllDeliveryData();
+    const interval = setInterval(() => {
+      refreshAllDeliveryData();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [refreshAllDeliveryData]);
+
+  // Listen for incoming web orders and immediately refresh queues
+  useEffect(() => {
+    if (!token) return;
+    if (!(window as any).electronAPI?.onNewWebOrder) return;
+    const cleanup = (window as any).electronAPI.onNewWebOrder(() => {
+      refreshAllDeliveryData();
+    });
+    return () => {
+      if (typeof cleanup === "function") cleanup();
+    };
+  }, [token, refreshAllDeliveryData]);
+
+  const readyOrders = readyOrdersState.orders;
+  const outForDeliveryOrders = outOrdersState.orders;
+  const kitchenDeliveryOrders = radarData.kitchenOrders;
+
+  const readyTotalPages =
+    readyOrdersState.totalCount > 0
+      ? Math.ceil(readyOrdersState.totalCount / OPERATIONAL_PAGE_LIMIT)
       : 0;
 
-  const handlePageChange = (newPage: number) => {
-    setFilter((prev) => ({
-      ...prev,
-      page: newPage,
-    }));
-  };
+  const outTotalPages =
+    outOrdersState.totalCount > 0
+      ? Math.ceil(outOrdersState.totalCount / OPERATIONAL_PAGE_LIMIT)
+      : 0;
+
+  // Step back when the current page no longer exists (e.g. orders dispatched
+  // from the last page), otherwise the table is empty and pagination is hidden
+  useEffect(() => {
+    if (readyPage > 0 && readyPage >= readyTotalPages) {
+      setReadyPage(Math.max(0, readyTotalPages - 1));
+    }
+  }, [readyPage, readyTotalPages]);
+
+  useEffect(() => {
+    if (outPage > 0 && outPage >= outTotalPages) {
+      setOutPage(Math.max(0, outTotalPages - 1));
+    }
+  }, [outPage, outTotalPages]);
 
   const assignDelivery = useCallback(
     async (order: Order) => {
@@ -185,6 +437,7 @@ export const DeliveryView = () => {
           toast.error(t("deliveryView.messages.failedToAssignDeliveryPerson"));
           return;
         }
+        refreshAllDeliveryData();
         refreshOrdersCallback();
         const orderDisplayId = order.ticketNumber
           ? order.ticketNumber
@@ -200,7 +453,14 @@ export const DeliveryView = () => {
         toast.error(t("deliveryView.messages.failedToAssignDelivery"));
       }
     },
-    [deliveryPerson, token, refreshOrdersCallback]
+    [
+      deliveryPerson,
+      token,
+      refreshAllDeliveryData,
+      refreshOrdersCallback,
+      configurations.orderPrefix,
+      t,
+    ]
   );
 
   const markAsDelivered = useCallback(
@@ -214,6 +474,7 @@ export const DeliveryView = () => {
           toast.error(t("deliveryView.messages.failedToMarkAsDelivered"));
           return;
         }
+        refreshAllDeliveryData();
         refreshOrdersCallback();
         toast.success(t("deliveryView.messages.orderMarkedAsDelivered"));
       } catch (error) {
@@ -221,7 +482,7 @@ export const DeliveryView = () => {
         toast.error(t("deliveryView.messages.failedToMarkAsDeliveredRetry"));
       }
     },
-    [token, refreshOrdersCallback, t]
+    [token, refreshAllDeliveryData, refreshOrdersCallback, t]
   );
 
   const handleCompleteDriverOrders = async (
@@ -258,7 +519,8 @@ export const DeliveryView = () => {
             count: successCount,
           }) || `${successCount} pedidos de ${driverName} completados`
         );
-        await refreshOrdersCallback();
+        await refreshAllDeliveryData();
+        refreshOrdersCallback();
       } else {
         toast.error(
           t("deliveryView.messages.failedToMarkAsDelivered") ||
@@ -336,6 +598,7 @@ export const DeliveryView = () => {
       );
       setIsCancelOrderModalOpen(false);
       setSelectedOrderForCancel(null);
+      refreshAllDeliveryData();
       refreshOrdersCallback();
     } catch (error) {
       console.error("Error cancelling order:", error);
@@ -394,6 +657,7 @@ export const DeliveryView = () => {
           t("deliveryView.messages.deliveryPersonChanged") ||
           "Delivery person changed successfully"
         );
+        refreshAllDeliveryData();
         refreshOrdersCallback();
         setSelectedOrderForChange(null);
         setChangeDeliveryPerson(null);
@@ -405,39 +669,29 @@ export const DeliveryView = () => {
         );
       }
     },
-    [token, refreshOrdersCallback, t]
+    [token, refreshAllDeliveryData, refreshOrdersCallback, t]
   );
 
   const stats = useMemo(
     () => [
       {
         title: t("deliveryView.stats.readyForDelivery"),
-        value: readyOrders.length,
+        value: readyOrdersState.totalCount,
         icon: <CircleCheckIcon className="size-6 text-green-600" />,
         bgColor: "bg-green-100",
       },
       {
         title: t("deliveryView.stats.outForDelivery"),
-        value: outForDeliveryOrders.length,
+        value: outOrdersState.totalCount,
         icon: <LightningBoltIcon className="text-blue-600 size-6" />,
         bgColor: "bg-blue-100",
       },
       {
-        title: t("deliveryView.stats.deliveredToday"),
-        value:
-          !isDeliveryFilterActive || isLoading
-            ? 0
-            : orders.filter((o) => {
-                if (o.status?.toLowerCase() !== "delivered") return false;
-                const deliveredDate = new Date(
-                  o.deliveredAt || (o as any).updatedAt || o.createdAt || ""
-                );
-                const today = new Date();
-                return (
-                  !isNaN(deliveredDate.getTime()) &&
-                  deliveredDate.toDateString() === today.toDateString()
-                );
-              }).length,
+        title:
+          filter.startDateRange && filter.endDateRange
+            ? t("deliveryView.delivered") || "Delivered"
+            : t("deliveryView.stats.deliveredToday"),
+        value: deliveredTodayCount,
         icon: <CheckIcon className="text-gray-600 size-6" />,
         bgColor: "bg-gray-100",
       },
@@ -450,21 +704,33 @@ export const DeliveryView = () => {
         bgColor: "bg-purple-100",
       },
     ],
-    [readyOrders, outForDeliveryOrders, orders, isDeliveryFilterActive, isLoading, t]
+    [
+      readyOrdersState.totalCount,
+      outOrdersState.totalCount,
+      deliveredTodayCount,
+      outForDeliveryOrders,
+      filter.startDateRange,
+      filter.endDateRange,
+      t,
+    ]
   );
-  const renderReadyOrderRow = (order: Order) => {
+  const renderReadyOrderRow = (order: Order, index: number = 0) => {
     const readyTime = new Date(order.readyAt || order.createdAt || "");
     const now = new Date();
     const diffMinutes = Math.floor(
       (now.getTime() - readyTime.getTime()) / (1000 * 60)
     );
     const readySince = `${Math.floor(diffMinutes / 60)}h ${diffMinutes % 60}m`;
+    const serial = readyPage * OPERATIONAL_PAGE_LIMIT + index + 1;
 
     return (
       <tr
         key={order.id}
         className="hover:bg-gray-50 transition-colors duration-150"
       >
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-500">
+          #{serial}
+        </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-sm font-medium text-black">
             {getCustomerDisplayName(order, platforms)}
@@ -555,7 +821,7 @@ export const DeliveryView = () => {
       </tr>
     );
   };
-  const renderOutForDeliveryRow = (order: Order) => {
+  const renderOutForDeliveryRow = (order: Order, index: number = 0) => {
     const assignedTime = new Date(
       order.assignedAt || (order as any).updatedAt || order.createdAt || ""
     );
@@ -568,11 +834,16 @@ export const DeliveryView = () => {
       calculateOrderTotal(order.items || []).orderTotal ||
       (order as any).price ||
       0;
+    const serial = outPage * OPERATIONAL_PAGE_LIMIT + index + 1;
+
     return (
       <tr
         key={order.id}
         className="hover:bg-gray-50 transition-colors duration-150"
       >
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-500">
+          #{serial}
+        </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="text-sm font-medium text-black">
             {getCustomerDisplayName(order, platforms)}
@@ -795,10 +1066,10 @@ export const DeliveryView = () => {
             <div className="flex items-center gap-3 shrink-0">
               <div className="text-right hidden sm:block">
                 <div className="text-xs font-semibold text-emerald-400">
-                  {readyOrders.length} {t("deliveryView.stats.readyForDelivery") || "Listos"}
+                  {radarData.readyOrders.length} {t("deliveryView.stats.readyForDelivery") || "Listos"}
                 </div>
                 <div className="text-[11px] text-amber-300">
-                  {kitchenDeliveryOrders.length} {t("deliveryView.radar.inKitchen") || "En Cocina"}
+                  {radarData.kitchenOrders.length} {t("deliveryView.radar.inKitchen") || "En Cocina"}
                 </div>
               </div>
               <button
@@ -843,7 +1114,7 @@ export const DeliveryView = () => {
                 </div>
               </div>
             </div>
-            {isLoading || !isDeliveryFilterActive ? (
+            {isLoading ? (
               <div className="py-16 flex flex-col items-center justify-center gap-3">
                 <div className="size-8 rounded-full border-2 border-zinc-900 border-t-transparent animate-spin" />
                 <span className="text-xs text-zinc-500 font-medium">
@@ -851,23 +1122,35 @@ export const DeliveryView = () => {
                 </span>
               </div>
             ) : (
-              <OrderTable
-                data={readyOrders}
-                columns={[
-                  t("deliveryView.table.customer"),
-                  t("deliveryView.table.contact"),
-                  t("deliveryView.table.address"),
-                  t("deliveryView.table.items"),
-                  t("deliveryView.table.amount"),
-                  t("deliveryView.table.readySince"),
-                  t("deliveryView.table.orderId"),
-                  t("deliveryView.table.actions"),
-                ]}
-                renderRow={renderReadyOrderRow}
-              />
+              <>
+                <OrderTable
+                  data={readyOrders}
+                  columns={[
+                    t("deliveryView.table.serial"),
+                    t("deliveryView.table.customer"),
+                    t("deliveryView.table.contact"),
+                    t("deliveryView.table.address"),
+                    t("deliveryView.table.items"),
+                    t("deliveryView.table.amount"),
+                    t("deliveryView.table.readySince"),
+                    t("deliveryView.table.orderId"),
+                    t("deliveryView.table.actions"),
+                  ]}
+                  renderRow={renderReadyOrderRow}
+                />
+                {readyTotalPages > 1 && (
+                  <div className="p-4 border-t border-gray-100 flex justify-end">
+                    <Pagination
+                      currentPage={readyPage}
+                      totalPages={readyTotalPages}
+                      onPageChange={setReadyPage}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
-          {!isLoading && isDeliveryFilterActive && outForDeliveryOrders.length > 0 && (
+          {!isLoading && outForDeliveryOrders.length > 0 && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -952,6 +1235,7 @@ export const DeliveryView = () => {
               <OrderTable
                 data={outForDeliveryOrders}
                 columns={[
+                  t("deliveryView.table.serial"),
                   t("deliveryView.table.customer"),
                   t("deliveryView.table.address"),
                   t("deliveryView.table.driver"),
@@ -963,13 +1247,17 @@ export const DeliveryView = () => {
                 ]}
                 renderRow={renderOutForDeliveryRow}
               />
+              {outTotalPages > 1 && (
+                <div className="p-4 border-t border-gray-100 flex justify-end">
+                  <Pagination
+                    currentPage={outPage}
+                    totalPages={outTotalPages}
+                    onPageChange={setOutPage}
+                  />
+                </div>
+              )}
             </div>
           )}
-          <Pagination
-            currentPage={filter.page || 0}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
         </div>
       </div>
 
@@ -1004,8 +1292,8 @@ export const DeliveryView = () => {
       <DeliveryRadarModal
         isOpen={isRadarModalOpen}
         onClose={() => setIsRadarModalOpen(false)}
-        readyOrders={readyOrders}
-        kitchenOrders={kitchenDeliveryOrders}
+        readyOrders={radarData.readyOrders}
+        kitchenOrders={radarData.kitchenOrders}
         restaurantAddress={
           [configurations.address, configurations.city, configurations.province]
             .filter(Boolean)
@@ -1015,7 +1303,10 @@ export const DeliveryView = () => {
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
         deliveryPersons={deliveryPersons}
         token={token}
-        onOrdersAssigned={refreshOrdersCallback}
+        onOrdersAssigned={() => {
+          refreshAllDeliveryData();
+          refreshOrdersCallback();
+        }}
         orderPrefix={configurations.orderPrefix || "K"}
         restaurantCoords={
           configurations.latitude && configurations.longitude
