@@ -521,9 +521,7 @@ export const KitchenView = () => {
             .filter(Boolean)
             .join(", ") || configurations.address
         }
-        destination={formatAddress(
-          selectedOrderForRoute?.customer?.address || "",
-        )}
+        destination={selectedOrderForRoute?.customer?.address || ""}
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
       />
     </div>

@@ -1,4 +1,9 @@
-import { GeocodeHit, normalizeAddressKey } from "@/renderer/utils/googleMaps";
+import {
+  GeocodeHit,
+  normalizeAddressKey,
+  geocodeAddressDetailed,
+} from "@/renderer/utils/googleMaps";
+import { formatAddressForGeocoding } from "@/renderer/utils/utils";
 
 // Shared geocode cache in the local database: an address found once by any POS
 // is reused by all of them instead of being looked up online again.
@@ -92,4 +97,28 @@ export const reserveNominatimSlot = async (
   const res = await api().reserveGeocodeSlot(token, "nominatim", intervalMs);
   if (!res?.status) throw new Error(res?.error || "Slot reservation failed");
   return Number(res.data) || 0;
+};
+
+// Location of one delivery address, looked up exactly like the radar does:
+// apartment / flat details stripped, shared DB cache first (so anything the
+// radar or another POS already found is reused), otherwise looked up online
+// and saved to the cache. Pass the order's original address (structured or
+// plain text), not the display-formatted one, so the apartment can be removed.
+export const locateDeliveryAddress = async (
+  token: string | null,
+  rawAddress: string
+): Promise<{ lat: number; lng: number } | null> => {
+  const lookupText = formatAddressForGeocoding(rawAddress || "");
+  if (!lookupText.trim()) return null;
+  const addressKey = getAddressCacheKey(lookupText);
+
+  if (token) {
+    const cached = (await loadCachedCoordinates(token, [addressKey])).get(addressKey);
+    if (cached) return { lat: cached.lat, lng: cached.lng };
+  }
+
+  const { hit } = await geocodeAddressDetailed(lookupText);
+  if (!hit) return null;
+  if (token) saveCachedCoordinates(token, [{ addressKey, hit }]);
+  return { lat: hit.lat, lng: hit.lng };
 };

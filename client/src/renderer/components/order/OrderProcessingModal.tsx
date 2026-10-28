@@ -15,6 +15,7 @@ import { formatAddress } from "@/renderer/utils/utils";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
 import DeliveryRouteModal from "./modals/DeliveryRouteModal";
 import { calculateDistance, geocodeAddress, isPointInPolygon } from "@/renderer/utils/googleMaps";
+import { locateDeliveryAddress } from "./modals/radar/geocodeCacheApi";
 import { useTranslation } from "react-i18next";
 import {
   AddIcon,
@@ -307,16 +308,21 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           ? { lat: configurations.latitude, lng: configurations.longitude }
           : restaurantAddress;
 
-      const distance = await calculateDistance(
-        originParam,
-        formatAddress(customerAddress),
-        apiKey
+      // Same lookup as the radar/route map (shared cache, apartment stripped)
+      const customerLocation = await locateDeliveryAddress(
+        auth?.token ?? null,
+        customerAddress
       );
+      if (!customerLocation) {
+        setCustomerDistance(null);
+        return;
+      }
+      const distance = await calculateDistance(originParam, customerLocation, apiKey);
       setCustomerDistance(distance);
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [selectedCustomer, customCustomerAddress, configurations?.address, configurations?.googleMapsApiKey]);
+  }, [selectedCustomer, customCustomerAddress, configurations?.address, configurations?.googleMapsApiKey, auth?.token]);
 
   const handlePaymentConfirm = (paymentData: {
     paymentType: string;
@@ -500,7 +506,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         // selected saved customer's address
         const customerLocation =
           (!selectedCustomer && customerCoords) ||
-          (await geocodeAddress(formatAddress(customerAddress), apiKey));
+          // Same lookup as the radar/route map (shared cache, apartment stripped)
+          (await locateDeliveryAddress(auth?.token ?? null, customerAddress));
         if (!customerLocation) {
           console.warn("Could not geocode customer address. Proceeding without zone check.");
           return true;
@@ -1462,7 +1469,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             .filter(Boolean)
             .join(", ") || configurations.address
         }
-        destination={formatAddress(selectedCustomer?.address || customCustomerAddress)}
+        destination={selectedCustomer?.address || customCustomerAddress}
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
       />
     </div>

@@ -5,6 +5,8 @@ import { MessageSquare, ChevronDown } from "lucide-react";
 import CustomButton from "../../ui/CustomButton";
 import { useConfigurations } from "../../../contexts/configurationContext";
 import { geocodeAddress, getOsrmBaseUrl } from "../../../utils/googleMaps";
+import { useAuth } from "../../../contexts/AuthContext";
+import { locateDeliveryAddress } from "./radar/geocodeCacheApi";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -12,6 +14,8 @@ interface DeliveryRouteModalProps {
     isOpen: boolean;
     onClose: () => void;
     origin: string;
+    // The order's original customer address (structured or plain text), not the
+    // display-formatted one, so the apartment can be stripped for the lookup
     destination: string;
     googleMapsApiKey?: string;
     orderId?: string;
@@ -27,6 +31,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
 }) => {
     const { t } = useTranslation();
     const { configurations } = useConfigurations();
+    const { auth } = useAuth();
     const mapRef = useRef<HTMLDivElement>(null);
     const [error, setError] = useState<string | null>(null);
     const [routes, setRoutes] = useState<any[]>([]);
@@ -265,7 +270,9 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
                 configurations?.latitude && configurations?.longitude
                     ? Promise.resolve({ lat: configurations.latitude, lng: configurations.longitude })
                     : geocodeAddress(origin, googleMapsApiKey),
-                geocodeAddress(destination, googleMapsApiKey),
+                // Same lookup as the radar (shared cache, apartment stripped),
+                // so an address the radar can place is found here too
+                locateDeliveryAddress(auth.token, destination),
             ]);
 
             if (origCoords && destCoords) {
