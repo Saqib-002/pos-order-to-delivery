@@ -7,6 +7,7 @@ import { Customer } from "@/types/order";
 import { useTranslation } from "react-i18next";
 import { AddressAutocomplete } from "../../shared/AddressAutocomplete";
 import { CrossIcon } from "@/renderer/public/Svg";
+import { extractAddressCoords } from "@/renderer/utils/utils";
 
 interface CustomerModalProps {
   isOpen: boolean;
@@ -15,6 +16,10 @@ interface CustomerModalProps {
   initialCustomer?: Customer | null;
   onSuccess?: (customer: Customer) => void;
 }
+
+// The saved map pin is kept only while street, postcode and city stay the same
+const pinKey = (address: string, postalCode: string, city: string) =>
+  [address, postalCode, city].map((value) => value.trim().toLowerCase()).join("|");
 
 const CustomerModal = ({
   isOpen,
@@ -46,6 +51,7 @@ const CustomerModal = ({
   const [searchResults, setSearchResults] = useState<Customer[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const savedPinRef = useRef<{ key: string; lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     setIsEditMode(mode === "edit");
@@ -99,7 +105,7 @@ const CustomerModal = ({
 
   useEffect(() => {
     if (isOpen) {
-      if (mode === "edit" && initialCustomer) {
+      if (initialCustomer) {
         const address = initialCustomer.address || "";
         let parsedAddress = "";
         let parsedApartment = "";
@@ -121,6 +127,11 @@ const CustomerModal = ({
           parsedAddress = address;
         }
 
+        const coords = extractAddressCoords(address);
+        savedPinRef.current = coords
+          ? { key: pinKey(parsedAddress, parsedPostalCode, parsedCity), ...coords }
+          : null;
+
         setFormData({
           id: initialCustomer.id || "",
           name: initialCustomer.name,
@@ -135,6 +146,7 @@ const CustomerModal = ({
           comments: initialCustomer.comments || "",
         });
       } else {
+        savedPinRef.current = null;
         setFormData({
           name: "",
           phone: "",
@@ -175,6 +187,11 @@ const CustomerModal = ({
     } else {
       parsedAddress = address;
     }
+
+    const coords = extractAddressCoords(address);
+    savedPinRef.current = coords
+      ? { key: pinKey(parsedAddress, parsedPostalCode, parsedCity), ...coords }
+      : null;
 
     setFormData({
       id: customer.id || "",
@@ -225,6 +242,10 @@ const CustomerModal = ({
     let addressString = `address=${formData.address.trim()}|postal=${formData.postalCode.trim()}|city=${formData.city.trim()}|province=${formData.province.trim()}`;
     if (formData.apartment.trim()) {
       addressString += `|apartment=${formData.apartment.trim()}`;
+    }
+    const savedPin = savedPinRef.current;
+    if (savedPin && savedPin.key === pinKey(formData.address, formData.postalCode, formData.city)) {
+      addressString += `|lat=${savedPin.lat}|lng=${savedPin.lng}`;
     }
 
     if (!isEditMode) {

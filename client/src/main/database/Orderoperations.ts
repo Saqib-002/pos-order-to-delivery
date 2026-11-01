@@ -1130,6 +1130,9 @@ export class OrderDatabaseOperations {
           type = "delivery";
         } else if (type === "web:pickup" || type === "app:pickup") {
           type = "pickup";
+        } else if (type.startsWith("platform:")) {
+          // Shown as the "Platform" badge in the order processing modal
+          type = "platform";
         }
         counts[type] = (counts[type] || 0) + parseInt(
           row.count?.toString() || "0"

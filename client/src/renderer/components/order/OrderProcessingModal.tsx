@@ -171,6 +171,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [customerToEdit, setCustomerToEdit] = useState<Customer | null>(null);
   const [customerDistance, setCustomerDistance] = useState<number | null>(null);
   const [customerCoords, setCustomerCoords] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -258,6 +259,34 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
     setCustomerSearch(newCustomer.name);
     setShowSearchResults(false);
     setIsCustomerModalOpen(false);
+    setCustomerToEdit(null);
+  };
+
+  const openNewCustomer = () => {
+    setCustomerToEdit(null);
+    setIsCustomerModalOpen(true);
+  };
+
+  // A reopened order keeps only a copy of the customer, without its id: find
+  // the saved customer by phone, otherwise the form saves it as a new one
+  const openCustomerEdit = async () => {
+    if (!selectedCustomer) return;
+    let customer = selectedCustomer;
+    if (!customer.id && customer.phone && auth?.token) {
+      try {
+        const res = await (window as any).electronAPI.getCustomerByPhone(
+          auth.token,
+          customer.phone
+        );
+        if (res.status && res.data?.id) {
+          customer = { ...customer, id: res.data.id };
+        }
+      } catch (error) {
+        console.error("Error finding customer by phone:", error);
+      }
+    }
+    setCustomerToEdit(customer);
+    setIsCustomerModalOpen(true);
   };
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -697,7 +726,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                 label={t("orderProcessingModal.customerSearch.addNew")}
                 type="button"
                 variant="green"
-                onClick={() => setIsCustomerModalOpen(true)}
+                onClick={openNewCustomer}
                 Icon={<AddIcon className="size-5" />}
                 className="h-max py-3 self-end text-lg bg-gradient-to-r from-black to-gray-800 text-white hover:from-gray-800 hover:to-gray-900 touch-manipulation"
               />
@@ -744,13 +773,22 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                       )}
                     </span>
                   </h4>
-                  <CustomButton
-                    type="button"
-                    onClick={clearCustomerSelection}
-                    label={t("orderProcessingModal.customerSearch.change")}
-                    variant="transparent"
-                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 touch-manipulation !py-1 !px-3"
-                  />
+                  <div className="flex gap-2">
+                    <CustomButton
+                      type="button"
+                      onClick={openCustomerEdit}
+                      label={t("orderProcessingModal.customerSearch.edit")}
+                      variant="transparent"
+                      className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 touch-manipulation !py-1 !px-3"
+                    />
+                    <CustomButton
+                      type="button"
+                      onClick={clearCustomerSelection}
+                      label={t("orderProcessingModal.customerSearch.change")}
+                      variant="transparent"
+                      className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 touch-manipulation !py-1 !px-3"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-4">
                   {/* Name, Phone, Email in one row */}
@@ -1445,8 +1483,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       {/* Customer Modal */}
       <CustomerModal
         isOpen={isCustomerModalOpen}
-        onClose={() => setIsCustomerModalOpen(false)}
-        mode="add"
+        onClose={() => {
+          setIsCustomerModalOpen(false);
+          setCustomerToEdit(null);
+        }}
+        mode={customerToEdit?.id ? "edit" : "add"}
+        initialCustomer={customerToEdit}
         onSuccess={handleNewCustomerCreated}
       />
 
