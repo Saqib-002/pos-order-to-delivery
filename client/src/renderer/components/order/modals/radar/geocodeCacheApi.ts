@@ -3,7 +3,7 @@ import {
   normalizeAddressKey,
   geocodeAddressDetailed,
 } from "@/renderer/utils/googleMaps";
-import { formatAddressForGeocoding } from "@/renderer/utils/utils";
+import { formatAddressForGeocoding, extractAddressCoords } from "@/renderer/utils/utils";
 
 // Shared geocode cache in the local database: an address found once by any POS
 // is reused by all of them instead of being looked up online again.
@@ -108,6 +108,9 @@ export const locateDeliveryAddress = async (
   token: string | null,
   rawAddress: string
 ): Promise<{ lat: number; lng: number } | null> => {
+  const customerCoords = extractAddressCoords(rawAddress);
+  if (customerCoords) return customerCoords;
+
   const lookupText = formatAddressForGeocoding(rawAddress || "");
   if (!lookupText.trim()) return null;
   const addressKey = getAddressCacheKey(lookupText);

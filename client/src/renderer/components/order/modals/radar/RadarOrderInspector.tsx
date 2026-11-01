@@ -186,6 +186,12 @@ export const RadarOrderInspector: React.FC<RadarOrderInspectorProps> = ({
             {t("deliveryView.radar.manualLocation")}
           </div>
         )}
+        {inspectedOrder.locationSource === "customer" && (
+          <div className="mt-1.5 text-[11px] font-semibold text-amber-700 flex items-center gap-1.5">
+            <MapPin className="size-3.5" />
+            {t("deliveryView.radar.customerLocation", "Ubicación fijada por el cliente")}
+          </div>
+        )}
 
         {ENABLE_MANUAL_LOCATION_FIXES && addressKey && (
           <div className="grid grid-cols-2 gap-1.5 mt-1.5">

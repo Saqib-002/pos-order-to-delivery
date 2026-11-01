@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CrossIcon, CarIcon, BikeIcon } from "@/renderer/public/Svg";
 import { MessageSquare, ChevronDown } from "lucide-react";
-import CustomButton from "../../ui/CustomButton";
 import { useConfigurations } from "../../../contexts/configurationContext";
 import { geocodeAddress, getOsrmBaseUrl } from "../../../utils/googleMaps";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -17,6 +16,7 @@ interface DeliveryRouteModalProps {
     // The order's original customer address (structured or plain text), not the
     // display-formatted one, so the apartment can be stripped for the lookup
     destination: string;
+    destinationCoords?: { lat: number; lng: number } | null;
     googleMapsApiKey?: string;
     orderId?: string;
 }
@@ -26,6 +26,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     onClose,
     origin,
     destination,
+    destinationCoords,
     googleMapsApiKey,
     orderId,
 }) => {
@@ -125,6 +126,10 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     const markersRef = useRef<L.Marker[]>([]);
     const zonePolygonsRef = useRef<L.Polygon[]>([]);
     const driverMarkerRef = useRef<L.Marker | null>(null);
+    const resolvedEndpointsRef = useRef<{
+        orig: { lat: number; lng: number };
+        dest: { lat: number; lng: number };
+    } | null>(null);
     // Incremented per fetch so a slow response for a previous travel mode
     // can't overwrite the route of the mode selected afterwards
     const routeRequestSeqRef = useRef(0);
@@ -268,14 +273,18 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
 
             const [origCoords, destCoords] = await Promise.all([
                 configurations?.latitude && configurations?.longitude
-                    ? Promise.resolve({ lat: configurations.latitude, lng: configurations.longitude })
+                    ? Promise.resolve({
+                        lat: Number(configurations.latitude),
+                        lng: Number(configurations.longitude),
+                    })
                     : geocodeAddress(origin, googleMapsApiKey),
-                // Same lookup as the radar (shared cache, apartment stripped),
-                // so an address the radar can place is found here too
-                locateDeliveryAddress(auth.token, destination),
+                destinationCoords
+                    ? Promise.resolve(destinationCoords)
+                    : locateDeliveryAddress(auth.token, destination),
             ]);
 
             if (origCoords && destCoords) {
+                resolvedEndpointsRef.current = { orig: origCoords, dest: destCoords };
                 const osrmBase = getOsrmBaseUrl(travelMode === "BICYCLE" ? "bike" : "car");
                 const osrmUrl = `${osrmBase}/route/v1/driving/${origCoords.lng},${origCoords.lat};${destCoords.lng},${destCoords.lat}?overview=full&geometries=geojson&alternatives=true`;
                 const osrmRes = await fetch(osrmUrl);
@@ -294,9 +303,19 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
                         }));
                         setRoutes(formattedRoutes);
                         setSelectedRouteIndex(0);
-                        drawTrafficRoute(formattedRoutes[0]);
+                        drawTrafficRoute(formattedRoutes[0], origCoords, destCoords);
                         return;
                     }
+                }
+
+                // If OSRM routing is unavailable, still display exact origin and customer markers
+                if (seq === routeRequestSeqRef.current) {
+                    updateMarkers(origCoords, destCoords);
+                    const bounds = L.latLngBounds([
+                        [origCoords.lat, origCoords.lng],
+                        [destCoords.lat, destCoords.lng],
+                    ]);
+                    mapInstanceRef.current?.fitBounds(bounds, { padding: [50, 50] });
                 }
             }
 
@@ -310,17 +329,32 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     };
 
     // Draw the color-coded polyline using Leaflet
-    const drawTrafficRoute = (route: any) => {
+    const drawTrafficRoute = (
+        route: any,
+        targetOrigin?: { lat: number; lng: number },
+        targetDest?: { lat: number; lng: number }
+    ) => {
         if (!mapInstanceRef.current || !route?.coordinates || route.coordinates.length === 0) return;
 
         polylinesRef.current.forEach(p => p.remove());
         polylinesRef.current = [];
 
-        const latLngs: [number, number][] = route.coordinates.map((c: any) => [c.lat, c.lng]);
-        const originPos = { lat: latLngs[0][0], lng: latLngs[0][1] };
-        const destPos = { lat: latLngs[latLngs.length - 1][0], lng: latLngs[latLngs.length - 1][1] };
+        // Prioritize exact resolved coordinates over OSRM road-snapped endpoints
+        const originPos = targetOrigin || resolvedEndpointsRef.current?.orig || { lat: route.coordinates[0].lat, lng: route.coordinates[0].lng };
+        const destPos = targetDest || resolvedEndpointsRef.current?.dest || { lat: route.coordinates[route.coordinates.length - 1].lat, lng: route.coordinates[route.coordinates.length - 1].lng };
 
         updateMarkers(originPos, destPos);
+
+        const latLngs: [number, number][] = [];
+        if (originPos) {
+            latLngs.push([originPos.lat, originPos.lng]);
+        }
+        for (const c of route.coordinates) {
+            latLngs.push([c.lat, c.lng]);
+        }
+        if (destPos) {
+            latLngs.push([destPos.lat, destPos.lng]);
+        }
 
         const poly = L.polyline(latLngs, {
             color: "#10B981",
@@ -344,6 +378,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
             markersRef.current = [];
             zonePolygonsRef.current = [];
             driverMarkerRef.current = null;
+            resolvedEndpointsRef.current = null;
             return;
         }
 
@@ -375,7 +410,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
             setSelectedRouteIndex(0);
             fetchRoutes();
         }
-    }, [isOpen, origin, destination, travelMode]);
+    }, [isOpen, origin, destination, destinationCoords?.lat, destinationCoords?.lng, travelMode]);
 
     useEffect(() => {
         updateZones();

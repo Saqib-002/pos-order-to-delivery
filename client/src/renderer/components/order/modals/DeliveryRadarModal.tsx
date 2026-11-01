@@ -24,6 +24,7 @@ import {
   formatAddressForGeocoding,
   extractPostcode,
   getOrderDisplayNumber,
+  extractAddressCoords,
 } from "../../../utils/utils";
 import { updateOrder } from "../../../utils/order";
 import { useConfigurations } from "../../../contexts/configurationContext";
@@ -350,9 +351,19 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
 
       const allOrdersToGeocode = [...readyOrders, ...kitchenOrders];
       const unlocated: UnlocatedRadarOrder[] = [];
+      // Orders with customer-pinned coordinates: placed immediately without shared cache lookup
+      const customerOrders: { order: Order; coords: { lat: number; lng: number } }[] = [];
       // Geocoded without the apartment: same building, same location
       const withAddress: { order: Order; address: string; key: string }[] = [];
       for (const order of allOrdersToGeocode) {
+        const coords = order.customer?.address
+          ? extractAddressCoords(order.customer.address)
+          : null;
+        if (coords) {
+          customerOrders.push({ order, coords });
+          continue;
+        }
+
         const address = order.customer?.address
           ? formatAddressForGeocoding(order.customer.address)
           : "";
@@ -377,6 +388,15 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
       const getWarnings = (order: Order, hit: GeocodeHit): LocationWarning[] => {
         if (hit.source === "manual") return [];
         const warnings: LocationWarning[] = [];
+        if (
+          zones.length > 0 &&
+          !zones.some((z: any) => isPointInPolygon(hit, z.points))
+        ) {
+          warnings.push("outside_zones");
+        }
+        // Customer-selected pin skips provider postcode mismatch and town approximation warnings
+        if (hit.source === "customer") return warnings;
+
         // Only the first 3 digits (province + town/area): neighbouring postcodes
         // of the same town (Rivas 28521/28522/28523) often disagree between
         // providers, but a different prefix means a match in the wrong town.
@@ -387,12 +407,6 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
           orderPostcode.slice(0, 3) !== hit.postcode.slice(0, 3)
         ) {
           warnings.push("postcode_mismatch");
-        }
-        if (
-          zones.length > 0 &&
-          !zones.some((z: any) => isPointInPolygon(hit, z.points))
-        ) {
-          warnings.push("outside_zones");
         }
         if (hit.precision === "town") warnings.push("approximate");
         return warnings;
@@ -420,6 +434,19 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
       };
 
       const resultsByOrderId = new Map<string, GeocodedDeliveryOrder>();
+      // Immediately place customer orders with their exact point
+      for (const { order, coords } of customerOrders) {
+        const hit: GeocodeHit = {
+          lat: coords.lat,
+          lng: coords.lng,
+          source: "customer",
+          precision: "building",
+          postcode: null,
+        };
+        const key = getAddressCacheKey(formatAddressForGeocoding(order.customer?.address || ""));
+        resultsByOrderId.set(order.id, toGeocoded(order, key, hit));
+      }
+
       const pendingByKey = new Map<
         string,
         { key: string; address: string; orders: Order[] }

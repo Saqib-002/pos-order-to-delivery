@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -11,10 +11,10 @@ import { Order, OrderItem, Customer } from "@/types/order";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { useConfigurations } from "@/renderer/contexts/configurationContext";
 import { calculateOrderTotal } from "@/renderer/utils/orderCalculations";
-import { formatAddress } from "@/renderer/utils/utils";
+import { formatAddress, extractAddressCoords } from "@/renderer/utils/utils";
 import { calculatePaymentStatus } from "@/renderer/utils/paymentStatus";
 import DeliveryRouteModal from "./modals/DeliveryRouteModal";
-import { calculateDistance, geocodeAddress, isPointInPolygon } from "@/renderer/utils/googleMaps";
+import { calculateDistance, isPointInPolygon } from "@/renderer/utils/googleMaps";
 import { locateDeliveryAddress } from "./modals/radar/geocodeCacheApi";
 import { useTranslation } from "react-i18next";
 import {
@@ -291,9 +291,11 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
 
   useEffect(() => {
     const timer = setTimeout(async () => {
-      const customerAddress = selectedCustomer
-        ? selectedCustomer.address
-        : customCustomerAddress;
+      const customerAddress =
+        selectedCustomer?.address ||
+        customCustomerAddress.trim() ||
+        (order as any)?.customerAddress ||
+        "";
 
       const restaurantAddress = configurations?.address;
       const apiKey = configurations?.googleMapsApiKey;
@@ -479,15 +481,25 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
       orderType === "web:delivery" ||
       orderType === "app:delivery"
     ) {
-      if (!selectedCustomer && !customCustomerPhone.trim()) {
+
+      const customerPhone =
+        selectedCustomer?.phone ||
+        customCustomerPhone.trim() ||
+        (order as any)?.customerPhone ||
+        (order as any)?.customer?.phone ||
+        "";
+
+      if (!customerPhone) {
         toast.error(t("orderProcessingModal.errors.customerPhoneRequired"));
         return;
       }
 
       const checkDeliveryRequirement = async () => {
-        const customerAddress = selectedCustomer
-          ? selectedCustomer.address
-          : customCustomerAddress;
+        const customerAddress =
+          selectedCustomer?.address ||
+          customCustomerAddress.trim() ||
+          (order as any)?.customerAddress ||
+          "";
 
         if (!customerAddress || !customerAddress.trim()) {
           toast.error(t("orderProcessingModal.errors.customerDetailsRequired"));
@@ -495,7 +507,6 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         }
 
         const restaurantAddress = configurations.address;
-        const apiKey = configurations.googleMapsApiKey;
 
         if (!restaurantAddress) {
           console.warn("Restaurant address missing. Skipping distance check.");
@@ -1008,6 +1019,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                           setCustomCustomerAddress(addressString);
                           return updated;
                         });
+                        // Hand-edited address: the picked suggestion's point no longer applies
+                        setCustomerCoords(null);
                         if (value.trim() && !selectedCustomer) {
                           setCustomerSearch("");
                         }
@@ -1026,13 +1039,11 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                           addressString += `|apartment=${components.apartment}`;
                         }
                         setCustomCustomerAddress(addressString);
-                        if (components.lat !== undefined) {
-                          setCustomerCoords(
-                            components.lat != null && components.lng != null
-                              ? { lat: components.lat, lng: components.lng }
-                              : null
-                          );
-                        }
+                        setCustomerCoords(
+                          components.lat != null && components.lng != null
+                            ? { lat: components.lat, lng: components.lng }
+                            : null
+                        );
                       }}
                       apartmentValue={customAddressFields.apartment}
                       postalCodeValue={customAddressFields.postalCode}
@@ -1050,6 +1061,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                         });
                       }}
                       onPostalCodeChange={(value) => {
+                        setCustomerCoords(null);
                         setCustomAddressFields((prev) => {
                           const updated = {
                             ...prev,
@@ -1061,6 +1073,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                         });
                       }}
                       onCityChange={(value) => {
+                        setCustomerCoords(null);
                         setCustomAddressFields((prev) => {
                           const updated = {
                             ...prev,
@@ -1072,6 +1085,7 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                         });
                       }}
                       onProvinceChange={(value) => {
+                        setCustomerCoords(null);
                         setCustomAddressFields((prev) => {
                           const updated = {
                             ...prev,
@@ -1469,7 +1483,21 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
             .filter(Boolean)
             .join(", ") || configurations.address
         }
-        destination={selectedCustomer?.address || customCustomerAddress}
+        destination={
+          selectedCustomer?.address ||
+          customCustomerAddress ||
+          (order as any)?.customerAddress ||
+          ""
+        }
+        destinationCoords={
+          // Picked-suggestion coords only describe the custom address
+          (!selectedCustomer && customerCoords) ||
+          extractAddressCoords(
+            selectedCustomer?.address ||
+              customCustomerAddress ||
+              (order as any)?.customerAddress
+          )
+        }
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
       />
     </div>

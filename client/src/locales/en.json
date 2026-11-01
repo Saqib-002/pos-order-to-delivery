@@ -1583,6 +1583,7 @@
       "placeOnMap": "Place on map",
       "placingBanner": "Tap the map where order {{order}} should be",
       "manualLocation": "Location set manually",
+      "customerLocation": "Location set by the customer",
       "confirmLocation": "Location is correct",
       "locationWarning": {
         "postcode_mismatch": "Postcode differs from the order's address",

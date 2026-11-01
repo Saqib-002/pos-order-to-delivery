@@ -170,13 +170,16 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
 export async function startCloudSyncServices(): Promise<void> {
     Logger.info("Starting background cloud sync services...");
     syncLogger.info("Starting background cloud sync services...");
-    try {
-        const { startBackgroundSync } = await import("../utils/syncManager.js");
-        startBackgroundSync();
-    } catch (syncErr) {
-        Logger.error("Failed to start background sync manager:", syncErr);
-        syncLogger.error("Failed to start background sync manager:", syncErr);
-    }
+    // Driver-app whiteboard polling is off: the driver app isn't used, and the
+    // VPS never clears delivered/cancelled orders, so every 10s poll re-applied
+    // an ever-growing list to local orders.
+    // try {
+    //     const { startBackgroundSync } = await import("../utils/syncManager.js");
+    //     startBackgroundSync();
+    // } catch (syncErr) {
+    //     Logger.error("Failed to start background sync manager:", syncErr);
+    //     syncLogger.error("Failed to start background sync manager:", syncErr);
+    // }
     try {
         const { startQueueProcessor } = await import("../utils/sync/index.js");
         startQueueProcessor();

@@ -9,7 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 import Header from "../components/shared/Header.order";
 import { FilterControls } from "../components/shared/FilterControl.order";
 import { updateOrder, StringToComplements } from "../utils/order";
-import { formatAddress, getOrderDisplayNumber, getCustomerDisplayName } from "../utils/utils";
+import { formatAddress, getOrderDisplayNumber, getCustomerDisplayName, extractAddressCoords } from "../utils/utils";
 import { useOrderManagementContext } from "../contexts/orderManagementContext";
 import { useConfigurations } from "../contexts/configurationContext";
 import { calculateOrderTotal } from "../utils/orderCalculations";
@@ -1284,7 +1284,24 @@ export const DeliveryView = () => {
             .filter(Boolean)
             .join(", ") || configurations.address
         }
-        destination={selectedOrderForRoute?.customer?.address || ""}
+        destination={
+          selectedOrderForRoute?.customer?.address ||
+          (selectedOrderForRoute as any)?.customerAddress ||
+          ""
+        }
+        destinationCoords={
+          extractAddressCoords(
+            selectedOrderForRoute?.customer?.address ||
+              (selectedOrderForRoute as any)?.customerAddress
+          ) ||
+          ((selectedOrderForRoute as any)?.latitude &&
+          (selectedOrderForRoute as any)?.longitude
+            ? {
+                lat: Number((selectedOrderForRoute as any).latitude),
+                lng: Number((selectedOrderForRoute as any).longitude),
+              }
+            : null)
+        }
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
         orderId={selectedOrderForRoute?.id}
       />

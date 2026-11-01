@@ -32,7 +32,7 @@ import {
   MapIcon,
 } from "../public/Svg";
 import { OPERATIONAL_PAGE_LIMIT } from "@/constants";
-import { formatAddress, getOrderDisplayNumber, getCustomerDisplayName } from "../utils/utils";
+import { formatAddress, getOrderDisplayNumber, getCustomerDisplayName, extractAddressCoords } from "../utils/utils";
 import DeliveryRouteModal from "../components/order/modals/DeliveryRouteModal";
 import Pagination from "../components/shared/Pagination";
 
@@ -521,7 +521,24 @@ export const KitchenView = () => {
             .filter(Boolean)
             .join(", ") || configurations.address
         }
-        destination={selectedOrderForRoute?.customer?.address || ""}
+        destination={
+          selectedOrderForRoute?.customer?.address ||
+          (selectedOrderForRoute as any)?.customerAddress ||
+          ""
+        }
+        destinationCoords={
+          extractAddressCoords(
+            selectedOrderForRoute?.customer?.address ||
+              (selectedOrderForRoute as any)?.customerAddress
+          ) ||
+          ((selectedOrderForRoute as any)?.latitude &&
+          (selectedOrderForRoute as any)?.longitude
+            ? {
+                lat: Number((selectedOrderForRoute as any).latitude),
+                lng: Number((selectedOrderForRoute as any).longitude),
+              }
+            : null)
+        }
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
       />
     </div>

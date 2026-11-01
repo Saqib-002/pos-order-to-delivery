@@ -63,7 +63,7 @@ export const calculateDistance = async (
 };
 
 export type GeocodeStatus = "found" | "not_found" | "error";
-export type GeocodeSource = "cartociudad" | "photon" | "nominatim" | "manual";
+export type GeocodeSource = "cartociudad" | "photon" | "nominatim" | "manual" | "customer";
 // How exactly the provider matched the address
 export type GeocodePrecision = "building" | "street" | "town" | "unknown";
 
@@ -168,6 +168,28 @@ const cleanPostcode = (value: unknown): string | null => {
   return match ? match[0] : null;
 };
 
+// "Calle Luna 3, 28521 Madrid Rivas" -> street "Calle Luna 3", postcode "28521"
+// (the street is everything before the part holding the postcode)
+const splitStreetAndPostcode = (
+  text: string
+): { street: string; postcode: string } | null => {
+  const parts = text.split(",").map((p) => p.trim()).filter(Boolean);
+  const index = parts.findIndex((p) => /\b\d{5}\b/.test(p));
+  if (index <= 0) return null;
+  return {
+    street: parts.slice(0, index).join(", "),
+    postcode: parts[index].match(/\b\d{5}\b/)![0],
+  };
+};
+
+const cartoCiudadHit = (item: any): GeocodeHit => ({
+  lat: Number(item.lat),
+  lng: Number(item.lng),
+  source: "cartociudad",
+  precision: cartoCiudadPrecision(item.type),
+  postcode: cleanPostcode(item.postalCode),
+});
+
 // Concurrent lookups of the same address share one request
 const geocodeInFlight = new Map<string, Promise<GeocodeResult>>();
 
@@ -240,7 +262,27 @@ export const geocodeAddressDetailed = async (
       return { location: { lat: hit.lat, lng: hit.lng }, hit, status: "found" };
     };
 
-    // 1. Try CartoCiudad (Official Spain National Geographic Institute - 100% Free)
+    // 1a. CartoCiudad with just the street, limited to the address's postcode:
+    // finds the building even when the town fields are muddled ("28521 Madrid
+    // Rivas vaciamadrid"), and can't jump to a same-named street elsewhere
+    const streetAndPostcode = splitStreetAndPostcode(deduped);
+    if (streetAndPostcode) {
+      try {
+        const { ok, data } = await fetchJsonWithTimeout(
+          `https://www.cartociudad.es/geocoder/api/geocoder/candidates?q=${encodeURIComponent(streetAndPostcode.street)}&limit=1&cod_postal_filter=${streetAndPostcode.postcode}`,
+          { Accept: "application/json" }
+        );
+        if (!ok) {
+          hadFailure = true;
+        } else if (Array.isArray(data) && data.length > 0 && data[0].lat && data[0].lng) {
+          return found(cartoCiudadHit(data[0]));
+        }
+      } catch {
+        hadFailure = true;
+      }
+    }
+
+    // 1b. Try CartoCiudad (Official Spain National Geographic Institute - 100% Free)
     for (const q of queryCandidates) {
       try {
         const { ok, data } = await fetchJsonWithTimeout(
@@ -250,13 +292,7 @@ export const geocodeAddressDetailed = async (
         if (!ok) {
           hadFailure = true;
         } else if (Array.isArray(data) && data.length > 0 && data[0].lat && data[0].lng) {
-          return found({
-            lat: Number(data[0].lat),
-            lng: Number(data[0].lng),
-            source: "cartociudad",
-            precision: cartoCiudadPrecision(data[0].type),
-            postcode: cleanPostcode(data[0].postalCode),
-          });
+          return found(cartoCiudadHit(data[0]));
         }
       } catch {
         hadFailure = true;

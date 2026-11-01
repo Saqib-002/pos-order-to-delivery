@@ -69,6 +69,32 @@ const parseStructuredAddress = (address: string) => {
   return addressObj;
 };
 
+export const extractAddressCoords = (
+  address: string | null | undefined
+): { lat: number; lng: number } | null => {
+  if (!address || typeof address !== "string") return null;
+  if (!address.includes("|") || !address.includes("=")) return null;
+
+  const addressObj = parseStructuredAddress(address);
+  if (!addressObj.lat || !addressObj.lng) return null;
+
+  const lat = parseFloat(addressObj.lat);
+  const lng = parseFloat(addressObj.lng);
+
+  if (
+    Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180
+  ) {
+    return { lat, lng };
+  }
+
+  return null;
+};
+
 // A comma-separated part that is flat/door details or a delivery note rather
 // than location, e.g. "portal 2", "escalera izq", "piso 3", "timbre roto".
 // The negative lookahead stops prefixes of real words ("local" ≠ "localidad").
@@ -79,6 +105,11 @@ const FLOOR_DOOR_PART = /^\d+\s*[ºª°]\s*[a-z]?\.?(\s*(izquierda|izq|izda|dere
 // A floor/door stuck to the end of the street part: "Calle Luna 3 2ºB"
 // (only at the end, so street names like "Calle 1º de Mayo 5" are untouched)
 const TRAILING_FLOOR_DOOR = /\s+\d+\s*[ºª°]\s*[a-z]?\.?$/i;
+// House number glued to portal/floor/door, as staff often type it:
+// "Vicente Aranda N2-P6-BB" or "Vicente Aranda 2-p6-1b" -> "Vicente Aranda 2"
+const GLUED_NUMBER_EXTRAS = /\s+n?[º°.]?\s*(\d+[a-z]?)(?:\s*[-/]\s*[a-z0-9ºª°]+)+$/i;
+// "Vicente Aranda N2" / "Nº 2" -> "Vicente Aranda 2"
+const NUMBER_PREFIX = /\s+n[º°.]?\s*(\d+[a-z]?)$/i;
 
 // Removes flat details and notes that make geocoders find nothing, e.g.
 // "Calle Lago Ontario 3, portal 2, escalera izq, 3ºB, timbre roto, Rivas"
@@ -94,7 +125,11 @@ export const stripAddressExtras = (text: string) => {
   const kept = rest.filter(
     (p) => !EXTRA_ADDRESS_PART.test(p) && !FLOOR_DOOR_PART.test(p)
   );
-  return [street.replace(TRAILING_FLOOR_DOOR, ""), ...kept].join(", ");
+  const cleanStreet = street
+    .replace(GLUED_NUMBER_EXTRAS, " $1")
+    .replace(NUMBER_PREFIX, " $1")
+    .replace(TRAILING_FLOOR_DOOR, "");
+  return [cleanStreet, ...kept].join(", ");
 };
 
 // Address text sent to geocoders: like formatAddress but without the

@@ -1584,6 +1584,7 @@
       "placeOnMap": "Colocar en el mapa",
       "placingBanner": "Toca el mapa donde debe estar el pedido {{order}}",
       "manualLocation": "Ubicación fijada manualmente",
+      "customerLocation": "Ubicación fijada por el cliente",
       "confirmLocation": "La ubicación es correcta",
       "locationWarning": {
         "postcode_mismatch": "El código postal no coincide con la dirección del pedido",

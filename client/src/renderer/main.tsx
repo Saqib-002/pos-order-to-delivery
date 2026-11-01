@@ -13,8 +13,11 @@ Sentry.init({
   environment: import.meta.env.MODE || (import.meta.env.PROD ? 'production' : 'development'),
   tracesSampleRate: 0,
   integrations: [
+    // Text and inputs are masked: the replay shows what staff clicked, not the
+    // customer names, phones and addresses on screen
     Sentry.replayIntegration({
-      maskAllText: false,
+      maskAllText: true,
+      maskAllInputs: true,
       blockAllMedia: false,
     }),
   ],
