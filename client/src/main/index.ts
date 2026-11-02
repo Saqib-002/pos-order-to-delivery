@@ -15,7 +15,13 @@ if (isPackaged) {
   dotenv.config();
 }
 
+const isSentryEnabled =
+  process.env.SENTRY_ENABLED !== undefined
+    ? process.env.SENTRY_ENABLED === "true"
+    : isPackaged;
+
 Sentry.init({
+  enabled: isSentryEnabled,
   dsn: process.env.SENTRY_DSN || "https://c4a321d596ed8726ce01949d87dc0d84@o4508920124276736.ingest.us.sentry.io/4512271446900736",
   environment: process.env.NODE_ENV || (isPackaged ? "production" : "development"),
   tracesSampleRate: 0,
@@ -30,20 +36,22 @@ Sentry.init({
   ],
 });
 
-try {
-  const hostname = os.hostname();
-  const username = os.userInfo().username;
-  Sentry.setTag("hostname", hostname);
-  Sentry.setTag("os_user", username);
-  Sentry.setContext("device", {
-    name: hostname,
-    os_user: username,
-    platform: process.platform,
-    arch: process.arch,
-    release: os.release(),
-  });
-} catch {
-  // Ignore device info error
+if (isSentryEnabled) {
+  try {
+    const hostname = os.hostname();
+    const username = os.userInfo().username;
+    Sentry.setTag("hostname", hostname);
+    Sentry.setTag("os_user", username);
+    Sentry.setContext("device", {
+      name: hostname,
+      os_user: username,
+      platform: process.platform,
+      arch: process.arch,
+      release: os.release(),
+    });
+  } catch {
+    // Ignore device info error
+  }
 }
 
 app.whenReady().then(async () => {

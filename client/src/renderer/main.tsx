@@ -8,7 +8,13 @@ import { ConfirmProvider } from './contexts/confirmContext';
 import { ConfigurationsProvider } from './contexts/configurationContext';
 import '../i18n';
 
+const isSentryEnabled =
+  import.meta.env.VITE_SENTRY_ENABLED !== undefined
+    ? import.meta.env.VITE_SENTRY_ENABLED === "true"
+    : import.meta.env.PROD;
+
 Sentry.init({
+  enabled: isSentryEnabled,
   dsn: import.meta.env.VITE_SENTRY_DSN || "https://c4a321d596ed8726ce01949d87dc0d84@o4508920124276736.ingest.us.sentry.io/4512271446900736",
   environment: import.meta.env.MODE || (import.meta.env.PROD ? 'production' : 'development'),
   tracesSampleRate: 0,
@@ -36,21 +42,23 @@ Sentry.init({
   ],
 });
 
-try {
-  (window as any).electronAPI?.getDeviceInfo?.().then((device: any) => {
-    if (device?.hostname) {
-      Sentry.setTag("hostname", device.hostname);
-      if (device.username) {
-        Sentry.setTag("os_user", device.username);
+if (isSentryEnabled) {
+  try {
+    (window as any).electronAPI?.getDeviceInfo?.().then((device: any) => {
+      if (device?.hostname) {
+        Sentry.setTag("hostname", device.hostname);
+        if (device.username) {
+          Sentry.setTag("os_user", device.username);
+        }
+        Sentry.setContext("device", {
+          name: device.hostname,
+          os_user: device.username,
+        });
       }
-      Sentry.setContext("device", {
-        name: device.hostname,
-        os_user: device.username,
-      });
-    }
-  }).catch(() => {});
-} catch {
-  // Ignore
+    }).catch(() => {});
+  } catch {
+    // Ignore
+  }
 }
 
 interface ErrorBoundaryProps {
@@ -73,7 +81,9 @@ class RootErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    Sentry.captureException(error, { extra: { componentStack: errorInfo.componentStack } });
+    if (isSentryEnabled) {
+      Sentry.captureException(error, { extra: { componentStack: errorInfo.componentStack } });
+    }
   }
 
   render() {
