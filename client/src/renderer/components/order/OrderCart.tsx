@@ -77,7 +77,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
     const checkVariants = async () => {
       const uniqueProductIds = Array.from(new Set(orderItems.map(item => item.productId).filter(Boolean)));
       const newMap = { ...productsWithVariants };
-      
+
       let changed = false;
       for (const prodId of uniqueProductIds) {
         if (newMap[prodId] === undefined) {
@@ -107,7 +107,7 @@ const OrderCart: React.FC<OrderCartProps> = ({
           }
         }
       }
-      
+
       if (changed) {
         setProductsWithVariants({ ...newMap });
       }

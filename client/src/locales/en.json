@@ -1587,8 +1587,7 @@
       "confirmLocation": "Location is correct",
       "locationWarning": {
         "postcode_mismatch": "Postcode differs from the order's address",
-        "outside_zones": "Outside your delivery zones",
-        "approximate": "Only the town was found, not the exact address"
+        "outside_zones": "Outside your delivery zones"
       },
       "messages": {
         "corridorOnlyKitchen": "This route corridor contains orders that are still cooking in the kitchen.",

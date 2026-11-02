@@ -26,7 +26,9 @@ export class GeocodeCacheOperations {
         "precision",
         "resultPostcode"
       )
-      .whereIn("addressKey", addressKeys);
+      .whereIn("addressKey", addressKeys)
+      // Town-level rows saved before they were rejected: look the address up again
+      .andWhere((q) => q.whereNull("precision").orWhereNot("precision", "town"));
     return rows.map((r) => ({
       addressKey: r.addressKey,
       lat: Number(r.latitude),
@@ -37,12 +39,16 @@ export class GeocodeCacheOperations {
     }));
   }
 
-  // Automatic lookups: never overwrite a location a user placed by hand
+  // Automatic lookups: never overwrite a location a user placed by hand.
+  // Town-level matches aren't stored, so the next lookup tries again for the
+  // street instead of every POS reusing the town centre
   static async saveMany(entries: GeocodeCacheEntry[]): Promise<void> {
     // One row per key: Postgres rejects an upsert that hits the same key twice
     const byKey = new Map<string, GeocodeCacheEntry>();
     for (const e of entries) {
-      if (isValidEntry(e) && e.source !== "manual") byKey.set(e.addressKey, e);
+      if (isValidEntry(e) && e.source !== "manual" && e.precision !== "town") {
+        byKey.set(e.addressKey, e);
+      }
     }
     const valid = Array.from(byKey.values());
     if (valid.length === 0) return;

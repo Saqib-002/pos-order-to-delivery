@@ -1588,8 +1588,7 @@
       "confirmLocation": "La ubicación es correcta",
       "locationWarning": {
         "postcode_mismatch": "El código postal no coincide con la dirección del pedido",
-        "outside_zones": "Fuera de tus zonas de reparto",
-        "approximate": "Solo se encontró la localidad, no la dirección exacta"
+        "outside_zones": "Fuera de tus zonas de reparto"
       },
       "messages": {
         "corridorOnlyKitchen": "Este corredor contiene pedidos que aún están cocinándose en cocina.",

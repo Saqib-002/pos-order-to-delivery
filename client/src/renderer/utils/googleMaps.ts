@@ -142,13 +142,38 @@ const scheduleNominatim = <T>(task: () => Promise<T>): Promise<T> => {
 
 // "building" only when the provider matched an actual house number. Anything
 // else that isn't a street — towns, postcodes, named places (a station, a
-// shopping centre…) — counts as "town" so it's flagged as approximate.
+// shopping centre…) — counts as "town" and is never used as a location.
 // e.g. Photon answers "28521 Rivas-Vaciamadrid" with the railway station.
 const cartoCiudadPrecision = (type: unknown): GeocodePrecision => {
   const t = String(type || "").toLowerCase();
   if (t === "portal" || t === "refcatastral") return "building";
   if (t === "callejero" || t === "carretera") return "street";
   return t ? "town" : "unknown";
+};
+
+// Words that don't identify a street ("Calle de la Luna" -> "luna")
+const STREET_FILLER = new Set([
+  "calle", "c", "cl", "avenida", "av", "avda", "plaza", "pl", "pza", "paseo",
+  "camino", "carretera", "ctra", "ronda", "travesia", "glorieta", "urbanizacion",
+  "urb", "de", "del", "la", "las", "los", "el", "y",
+]);
+const streetWords = (text: string): string[] =>
+  text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length > 1 && !/^\d+$/.test(w) && !STREET_FILLER.has(w));
+
+// Photon and Nominatim match loosely and can return the same house number on
+// another street ("Calle Zzz 12" -> "Calle de Irlanda 12"): the matched street
+// must share a word with the typed one (the part before the first comma).
+// True when either street is unknown.
+export const sameStreet = (typedAddress: string, matchedStreet: unknown): boolean => {
+  const typed = streetWords(typedAddress.split(",")[0]);
+  const matched = streetWords(String(matchedStreet || ""));
+  if (typed.length === 0 || matched.length === 0) return true;
+  return matched.some((w) => typed.includes(w));
 };
 
 const photonPrecision = (props: any): GeocodePrecision => {
@@ -243,8 +268,10 @@ export const geocodeAddressDetailed = async (
     // CartoCiudad often returns nothing when the postcode is in the text
     // ("Calle Mayor 5, 28013 Madrid" fails, "Calle Mayor 5, Madrid" finds the
     // building), so also try without it. The postcode check on the result still
-    // catches a match in the wrong town.
+    // catches a match in the wrong town. Brackets go too: with "(Town)" stuck
+    // to the street, Photon matches the town's station instead of the street.
     const withoutPostcode = cleanedAdmin
+      .replace(/\s*\([^)]*\)/g, "")
       .replace(/\b\d{5}\b/g, "")
       .replace(/\s+/g, " ")
       .replace(/\s*,\s*(,\s*)*/g, ", ")
@@ -257,7 +284,10 @@ export const geocodeAddressDetailed = async (
     // Set when any provider is unreachable or errors, so a transient outage
     // isn't cached as "address not found" for the rest of the session
     let hadFailure = false;
-    const found = (hit: GeocodeHit): GeocodeResult => {
+    // A town-level match (town centre, postcode, a station…) would put the
+    // pin on the wrong spot: skip it and keep trying for the street
+    const found = (hit: GeocodeHit): GeocodeResult | null => {
+      if (hit.precision === "town") return null;
       geocodeMemoryCache.set(cacheKey, hit);
       return { location: { lat: hit.lat, lng: hit.lng }, hit, status: "found" };
     };
@@ -275,7 +305,8 @@ export const geocodeAddressDetailed = async (
         if (!ok) {
           hadFailure = true;
         } else if (Array.isArray(data) && data.length > 0 && data[0].lat && data[0].lng) {
-          return found(cartoCiudadHit(data[0]));
+          const result = found(cartoCiudadHit(data[0]));
+          if (result) return result;
         }
       } catch {
         hadFailure = true;
@@ -292,7 +323,8 @@ export const geocodeAddressDetailed = async (
         if (!ok) {
           hadFailure = true;
         } else if (Array.isArray(data) && data.length > 0 && data[0].lat && data[0].lng) {
-          return found(cartoCiudadHit(data[0]));
+          const result = found(cartoCiudadHit(data[0]));
+          if (result) return result;
         }
       } catch {
         hadFailure = true;
@@ -310,13 +342,17 @@ export const geocodeAddressDetailed = async (
         if (!ok) {
           hadFailure = true;
         } else if (feat?.geometry?.coordinates) {
-          return found({
+          const result = found({
             lat: Number(feat.geometry.coordinates[1]),
             lng: Number(feat.geometry.coordinates[0]),
             source: "photon",
-            precision: photonPrecision(feat.properties),
+            // Another street with the same number only marks the area
+            precision: sameStreet(cleanAddr, feat.properties?.street || feat.properties?.name)
+              ? photonPrecision(feat.properties)
+              : "town",
             postcode: cleanPostcode(feat.properties?.postcode),
           });
+          if (result) return result;
         }
       } catch {
         hadFailure = true;
@@ -335,13 +371,16 @@ export const geocodeAddressDetailed = async (
         if (!ok) {
           hadFailure = true;
         } else if (Array.isArray(data) && data.length > 0 && data[0].lat && data[0].lon) {
-          return found({
+          const result = found({
             lat: Number(data[0].lat),
             lng: Number(data[0].lon),
             source: "nominatim",
-            precision: nominatimPrecision(data[0]),
+            precision: sameStreet(cleanAddr, data[0].address?.road)
+              ? nominatimPrecision(data[0])
+              : "town",
             postcode: cleanPostcode(data[0].address?.postcode),
           });
+          if (result) return result;
         }
       } catch {
         hadFailure = true;
@@ -469,7 +508,7 @@ export const getCompassDirection = (bearing: number): string => {
 };
 
 // Why a found location may be wrong (shown as a warning on the pin)
-export type LocationWarning = "postcode_mismatch" | "outside_zones" | "approximate";
+export type LocationWarning = "postcode_mismatch" | "outside_zones";
 
 export interface GeocodedDeliveryOrder {
   order: any;

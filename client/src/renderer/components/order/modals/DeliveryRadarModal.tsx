@@ -408,7 +408,6 @@ export const DeliveryRadarModal: React.FC<DeliveryRadarModalProps> = ({
         ) {
           warnings.push("postcode_mismatch");
         }
-        if (hit.precision === "town") warnings.push("approximate");
         return warnings;
       };
 

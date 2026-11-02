@@ -134,7 +134,7 @@ const AuthorInfo = () => {
                                     <div className="pt-4 border-t border-gray-200">
                                         <p className="text-xs text-gray-500 mb-1">{t("authorInfo.softwareVersion")}</p>
                                         <p className="inline-flex items-center px-3 py-1 rounded-full bg-gray-50 text-gray-700 text-sm font-bold border border-gray-100">
-                                            v{configurations.softwareVersion || "1.0.0"}
+                                            v{configurations.softwareVersion || "2.1.1"}
                                         </p>
                                     </div>
                                 </div>

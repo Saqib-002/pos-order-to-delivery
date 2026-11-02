@@ -623,13 +623,13 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
               <p className="text-white text-xs bg-black/30 px-4 py-2 rounded-full backdrop-blur-sm border border-white/20 shadow-lg mb-2">
                 {kitchenEstimates.pickup && kitchenEstimates.delivery
                   ? t("orderProcessingModal.sentToKitchenWithSeparateTimes", {
-                      count: sentToKitchenCount,
-                      pickupTime: kitchenEstimates.pickup,
-                      deliveryTime: kitchenEstimates.delivery,
-                    })
+                    count: sentToKitchenCount,
+                    pickupTime: kitchenEstimates.pickup,
+                    deliveryTime: kitchenEstimates.delivery,
+                  })
                   : t("orderProcessingModal.sentToKitchenCount", {
-                      count: sentToKitchenCount,
-                    })}
+                    count: sentToKitchenCount,
+                  })}
               </p>
               {Object.keys(typeCounts).length > 0 && (
                 <div className="flex gap-2">
@@ -841,24 +841,24 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                           (orderType === "delivery" ||
                             orderType === "web:delivery" ||
                             orderType === "app:delivery") && (
-                          <div className="mt-2 flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-emerald-600 font-semibold text-sm">
-                              <LocationIcon className="size-4" />
-                              <span>
-                                {t("orderProcessingModal.customerSearch.distance", {
-                                  distance: customerDistance.toFixed(2),
-                                })}
-                              </span>
+                            <div className="mt-2 flex items-center justify-between">
+                              <div className="flex items-center gap-2 text-emerald-600 font-semibold text-sm">
+                                <LocationIcon className="size-4" />
+                                <span>
+                                  {t("orderProcessingModal.customerSearch.distance", {
+                                    distance: customerDistance.toFixed(2),
+                                  })}
+                                </span>
+                              </div>
+                              <CustomButton
+                                type="button"
+                                onClick={() => setIsRouteModalOpen(true)}
+                                variant="transparent"
+                                className="text-xs text-blue-600 hover:text-blue-700 underline p-0 h-auto"
+                                label={t("orderProcessingModal.customerSearch.viewRoute")}
+                              />
                             </div>
-                            <CustomButton
-                              type="button"
-                              onClick={() => setIsRouteModalOpen(true)}
-                              variant="transparent"
-                              className="text-xs text-blue-600 hover:text-blue-700 underline p-0 h-auto"
-                              label={t("orderProcessingModal.customerSearch.viewRoute")}
-                            />
-                          </div>
-                        )}
+                          )}
                       </div>
                     )}
                 </div>
@@ -888,13 +888,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     }
                   }}
                   variant="transparent"
-                  className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
-                    orderType === "delivery" ||
-                    orderType === "web:delivery" ||
-                    orderType === "app:delivery"
+                  className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${orderType === "delivery" ||
+                      orderType === "web:delivery" ||
+                      orderType === "app:delivery"
                       ? "border-black bg-gray-50 text-gray-700 shadow-md"
                       : "border-gray-200 hover:border-gray-300 bg-white"
-                  }`}
+                    }`}
                   label={
                     <>
                       <div className="mb-3 flex justify-center">
@@ -925,13 +924,12 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
                     }
                   }}
                   variant="transparent"
-                  className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${
-                    orderType === "pickup" ||
-                    orderType === "web:pickup" ||
-                    orderType === "app:pickup"
+                  className={`!p-6 border-2 rounded-xl text-center !block transition-all duration-200 hover:shadow-md min-h-[100px] ${orderType === "pickup" ||
+                      orderType === "web:pickup" ||
+                      orderType === "app:pickup"
                       ? "border-black bg-gray-50 text-gray-700 shadow-md"
                       : "border-gray-200 hover:border-gray-300 bg-white"
-                  }`}
+                    }`}
                   label={
                     <>
                       <div className="mb-3 flex justify-center">
@@ -1501,8 +1499,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
         totalAmount={orderTotal}
         orderType={
           orderType === "pickup" ||
-          orderType === "web:pickup" ||
-          orderType === "app:pickup"
+            orderType === "web:pickup" ||
+            orderType === "app:pickup"
             ? "pickup"
             : "dine-in"
         }
@@ -1536,8 +1534,8 @@ const OrderProcessingModal: React.FC<OrderProcessingModalProps> = ({
           (!selectedCustomer && customerCoords) ||
           extractAddressCoords(
             selectedCustomer?.address ||
-              customCustomerAddress ||
-              (order as any)?.customerAddress
+            customCustomerAddress ||
+            (order as any)?.customerAddress
           )
         }
         googleMapsApiKey={configurations.googleMapsApiKey || ""}
