@@ -26,8 +26,8 @@ export const createProduct = async (
             printerIds
         );
         if (result && result.id) {
-            syncProductToVPS(result.id);
-            syncProductAssociationsToVPS(result.id);
+            await syncProductToVPS(result.id);
+            await syncProductAssociationsToVPS(result.id);
         }
         return {
             status: true,
@@ -107,8 +107,8 @@ export const updateProduct = async (
             printerIds
         );
         if (productData && productData.id) {
-            syncProductToVPS(productData.id);
-            syncProductAssociationsToVPS(productData.id);
+            await syncProductToVPS(productData.id);
+            await syncProductAssociationsToVPS(productData.id);
         }
         return {
             status: true,

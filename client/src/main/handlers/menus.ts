@@ -71,8 +71,8 @@ export const createMenu = async (
             MenuPageAssociations
         );
         if (res && res.id) {
-            syncMenuToVPS(res.id);
-            syncMenuAssociationsToVPS(res.id);
+            await syncMenuToVPS(res.id);
+            await syncMenuAssociationsToVPS(res.id);
         }
         return { status: true, data: res };
     } catch (error) {
@@ -94,8 +94,8 @@ export const updateMenu = async (
         await deleteMenuAssociationsFromVPS(id, MenuPageAssociations);
         const res = await MenusOperations.updateMenu(id, updates, MenuPageAssociations);
         if (res && res.id) {
-            syncMenuToVPS(res.id);
-            syncMenuAssociationsToVPS(res.id);
+            await syncMenuToVPS(res.id);
+            await syncMenuAssociationsToVPS(res.id);
         }
         return { status: true, data: res };
     } catch (error) {

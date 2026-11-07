@@ -23,8 +23,8 @@ export const createGroup = async (
                 groupItems
             );
             if (result && result.group) {
-                syncGroupToVPS(result.group.id);
-                syncGroupItemsForGroup(result.group.id);
+                await syncGroupToVPS(result.group.id);
+                await syncGroupItemsForGroup(result.group.id);
             }
             return {
                 status: true,
@@ -88,8 +88,8 @@ export const updateGroup = async (event: IpcMainInvokeEvent, token: string, grou
         const result = await GroupsDatabaseOperations.updateGroup(groupData, groupItems);
 
         if (groupData && groupData.id) {
-            syncGroupToVPS(groupData.id);
-            syncGroupItemsForGroup(groupData.id);
+            await syncGroupToVPS(groupData.id);
+            await syncGroupItemsForGroup(groupData.id);
         }
 
         return {

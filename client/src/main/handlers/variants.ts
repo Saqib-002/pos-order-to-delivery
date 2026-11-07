@@ -23,8 +23,8 @@ export const createVariant = async (
             variantItems
         );
         if (result && result.variant) {
-            syncVariantToVPS(result.variant.id);
-            syncVariantItemsForVariant(result.variant.id);
+            await syncVariantToVPS(result.variant.id);
+            await syncVariantItemsForVariant(result.variant.id);
         }
         return {
             status: true,

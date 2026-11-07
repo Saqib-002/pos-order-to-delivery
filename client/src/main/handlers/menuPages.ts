@@ -23,8 +23,8 @@ export const createMenuPage = async (
             products
         );
         if (result && result.id) {
-            syncMenuPageToVPS(result.id);
-            syncMenuPageProductsToVPS(result.id);
+            await syncMenuPageToVPS(result.id);
+            await syncMenuPageProductsToVPS(result.id);
         }
         return {
             status: true,
@@ -71,8 +71,8 @@ export const updateMenuPage = async (
             products
         );
         if (result && result.id) {
-            syncMenuPageToVPS(result.id);
-            syncMenuPageProductsToVPS(result.id);
+            await syncMenuPageToVPS(result.id);
+            await syncMenuPageProductsToVPS(result.id);
         }
         return {
             status: true,
