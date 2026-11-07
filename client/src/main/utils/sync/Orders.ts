@@ -1,16 +1,15 @@
 import { db } from "../../database/index.js";
-import { enqueue } from "./queue/index.js";
+import { enqueueOrderStatus } from "./orderQueue.js";
 import { syncLogger as Logger } from "../logger.js";
 
 /**
- * Enqueue an updated web order's status and details to sync to the VPS v1 API.
- * Called whenever a web order's status or details are updated in the local POS DB.
+ * Queue an updated web/app order's status and details for the VPS v1 API.
+ * Called whenever a web/app order's status or details change in the POS DB.
  *
- * Queued (via the offline sync queue) rather than sent immediately, so the
- * update survives being offline and is retried by the background queue
- * processor until it succeeds — previously this was a one-shot fetch that
- * silently and permanently dropped the status change if it failed while
- * offline, with no retry when connectivity returned.
+ * The update goes into the shared `order_sync_queue` table, so it works from
+ * any POS (master or client). The master POS sends it, retrying until the VPS
+ * accepts it. Previously each POS used its own local queue file and only the
+ * master's was ever sent, so changes made on a client POS were silently lost.
  */
 export async function syncWebOrderToVPS(orderId: string): Promise<void> {
   try {
@@ -21,10 +20,13 @@ export async function syncWebOrderToVPS(orderId: string): Promise<void> {
     const orderType = order.orderType?.toLowerCase() || "";
     if (!orderType.includes("web") && !orderType.includes("app")) return;
 
-    enqueue("orderstatus", "upsert", {
+    // deliveryPersonId is deliberately not sent: the VPS orders table has a foreign
+    // key to its delivery_persons table, which is no longer filled (the driver
+    // sync was removed). Sending an id the VPS doesn't know would fail the update.
+    // The driver's name and phone are sent instead, which is what customers see.
+    await enqueueOrderStatus(orderId, {
       id: orderId,
-      status: order.status,
-      deliveryPersonId: order.deliveryPersonId || null,
+      status: String(order.status || "").toLowerCase(),
       deliveryPersonName: order.deliveryPersonName || null,
       deliveryPersonPhone: order.deliveryPersonPhone || null,
       deliveryPersonEmail: order.deliveryPersonEmail || null,

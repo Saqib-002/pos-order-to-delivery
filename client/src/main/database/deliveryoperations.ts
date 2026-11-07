@@ -149,7 +149,7 @@ export class DeliveryDatabaseOperations {
             await db("orders").where("id", orderId).update({
                 deliveryPersonId: deliveryPersonId,
                 assignedAt: now,
-                status: "Out for Delivery",
+                status: "out for delivery",
                 updatedAt: now,
             });
         } catch (error) {

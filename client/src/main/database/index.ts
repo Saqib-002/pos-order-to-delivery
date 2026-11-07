@@ -41,6 +41,8 @@ export function isLocalDatabaseHost(host: string): boolean {
 export async function initDatabase(credentials: DbCredentials): Promise<void> {
     try {
         if (db) {
+            // Stop sync rounds before closing the pool they are using.
+            await stopCloudSyncServices();
             await db.destroy();
         }
         const isPackaged = app.isPackaged;
@@ -149,14 +151,24 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
                 ? credentials.isSyncMaster
                 : isLocalDatabaseHost(credentials.host);
 
+        await stopCloudSyncServices();
+
+        // Older versions kept order status updates in a local queue file on each PC
+        // (never sent from client POS terminals). Order updates now use the shared
+        // order_sync_queue table, so back those old ones up without sending them.
+        try {
+            const { backupLegacyOrderStatusJobs } = await import("../utils/sync/orderQueue.js");
+            backupLegacyOrderStatusJobs();
+        } catch (backupErr) {
+            Logger.error("Failed to back up old local order updates:", backupErr);
+        }
+
         if (isMaster) {
-            await stopCloudSyncServices();
             Logger.info(
                 `Server/Master POS active (host: "${credentials.host}", isSyncMaster: ${credentials.isSyncMaster ?? "auto"}). Starting background cloud sync services...`
             );
             await startCloudSyncServices();
         } else {
-            await stopCloudSyncServices();
             Logger.info(
                 `Client POS active (connected to database at "${credentials.host}"). Background cloud sync services are delegated to the Server POS.`
             );
@@ -170,16 +182,13 @@ export async function initDatabase(credentials: DbCredentials): Promise<void> {
 export async function startCloudSyncServices(): Promise<void> {
     Logger.info("Starting background cloud sync services...");
     syncLogger.info("Starting background cloud sync services...");
-    // Driver-app whiteboard polling is off: the driver app isn't used, and the
-    // VPS never clears delivered/cancelled orders, so every 10s poll re-applied
-    // an ever-growing list to local orders.
-    // try {
-    //     const { startBackgroundSync } = await import("../utils/syncManager.js");
-    //     startBackgroundSync();
-    // } catch (syncErr) {
-    //     Logger.error("Failed to start background sync manager:", syncErr);
-    //     syncLogger.error("Failed to start background sync manager:", syncErr);
-    // }
+    try {
+        const { startOrderSyncQueue } = await import("../utils/sync/orderQueue.js");
+        startOrderSyncQueue();
+    } catch (orderQueueErr) {
+        Logger.error("Failed to start order sync queue:", orderQueueErr);
+        syncLogger.error("Failed to start order sync queue:", orderQueueErr);
+    }
     try {
         const { startQueueProcessor } = await import("../utils/sync/index.js");
         startQueueProcessor();
@@ -213,14 +222,14 @@ export async function startCloudSyncServices(): Promise<void> {
 export async function stopCloudSyncServices(): Promise<void> {
     Logger.info("Stopping background cloud sync services...");
     try {
-        const { stopBackgroundSync } = await import("../utils/syncManager.js");
-        stopBackgroundSync();
+        const { stopOrderSyncQueue } = await import("../utils/sync/orderQueue.js");
+        await stopOrderSyncQueue();
     } catch (err) {
-        Logger.error("Failed to stop background sync manager:", err);
+        Logger.error("Failed to stop order sync queue:", err);
     }
     try {
         const { stopWebOrderSync } = await import("../utils/webOrderSync.js");
-        stopWebOrderSync();
+        await stopWebOrderSync();
     } catch (err) {
         Logger.error("Failed to stop web order sync:", err);
     }
@@ -245,6 +254,8 @@ export async function stopCloudSyncServices(): Promise<void> {
 }
 export async function closeDatabase(): Promise<void> {
     if (db) {
+        // Stop sync rounds before closing the pool they are using.
+        await stopCloudSyncServices();
         await db.destroy();
         Logger.info("Database connection closed");
     }

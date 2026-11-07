@@ -3,6 +3,14 @@ import { OrderDatabaseOperations } from "../database/Orderoperations.js";
 import { WebCustomerDatabaseOperations } from "../database/webCustomerOperations.js";
 import { WebOrderAlertsOperations } from "../database/webOrderAlertsOperations.js";
 import { syncLogger as Logger } from "./logger.js";
+import { withSyncLock, waitForRound, WEB_ORDER_SYNC_LOCK } from "./sync/lock.js";
+
+const REQUEST_TIMEOUT_MS = 15_000;
+
+// The VPS requires the POS sync secret on the order sync endpoints.
+function posSyncHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  return { Authorization: `Bearer ${process.env.DRIVER_SYNC_SECRET || ""}`, ...extra };
+}
 
 function notifyWindowsNewOrder(order: any, items: any[]) {
   try {
@@ -41,7 +49,10 @@ async function syncWebOrders(): Promise<void> {
   const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
 
   try {
-    const response = await fetch(`${vpsUrl}/api/v1/orders/sync/pending`);
+    const response = await fetch(`${vpsUrl}/api/v1/orders/sync/pending`, {
+      headers: posSyncHeaders(),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
 
     if (!response.ok) {
       Logger.warn(`WebOrderSync: poll request failed — ${response.status} ${response.statusText}`);
@@ -77,8 +88,9 @@ async function syncWebOrders(): Promise<void> {
     if (processedIds.length > 0) {
       const ackResponse = await fetch(`${vpsUrl}/api/v1/orders/sync/acknowledge`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: posSyncHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ ids: processedIds }),
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
       if (!ackResponse.ok) {
         Logger.error(`WebOrderSync: Failed to acknowledge synced orders: ${ackResponse.statusText}`);
@@ -92,27 +104,50 @@ async function syncWebOrders(): Promise<void> {
 }
 
 let syncInterval: NodeJS.Timeout | null = null;
+let currentTick: Promise<void> | null = null;
+let lockBusyLogged = false;
+
+// One round: fetch new web orders, then sound/print alerts. Holds a database
+// lock so that if two PCs are both set as master, only one fetches and prints.
+async function runTick(): Promise<void> {
+  const ran = await withSyncLock(WEB_ORDER_SYNC_LOCK, async () => {
+    try {
+      await syncWebOrders();
+    } finally {
+      await dispatchPendingAlerts();
+    }
+  });
+  if (!ran && !lockBusyLogged) {
+    Logger.warn("WebOrderSync: another master POS is already fetching web orders; this PC will wait");
+  }
+  lockBusyLogged = !ran;
+}
+
+async function syncTick(): Promise<void> {
+  if (currentTick) return;
+  currentTick = runTick().finally(() => {
+    currentTick = null;
+  });
+  await currentTick;
+}
 
 export function startWebOrderSync(): void {
   if (syncInterval) return;
   Logger.info("WebOrderSync: starting background sync loop (10s interval)...");
 
   // Run once immediately on startup
-  syncWebOrders()
-    .catch((err) => Logger.error("WebOrderSync: initial sync error:", err))
-    .finally(() => dispatchPendingAlerts());
+  syncTick().catch((err) => Logger.error("WebOrderSync: initial sync error:", err));
 
   syncInterval = setInterval(() => {
-    syncWebOrders()
-      .catch((err) => Logger.error("WebOrderSync: sync tick error:", err))
-      .finally(() => dispatchPendingAlerts());
+    syncTick().catch((err) => Logger.error("WebOrderSync: sync tick error:", err));
   }, 10_000);
 }
 
-export function stopWebOrderSync(): void {
+export async function stopWebOrderSync(): Promise<void> {
   if (syncInterval) {
     clearInterval(syncInterval);
     syncInterval = null;
     Logger.info("WebOrderSync: stopped background sync loop.");
   }
+  await waitForRound(currentTick);
 }

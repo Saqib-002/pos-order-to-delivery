@@ -281,18 +281,10 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             break;
 
-        case "orderstatus":
-            if (job.operation === "upsert") {
-                return {
-                    url: `${vpsUrl}/api/v1/orders/${payload.id}/status`,
-                    init: {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json", ...authHeader },
-                        body: JSON.stringify(payload),
-                    },
-                };
-            }
-            break;
+        // Order status updates no longer use this local queue: they go through the
+        // shared order_sync_queue table (utils/sync/orderQueue.ts). Any old
+        // "orderstatus" job left here falls through as unknown and is dropped,
+        // so a stale status can never be sent.
 
         case "configuration":
             if (job.operation === "upsert") {

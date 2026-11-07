@@ -124,10 +124,6 @@ export const deleteOrder = async (
         const { syncWebOrderToVPS } = await import("../utils/sync/Orders.js");
         syncWebOrderToVPS(id).catch(err => Logger.error("WebOrderSync: error syncing cancelled order:", err));
       }
-      if (cancelledOrder.deliveryPersonId) {
-        const { syncOrderToVPS } = await import("../utils/syncManager.js");
-        syncOrderToVPS(id).catch(err => Logger.error("SyncManager: error syncing cancelled driver order:", err));
-      }
     }
 
     return {
@@ -240,10 +236,6 @@ export const updateOrder = async (
       if (orderType.includes("web") || orderType.includes("app")) {
         const { syncWebOrderToVPS } = await import("../utils/sync/Orders.js");
         syncWebOrderToVPS(orderId).catch(err => Logger.error("WebOrderSync: error syncing updated order:", err));
-      }
-      if (updatedOrder.deliveryPersonId) {
-        const { syncOrderToVPS } = await import("../utils/syncManager.js");
-        syncOrderToVPS(orderId).catch(err => Logger.error("SyncManager: error syncing driver-assigned order:", err));
       }
     }
 
