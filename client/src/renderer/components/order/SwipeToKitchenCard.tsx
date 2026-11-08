@@ -128,8 +128,13 @@ const SwipeToKitchenCard: React.FC<SwipeToKitchenCardProps> = ({
     }
   };
 
-  // Capture lost without a release here (e.g. the window lost focus)
+  // Capture lost without a release here (e.g. the window lost focus).
+  // Only the card's own capture counts: on a touch screen the browser first
+  // captures the finger to the inner element that was touched (the ticket
+  // number, a pill...), and handing it to the card when the swipe starts fires
+  // lostpointercapture on that inner element, which bubbles up to here.
   const handleLostPointerCapture = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.target !== e.currentTarget) return;
     const g = gesture.current;
     if (g && g.pointerId === e.pointerId) dropGesture();
   };
