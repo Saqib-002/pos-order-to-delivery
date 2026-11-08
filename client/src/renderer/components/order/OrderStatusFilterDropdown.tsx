@@ -15,12 +15,18 @@ import {
   X,
   Filter,
   Check,
+  Globe,
+  Smartphone,
+  House,
+  ShoppingBag,
+  UtensilsCrossed,
+  Store,
 } from "lucide-react";
 
 export interface StatusFilterOption {
   value: string;
   label: string;
-  category: "all" | "status" | "payment";
+  category: "all" | "status" | "payment" | "type";
   dotColor: string;
   bgLight: string;
   textColor: string;
@@ -175,6 +181,68 @@ export const OrderStatusFilterDropdown: React.FC<OrderStatusFilterDropdownProps>
       borderColor: "border-amber-200",
       icon: <Coins className="size-3.5 text-amber-600" />,
     },
+    // Order types (colours match the type pill on the order cards).
+    // Delivery and Pickup include web and app orders of that kind.
+    {
+      value: "type:web",
+      label: t("orderTypes.web", "Web"),
+      category: "type",
+      dotColor: "bg-amber-500",
+      bgLight: "bg-amber-50",
+      textColor: "text-amber-800",
+      borderColor: "border-amber-200",
+      icon: <Globe className="size-3.5 text-amber-600" />,
+    },
+    {
+      value: "type:app",
+      label: t("orderTypes.app", "App"),
+      category: "type",
+      dotColor: "bg-teal-500",
+      bgLight: "bg-teal-50",
+      textColor: "text-teal-800",
+      borderColor: "border-teal-200",
+      icon: <Smartphone className="size-3.5 text-teal-600" />,
+    },
+    {
+      value: "type:delivery",
+      label: t("orderTypes.delivery", "Delivery"),
+      category: "type",
+      dotColor: "bg-orange-500",
+      bgLight: "bg-orange-50",
+      textColor: "text-orange-800",
+      borderColor: "border-orange-200",
+      icon: <House className="size-3.5 text-orange-600" />,
+    },
+    {
+      value: "type:pickup",
+      label: t("orderTypes.pickup", "Pickup"),
+      category: "type",
+      dotColor: "bg-blue-500",
+      bgLight: "bg-blue-50",
+      textColor: "text-blue-800",
+      borderColor: "border-blue-200",
+      icon: <ShoppingBag className="size-3.5 text-blue-600" />,
+    },
+    {
+      value: "type:dine-in",
+      label: t("orderTypes.dineIn", "Dine In"),
+      category: "type",
+      dotColor: "bg-purple-500",
+      bgLight: "bg-purple-50",
+      textColor: "text-purple-800",
+      borderColor: "border-purple-200",
+      icon: <UtensilsCrossed className="size-3.5 text-purple-600" />,
+    },
+    {
+      value: "type:platform",
+      label: t("orderTypes.platform", "Platform"),
+      category: "type",
+      dotColor: "bg-pink-500",
+      bgLight: "bg-pink-50",
+      textColor: "text-pink-800",
+      borderColor: "border-pink-200",
+      icon: <Store className="size-3.5 text-pink-600" />,
+    },
   ];
 
   const currentOption = options.find((opt) => opt.value === value) || options[0];
@@ -182,6 +250,7 @@ export const OrderStatusFilterDropdown: React.FC<OrderStatusFilterDropdownProps>
 
   const orderStatusOptions = options.filter((o) => o.category === "status");
   const paymentStatusOptions = options.filter((o) => o.category === "payment");
+  const orderTypeOptions = options.filter((o) => o.category === "type");
 
   const handleSelect = (val: string) => {
     onChange(val);
@@ -232,7 +301,7 @@ export const OrderStatusFilterDropdown: React.FC<OrderStatusFilterDropdownProps>
 
       {/* Popover Menu */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1.5 w-60 max-h-80 overflow-y-auto bg-white rounded-xl shadow-xl border border-gray-200 z-50 py-1.5 animate-in fade-in-0 zoom-in-95 duration-100">
+        <div className="absolute right-0 top-full mt-1.5 w-60 max-h-[70vh] overflow-y-auto bg-white rounded-xl shadow-xl border border-gray-200 z-50 py-1.5 animate-in fade-in-0 zoom-in-95 duration-100">
           {/* All Orders Option */}
           <div className="px-1.5 pb-1 mb-1 border-b border-gray-100">
             <button
@@ -292,6 +361,39 @@ export const OrderStatusFilterDropdown: React.FC<OrderStatusFilterDropdownProps>
             </div>
             <div className="space-y-0.5">
               {paymentStatusOptions.map((opt) => {
+                const isSelected = value === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => handleSelect(opt.value)}
+                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                      isSelected
+                        ? `${opt.bgLight} ${opt.textColor} font-semibold ring-1 ${opt.borderColor}`
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <span className={`size-2 rounded-full shrink-0 ${opt.dotColor}`} />
+                      <span className="shrink-0">{opt.icon}</span>
+                      <span className="truncate">{opt.label}</span>
+                    </div>
+                    {isSelected && (
+                      <Check className={`size-3.5 shrink-0 ${opt.textColor}`} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Order Type Section */}
+          <div className="px-2.5 pt-2 pb-1 border-t border-gray-100 mt-1">
+            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1">
+              {t("orderTypes.title", "Order Type")}
+            </div>
+            <div className="space-y-0.5">
+              {orderTypeOptions.map((opt) => {
                 const isSelected = value === opt.value;
                 return (
                   <button

@@ -681,6 +681,57 @@ export class OrderDatabaseOperations {
       throw error;
     }
   }
+  /**
+   * Swipe to kitchen: moves a pending web/app order to "sent to kitchen".
+   * The order row is locked first, so when two POS screens send the same order
+   * only one of them wins (and only that one prints), and an order another
+   * screen already moved on is never moved back. All or nothing: if anything
+   * fails the order stays pending.
+   * Payment stays as it is; a blank payment becomes "pending", as Process does.
+   * receiptPrinted tells the screen whether the customer receipt already
+   * printed on arrival; its automatic retries stop once the order leaves
+   * "pending", so the screen prints it when it has not.
+   */
+  static async sendPendingOrderToKitchen(orderId: string): Promise<{
+    claimed: boolean;
+    status: string | null;
+    order: any | null;
+    items: OrderItem[];
+    receiptPrinted: boolean;
+  }> {
+    return db.transaction(async (trx) => {
+      const row = await trx("orders").where("id", orderId).forUpdate().first();
+      const type = String(row?.orderType || "").toLowerCase();
+      const movable =
+        row &&
+        String(row.status || "").toLowerCase() === "pending" &&
+        (type.startsWith("web") || type.startsWith("app"));
+      if (!movable) {
+        return {
+          claimed: false,
+          status: row?.status ?? null,
+          order: null,
+          items: [],
+          receiptPrinted: false,
+        };
+      }
+
+      const status = "sent to kitchen";
+      const paymentType = String(row.paymentType || "").trim() ? row.paymentType : "pending";
+      const updatedAt = new Date().toISOString();
+      await trx("orders").where("id", orderId).update({ status, paymentType, updatedAt });
+
+      // Fresh items, so the kitchen tickets skip anything already printed
+      const items = await trx("order_items").where("orderId", orderId);
+      return {
+        claimed: true,
+        status,
+        order: { ...row, status, paymentType, updatedAt },
+        items: OrderDatabaseOperations.formatOrderItems(items),
+        receiptPrinted: Boolean(row.autoPrintedAt),
+      };
+    });
+  }
   static async getOrderAnalytics(filter: any): Promise<any> {
     const {
       dateRange,
@@ -1159,6 +1210,12 @@ export class OrderDatabaseOperations {
           query.whereIn("orderType", ["delivery", "web:delivery", "app:delivery"]);
         } else if (filter.selectedOrderType?.toLowerCase() === "pickup") {
           query.whereIn("orderType", ["pickup", "web:pickup", "app:pickup"]);
+        } else if (filter.selectedOrderType?.toLowerCase() === "web") {
+          // every website order (delivery and pickup)
+          query.whereRaw(`LOWER("orderType") LIKE 'web%'`);
+        } else if (filter.selectedOrderType?.toLowerCase() === "app") {
+          // every mobile app order (delivery and pickup)
+          query.whereRaw(`LOWER("orderType") LIKE 'app%'`);
         } else {
           const normalizedOrderType = filter.selectedOrderType
             .toLowerCase()

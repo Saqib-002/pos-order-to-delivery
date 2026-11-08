@@ -250,6 +250,33 @@ export const updateOrder = async (
     };
   }
 };
+// Swipe to kitchen on the Orders screen: only a pending web/app order moves,
+// and only the screen that moved it gets claimed: true (and prints).
+export const sendOrderToKitchen = async (
+  event: IpcMainInvokeEvent,
+  token: string,
+  orderId: string
+) => {
+  try {
+    const result = await OrderDatabaseOperations.sendPendingOrderToKitchen(orderId);
+    if (result.claimed) {
+      const { syncWebOrderToVPS } = await import("../utils/sync/Orders.js");
+      syncWebOrderToVPS(orderId).catch((err) =>
+        Logger.error("WebOrderSync: error syncing order sent to kitchen:", err)
+      );
+    }
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    Logger.error(`Swipe to kitchen failed for order ${orderId}:`, error);
+    return {
+      status: false,
+      error: (error as Error).message,
+    };
+  }
+};
 export const removeMenuFromOrder = async (
   event: IpcMainInvokeEvent,
   token: string,

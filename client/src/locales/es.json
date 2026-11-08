@@ -952,7 +952,9 @@
       "paid": "Pagado",
       "unpaid": "No Pagado",
       "partialPayment": "Pago Parcial",
-      "filterOrders": "Filtrar Pedidos"
+      "filterOrders": "Filtrar Pedidos",
+      "orderStatus": "Estado del pedido",
+      "paymentStatus": "Estado del pago"
     }
   },
   "orderTakingForm": {
@@ -2962,7 +2964,19 @@
   "orderComponent": {
     "partialPayment": "Pagado: €{{paid}} / €{{total}}",
     "noOrders": "Sin Pedidos",
-    "noOrdersAvailable": "No hay pedidos disponibles para mostrar"
+    "noOrdersAvailable": "No hay pedidos disponibles para mostrar",
+    "swipeToKitchen": {
+      "hint": "Desliza → cocina",
+      "action": "Enviar a cocina",
+      "sending": "Enviando a cocina…",
+      "sent": "Pedido {{ticket}} enviado a cocina",
+      "alreadyProcessed": "El pedido {{ticket}} ya se procesó en otro equipo",
+      "failed": "No se pudo enviar el pedido a cocina. Inténtelo de nuevo o abra el pedido y pulse Procesar.",
+      "noItems": "El pedido no tiene productos.",
+      "errorTitle": "No se puede enviar a cocina",
+      "openOrder": "Abrir pedido",
+      "close": "Cerrar"
+    }
   },
   "unifiedCard": {
     "catCountText": "Categorías",

@@ -1,10 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getPendingKitchenItems } from "../../utils/kitchenPrinting";
 import OrderCart from "./OrderCart";
 import OrderProcessingModal from "./OrderProcessingModal";
 import RefundProcessingModal from "./modals/RefundProcessingModal";
 import PrintConfirmationModal from "./modals/PrintConfirmationModal";
 import OrderDetailsModal from "./modals/OrderDetailsModal";
+import SwipeToKitchenCard from "./SwipeToKitchenCard";
+import SwipeToKitchenAlertModal from "./modals/SwipeToKitchenAlertModal";
+import { locateDeliveryAddress } from "./modals/radar/geocodeCacheApi";
+import {
+  canSwipeToKitchen,
+  checkBeforeKitchen,
+} from "@/renderer/utils/swipeToKitchen";
+import { printKitchenTickets } from "@/renderer/utils/kitchenTickets";
 import { useOrder } from "../../contexts/OrderContext";
 import { toast } from "react-toastify";
 import { Order, OrderItem } from "@/types/order";
@@ -16,6 +24,7 @@ import {
   generateReceiptHTML,
   generateItemsReceiptHTML,
   groupItemsByPrinter,
+  printOrder,
 } from "@/renderer/utils/printer";
 import { useTranslation } from "react-i18next";
 import {
@@ -62,6 +71,18 @@ const OrderComponent = () => {
   const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false);
   const [selectedOrderForDetails, setSelectedOrderForDetails] = useState<Order | null>(null);
   const [platforms, setPlatforms] = useState<Array<{ id: string; name: string }>>([]);
+  // Swipe to kitchen: orders being sent right now (the ref blocks a double
+  // swipe before React re-renders), and alerts for refused ones, shown one
+  // at a time so none is lost when two swipes fail close together
+  const [sendingOrderIds, setSendingOrderIds] = useState<string[]>([]);
+  const sendingOrderIdsRef = useRef<Set<string>>(new Set());
+  const [kitchenAlerts, setKitchenAlerts] = useState<
+    Array<{ order: Order; message: string }>
+  >([]);
+  const kitchenAlert = kitchenAlerts[0] ?? null;
+  const addKitchenAlert = (order: Order, message: string) =>
+    setKitchenAlerts((prev) => [...prev, { order, message }]);
+  const closeKitchenAlert = () => setKitchenAlerts((prev) => prev.slice(1));
 
   const {
     auth: { token, user },
@@ -374,6 +395,139 @@ const OrderComponent = () => {
       });
     }
   };
+  const getTicketLabel = (o: Order) =>
+    o.ticketNumber || `${configurations.orderPrefix || "K"}${o.orderId}`;
+
+  // The customer receipt normally prints when the order arrives, and is retried
+  // only while the order is pending. If it never printed, the swipe prints it
+  // now and records it the same way the arrival flow does.
+  const printMissingCustomerReceipt = async (
+    freshOrder: any,
+    items: OrderItem[],
+    ticket: string,
+  ) => {
+    const api = (window as any).electronAPI;
+    let printError = "";
+    const printed = await printOrder({
+      order: freshOrder,
+      orderItems: items,
+      token: token ?? null,
+      user,
+      t,
+      onError: (message) => {
+        printError = message;
+      },
+    });
+    try {
+      await api.markWebOrderAlert(
+        token,
+        freshOrder.id,
+        printed ? { printed: true } : { printed: false, error: printError },
+      );
+    } catch (error) {
+      console.error("Could not record the customer receipt print:", error);
+    }
+    if (!printed) {
+      // No more automatic retries for this order: tell staff, until they close it
+      toast.error(
+        t("orderManagement.autoPrintFailed", {
+          ticketNumber: `#${ticket}`,
+          error: printError || "-",
+        }),
+        { autoClose: false },
+      );
+    }
+  };
+
+  // Swipe right on a pending web/app card. Same checks as Process; no payment
+  // question (payment stays as it is); kitchen tickets print automatically.
+  // The customer receipt is not printed again (it printed when the order came
+  // in), unless it never printed.
+  const handleSwipeToKitchen = async (swipedOrder: Order) => {
+    if (sendingOrderIdsRef.current.has(swipedOrder.id)) return;
+    sendingOrderIdsRef.current.add(swipedOrder.id);
+    setSendingOrderIds(Array.from(sendingOrderIdsRef.current));
+
+    const ticket = getTicketLabel(swipedOrder);
+    let triedToSend = false;
+    let sent: {
+      status?: string;
+      order?: any;
+      items?: OrderItem[];
+      receiptPrinted?: boolean;
+    } | null = null;
+    try {
+      const { orderTotal } = calculateOrderTotal(swipedOrder.items || []);
+      const check = await checkBeforeKitchen({
+        order: swipedOrder,
+        orderTotal,
+        restaurantAddress: configurations.address,
+        zones: configurations.deliveryZones,
+        locate: (address) => locateDeliveryAddress(token ?? null, address),
+      });
+      if (!check.ok) {
+        addKitchenAlert(swipedOrder, t(check.messageKey, check.params));
+        return;
+      }
+
+      triedToSend = true;
+      const res = await (window as any).electronAPI.sendOrderToKitchen(
+        token,
+        swipedOrder.id,
+      );
+      if (!res?.status) {
+        console.error("Swipe to kitchen refused by the database step:", res?.error);
+        addKitchenAlert(swipedOrder, t("orderComponent.swipeToKitchen.failed"));
+        return;
+      }
+      if (!res.data?.claimed) {
+        // Another screen processed it first: nothing to print here
+        toast.info(t("orderComponent.swipeToKitchen.alreadyProcessed", { ticket }));
+        return;
+      }
+      sent = res.data;
+      toast.success(t("orderComponent.swipeToKitchen.sent", { ticket }));
+    } catch (error) {
+      console.error("Swipe to kitchen failed:", error);
+      addKitchenAlert(swipedOrder, t("orderComponent.swipeToKitchen.failed"));
+    } finally {
+      // Refresh before releasing the card, so it comes back already showing
+      // its new status instead of flashing "pending" again
+      if (triedToSend) await refreshOrdersCallback();
+      sendingOrderIdsRef.current.delete(swipedOrder.id);
+      setSendingOrderIds(Array.from(sendingOrderIdsRef.current));
+    }
+
+    if (sent) {
+      const items = sent.items || [];
+      await printKitchenTickets({
+        token: token ?? null,
+        order: { ...swipedOrder, status: sent.status || "sent to kitchen" },
+        items,
+        userRole: user?.role || "",
+        orderPrefix: configurations.orderPrefix,
+        t,
+      });
+      if (!sent.receiptPrinted && sent.order) {
+        await printMissingCustomerReceipt(sent.order, items, ticket);
+      }
+      // The list must hold the items as printed now, or opening the order and
+      // pressing Process would print the kitchen tickets a second time
+      await refreshOrdersCallback();
+    }
+  };
+
+  const handleKitchenAlertOpenOrder = () => {
+    if (!kitchenAlert) return;
+    const latest =
+      orders.find((o) => o.id === kitchenAlert.order.id) || kitchenAlert.order;
+    closeKitchenAlert();
+    // Never mix it into an order that is already open
+    if (orderItems.length === 0) {
+      handleOrderClick(latest);
+    }
+  };
+
   const handleViewDetails = (order: Order) => {
     setSelectedOrderForDetails(order);
     setIsOrderDetailsModalOpen(true);
@@ -462,17 +616,29 @@ const OrderComponent = () => {
                   const statusLower = order.status?.toLowerCase();
                   const isCancelled = statusLower === "cancelled" || statusLower === "canceled";
                   const isLocked = (isAssignedToDelivery || (isPaid && !isPlatform)) && !isCancelled;
+                  const isPending = statusLower === "pending";
+                  const swipeable = canSwipeToKitchen(order, isLocked);
 
                   return (
-                    <div
+                    <SwipeToKitchenCard
                       key={order.id}
-                      className={`flex justify-between items-center gap-3 border-b border-gray-400 mb-1 pb-3 w-full px-3 py-2 transition-all duration-200 relative ${isLocked
+                      enabled={swipeable}
+                      busy={sendingOrderIds.includes(order.id)}
+                      actionLabel={t("orderComponent.swipeToKitchen.action")}
+                      busyLabel={t("orderComponent.swipeToKitchen.sending")}
+                      onSwipe={() => handleSwipeToKitchen(order)}
+                      onTap={() => {
+                        if (!isLocked) handleOrderClick(order);
+                      }}
+                      wrapperClassName="mb-1"
+                      className={`flex justify-between items-center gap-3 border-b border-gray-400 pb-3 w-full px-3 py-2 transition-all duration-200 relative ${isLocked
                         ? "bg-gray-100 opacity-75"
                         : isCancelled
                           ? "hover:bg-red-50 cursor-pointer border-red-200"
-                          : "hover:bg-gray-50 cursor-pointer"
+                          : isPending
+                            ? "bg-yellow-100 hover:bg-yellow-200 border-l-4 border-l-yellow-400 cursor-pointer"
+                            : "hover:bg-gray-50 cursor-pointer"
                         }`}
-                      onClick={() => !isLocked && handleOrderClick(order)}
                     >
                       <div className="flex flex-col items-start gap-2 flex-1">
                         {/* Order Number and Total*/}
@@ -531,6 +697,13 @@ const OrderComponent = () => {
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
                               🏍️ {order.deliveryPerson?.name}
                               {order.deliveryPerson?.phone ? ` - ${order.deliveryPerson?.phone}` : ""}
+                            </span>
+                          )}
+
+                          {/* Swipe right to send to the kitchen */}
+                          {swipeable && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                              {t("orderComponent.swipeToKitchen.hint")}
                             </span>
                           )}
                         </div>
@@ -593,7 +766,7 @@ const OrderComponent = () => {
                           <EyeIcon className="w-5 h-5" />
                         </button>
                       )}
-                    </div>
+                    </SwipeToKitchenCard>
                   );
                 })}
               </div>
@@ -661,6 +834,14 @@ const OrderComponent = () => {
         onClose={() => handlePrintConfirm("cancel")}
         onConfirm={handlePrintConfirm}
       />
+      {kitchenAlert && (
+        <SwipeToKitchenAlertModal
+          ticket={getTicketLabel(kitchenAlert.order)}
+          message={kitchenAlert.message}
+          onOpenOrder={handleKitchenAlertOpenOrder}
+          onClose={closeKitchenAlert}
+        />
+      )}
       {isOrderDetailsModalOpen && selectedOrderForDetails && (
         <OrderDetailsModal
           order={selectedOrderForDetails}

@@ -391,6 +391,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("delete-order", token, id, cancelNote),
   updateOrder: (token: string, orderId: string, orderData: any) =>
     ipcRenderer.invoke("update-order", token, orderId, orderData),
+  sendOrderToKitchen: (token: string, orderId: string) =>
+    ipcRenderer.invoke("send-order-to-kitchen", token, orderId),
   getOrdersByFilter: (token: string, filter: any) =>
     ipcRenderer.invoke("get-orders-by-filter", token, filter),
   getOrdersCountByStatus: (token: string, status: string) =>

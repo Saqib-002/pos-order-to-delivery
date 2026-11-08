@@ -62,12 +62,14 @@ const OrderComponentHeader = () => {
     }));
   };
 
+  // One filter at a time: picking a status, payment or order type clears the others
   const handleCombinedFilterChange = (value: string) => {
     if (value === "all") {
       setFilter((prev) => ({
         ...prev,
         selectedStatus: [],
         selectedPaymentStatus: [],
+        selectedOrderType: "",
         page: 0,
       }));
     } else if (value.startsWith("status:")) {
@@ -76,6 +78,7 @@ const OrderComponentHeader = () => {
         ...prev,
         selectedStatus: [status],
         selectedPaymentStatus: [],
+        selectedOrderType: "",
         page: 0,
       }));
     } else if (value.startsWith("payment:")) {
@@ -84,6 +87,16 @@ const OrderComponentHeader = () => {
         ...prev,
         selectedStatus: [],
         selectedPaymentStatus: [paymentStatus],
+        selectedOrderType: "",
+        page: 0,
+      }));
+    } else if (value.startsWith("type:")) {
+      const orderType = value.replace("type:", "");
+      setFilter((prev) => ({
+        ...prev,
+        selectedStatus: [],
+        selectedPaymentStatus: [],
+        selectedOrderType: orderType,
         page: 0,
       }));
     }
@@ -136,6 +149,9 @@ const OrderComponentHeader = () => {
       filter.selectedPaymentStatus[0] !== "all"
     ) {
       return `payment:${filter.selectedPaymentStatus[0]}`;
+    }
+    if (filter.selectedOrderType) {
+      return `type:${filter.selectedOrderType}`;
     }
     return "all";
   };

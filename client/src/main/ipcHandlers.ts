@@ -33,6 +33,7 @@ import {
   updateItemQuantity,
   updateMenuQuantity,
   updateOrder,
+  sendOrderToKitchen,
   updateOrderItem,
   duplicateMenuInOrder,
   updateOrderItems,
@@ -538,6 +539,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("update-order-items", updateOrderItems);
   ipcMain.handle("get-order-items", getOrderItems);
   ipcMain.handle("update-order", updateOrder);
+  ipcMain.handle("send-order-to-kitchen", sendOrderToKitchen);
   ipcMain.handle("get-orders-by-filter", getOrdersByFilter);
   ipcMain.handle("get-orders-count-by-status", getOrdersCountByStatus);
   ipcMain.handle("get-orders-count-by-type", getOrdersCountByType);
