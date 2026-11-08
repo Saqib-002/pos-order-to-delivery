@@ -66,9 +66,7 @@ export const AboutTab: React.FC<AboutTabProps> = ({
   const [compressing, setCompressing] = useState(false);
   const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
   const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
-  const envBaseUrl =
-    (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
-    "";
+  const envBaseUrl = (import.meta as any).env?.VITE_SERVER_API_URL || "";
   const [driverApiUrl, setDriverApiUrl] = useState<string>(envBaseUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

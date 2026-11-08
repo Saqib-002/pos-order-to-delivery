@@ -20,7 +20,9 @@ interface DeliveryRouteModalProps {
     googleMapsApiKey?: string;
     orderId?: string;
 }
-
+const apiUrl = (import.meta as any).env.VITE_SERVER_API_URL || "http://localhost:3002/api";
+const apiUrlSuffix = (import.meta as any).env.VITE_SERVER_API_URL_SUFFIX || "/api/v1";
+const baseURL = `${apiUrl}/${apiUrlSuffix}`
 const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     isOpen,
     onClose,
@@ -106,8 +108,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
         if (isChatOpen) {
             setUnreadCount(0);
             if (orderId) {
-                const apiUrl = (import.meta as any).env.VITE_DRIVER_API_URL || "http://localhost:3002/api";
-                fetch(`${apiUrl}/pos/orders/${orderId}/messages/read`, { method: "POST" })
+                fetch(`${baseURL}/driver/pos/orders/${orderId}/messages/read`, { method: "POST" })
                     .catch(err => console.error("Error marking messages as read on POS:", err));
             }
             setTimeout(() => {
@@ -147,8 +148,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     const fetchChatMessages = async () => {
         if (!orderId) return;
         try {
-            const apiUrl = (import.meta as any).env.VITE_DRIVER_API_URL || "http://localhost:3002/api";
-            const response = await fetch(`${apiUrl}/driver/orders/${orderId}/messages`);
+            const response = await fetch(`${baseURL}/driver/orders/${orderId}/messages`);
             if (response.ok) {
                 const data = await response.json();
                 setChatMessages(data);
@@ -185,8 +185,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
         setNewMessageText("");
 
         try {
-            const apiUrl = (import.meta as any).env.VITE_DRIVER_API_URL || "http://localhost:3002/api";
-            const response = await fetch(`${apiUrl}/driver/orders/${orderId}/messages`, {
+            const response = await fetch(`${baseURL}/driver/orders/${orderId}/messages`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

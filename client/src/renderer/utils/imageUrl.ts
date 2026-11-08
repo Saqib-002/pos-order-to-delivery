@@ -20,7 +20,7 @@ export function formatImageUrl(
   }
 
   const envUrl =
-    (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
+    (import.meta as any).env?.VITE_SERVER_API_URL ||
     (import.meta as any).env?.DRIVER_API_URL ||
     "";
 

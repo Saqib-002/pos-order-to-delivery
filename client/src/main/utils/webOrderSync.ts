@@ -6,6 +6,7 @@ import { syncLogger as Logger } from "./logger.js";
 import { withSyncLock, waitForRound, WEB_ORDER_SYNC_LOCK } from "./sync/lock.js";
 
 const REQUEST_TIMEOUT_MS = 15_000;
+const POLL_INTERVAL_MS = 30_000;
 
 // The VPS requires the POS sync secret on the order sync endpoints.
 function posSyncHeaders(extra: Record<string, string> = {}): Record<string, string> {
@@ -133,14 +134,14 @@ async function syncTick(): Promise<void> {
 
 export function startWebOrderSync(): void {
   if (syncInterval) return;
-  Logger.info("WebOrderSync: starting background sync loop (10s interval)...");
+  Logger.info(`WebOrderSync: starting background sync loop (${POLL_INTERVAL_MS / 1000}s interval)...`);
 
   // Run once immediately on startup
   syncTick().catch((err) => Logger.error("WebOrderSync: initial sync error:", err));
 
   syncInterval = setInterval(() => {
     syncTick().catch((err) => Logger.error("WebOrderSync: sync tick error:", err));
-  }, 10_000);
+  }, POLL_INTERVAL_MS);
 }
 
 export async function stopWebOrderSync(): Promise<void> {

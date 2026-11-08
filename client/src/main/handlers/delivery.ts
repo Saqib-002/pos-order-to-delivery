@@ -4,6 +4,7 @@ import { DeliveryPerson } from "@/types/delivery.js";
 import Logger from "electron-log";
 import { verifyToken } from "./auth.js";
 import { syncWebOrderToVPS } from "../utils/sync/Orders.js";
+import { enqueueDriverOrderSnapshot } from "../utils/sync/queue/driverOrderQueue.js";
 
 // Create delivery person
 export const createDeliveryPerson = async (
@@ -129,6 +130,7 @@ export const assignDeliveryPersonToOrder = async (
     await DeliveryDatabaseOperations.assignDeliveryPerson(orderId, deliveryPersonId);
     Logger.info(`Delivery person ${deliveryPersonId} assigned to order ${orderId}`);
     syncWebOrderToVPS(orderId).catch(err => Logger.error("WebOrderSync: error queuing assigned order:", err));
+    enqueueDriverOrderSnapshot(orderId).catch(err => Logger.error(`DriverOrderSyncQueue: error queuing assigned order ${orderId}:`, err));
     return {
       status: true,
       data: {

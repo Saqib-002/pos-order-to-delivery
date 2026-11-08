@@ -320,9 +320,7 @@ export const OffersTab: React.FC<OffersTabProps> = ({
   const [menus, setMenus] = useState<MenuItem[]>([]);
   const [saving, setSaving] = useState(false);
 
-  const envBaseUrl =
-    (import.meta as any).env?.VITE_DRIVER_API_URL?.replace(/\/api\/?$/, "") ||
-    "";
+  const envBaseUrl = (import.meta as any).env?.VITE_SERVER_API_URL || "";
   const [driverApiUrl, setDriverApiUrl] = useState<string>(envBaseUrl);
 
   // Modal states

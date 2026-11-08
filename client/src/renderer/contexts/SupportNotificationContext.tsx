@@ -58,9 +58,10 @@ export const SupportNotificationProvider: React.FC<Props> = ({ children }) => {
   const fetchInitialUnread = useCallback(async () => {
     try {
       const adminToken = await (window as any).electronAPI.getDriverAdminToken();
-      const apiUrl =
-        (import.meta as any).env.VITE_DRIVER_API_URL || "http://localhost:3002/api";
-      const res = await fetch(`${apiUrl}/v1/support/unread-count`, {
+      const apiUrl = (import.meta as any).env.VITE_SERVER_API_URL || "http://localhost:3002/api";
+      const apiUrlSuffix = (import.meta as any).env.VITE_SERVER_API_URL_SUFFIX || "/api/v1";
+      const baseURL = `${apiUrl}/${apiUrlSuffix}`
+      const res = await fetch(`${baseURL}/support/unread-count`, {
         headers: { Authorization: `Bearer ${adminToken}` },
       });
       if (res.ok) {

@@ -34,5 +34,3 @@ export {
 export { syncWebOrderToVPS } from "./Orders.js";
 export { syncConfigToVPS } from "./configurations.js";
 export { syncSiteContentToVPS } from "./siteContent.js";
-
-export { startWebCustomerSync } from "./webCustomer.js";

@@ -2,6 +2,11 @@ import Logger from "electron-log";
 import { IpcMainInvokeEvent } from "electron";
 import { Order, OrderItem } from "@/types/order.js";
 import { OrderDatabaseOperations } from "../database/Orderoperations.js";
+import { enqueueDriverOrderSnapshot } from "../utils/sync/queue/driverOrderQueue.js";
+
+function queueDriverOrder(orderId?: string) {
+  if (orderId) enqueueDriverOrderSnapshot(orderId).catch((err) => Logger.error(`DriverOrderSyncQueue: failed to queue order ${orderId}:`, err));
+}
 
 export const saveOrder = async (
   event: IpcMainInvokeEvent,
@@ -10,6 +15,7 @@ export const saveOrder = async (
 ) => {
   try {
     const result = await OrderDatabaseOperations.saveOrder(item);
+    queueDriverOrder(result?.order?.id);
     return {
       status: true,
       data: result,
@@ -29,6 +35,7 @@ export const addItemToOrder = async (
 ) => {
   try {
     const result = await OrderDatabaseOperations.addItemToOrder(orderId, item);
+    queueDriverOrder(orderId);
     return {
       status: true,
       data: result,
@@ -52,6 +59,7 @@ export const replaceMenuInOrder = async (
     const result = await OrderDatabaseOperations.replaceMenuInOrder(
       orderId, menuId, menuSecondaryId, items
     );
+    queueDriverOrder(orderId);
     return { status: true, data: result };
   } catch (error) {
     return { status: false, error: (error as Error).message };
@@ -68,6 +76,7 @@ export const removeItemFromOrder = async (
       orderId,
       itemId
     );
+    queueDriverOrder(orderId);
     return {
       status: true,
       data: result,
@@ -96,6 +105,7 @@ export const removeMenuItemFromOrder = async (
       productId,
       menuPageId
     );
+    queueDriverOrder(orderId);
     return {
       status: true,
       data: result,
@@ -115,6 +125,7 @@ export const deleteOrder = async (
 ) => {
   try {
     const result = await OrderDatabaseOperations.deleteOrder(id, cancelNote);
+    queueDriverOrder(id);
 
     const { db } = await import("../database/index.js");
     const cancelledOrder = await db("orders").where({ id }).first();
@@ -148,6 +159,9 @@ export const updateItemQuantity = async (
       itemId,
       quantity
     );
+    const { db } = await import("../database/index.js");
+    const item = await db("order_items").where({ id: itemId }).first("orderId");
+    queueDriverOrder(item?.orderId);
     return {
       status: true,
       data: result,
@@ -170,6 +184,9 @@ export const updateOrderItem = async (
       itemId,
       itemData
     );
+    const { db } = await import("../database/index.js");
+    const item = await db("order_items").where({ id: itemId }).first("orderId");
+    queueDriverOrder(item?.orderId);
     return {
       status: true,
       data: result,
@@ -188,6 +205,10 @@ export const updateOrderItems = async (
 ) => {
   try {
     const result = await OrderDatabaseOperations.updateOrderItems(items);
+    const { db } = await import("../database/index.js");
+    const ids = items.map((item) => item.itemId);
+    const changedItems = ids.length ? await db("order_items").whereIn("id", ids).select("orderId") : [];
+    [...new Set(changedItems.map((item: any) => item.orderId))].forEach(queueDriverOrder);
     return {
       status: true,
       data: result,
@@ -228,6 +249,7 @@ export const updateOrder = async (
       orderId,
       orderData
     );
+    queueDriverOrder(orderId);
 
     const { db } = await import("../database/index.js");
     const updatedOrder = await db("orders").where({ id: orderId }).first();
@@ -260,6 +282,7 @@ export const sendOrderToKitchen = async (
   try {
     const result = await OrderDatabaseOperations.sendPendingOrderToKitchen(orderId);
     if (result.claimed) {
+      queueDriverOrder(orderId);
       const { syncWebOrderToVPS } = await import("../utils/sync/Orders.js");
       syncWebOrderToVPS(orderId).catch((err) =>
         Logger.error("WebOrderSync: error syncing order sent to kitchen:", err)
@@ -290,6 +313,7 @@ export const removeMenuFromOrder = async (
       menuId,
       menuSecondaryId
     );
+    queueDriverOrder(orderId);
     return {
       status: true,
       data: result,
@@ -316,6 +340,7 @@ export const updateMenuQuantity = async (
       menuSecondaryId,
       quantity
     );
+    queueDriverOrder(orderId);
     return {
       status: true,
       data: result,
@@ -359,6 +384,7 @@ export const duplicateMenuInOrder = async (
       menuId,
       menuSecondaryId
     );
+    queueDriverOrder(orderId);
     return {
       status: true,
       data: result,
@@ -459,6 +485,7 @@ export const createPlatformOrder = async (
 ) => {
   try {
     const result = await OrderDatabaseOperations.createPlatformOrder(orderData);
+    queueDriverOrder(result?.order?.id || result?.id);
     return {
       status: true,
       data: result,

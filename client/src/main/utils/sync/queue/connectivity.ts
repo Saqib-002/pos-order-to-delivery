@@ -8,7 +8,7 @@ export async function isOnline(): Promise<boolean> {
     const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
     try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
+        const timeout = setTimeout(() => controller.abort(), 15000);
 
         const response = await fetch(`${vpsUrl}/health`, {
             method: "HEAD",

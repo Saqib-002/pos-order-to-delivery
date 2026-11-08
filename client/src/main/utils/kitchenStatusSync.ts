@@ -1,7 +1,7 @@
 import { db } from "../database/index.js";
 import { syncLogger as Logger } from "./logger.js";
 
-const INTERVAL_MS = 20_000; // 20 seconds
+const INTERVAL_MS = 30_000;
 
 async function pushKitchenStatus(): Promise<void> {
   const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";

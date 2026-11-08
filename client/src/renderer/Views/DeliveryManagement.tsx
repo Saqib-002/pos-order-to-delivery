@@ -282,7 +282,8 @@ export const DeliveryManagement = () => {
   };
 
   const handleEditDeliveryPerson = (person: DeliveryPerson) => {
-    setCurrentDeliveryPerson(person);
+    // A password is never prefilled during editing; blank means unchanged.
+    setCurrentDeliveryPerson({ ...person, password: "" });
     setIsEditing(true);
     setIsModalOpen(true);
     setEmailError("");

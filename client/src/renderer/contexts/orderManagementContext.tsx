@@ -200,6 +200,9 @@ const useOrderManagementInternal = (auth: AuthState) => {
                   ...order,
                   status: match.status,
                   deliveredAt: match.deliveredAt || order.deliveredAt,
+                  cancelAt: match.cancelAt || order.cancelAt,
+                  notes: match.notes || order.notes,
+                  isPaid: match.isPaid ?? order.isPaid,
                 };
               }
               return order;

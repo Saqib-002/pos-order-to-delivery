@@ -17,7 +17,7 @@ import { withSyncLock, waitForRound, ORDER_SYNC_QUEUE_LOCK } from "./lock.js";
  */
 
 const TABLE = "order_sync_queue";
-const SEND_INTERVAL_MS = 5_000;
+const SEND_INTERVAL_MS = 30_000;
 const BATCH_SIZE = 50;
 const REQUEST_TIMEOUT_MS = 15_000;
 

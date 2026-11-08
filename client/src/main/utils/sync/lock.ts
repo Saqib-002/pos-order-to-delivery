@@ -3,6 +3,9 @@ import { db } from "../../database/index.js";
 // PostgreSQL advisory lock keys, shared by every POS connected to the same database.
 export const ORDER_SYNC_QUEUE_LOCK = 742301;
 export const WEB_ORDER_SYNC_LOCK = 742302;
+export const DELIVERY_PERSON_SYNC_QUEUE_LOCK = 742303;
+export const DRIVER_ORDER_SYNC_QUEUE_LOCK = 742304;
+export const DRIVER_ORDER_STATUS_SYNC_LOCK = 742305;
 
 /**
  * Run `fn` only if no other POS is running the same job right now.

@@ -2,6 +2,10 @@ import { db } from "./index.js";
 import { DeliveryPerson } from "@/types/delivery";
 import { randomUUID } from "crypto";
 import Logger from "electron-log";
+import {
+    enqueueDeliveryPersonDelete,
+    enqueueDeliveryPersonUpsert,
+} from "../utils/sync/queue/deliveryPersonQueue.js";
 
 export class DeliveryDatabaseOperations {
     static async createDeliveryPerson(
@@ -27,7 +31,10 @@ export class DeliveryDatabaseOperations {
                 createdAt: now,
                 updatedAt: now,
             };
-            await db("delivery_persons").insert(newDeliveryPerson);
+            await db.transaction(async (trx) => {
+                await trx("delivery_persons").insert(newDeliveryPerson);
+                await enqueueDeliveryPersonUpsert(trx, newDeliveryPerson);
+            });
             return {
                 ...newDeliveryPerson,
                 password: "",
@@ -48,7 +55,13 @@ export class DeliveryDatabaseOperations {
                     return { ...person, ...stats };
                 })
             );
-            return deliveryPersonsWithStats;
+            // Never expose the stored bcrypt hash to the renderer. Edit forms
+            // should start with an empty password and only submit a new value
+            // when the operator intentionally changes it.
+            return deliveryPersonsWithStats.map(({ password: _password, ...person }) => ({
+                ...person,
+                password: "",
+            }));
         } catch (error) {
             throw error;
         }
@@ -108,17 +121,17 @@ export class DeliveryDatabaseOperations {
                 delete updateData.password;
             }
 
-            await db("delivery_persons")
-                .where("id", id)
-                .update(updateData);
+            const updatedPerson = await db.transaction(async (trx) => {
+                await trx("delivery_persons").where("id", id).update(updateData);
 
-            const updatedPerson = await db("delivery_persons")
-                .where("id", id)
-                .first();
+                const person = await trx("delivery_persons").where("id", id).first();
+                if (!person) throw new Error("Delivery person not found after update");
 
-            if (!updatedPerson) {
-                throw new Error("Delivery person not found after update");
-            }
+                await enqueueDeliveryPersonUpsert(trx, person, {
+                    includePassword: Boolean(updates.password),
+                });
+                return person;
+            });
 
             Logger.info(`Delivery person updated: ${id}`);
             return {
@@ -130,10 +143,16 @@ export class DeliveryDatabaseOperations {
         }
     }
 
-    // Delete delivery person (soft delete)
+    // Delete locally and enqueue a hard delete on the driver server.
     static async deleteDeliveryPerson(id: string): Promise<void> {
         try {
-            await db("delivery_persons").where("id", id).delete();
+            await db.transaction(async (trx) => {
+                const person = await trx("delivery_persons").where("id", id).first("id");
+                if (!person) throw new Error("Delivery person not found");
+
+                await trx("delivery_persons").where("id", id).delete();
+                await enqueueDeliveryPersonDelete(trx, id);
+            });
         } catch (error) {
             throw error;
         }

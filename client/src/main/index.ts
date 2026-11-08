@@ -103,7 +103,9 @@ app.on("window-all-closed", () => {
   }
 });
 
-app.on("before-quit", async () => {
+// Electron emits `before-quit` at runtime, but the installed Electron 37 types
+// omit it from App.on's event overloads. Use the inherited EventEmitter API.
+(app as NodeJS.EventEmitter).addListener("before-quit", async () => {
   Logger.info("Application shutting down, closing database...");
   await closeDatabase();
 });

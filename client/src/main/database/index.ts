@@ -190,18 +190,32 @@ export async function startCloudSyncServices(): Promise<void> {
         syncLogger.error("Failed to start order sync queue:", orderQueueErr);
     }
     try {
+        const { startCustomerAndDeliveryPersonSync } = await import("../utils/sync/queue/customerAndDeliveryPersonSync.js");
+        startCustomerAndDeliveryPersonSync();
+    } catch (customerAndDeliveryPersonSyncErr) {
+        Logger.error("Failed to start customer and delivery person sync:", customerAndDeliveryPersonSyncErr);
+        syncLogger.error("Failed to start customer and delivery person sync:", customerAndDeliveryPersonSyncErr);
+    }
+    try {
+        const { startDriverOrderSyncQueue } = await import("../utils/sync/queue/driverOrderQueue.js");
+        startDriverOrderSyncQueue();
+    } catch (driverOrderQueueErr) {
+        Logger.error("Failed to start driver order sync queue:", driverOrderQueueErr);
+        syncLogger.error("Failed to start driver order sync queue:", driverOrderQueueErr);
+    }
+    try {
+        const { startDriverOrderStatusSync } = await import("../utils/driverOrderStatusSync.js");
+        startDriverOrderStatusSync();
+    } catch (driverOrderStatusSyncErr) {
+        Logger.error("Failed to start driver order status sync:", driverOrderStatusSyncErr);
+        syncLogger.error("Failed to start driver order status sync:", driverOrderStatusSyncErr);
+    }
+    try {
         const { startQueueProcessor } = await import("../utils/sync/index.js");
         startQueueProcessor();
     } catch (queueErr) {
         Logger.error("Failed to start sync queue processor:", queueErr);
         syncLogger.error("Failed to start sync queue processor:", queueErr);
-    }
-    try {
-        const { startWebCustomerSync } = await import("../utils/sync/webCustomer.js");
-        startWebCustomerSync();
-    } catch (webCustomerSyncErr) {
-        Logger.error("Failed to start web customer sync:", webCustomerSyncErr);
-        syncLogger.error("Failed to start web customer sync:", webCustomerSyncErr);
     }
     try {
         const { startWebOrderSync } = await import("../utils/webOrderSync.js");
@@ -228,6 +242,24 @@ export async function stopCloudSyncServices(): Promise<void> {
         Logger.error("Failed to stop order sync queue:", err);
     }
     try {
+        const { stopCustomerAndDeliveryPersonSync } = await import("../utils/sync/queue/customerAndDeliveryPersonSync.js");
+        await stopCustomerAndDeliveryPersonSync();
+    } catch (err) {
+        Logger.error("Failed to stop customer and delivery person sync:", err);
+    }
+    try {
+        const { stopDriverOrderSyncQueue } = await import("../utils/sync/queue/driverOrderQueue.js");
+        await stopDriverOrderSyncQueue();
+    } catch (err) {
+        Logger.error("Failed to stop driver order sync queue:", err);
+    }
+    try {
+        const { stopDriverOrderStatusSync } = await import("../utils/driverOrderStatusSync.js");
+        await stopDriverOrderStatusSync();
+    } catch (err) {
+        Logger.error("Failed to stop driver order status sync:", err);
+    }
+    try {
         const { stopWebOrderSync } = await import("../utils/webOrderSync.js");
         await stopWebOrderSync();
     } catch (err) {
@@ -238,12 +270,6 @@ export async function stopCloudSyncServices(): Promise<void> {
         stopKitchenStatusSync();
     } catch (err) {
         Logger.error("Failed to stop kitchen status sync:", err);
-    }
-    try {
-        const { stopWebCustomerSync } = await import("../utils/sync/webCustomer.js");
-        stopWebCustomerSync();
-    } catch (err) {
-        Logger.error("Failed to stop web customer sync:", err);
     }
     try {
         const { stopQueueProcessor } = await import("../utils/sync/index.js");
