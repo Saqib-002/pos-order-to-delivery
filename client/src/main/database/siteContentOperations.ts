@@ -60,9 +60,10 @@ export class SiteContentOperations {
    * Fetch remote content from Cloud VPS and cache locally
    */
   static async fetchRemoteSiteContent() {
-    const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
+    const vpsUrl = process.env.SERVER_API_URL || "http://localhost:3002";
+    const vpsUrlSuffix = process.env.SERVER_API_URL_SUFFIX || "http://localhost:3002";
     try {
-      const response = await fetch(`${vpsUrl}/api/v1/content`);
+      const response = await fetch(`${vpsUrl}/${vpsUrlSuffix}/content`);
       if (!response.ok) {
         Logger.warn(`SiteContentOperations: remote fetch failed — ${response.status}`);
         return (siteContentStore as any).store ?? {};

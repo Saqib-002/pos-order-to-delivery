@@ -4,8 +4,9 @@ import { syncLogger as Logger } from "./logger.js";
 const INTERVAL_MS = 30_000;
 
 async function pushKitchenStatus(): Promise<void> {
-  const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
-  const secret = process.env.DRIVER_SYNC_SECRET || "";
+  const vpsUrl = process.env.SERVER_API_URL || "http://localhost:3002";
+  const vpsUrlSuffix = process.env.SERVER_API_URL_SUFFIX || "http://localhost:3002";
+  const secret = process.env.SERVER_SYNC_SECRET || "";
 
   try {
     const result = await db("orders")
@@ -14,7 +15,7 @@ async function pushKitchenStatus(): Promise<void> {
       .first();
     const count = parseInt(result?.count?.toString() || "0", 10);
 
-    const response = await fetch(`${vpsUrl}/api/v1/kitchen/status`, {
+    const response = await fetch(`${vpsUrl}/${vpsUrlSuffix}/kitchen/status`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

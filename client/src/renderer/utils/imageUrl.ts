@@ -21,7 +21,7 @@ export function formatImageUrl(
 
   const envUrl =
     (import.meta as any).env?.VITE_SERVER_API_URL ||
-    (import.meta as any).env?.DRIVER_API_URL ||
+    (import.meta as any).env?.SERVER_API_URL ||
     "";
 
   const base = (baseUrl || envUrl).replace(/\/+$/, "");

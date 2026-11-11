@@ -63,12 +63,13 @@ export const uploadImgToServer = async (
     const formData = new FormData();
     formData.append("file", blob, `${isLogo ? "logo" : "image"}.${ext}`);
 
-    const vpsUrl = process.env.DRIVER_API_URL || "";
-    const secret = process.env.DRIVER_SYNC_SECRET || "";
+    const vpsUrl = process.env.SERVER_API_URL || "";
+    const vpsUrlSuffix = process.env.SERVER_API_URL_SUFFIX || "http://localhost:3002";
+    const secret = process.env.SERVER_SYNC_SECRET || "";
 
     // Build URL — pass ?type=logo so the server uses a stable "logo.<ext>" filename
     const qs = isLogo ? "?type=logo" : "";
-    const url = `${vpsUrl}/api/v1/content/upload-image${qs}`;
+    const url = `${vpsUrl}/${vpsUrlSuffix}/content/upload-image${qs}`;
 
     let response: Response;
     try {

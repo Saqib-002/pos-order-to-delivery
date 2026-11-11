@@ -9,8 +9,9 @@ const PROCESSOR_INTERVAL_MS = 180_000;
  * Add new entity/operation cases here as the sync workflow grows.
  */
 function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
-    const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
-    const secret = process.env.DRIVER_SYNC_SECRET || "";
+    const vpsUrl = process.env.SERVER_API_URL || "http://localhost:3002";
+    const vpsUrlSuffix = process.env.SERVER_API_URL_SUFFIX || "http://localhost:3002";
+    const secret = process.env.SERVER_SYNC_SECRET || "";
     const authHeader = { "Authorization": `Bearer ${secret}` };
     const payload = JSON.parse(job.payload);
 
@@ -18,7 +19,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "category":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/categories/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/categories/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -28,7 +29,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/categories/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/categories/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -37,7 +38,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "subcategory":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/subcategories/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/subcategories/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -47,7 +48,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/subcategories/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/subcategories/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -56,7 +57,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "product":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/products/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/products/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -66,7 +67,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/products/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/products/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -75,7 +76,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "variant":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/variants/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/variants/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -85,7 +86,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/variants/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/variants/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -94,7 +95,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "variantitem":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/variants/items/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/variants/items/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -104,7 +105,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/variants/items/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/variants/items/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -113,7 +114,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "productvariant":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/variants/products-associations/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/variants/products-associations/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -123,7 +124,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/variants/products-associations/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/variants/products-associations/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -132,7 +133,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "printerproduct":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/printers-products/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/printers-products/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -142,7 +143,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/printers-products/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/printers-products/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -151,7 +152,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "group":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/groups/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/groups/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -161,7 +162,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/groups/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/groups/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -170,7 +171,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "groupitem":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/groups/items/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/groups/items/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -180,7 +181,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/groups/items/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/groups/items/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -189,7 +190,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "productgroup":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/groups/products-associations/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/groups/products-associations/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -199,7 +200,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/groups/products-associations/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/groups/products-associations/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -208,7 +209,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "menu":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/menus/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/menus/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -218,7 +219,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/menus/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/menus/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -227,7 +228,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "menupage":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/menus/pages/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/menus/pages/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -237,7 +238,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/menus/pages/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/menus/pages/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -246,7 +247,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "menupageproduct":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/menus/page-products/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/menus/page-products/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -256,7 +257,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/menus/page-products/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/menus/page-products/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -265,7 +266,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "menupageassociation":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/menus/page-associations/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/menus/page-associations/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -275,7 +276,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/menus/page-associations/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/menus/page-associations/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -289,7 +290,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "configuration":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/configurations/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/configurations/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -302,7 +303,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "site_content":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/content/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/content/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -315,7 +316,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "allergen":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/allergens/sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/allergens/sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },
@@ -325,7 +326,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
             }
             if (job.operation === "delete") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/allergens/${payload.id}`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/allergens/${payload.id}`,
                     init: { method: "DELETE", headers: authHeader },
                 };
             }
@@ -334,7 +335,7 @@ function buildRequest(job: SyncJob): { url: string; init: RequestInit } | null {
         case "product_allergen":
             if (job.operation === "upsert") {
                 return {
-                    url: `${vpsUrl}/api/v1/menu/allergens/product-sync`,
+                    url: `${vpsUrl}/${vpsUrlSuffix}/menu/allergens/product-sync`,
                     init: {
                         method: "POST",
                         headers: { "Content-Type": "application/json", ...authHeader },

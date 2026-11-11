@@ -5,7 +5,7 @@
  * not care about the status code, only that the network is reachable.
  */
 export async function isOnline(): Promise<boolean> {
-    const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
+    const vpsUrl = process.env.SERVER_API_URL || "http://localhost:3002";
     try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 15000);
@@ -14,7 +14,6 @@ export async function isOnline(): Promise<boolean> {
             method: "HEAD",
             signal: controller.signal,
         });
-
         clearTimeout(timeout);
         return response.ok;
     } catch {

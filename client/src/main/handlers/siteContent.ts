@@ -3,7 +3,7 @@ import { verifyToken } from "./auth.js";
 import Logger from "electron-log";
 import jwt from "jsonwebtoken";
 
-const getVpsUrl = () => process.env.DRIVER_API_URL || "http://localhost:3002";
+const getVpsUrl = () => `${process.env.SERVER_API_URL}/${process.env.SERVER_API_URL_SUFFIX}` || "http://localhost:3002";
 
 const getAuthHeaders = () => {
   const adminSecret =
@@ -61,7 +61,7 @@ export const getWebCustomers = async (event: any, token: string, queryParams: Re
         params.set(k, String(v));
       }
     }
-    const res = await fetch(`${vpsUrl}/api/v1/customers?${params.toString()}`, {
+    const res = await fetch(`${vpsUrl}/customers?${params.toString()}`, {
       headers: getAuthHeaders(),
     });
     if (!res.ok) {
@@ -79,7 +79,7 @@ export const getWebCustomerById = async (event: any, token: string, id: string) 
   try {
     verifyToken(event, token);
     const vpsUrl = getVpsUrl();
-    const res = await fetch(`${vpsUrl}/api/v1/customers/${id}`, {
+    const res = await fetch(`${vpsUrl}/customers/${id}`, {
       headers: getAuthHeaders(),
     });
     if (!res.ok) {
@@ -97,7 +97,7 @@ export const updateWebCustomer = async (event: any, token: string, id: string, p
   try {
     verifyToken(event, token);
     const vpsUrl = getVpsUrl();
-    const res = await fetch(`${vpsUrl}/api/v1/customers/${id}`, {
+    const res = await fetch(`${vpsUrl}/customers/${id}`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
@@ -117,7 +117,7 @@ export const deleteWebCustomer = async (event: any, token: string, id: string) =
   try {
     verifyToken(event, token);
     const vpsUrl = getVpsUrl();
-    const res = await fetch(`${vpsUrl}/api/v1/customers/${id}`, {
+    const res = await fetch(`${vpsUrl}/customers/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
@@ -136,7 +136,7 @@ export const restoreWebCustomer = async (event: any, token: string, id: string) 
   try {
     verifyToken(event, token);
     const vpsUrl = getVpsUrl();
-    const res = await fetch(`${vpsUrl}/api/v1/customers/${id}/restore`, {
+    const res = await fetch(`${vpsUrl}/customers/${id}/restore`, {
       method: "PATCH",
       headers: getAuthHeaders(),
     });
@@ -163,7 +163,7 @@ export const getSupportConversations = async (event: any, token: string, queryPa
         params.set(k, String(v));
       }
     }
-    const res = await fetch(`${vpsUrl}/api/v1/support/conversations?${params.toString()}`, {
+    const res = await fetch(`${vpsUrl}/support/conversations?${params.toString()}`, {
       headers: getAuthHeaders(),
     });
     if (!res.ok) {
@@ -181,7 +181,7 @@ export const getSupportMessages = async (event: any, token: string, conversation
   try {
     verifyToken(event, token);
     const vpsUrl = getVpsUrl();
-    const res = await fetch(`${vpsUrl}/api/v1/support/conversations/${conversationId}/messages/admin`, {
+    const res = await fetch(`${vpsUrl}/support/conversations/${conversationId}/messages/admin`, {
       headers: getAuthHeaders(),
     });
     if (!res.ok) {
@@ -199,7 +199,7 @@ export const sendSupportReply = async (event: any, token: string, conversationId
   try {
     verifyToken(event, token);
     const vpsUrl = getVpsUrl();
-    const res = await fetch(`${vpsUrl}/api/v1/support/conversations/${conversationId}/reply`, {
+    const res = await fetch(`${vpsUrl}/support/conversations/${conversationId}/reply`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify({ body }),
@@ -232,7 +232,7 @@ export const updateSupportStatus = async (event: any, token: string, conversatio
   try {
     verifyToken(event, token);
     const vpsUrl = getVpsUrl();
-    const res = await fetch(`${vpsUrl}/api/v1/support/conversations/${conversationId}/status`, {
+    const res = await fetch(`${vpsUrl}/support/conversations/${conversationId}/status`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify({ status }),
@@ -240,6 +240,7 @@ export const updateSupportStatus = async (event: any, token: string, conversatio
     if (!res.ok) {
       throw new Error(`Server returned ${res.status}: ${res.statusText}`);
     }
+
     const data = await res.json();
     return { status: true, data };
   } catch (error: any) {
@@ -252,7 +253,7 @@ export const deleteSupportConversation = async (event: any, token: string, conve
   try {
     verifyToken(event, token);
     const vpsUrl = getVpsUrl();
-    const res = await fetch(`${vpsUrl}/api/v1/support/conversations/${conversationId}`, {
+    const res = await fetch(`${vpsUrl}/support/conversations/${conversationId}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });

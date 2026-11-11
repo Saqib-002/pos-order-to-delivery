@@ -10,7 +10,7 @@ const POLL_INTERVAL_MS = 30_000;
 
 // The VPS requires the POS sync secret on the order sync endpoints.
 function posSyncHeaders(extra: Record<string, string> = {}): Record<string, string> {
-  return { Authorization: `Bearer ${process.env.DRIVER_SYNC_SECRET || ""}`, ...extra };
+  return { Authorization: `Bearer ${process.env.SERVER_SYNC_SECRET || ""}`, ...extra };
 }
 
 function notifyWindowsNewOrder(order: any, items: any[]) {
@@ -47,19 +47,18 @@ async function dispatchPendingAlerts(): Promise<void> {
 }
 
 async function syncWebOrders(): Promise<void> {
-  const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
+  const vpsUrl = process.env.SERVER_API_URL || "http://localhost:3002";
+  const vpsUrlSuffix = process.env.SERVER_API_URL_SUFFIX || "http://localhost:3002";
 
   try {
-    const response = await fetch(`${vpsUrl}/api/v1/orders/sync/pending`, {
+    const response = await fetch(`${vpsUrl}/${vpsUrlSuffix}/orders/sync/pending`, {
       headers: posSyncHeaders(),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
-
     if (!response.ok) {
       Logger.warn(`WebOrderSync: poll request failed — ${response.status} ${response.statusText}`);
       return;
     }
-
     const pendingOrders: any[] = await response.json();
 
     if (!Array.isArray(pendingOrders) || pendingOrders.length === 0) {
@@ -87,7 +86,7 @@ async function syncWebOrders(): Promise<void> {
     }
 
     if (processedIds.length > 0) {
-      const ackResponse = await fetch(`${vpsUrl}/api/v1/orders/sync/acknowledge`, {
+      const ackResponse = await fetch(`${vpsUrl}/${vpsUrlSuffix}/orders/sync/acknowledge`, {
         method: "POST",
         headers: posSyncHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ ids: processedIds }),

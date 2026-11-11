@@ -21,7 +21,7 @@ interface DeliveryRouteModalProps {
     orderId?: string;
 }
 const apiUrl = (import.meta as any).env.VITE_SERVER_API_URL || "http://localhost:3002/api";
-const apiUrlSuffix = (import.meta as any).env.VITE_SERVER_API_URL_SUFFIX || "/api/v1";
+const apiUrlSuffix = (import.meta as any).env.VITE_SERVER_API_URL_SUFFIX || "api/v1";
 const baseURL = `${apiUrl}/${apiUrlSuffix}`
 const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
     isOpen,
@@ -425,7 +425,7 @@ const DeliveryRouteModal: React.FC<DeliveryRouteModalProps> = ({
             return;
         }
 
-        const wsUrl = (import.meta as any).env.VITE_DRIVER_WS_URL || "ws://localhost:3002";
+        const wsUrl = (import.meta as any).env.VITE_SERVER_WS_URL || "ws://localhost:3002";
         const socket = new WebSocket(wsUrl);
 
         socket.onopen = () => {

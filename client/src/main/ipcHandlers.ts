@@ -346,7 +346,7 @@ export function registerIpcHandlers() {
   });
   ipcMain.handle("get-driver-api-url", async () => {
     return (
-      process.env.DRIVER_API_URL ||
+      process.env.SERVER_API_URL ||
       ""
     );
   });

@@ -71,8 +71,9 @@ async function applyStatusUpdates(updates: DriverOrderStatus[]): Promise<string[
 }
 
 async function pollDriverOrderStatuses(): Promise<void> {
-  const serverUrl = (process.env.DRIVER_API_URL || "http://localhost:3002").replace(/\/$/, "");
-  const secret = process.env.DRIVER_SYNC_SECRET || "";
+  const vpsUrl = (process.env.SERVER_API_URL || "http://localhost:3002").replace(/\/$/, "");
+  const vpsUrlSuffix = (process.env.SERVER_API_URL_SUFFIX || "http://localhost:3002").replace(/\/$/, "");
+  const secret = process.env.SERVER_SYNC_SECRET || "";
   let offset = 0;
   let appliedCount = 0;
 
@@ -88,7 +89,7 @@ async function pollDriverOrderStatuses(): Promise<void> {
     offset += candidates.length;
     if (orderIds.length === 0) continue;
 
-    const response = await fetch(`${serverUrl}/api/v1/driver/pos/orders/statuses`, {
+    const response = await fetch(`${vpsUrl}/${vpsUrlSuffix}/driver/pos/orders/statuses`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${secret}` },
       body: JSON.stringify({ orderIds }),

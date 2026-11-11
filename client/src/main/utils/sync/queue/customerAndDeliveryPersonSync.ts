@@ -1,8 +1,8 @@
-import { syncLogger as Logger } from "../logger.js";
-import { processDeliveryPersonSyncQueue, stopDeliveryPersonSyncQueue } from "./queue/deliveryPersonQueue.js";
-import { processWebCustomerSync, stopWebCustomerSync } from "./webCustomer.js";
+import { syncLogger as Logger } from "../../logger.js";
+import { processDeliveryPersonSyncQueue, stopDeliveryPersonSyncQueue } from "../queue/deliveryPersonQueue.js";
+import { processWebCustomerSync, stopWebCustomerSync } from "../webCustomer.js";
 
-const SYNC_INTERVAL_MS = 180_000;
+const SYNC_INTERVAL_MS = 120_000;
 
 let syncInterval: NodeJS.Timeout | null = null;
 let currentRound: Promise<void> | null = null;

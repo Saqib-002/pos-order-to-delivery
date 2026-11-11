@@ -30,7 +30,8 @@ function setLastSyncedAt(value: string | null): void {
  * upsert them into the local DB, then advance the cursor.
  */
 async function syncWebCustomers(): Promise<void> {
-  const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
+  const vpsUrl = process.env.SERVER_API_URL || "http://localhost:3002";
+  const vpsUrlSuffix = process.env.SERVER_API_URL_SUFFIX || "http://localhost:3002";
   const lastSyncedAt = getLastSyncedAt();
 
   try {
@@ -38,11 +39,11 @@ async function syncWebCustomers(): Promise<void> {
       ? `?since=${encodeURIComponent(lastSyncedAt)}`
       : "";
 
-    const syncSecret = process.env.DRIVER_SYNC_SECRET || "";
+    const syncSecret = process.env.SERVER_SYNC_SECRET || "";
     const headers: Record<string, string> = {};
     if (syncSecret) headers["x-sync-secret"] = syncSecret;
 
-    const response = await fetch(`${vpsUrl}/api/v1/customers/poll${qs}`, {
+    const response = await fetch(`${vpsUrl}/${vpsUrlSuffix}/customers/poll${qs}`, {
       headers,
     });
 

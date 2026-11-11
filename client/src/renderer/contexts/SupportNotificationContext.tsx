@@ -59,7 +59,7 @@ export const SupportNotificationProvider: React.FC<Props> = ({ children }) => {
     try {
       const adminToken = await (window as any).electronAPI.getDriverAdminToken();
       const apiUrl = (import.meta as any).env.VITE_SERVER_API_URL || "http://localhost:3002/api";
-      const apiUrlSuffix = (import.meta as any).env.VITE_SERVER_API_URL_SUFFIX || "/api/v1";
+      const apiUrlSuffix = (import.meta as any).env.VITE_SERVER_API_URL_SUFFIX || "api/v1";
       const baseURL = `${apiUrl}/${apiUrlSuffix}`
       const res = await fetch(`${baseURL}/support/unread-count`, {
         headers: { Authorization: `Bearer ${adminToken}` },
@@ -91,7 +91,7 @@ export const SupportNotificationProvider: React.FC<Props> = ({ children }) => {
     }
 
     const wsUrl =
-      (import.meta as any).env.VITE_DRIVER_WS_URL || "ws://localhost:3002";
+      (import.meta as any).env.VITE_SERVER_WS_URL || "ws://localhost:3002";
 
     const socket = new WebSocket(wsUrl);
     wsRef.current = socket;

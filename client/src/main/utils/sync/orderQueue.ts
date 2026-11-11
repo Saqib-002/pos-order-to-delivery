@@ -60,15 +60,16 @@ async function sendPendingOrderUpdates(): Promise<void> {
   const rows = await db(TABLE).whereNull("parkedAt").orderBy("id", "asc").limit(BATCH_SIZE);
   if (rows.length === 0) return;
 
-  const vpsUrl = process.env.DRIVER_API_URL || "http://localhost:3002";
-  const secret = process.env.DRIVER_SYNC_SECRET || "";
+  const vpsUrl = process.env.SERVER_API_URL || "http://localhost:3002";
+  const vpsUrlSuffix = process.env.SERVER_API_URL_SUFFIX || "http://localhost:3002";
+  const secret = process.env.SERVER_SYNC_SECRET || "";
   let sent = 0;
 
   for (const row of rows) {
     const label = `#${row.id} order ${row.orderId} (from ${row.deviceName || "unknown device"})`;
     let response: Response;
     try {
-      response = await fetch(`${vpsUrl}/api/v1/orders/${encodeURIComponent(row.orderId)}/status`, {
+      response = await fetch(`${vpsUrl}/${vpsUrlSuffix}/orders/${encodeURIComponent(row.orderId)}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${secret}` },
         body: row.payload,
