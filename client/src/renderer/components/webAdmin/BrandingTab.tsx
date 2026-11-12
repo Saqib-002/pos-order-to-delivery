@@ -1,23 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
 import CustomInput from "../shared/CustomInput";
 import CustomButton from "../ui/CustomButton";
-import TranslateButton from "./TranslateButton";
-import { RichTextEditor, blocknoteToPlainText, plainTextToBlocknote } from "./RichTextEditor";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { useAuth } from "@/renderer/contexts/AuthContext";
 import { formatImageUrl } from "../../utils/imageUrl";
 import { compressImageFile, fileToBase64, type CompressInfo } from "../../utils/imageCompression";
 import { ImageAspectHint } from "../shared/ImageAspectHint";
-import { LocalisedString } from "./HeroTab";
-import { ImageIcon, Upload, X, Clock, Palette, Loader2, Fullscreen } from "lucide-react";
+import { ImageIcon, Upload, X, Palette, Loader2, Fullscreen } from "lucide-react";
 import ImagePreviewModal from "../shared/ImagePreviewModal";
 
 export interface BrandingData {
   logoUrl: string;
   brandName: string;
   brandSubtext: string;
-  openingHours: LocalisedString;
 }
 
 export interface AnnouncementData {
@@ -39,7 +35,6 @@ const EMPTY_BRANDING: BrandingData = {
   logoUrl: "",
   brandName: "",
   brandSubtext: "",
-  openingHours: { en: "", es: "" },
 };
 
 interface BrandingTabProps {
@@ -83,10 +78,6 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
           logoUrl: b.logoUrl || "",
           brandName: b.brandName || "",
           brandSubtext: b.brandSubtext || "",
-          openingHours: {
-            en: b.openingHours?.en || "",
-            es: b.openingHours?.es || "",
-          },
         });
       }
     }
@@ -288,88 +279,6 @@ export const BrandingTab: React.FC<BrandingTabProps> = ({
             onChange={(e) =>
               setBranding({ ...branding, brandSubtext: e.target.value })
             }
-          />
-        </div>
-      </div>
-
-      {/* ── Opening Hours Card (Rich Text) ── */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-gray-500" />
-            <div>
-              <h2 className="text-base font-bold text-gray-800">
-                {t("webAdmin.branding.hoursTitle")}
-              </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {t("webAdmin.branding.hoursSubtitle")}
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-              {t("webAdmin.common.english")}
-            </span>
-            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-              {t("webAdmin.common.espanol")}
-            </span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <RichTextEditor
-            label={`${t("webAdmin.branding.hoursTitle")} (EN)`}
-            labelAction={
-              <TranslateButton
-                value={blocknoteToPlainText(branding.openingHours.en)}
-                direction="en→es"
-                onTranslated={(v) =>
-                  setBranding({
-                    ...branding,
-                    openingHours: {
-                      ...branding.openingHours,
-                      es: plainTextToBlocknote(v),
-                    },
-                  })
-                }
-              />
-            }
-            value={branding.openingHours.en}
-            onChange={(val) =>
-              setBranding({
-                ...branding,
-                openingHours: { ...branding.openingHours, en: val },
-              })
-            }
-            hint={t("webAdmin.branding.hoursHint")}
-            minHeight="140px"
-          />
-          <RichTextEditor
-            label={`${t("webAdmin.branding.hoursTitle")} (ES)`}
-            labelAction={
-              <TranslateButton
-                value={blocknoteToPlainText(branding.openingHours.es)}
-                direction="es→en"
-                onTranslated={(v) =>
-                  setBranding({
-                    ...branding,
-                    openingHours: {
-                      ...branding.openingHours,
-                      en: plainTextToBlocknote(v),
-                    },
-                  })
-                }
-              />
-            }
-            value={branding.openingHours.es}
-            onChange={(val) =>
-              setBranding({
-                ...branding,
-                openingHours: { ...branding.openingHours, es: val },
-              })
-            }
-            hint={t("webAdmin.branding.hoursHint")}
-            minHeight="140px"
           />
         </div>
       </div>
